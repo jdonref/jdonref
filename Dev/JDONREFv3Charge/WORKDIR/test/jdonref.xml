@@ -1,0 +1,5 @@
+<jdonref>
+    <wsdl>http://localhost/JDONREFv3/JDONREF?wsdl</wsdl>
+    <uri>http://jdonref.ppol/</uri>
+    <service>JDONREFService</service>
+</jdonref>

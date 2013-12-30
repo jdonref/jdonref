@@ -1,0 +1,7 @@
+<connection>
+	<server>localhost</server>
+	<database>jdonref</database>
+	<port>5432</port>
+	<user>jdonrefadmin</user>
+	<password>passwd-jdonrefadmin</password>
+</connection>

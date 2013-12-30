@@ -1,0 +1,7 @@
+<connection>
+	<server>plf-jdonref.ppol.mi</server>
+	<database>DB_JDONREF</database>
+	<port>5432</port>
+	<user>jdonrefadmin</user>
+	<password>jdonref</password>
+</connection>
