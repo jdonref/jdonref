@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Published by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.1.2-b05-RC1. --><xs:schema xmlns:tns="http://jdonref.ppol/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://jdonref.ppol/">
+
+<xs:element name="contacte" type="tns:contacte"></xs:element>
+
+<xs:element name="contacteResponse" type="tns:contacteResponse"></xs:element>
+
+<xs:element name="decoupe" type="tns:decoupe"></xs:element>
+
+<xs:element name="decoupeResponse" type="tns:decoupeResponse"></xs:element>
+
+<xs:element name="geocode" type="tns:geocode"></xs:element>
+
+<xs:element name="geocodeResponse" type="tns:geocodeResponse"></xs:element>
+
+<xs:element name="getVersion" type="tns:getVersion"></xs:element>
+
+<xs:element name="getVersionResponse" type="tns:getVersionResponse"></xs:element>
+
+<xs:element name="normalise" type="tns:normalise"></xs:element>
+
+<xs:element name="normaliseResponse" type="tns:normaliseResponse"></xs:element>
+
+<xs:element name="revalide" type="tns:revalide"></xs:element>
+
+<xs:element name="revalideResponse" type="tns:revalideResponse"></xs:element>
+
+<xs:element name="reverse" type="tns:reverse"></xs:element>
+
+<xs:element name="reverseResponse" type="tns:reverseResponse"></xs:element>
+
+<xs:element name="valide" type="tns:valide"></xs:element>
+
+<xs:element name="valideResponse" type="tns:valideResponse"></xs:element>
+
+<xs:complexType name="reverse">
+<xs:sequence>
+<xs:element name="application" type="xs:int"></xs:element>
+<xs:element name="services" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="operation" type="xs:int"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="distance" type="xs:double"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="reverseResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:resultatGeocodageInverse" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatGeocodageInverse">
+<xs:sequence>
+<xs:element name="codeRetour" type="xs:int"></xs:element>
+<xs:element name="erreurs" type="tns:resultatErreur" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="propositions" type="tns:propositionGeocodageInverse" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatErreur">
+<xs:sequence>
+<xs:element name="code" type="xs:int"></xs:element>
+<xs:element name="message" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="service" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="propositionGeocodageInverse">
+<xs:sequence>
+<xs:element name="code" type="xs:int"></xs:element>
+<xs:element name="distance" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="donneesOrigine" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="ids" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="referentiel" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="service" type="xs:int"></xs:element>
+<xs:element name="t0" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="t1" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="x" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="y" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="revalide">
+<xs:sequence>
+<xs:element name="application" type="xs:int"></xs:element>
+<xs:element name="services" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="ids" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="date" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="revalideResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:resultatRevalidation" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatRevalidation">
+<xs:sequence>
+<xs:element name="codeRetour" type="xs:int"></xs:element>
+<xs:element name="erreurs" type="tns:resultatErreur" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="propositions" type="tns:propositionRevalidation" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="propositionRevalidation">
+<xs:sequence>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="donneesOrigine" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="ids" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="service" type="xs:int"></xs:element>
+<xs:element name="t0" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="t1" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getVersion">
+<xs:sequence>
+<xs:element name="application" type="xs:int"></xs:element>
+<xs:element name="services" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getVersionResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:resultatVersion" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatVersion">
+<xs:sequence>
+<xs:element name="codeRetour" type="xs:int"></xs:element>
+<xs:element name="erreurs" type="tns:resultatErreur" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="propositions" type="tns:propositionVersion" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="propositionVersion">
+<xs:sequence>
+<xs:element name="nom" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="service" type="xs:int"></xs:element>
+<xs:element name="version" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="decoupe">
+<xs:sequence>
+<xs:element name="application" type="xs:int"></xs:element>
+<xs:element name="services" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="operations" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="decoupeResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:resultatDecoupage" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatDecoupage">
+<xs:sequence>
+<xs:element name="codeRetour" type="xs:int"></xs:element>
+<xs:element name="erreurs" type="tns:resultatErreur" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="propositions" type="tns:propositionDecoupage" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="propositionDecoupage">
+<xs:sequence>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="service" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="geocode">
+<xs:sequence>
+<xs:element name="application" type="xs:int"></xs:element>
+<xs:element name="services" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="ids" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="geocodeResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:resultatGeocodage" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatGeocodage">
+<xs:sequence>
+<xs:element name="codeRetour" type="xs:int"></xs:element>
+<xs:element name="erreurs" type="tns:resultatErreur" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="propositions" type="tns:propositionGeocodage" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="propositionGeocodage">
+<xs:sequence>
+<xs:element name="date" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="projection" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="referentiel" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="service" type="xs:int"></xs:element>
+<xs:element name="type" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="x" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="y" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="valide">
+<xs:sequence>
+<xs:element name="application" type="xs:int"></xs:element>
+<xs:element name="services" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="operation" type="xs:int"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="valideResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:resultatValidation" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatValidation">
+<xs:sequence>
+<xs:element name="codeRetour" type="xs:int"></xs:element>
+<xs:element name="erreurs" type="tns:resultatErreur" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="propositions" type="tns:propositionValidation" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="propositionValidation">
+<xs:sequence>
+<xs:element name="code" type="xs:int"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="donneesOrigine" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="ids" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="note" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="service" type="xs:int"></xs:element>
+<xs:element name="t0" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="t1" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="normalise">
+<xs:sequence>
+<xs:element name="application" type="xs:int"></xs:element>
+<xs:element name="services" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="operation" type="xs:int"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="normaliseResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:resultatNormalisation" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatNormalisation">
+<xs:sequence>
+<xs:element name="codeRetour" type="xs:int"></xs:element>
+<xs:element name="erreurs" type="tns:resultatErreur" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="propositions" type="tns:propositionNormalisation" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="propositionNormalisation">
+<xs:sequence>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="service" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="contacte">
+<xs:sequence>
+<xs:element name="application" type="xs:int"></xs:element>
+<xs:element name="services" type="xs:int" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="operation" type="xs:int"></xs:element>
+<xs:element name="donnees" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="contacteResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:resultatContacte" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resultatContacte">
+<xs:sequence>
+<xs:element name="codeRetour" type="xs:int"></xs:element>
+<xs:element name="erreurs" type="tns:resultatErreur" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="options" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

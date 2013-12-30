@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xalan="http://xml.apache.org/xslt" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1">
+    <!--
+                ===================
+                JAX-WS WSIMPORT SECTION
+                ===================
+            -->
+    <target name="wsimport-init" depends="init">
+        <mkdir dir="${build.generated.dir}/wsimport/client"/>
+        <mkdir dir="${build.generated.dir}/wsimport/binaries"/>
+        <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+            <classpath path="${libs.jaxws21.classpath}"/>
+        </taskdef>
+    </target>
+    <target name="wsimport-client-check-JDONREF" depends="wsimport-init">
+        <condition property="wsimport-client-JDONREF.notRequired">
+            <available file="${build.generated.dir}/wsimport/client/ppol/jdonref/talend/client" type="dir"/>
+        </condition>
+    </target>
+    <target name="wsimport-client-JDONREF" depends="wsimport-init,wsimport-client-check-JDONREF" unless="wsimport-client-JDONREF.notRequired">
+        <wsimport fork="true" xendorsed="true" sourcedestdir="${build.generated.dir}/wsimport/client" extension="true" package="ppol.jdonref.talend.client" destdir="${build.generated.dir}/wsimport/binaries" wsdl="${basedir}/xml-resources/web-service-references/JDONREF/wsdl/localhost/JDONREFv3/JDONREF.wsdl" wsdlLocation="http://localhost/JDONREFv3/JDONREF?wsdl" catalog="catalog.xml">
+            <jvmarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
+        </wsimport>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${build.generated.dir}/wsimport/binaries" includes="**/*.xml"/>
+        </copy>
+    </target>
+    <target name="wsimport-client-clean-JDONREF" depends="-init-project">
+        <delete dir="${build.generated.dir}/wsimport/client/ppol/jdonref/talend/client"/>
+    </target>
+    <target name="wsimport-client-generate" depends="wsimport-client-JDONREF"/>
+    <target name="wsimport-client-compile" depends="-pre-pre-compile">
+        <j2seproject3:depend srcdir="${build.generated.dir}/wsimport/client" classpath="${libs.jaxws21.classpath}:${javac.classpath}" destdir="${build.classes.dir}"/>
+        <j2seproject3:javac srcdir="${build.generated.dir}/wsimport/client" classpath="${libs.jaxws21.classpath}:${javac.classpath}" destdir="${build.classes.dir}"/>
+    </target>
+</project>
