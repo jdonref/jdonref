@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xalan="http://xml.apache.org/xslt" xmlns:webproject2="http://www.netbeans.org/ns/web-project/2" xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1">
+    <!--
+                ===================
+                JAX-WS WSIMPORT SECTION
+                ===================
+            -->
+    <target name="wsimport-init" depends="init">
+        <mkdir dir="${build.generated.dir}/wsimport/client"/>
+        <mkdir dir="${build.generated.dir}/wsimport/binaries"/>
+        <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+            <classpath path="${java.home}/../lib/tools.jar:${j2ee.platform.wsimport.classpath}:${javac.classpath}"/>
+        </taskdef>
+        <condition property="conf-dir" value="${conf.dir}/" else="">
+            <isset property="conf.dir"/>
+        </condition>
+    </target>
+    <target name="wsimport-client-check-JDONREF" depends="wsimport-init">
+        <condition property="wsimport-client-JDONREF.notRequired">
+            <available file="${build.generated.dir}/wsimport/client/ppol/jdonref/json/client" type="dir"/>
+        </condition>
+    </target>
+    <target name="wsimport-client-JDONREF" depends="wsimport-init,wsimport-client-check-JDONREF" unless="wsimport-client-JDONREF.notRequired">
+        <wsimport xendorsed="true" fork="true" package="ppol.jdonref.json.client" verbose="true" sourcedestdir="${build.generated.dir}/wsimport/client" extension="true" destdir="${build.generated.dir}/wsimport/binaries" wsdl="${basedir}/${conf-dir}xml-resources/web-service-references/JDONREF/wsdl/test-jdonrefv3.ppol.mi/JDONREFv3/JDONREF.wsdl" wsdlLocation="http://test-jdonrefv3.ppol.mi/JDONREFv3/JDONREF?wsdl" catalog="catalog.xml">
+            <jvmarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
+        </wsimport>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${build.generated.dir}/wsimport/binaries" includes="**/*.xml"/>
+        </copy>
+    </target>
+    <target name="wsimport-client-clean-JDONREF" depends="-init-project">
+        <delete dir="${build.generated.dir}/wsimport/client/ppol/jdonref/json/client"/>
+    </target>
+    <target name="wsimport-client-generate" depends="wsimport-client-JDONREF"/>
+    <target name="wsimport-client-compile" depends="-pre-pre-compile">
+        <webproject2:javac srcdir="${build.generated.dir}/wsimport/client" classpath="${j2ee.platform.wsimport.classpath}:${javac.classpath}" destdir="${build.classes.dir}"/>
+    </target>
+</project>

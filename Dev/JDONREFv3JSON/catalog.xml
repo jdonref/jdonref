@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://localhost/JDONREFv2/JDONREF?wsdl" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost/JDONREFv2/JDONREF.wsdl"/>
+    <system systemId="http://localhost:80/JDONREFv2/JDONREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost_80/JDONREFv2/JDONREF.xsd_1.xsd"/>
+    <system systemId="http://localhost/JDONREF/JDONREF?wsdl" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost/JDONREF/JDONREF.wsdl"/>
+    <system systemId="http://localhost:80/JDONREF/JDONREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost_80/JDONREF/JDONREF.xsd_1.xsd"/>
+    <system systemId="http://localhost/JADRREF/JADRREF?wsdl" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost/JADRREF/JADRREF.wsdl"/>
+    <system systemId="http://localhost:80/JADRREF/JADRREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost_80/JADRREF/JADRREF.xsd_1.xsd"/>
+    <system systemId="http://localhost/JPOIZONREF/JPOIZONREF?wsdl" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost/JPOIZONREF/JPOIZONREF.wsdl"/>
+    <system systemId="http://localhost:80/JPOIZONREF/JPOIZONREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost_80/JPOIZONREF/JPOIZONREF.xsd_1.xsd"/>
+    <system systemId="http://localhost/JDONREFv3/JDONREF?wsdl" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost/JDONREFv3/JDONREF.wsdl"/>
+    <system systemId="http://localhost:80/JDONREFv3/JDONREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost_80/JDONREFv3/JDONREF.xsd_1.xsd"/>
+    <system systemId="http://test-jdonrefv3.ppol.mi/JDONREFv3/JDONREF?wsdl" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/test-jdonrefv3.ppol.mi/JDONREFv3/JDONREF.wsdl"/>
+    <system systemId="http://test-jdonrefv3.ppol.mi:80/JDONREFv3/JDONREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/test-jdonrefv3.ppol.mi_80/JDONREFv3/JDONREF.xsd_1.xsd"/>
+</catalog>
