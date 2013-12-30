@@ -1,0 +1,1 @@
+cl /c /I"C:\Program Files\PostgreSQL\8.3\include\server" /I"C:\Program Files\PostgreSQL\8.3\include\server\port\win32" /I"C:\Program Files\Microsoft Platform SDK\Include" /I"C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\include" levenstein.c
