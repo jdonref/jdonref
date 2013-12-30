@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/departementsSpeciaux.dtd
+
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE departements SYSTEM "departementsSpeciaux.dtd">
+
+    <departements>
+    ...
+    </departements>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT departements (codeDpt)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT codeDpt (synonymes)*>
+<!ATTLIST codeDpt
+    code CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT synonymes (synonyme)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT synonyme (#PCDATA)>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services>
+    <service>
+        <identifiant>100</identifiant>
+        <nom>POIZON</nom>
+    </service>
+    <service>
+        <identifiant>101</identifiant>
+        <nom>POI</nom>
+        <parent>100</parent>
+    </service>
+    <service>
+        <identifiant>103</identifiant>
+        <nom>ARRONDISSEMENT</nom>
+        <parent>102</parent>
+    </service>
+    <service>
+        <identifiant>102</identifiant>
+        <nom>ZON</nom>
+        <parent>100</parent>
+    </service>
+    <service>
+        <identifiant>104</identifiant>
+        <nom>SAE</nom>
+        <parent>101</parent>
+    </service>
+    <cle>
+        <identifiant>105</identifiant>
+        <nom>SecteurOTV</nom>
+        <parent>102</parent>
+    </cle>
+    <cle>
+        <identifiant>106</identifiant>
+        <nom>QUARTIER SAS</nom>
+        <parent>102</parent>
+    </cle>
+    <cle>
+        <identifiant>1000</identifiant>
+        <parent>101</parent>
+        <nom>POI NAVTEQ</nom>
+    </cle>
+    <cle>
+        <identifiant>1001</identifiant>
+        <parent>1000</parent>
+        <nom>MONUMENT HISTORIQUE</nom>
+    </cle>
+    <cle>
+        <identifiant>1002</identifiant>
+        <parent>1000</parent>
+        <nom>MUSEE</nom>
+    </cle>
+    <cle>
+        <identifiant>1003</identifiant>
+        <parent>1000</parent>
+        <nom>PARC ATTRACTION</nom>
+    </cle>
+    <cle>
+        <identifiant>1004</identifiant>
+        <parent>1000</parent>
+        <nom>PARC EXPOSITION</nom>
+    </cle>
+    <cle>
+        <identifiant>1005</identifiant>
+        <parent>1000</parent>
+        <nom>THEATRE</nom>
+    </cle>
+    <cle>
+        <identifiant>1006</identifiant>
+        <parent>1000</parent>
+        <nom>VIE NOCTURNE</nom>
+    </cle>
+    <cle>
+        <identifiant>2000</identifiant>
+        <parent>102</parent>
+        <nom>ZONE BSPP</nom>
+    </cle>
+    <cle>
+        <identifiant>2001</identifiant>
+        <parent>2000</parent>
+        <nom>EMPRISE GEO ER</nom>
+    </cle>
+    <cle>
+        <identifiant>2002</identifiant>
+        <parent>2000</parent>
+        <nom>EMPRISE GEO ES</nom>
+    </cle>
+    <cle>
+        <identifiant>2003</identifiant>
+        <parent>2000</parent>
+        <nom>BSPP AUTRE ETBS</nom>
+    </cle>
+</services>
