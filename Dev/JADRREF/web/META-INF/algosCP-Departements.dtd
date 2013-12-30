@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/algosCP-Departements.dtd
+
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE departements SYSTEM "algosCP-Departements.dtd">
+
+    <departements>
+    ...
+    </departements>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT departements (codeDpt)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT codeDpt (algo)*>
+<!ATTLIST codeDpt
+    code CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT algo (param)*>
+<!ATTLIST algo
+    type CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT param (#PCDATA)>
+<!ATTLIST param
+    name CDATA #IMPLIED
+  >
