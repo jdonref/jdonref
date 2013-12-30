@@ -1,0 +1,13 @@
+<params>
+  <jdonref>
+    <wsdl>http://localhost:8080/JDONREFv2/JDONREF?wsdl</wsdl>
+    <uri>http://jdonref.ppol/</uri>
+    <service>JDONREFService</service>
+  </jdonref>
+  <application>4</application>
+  <geocodage>voie</geocodage>
+  <notemin>180</notemin>
+  <entete/>
+  <normalise/>
+  <gererpays/>
+</params>
