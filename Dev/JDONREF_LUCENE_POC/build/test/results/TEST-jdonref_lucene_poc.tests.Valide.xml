@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="PC_JULIEN" name="jdonref_lucene_poc.tests.Valide" tests="1" time="3.332" timestamp="2013-12-30T02:39:28">
+  <properties>
+    <property name="netbeans.autoupdate.country" value="FR" />
+    <property name="javax.xml.parsers.SAXParserFactory" value="org.netbeans.core.startup.SAXFactoryImpl" />
+    <property name="javac.test.classpath" value="C:\java\lucene\lucene-4.5.1\core\lucene-core-4.5.1.jar;C:\java\lucene\lucene-4.5.1\queryparser\lucene-queryparser-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\common\lucene-analyzers-common-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\morfologik;C:\java\lucene\lucene-4.5.1\analysis\phonetic:C:\java\postgresql\postgresql-8.4-703.jdbc3.jar:build/classes:C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-3.8.2.jar:C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-4.1.jar" />
+    <property name="org.openide.TopManager.GUI" value="true" />
+    <property name="libs.theme-default.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\defaulttheme.jar" />
+    <property name="libs.junit.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\java2\docs\junit-3.8.2-api.zip" />
+    <property name="javac.includes" value="jdonref_lucene_poc/tests/Valide.java" />
+    <property name="ant.core.lib" value="C:\Program Files (x86)\NetBeans 6.1\java2\ant\lib\ant.jar" />
+    <property name="libs.swing-app-framework.src" value="" />
+    <property name="libs.JDOM.src" value="" />
+    <property name="javadoc.windowtitle" value="" />
+    <property name="libs.toplink.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\toplink\toplink-essentials.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\toplink\toplink-essentials-agent.jar" />
+    <property name="user.dir" value="D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC" />
+    <property name="libs.theme-default-green.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\defaulttheme-green.jar" />
+    <property name="java.vm.version" value="20.6-b01" />
+    <property name="libs.jstl11.maven-pom" value="" />
+    <property name="libs.MySQLDriver.classpath" value="C:\Program Files (x86)\NetBeans 6.1\ide9\modules\ext\mysql-connector-java-5.1.5-bin.jar" />
+    <property name="libs.jstl11.src" value="" />
+    <property name="javadoc.notree" value="false" />
+    <property name="netbeans.autoupdate.version" value="1.23" />
+    <property name="libs.exceptionhandler-runtime.maven-pom" value="" />
+    <property name="jdk.home" value="C:\Program Files (x86)\Java\jdk1.5.0_12" />
+    <property name="libs.javac-api.src" value="" />
+    <property name="javadoc.noindex" value="false" />
+    <property name="libs.theme-default-green.runtime" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\defaulttheme-green.jar" />
+    <property name="sun.os.patch.level" value="Service Pack 1" />
+    <property name="libs.theme-default-gray.runtime" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\defaulttheme-gray.jar" />
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
+    <property name="libs.jdbcsupport-runtime.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\sqlx.jar" />
+    <property name="netbeans.autoupdate.variant" value="" />
+    <property name="have.tests" value="true" />
+    <property name="libs.jdbcsupport-designtime.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\sqlx.jar" />
+    <property name="org.xml.sax.driver" value="com.sun.org.apache.xerces.internal.parsers.SAXParser" />
+    <property name="libs.javac-api.javadoc" value="" />
+    <property name="os.name" value="Windows 7" />
+    <property name="libs.beans-binding.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\beansbinding-1.2.1.jar" />
+    <property name="libs.restapi.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\docs\jsr311-api-doc.zip" />
+    <property name="rave.build" value="thresher-fcs" />
+    <property name="libs.maiil.classpath" value="C:\java\mail\mail.jar" />
+    <property name="libs.restapi.classpath" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\jsr311-api.jar" />
+    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi" />
+    <property name="os.arch" value="x86" />
+    <property name="user.name" value="Julien" />
+    <property name="libs.jsf12.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\docs\javaee5-doc-api.zip" />
+    <property name="libs.jaxb21.maven-pom" value="" />
+    <property name="manifest.available+main.class" value="true" />
+    <property name="libs.swing-layout.maven-pom" value="" />
+    <property name="sun.java.command" value="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner jdonref_lucene_poc.tests.Valide filtertrace=true haltOnError=false haltOnFailure=false showoutput=true outputtoformatters=true logtestlistenerevents=true formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC\build\test\results\TEST-jdonref_lucene_poc.tests.Valide.xml crashfile=D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC\junitvmwatcher2141129466.properties propsfile=D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC\junit2076266912.properties" />
+    <property name="build.classes.dir" value="build/classes" />
+    <property name="netbeans.accept_license_class" value="org.netbeans.license.AcceptLicense" />
+    <property name="build.sysclasspath" value="ignore" />
+    <property name="libs.JDOM.classpath" value="C:\java\jdom-1.0\build\jdom.jar" />
+    <property name="libs.maiil.src" value="" />
+    <property name="libs.jaxws21.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\java2\docs\jaxws-2_1-api-doc.zip" />
+    <property name="libs.Lucene_4.5.maven-pom" value="" />
+    <property name="includes" value="**" />
+    <property name="javax.xml.parsers.DocumentBuilderFactory" value="org.netbeans.core.startup.DOMFactoryImpl" />
+    <property name="user.country" value="FR" />
+    <property name="manifest.file" value="manifest.mf" />
+    <property name="libs.jstl11.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\docs\javaee5-doc-api.zip" />
+    <property name="javadoc.encoding" value="UTF-8" />
+    <property name="platform.home" value="C:\Program Files (x86)\Java\jdk1.6.0_31" />
+    <property name="javac.classpath" value="C:\java\lucene\lucene-4.5.1\core\lucene-core-4.5.1.jar;C:\java\lucene\lucene-4.5.1\queryparser\lucene-queryparser-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\common\lucene-analyzers-common-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\morfologik;C:\java\lucene\lucene-4.5.1\analysis\phonetic:C:\java\postgresql\postgresql-8.4-703.jdbc3.jar" />
+    <property name="libs.jsfsupport-designtime.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\appbase-doc.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\dataprovider-doc.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\jsfcl-doc.zip" />
+    <property name="platform.bootcp" value="C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\resources.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\rt.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\sunrsasign.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\jsse.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\jce.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\charsets.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\modules\jdk.boot.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\classes;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\dnsns.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\localedata.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\sunjce_provider.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\sunmscapi.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\sunpkcs11.jar" />
+    <property name="netbeans.system_http_non_proxy_hosts" value="" />
+    <property name="netbeans.home" value="C:\Program Files (x86)\NetBeans 6.1\platform8" />
+    <property name="build.compiler.emacs" value="true" />
+    <property name="libs.jdbcsupport-runtime.javadoc" value="" />
+    <property name="java.endorsed.dirs" value="C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\endorsed" />
+    <property name="test.includes" value="jdonref_lucene_poc/tests/Valide.java" />
+    <property name="netbeans.dynamic.classpath" value="C:\Program Files (x86)\NetBeans 6.1\platform8\core\core.jar;C:\Program Files (x86)\NetBeans 6.1\platform8\core\org-openide-filesystems.jar;C:\Program Files (x86)\NetBeans 6.1\nb6.1\core\org-netbeans-upgrader.jar;C:\Program Files (x86)\NetBeans 6.1\nb6.1\core\locale\core_nb.jar" />
+    <property name="java.vm.specification.version" value="1.0" />
+    <property name="platforms.JDK_1.6.home" value="C:\Program Files (x86)\Java\jdk1.6.0_31" />
+    <property name="libs.jaxws21.src" value="" />
+    <property name="application.title" value="JDONREF_LUCENE_POC" />
+    <property name="libs.swing-app-framework.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\appframework-1.0.3.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\swing-worker-1.1.jar" />
+    <property name="netbeans.autoupdate.language" value="fr" />
+    <property name="java.vendor" value="Sun Microsystems Inc." />
+    <property name="platforms.JDK_1.6.compiler" value="modern" />
+    <property name="javac.debug" value="true" />
+    <property name="javadoc.splitindex" value="true" />
+    <property name="file.separator" value="\" />
+    <property name="libs.IdentityAntTasks.src" value="" />
+    <property name="libs.junit_4.maven-pom" value="" />
+    <property name="netbeans.buildnumber" value="200804211638" />
+    <property name="user.variant" value="" />
+    <property name="libs.webui-runtime.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\webui.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\commons-fileupload-1.0.jar" />
+    <property name="sun.java.launcher" value="SUN_STANDARD" />
+    <property name="libs.junit.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-3.8.2.jar" />
+    <property name="libs.struts.classpath" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\struts\antlr.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\struts\commons-beanutils.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\struts\commons-digester.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\struts\commons-logging.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\struts\commons-validator.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\struts\jakarta-oro.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\struts\struts.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\commons-fileupload-1.0.jar" />
+    <property name="libs.woodstock-theme-default.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\webui-jsf-suntheme.jar" />
+    <property name="org.openide.awt.SwingBrowserImpl.do-not-block-awt" value="false" />
+    <property name="javac.includes.binary" value="" />
+    <property name="ant.home" value="C:\Program Files (x86)\NetBeans 6.1\java2\ant" />
+    <property name="libs.junit_4.src" value="" />
+    <property name="libs.absolutelayout.maven-pom" value="" />
+    <property name="libs.PG8.4.src" value="" />
+    <property name="ant.java.version" value="1.5" />
+    <property name="java.library.path" value="C:\Program Files (x86)\Java\jdk1.6.0_31\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\Program Files\Common Files\Microsoft Shared\Windows Live;C:\Program Files (x86)\Common Files\Microsoft Shared\Windows Live;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Java\jre1.6.0_03\bin;C:\Program Files\TortoiseSVN\bin;C:\Program Files (x86)\Windows Live\Shared;C:\Program Files (x86)\QuickTime\QTSystem\;." />
+    <property name="javadoc.author" value="false" />
+    <property name="libs.IdentityAntTasks.classpath" value="C:\Program Files (x86)\NetBeans 6.1\identity2\ant\nblib\org-netbeans-modules-identity-ant.jar;C:\Program Files (x86)\NetBeans 6.1\identity2\modules\org-netbeans-modules-identity-profile-api.jar" />
+    <property name="java.util.logging.config.class" value="org.netbeans.core.startup.TopLogging" />
+    <property name="libs.PostgreSQLDriver.src" value="" />
+    <property name="sun.arch.data.model" value="32" />
+    <property name="basedir" value="D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC" />
+    <property name="jar.compress" value="false" />
+    <property name="libs.jstl11.classpath" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\standard.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\jstl.jar" />
+    <property name="path.separator" value=";" />
+    <property name="platform.javac" value="C:\Program Files (x86)\Java\jdk1.6.0_31/bin/javac" />
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle" />
+    <property name="libs.jaxws21.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\activation.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\FastInfoset.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\http.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jaxb-api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\jaxb-impl.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\jaxb-xjc.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jaxws-api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\jaxws-rt.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\jaxws-tools.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jsr173_api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jsr181-api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jsr250-api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\saaj-api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\saaj-impl.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\sjsxp.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\stax-ex.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\streambuffer.jar" />
+    <property name="libs.struts.src" value="" />
+    <property name="user.language" value="fr" />
+    <property name="libs.jaxb21.javadoc" value="" />
+    <property name="libs.spring-framework.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\spring\commons-logging-1.1.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\spring\spring-2.5.jar" />
+    <property name="application.vendor" value="Julien" />
+    <property name="manifest.available" value="true" />
+    <property name="run.test.classpath" value="C:\java\lucene\lucene-4.5.1\core\lucene-core-4.5.1.jar;C:\java\lucene\lucene-4.5.1\queryparser\lucene-queryparser-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\common\lucene-analyzers-common-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\morfologik;C:\java\lucene\lucene-4.5.1\analysis\phonetic:C:\java\postgresql\postgresql-8.4-703.jdbc3.jar:build/classes:C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-3.8.2.jar:C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-4.1.jar:build/test/classes" />
+    <property name="libs.swing-layout.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\platform8\docs\swing-layout-1.0.3-doc.zip" />
+    <property name="libs.swing-app-framework.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\java2\docs\appframework-1.0.3-doc.zip" />
+    <property name="https.nonProxyHosts" value="localhost|127.0.0.1|PC_JULIEN" />
+    <property name="libs.PostgreSQLDriver.maven-pom" value="" />
+    <property name="java.class.version" value="50.0" />
+    <property name="platforms.JDK_1.5.home" value="C:\Program Files (x86)\Java\jdk1.5.0_12" />
+    <property name="netbeans.system_http_proxy" value="DIRECT" />
+    <property name="user.properties.file" value="C:\Users\Julien\.netbeans\6.1\build.properties" />
+    <property name="libs.spring-framework.src" value="" />
+    <property name="libs.javac-api.maven-pom" value="" />
+    <property name="file.encoding.pkg" value="sun.io" />
+    <property name="sun.cpu.endian" value="little" />
+    <property name="libs.jaxb21.src" value="" />
+    <property name="libs.jsfsupport-designtime.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\jsfcl.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\appbase.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\dataprovider.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\sqlx.jar" />
+    <property name="version-output" value="java version &quot;1.6.0_31&quot;
+Java(TM) SE Runtime Environment (build 1.6.0_31-b05)
+Java HotSpot(TM) Client VM (build 20.6-b01, mixed mode, sharing)" />
+    <property name="javadoc.preview" value="true" />
+    <property name="nbplatform.default.harness.dir" value="C:\Program Files (x86)\NetBeans 6.1/harness" />
+    <property name="java.home" value="C:\Program Files (x86)\Java\jdk1.6.0_31\jre" />
+    <property name="libs.PG8.4.classpath" value="C:\java\postgresql\postgresql-8.4-703.jdbc3.jar" />
+    <property name="libs.spring-webmvc.src" value="" />
+    <property name="copyfiles.classpath" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\ant\extra\copyfiles.jar" />
+    <property name="debug.test.classpath" value="C:\java\lucene\lucene-4.5.1\core\lucene-core-4.5.1.jar;C:\java\lucene\lucene-4.5.1\queryparser\lucene-queryparser-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\common\lucene-analyzers-common-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\morfologik;C:\java\lucene\lucene-4.5.1\analysis\phonetic:C:\java\postgresql\postgresql-8.4-703.jdbc3.jar:build/classes:C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-3.8.2.jar:C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-4.1.jar:build/test/classes" />
+    <property name="libs.Lucene_4.5.javadoc" value="" />
+    <property name="netbeans.importclass" value="org.netbeans.upgrade.AutoUpgrade" />
+    <property name="libs.webui-designtime.src" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\webui-src.zip" />
+    <property name="libs.JTS.maven-pom" value="" />
+    <property name="org.openide.TopManager" value="org.netbeans.core.NonGui" />
+    <property name="libs.toplink.maven-pom" value="" />
+    <property name="libs.PostgreSQLDriver.javadoc" value="" />
+    <property name="libs.restlib.classpath" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\jsr311-api.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\jersey.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\jsp-api-2.0-20040521.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\persistence-api-1.0.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\activation.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jsr250-api.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\http.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\wadl2java.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jaxws-api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jaxb-api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\jaxb-impl.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\jaxb-xjc.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jsr173_api.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\rome-0.9.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\jdom-1.0.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\jettison-1.0-RC1.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\asm-3.1.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\rest\grizzly-http-webserver-1.7.2.jar" />
+    <property name="libs.exceptionhandler-runtime.javadoc" value="" />
+    <property name="libs.jsfsupport-runtime.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\jsfcl.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\appbase.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\dataprovider.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\sqlx.jar" />
+    <property name="libs.MySQLDriver.maven-pom" value="" />
+    <property name="http.nonProxyHosts" value="localhost|127.0.0.1|PC_JULIEN" />
+    <property name="org.netbeans.modules.tomcat.autoregister.catalinaHome" value="C:\Program Files (x86)\Apache Software Foundation\Apache Tomcat 6.0.16" />
+    <property name="libs.junit_4.javadoc" value="" />
+    <property name="libs.spring-webmvc.javadoc" value="" />
+    <property name="libs.toplink.src" value="" />
+    <property name="libs.webui.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\webui-doc.zip" />
+    <property name="libs.jsf12-support.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\appbase-doc.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\dataprovider-doc.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\jsfcl-doc.zip" />
+    <property name="run.classpath" value="C:\java\lucene\lucene-4.5.1\core\lucene-core-4.5.1.jar;C:\java\lucene\lucene-4.5.1\queryparser\lucene-queryparser-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\common\lucene-analyzers-common-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\morfologik;C:\java\lucene\lucene-4.5.1\analysis\phonetic:C:\java\postgresql\postgresql-8.4-703.jdbc3.jar:build/classes" />
+    <property name="libs.theme-default.runtime" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\defaulttheme.jar" />
+    <property name="libs.jdbcsupport-runtime.maven-pom" value="" />
+    <property name="libs.restapi.src" value="" />
+    <property name="sun.management.compiler" value="HotSpot Client Compiler" />
+    <property name="javac.deprecation" value="false" />
+    <property name="javadoc.use" value="true" />
+    <property name="libs.jdbcsupport-runtime.src" value="" />
+    <property name="libs.jdbcsupport-designtime.maven-pom" value="" />
+    <property name="libs.theme-default-gray.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\defaulttheme-gray.jar" />
+    <property name="sun.java2d.noddraw" value="true" />
+    <property name="libs.spring-webmvc.classpath" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\spring\spring-webmvc-2.5.jar" />
+    <property name="javac.compilerargs" value="" />
+    <property name="ant.file" value="D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC\build.xml" />
+    <property name="libs.beans-binding.maven-pom" value="" />
+    <property name="libs.jsf12.classpath" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\jsf-1_2\commons-beanutils.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\jsf-1_2\commons-collections.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\jsf-1_2\commons-digester.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\jsf-1_2\commons-logging.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\jsf-1_2\jsf-api.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\jsf-1_2\jsf-impl.jar" />
+    <property name="sun.awt.exception.handler" value="org.netbeans.core.startup.TopLogging$AWTHandler" />
+    <property name="libs.maiil.maven-pom" value="" />
+    <property name="libs.restapi.maven-pom" value="" />
+    <property name="libs.beans-binding.src" value="" />
+    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc." />
+    <property name="libs.swing-layout.src" value="C:\Program Files (x86)\NetBeans 6.1\platform8\docs\swing-layout-1.0.3-src.zip" />
+    <property name="libs.webui.src" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\webui-src.zip" />
+    <property name="org.openide.major.version" value="IDE/1" />
+    <property name="java.vm.name" value="Java HotSpot(TM) Client VM" />
+    <property name="netbeans.user" value="C:\Users\Julien\.netbeans\6.1" />
+    <property name="javadoc.additionalparam" value="" />
+    <property name="java.io.tmpdir" value="C:\Users\Julien\AppData\Local\Temp\" />
+    <property name="java.vendor.url" value="http://java.sun.com/" />
+    <property name="jspc.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\ant\lib\ant.jar:C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\servlet2.5-jsp2.1-api.jar:${j2ee.platform.classpath}:C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\glassfish-jspparser-2.0.jar:C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\glassfish-logging-2.0.jar:C:\Program Files (x86)\NetBeans 6.1\ide9\modules\ext\commons-logging-1.0.4.jar:C:\Program Files (x86)\NetBeans 6.1\java2\ant\lib\ant-launcher.jar" />
+    <property name="sun.boot.library.path" value="C:\Program Files (x86)\Java\jdk1.6.0_31\jre\bin" />
+    <property name="have.sources" value="true" />
+    <property name="debug.classpath" value="C:\java\lucene\lucene-4.5.1\core\lucene-core-4.5.1.jar;C:\java\lucene\lucene-4.5.1\queryparser\lucene-queryparser-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\common\lucene-analyzers-common-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\morfologik;C:\java\lucene\lucene-4.5.1\analysis\phonetic:C:\java\postgresql\postgresql-8.4-703.jdbc3.jar:build/classes" />
+    <property name="libs.woodstock-theme-default.runtime" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\webui-jsf-suntheme.jar" />
+    <property name="javadoc.private" value="false" />
+    <property name="test.src.dir" value="test" />
+    <property name="meta.inf.dir" value="src/META-INF" />
+    <property name="javadoc.encoding.used" value="UTF-8" />
+    <property name="dist.jar" value="dist/JDONREF_LUCENE_POC.jar" />
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment" />
+    <property name="ant.project.name" value="JDONREF_LUCENE_POC" />
+    <property name="netbeans.hash.code" value="unique=NB_JAVA_TOMCAT_WEBEE0c52338f2-9a9b-4b4e-9312-26ca9230105b" />
+    <property name="libs.jdbcsupport-designtime.javadoc" value="" />
+    <property name="platform.javadoc" value="C:\Program Files (x86)\Java\jdk1.6.0_31/bin/javadoc" />
+    <property name="platform.javadoc.tmp" value="${platforms.JDK_1.6.javadoc}" />
+    <property name="sun.cpu.isalist" value="pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86" />
+    <property name="libs.CopyLibs.javadoc" value="" />
+    <property name="platform.compiler" value="${platforms.JDK_1.6.compile}" />
+    <property name="ant.file.JDONREF_LUCENE_POC" value="D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC\build.xml" />
+    <property name="org.openide.specification.version" value="6.2" />
+    <property name="user.home" value="C:\Users\Julien" />
+    <property name="libs.exceptionhandler-runtime.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\errorhandler.jar" />
+    <property name="debug-args-line" value="-Xdebug" />
+    <property name="platform.javac.tmp" value="${platforms.JDK_1.6.javac}" />
+    <property name="libs.CopyLibs.maven-pom" value="" />
+    <property name="libs.absolutelayout.javadoc" value="" />
+    <property name="java.specification.name" value="Java Platform API Specification" />
+    <property name="libs.webui.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\webui.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\commons-fileupload-1.0.jar" />
+    <property name="libs.swing-app-framework.maven-pom" value="" />
+    <property name="libs.woodstock-components.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\webui-jsf.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\commons-fileupload-1.0.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\json-2.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\jsf-extensions-common-0.1.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\jsf-extensions-dynamic-faces-0.1.jar" />
+    <property name="java.specification.vendor" value="Sun Microsystems Inc." />
+    <property name="libs.jdbcsupport-designtime.src" value="" />
+    <property name="libs.javac-api.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\javac-api-nb-7.0-b07.jar" />
+    <property name="java.version" value="1.6.0_31" />
+    <property name="javadoc.version" value="false" />
+    <property name="libs.MySQLDriver.javadoc" value="" />
+    <property name="libs.maiil.javadoc" value="" />
+    <property name="org.openide.version" value="deprecated" />
+    <property name="platforms.JDK_1.5.compiler" value="modern" />
+    <property name="platform.java" value="C:\Program Files (x86)\Java\jdk1.6.0_31/bin/java" />
+    <property name="source.encoding" value="UTF-8" />
+    <property name="libs.junit.maven-pom" value="" />
+    <property name="libs.jsf12-support.src" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\appbase-src.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\dataprovider-src.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\jsfcl-src.zip" />
+    <property name="libs.struts.maven-pom" value="" />
+    <property name="netbeans.home+have.tests" value="true" />
+    <property name="libs.IdentityAntTasks.maven-pom" value="" />
+    <property name="work.dir" value="D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC" />
+    <property name="libs.jaxb21.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\activation.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jaxb-api.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\jaxb-impl.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\jaxb-xjc.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\jaxws21\api\jsr173_api.jar" />
+    <property name="do.depend" value="false" />
+    <property name="libs.JTS.classpath" value="C:\java\jts1.7\lib\jts-1.7.jar" />
+    <property name="dist.javadoc.dir" value="dist/javadoc" />
+    <property name="libs.swing-layout.classpath" value="C:\Program Files (x86)\NetBeans 6.1\platform8\modules\ext\swing-layout-1.0.3.jar" />
+    <property name="libs.restlib.src" value="" />
+    <property name="build.generated.dir" value="build/generated" />
+    <property name="javac.source" value="1.5" />
+    <property name="line.separator" value="
+" />
+    <property name="java.specification.version" value="1.6" />
+    <property name="libs.jaxws21.maven-pom" value="" />
+    <property name="java.vm.info" value="mixed mode, sharing" />
+    <property name="libs.Lucene_4.5.classpath" value="C:\java\lucene\lucene-4.5.1\core\lucene-core-4.5.1.jar;C:\java\lucene\lucene-4.5.1\queryparser\lucene-queryparser-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\common\lucene-analyzers-common-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\morfologik;C:\java\lucene\lucene-4.5.1\analysis\phonetic" />
+    <property name="libs.jsf12-support.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\jsfcl.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\appbase.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\dataprovider.jar;C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\sqlx.jar" />
+    <property name="platform.java.tmp" value="${platforms.JDK_1.6.java}" />
+    <property name="libs.spring-framework.maven-pom" value="" />
+    <property name="libs.JDOM.javadoc" value="" />
+    <property name="sun.boot.class.path" value="C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\resources.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\rt.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\sunrsasign.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\jsse.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\jce.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\charsets.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\modules\jdk.boot.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\classes" />
+    <property name="javac.target" value="1.5" />
+    <property name="libs.woodstock-components.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\webui-jsf-doc.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\webui-jsf-tld.zip" />
+    <property name="build.test.classes.dir" value="build/test/classes" />
+    <property name="src.dir" value="src" />
+    <property name="libs.IdentityAntTasks.javadoc" value="" />
+    <property name="org.netbeans.modules.tomcat.autoregister.token" value="1293049117976" />
+    <property name="sun.awt.keepWorkingSetOnMinimize" value="true" />
+    <property name="libs.JTS.javadoc" value="" />
+    <property name="libs.jsf12.src" value="" />
+    <property name="nbplatform.default.netbeans.dest.dir" value="C:\Program Files (x86)\NetBeans 6.1" />
+    <property name="libs.struts.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\docs\struts-1.2.9-javadoc.zip" />
+    <property name="dist.dir" value="dist" />
+    <property name="libs.webui-designtime.classpath" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\modules\ext\webui.jar;C:\Program Files (x86)\NetBeans 6.1\enterprise5\modules\ext\commons-fileupload-1.0.jar" />
+    <property name="java.awt.printerjob" value="sun.awt.windows.WPrinterJob" />
+    <property name="default.javac.source" value="1.5" />
+    <property name="ant.file.JDONREF_LUCENE_POC-impl" value="D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC\nbproject\build-impl.xml" />
+    <property name="javac.compilerargs.jaxws" value="" />
+    <property name="libs.MySQLDriver.src" value="" />
+    <property name="sun.jnu.encoding" value="Cp1252" />
+    <property name="libs.woodstock-components.src" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\webui-jsf-src.zip" />
+    <property name="java.runtime.version" value="1.6.0_31-b05" />
+    <property name="build.test.results.dir" value="build/test/results" />
+    <property name="manifest.available+main.class+mkdist.available" value="true" />
+    <property name="default.javac.target" value="1.5" />
+    <property name="libs.junit_4.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-4.1.jar" />
+    <property name="user.timezone" value="" />
+    <property name="libs.PG8.4.maven-pom" value="" />
+    <property name="do.jar" value="true" />
+    <property name="libs.jsfsupport-designtime.src" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\appbase-src.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\dataprovider-src.zip;C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\jsfcl-src.zip" />
+    <property name="netbeans.dirs" value="C:\Program Files (x86)\NetBeans 6.1\nb6.1;C:\Program Files (x86)\NetBeans 6.1\ide9;C:\Program Files (x86)\NetBeans 6.1\java2;C:\Program Files (x86)\NetBeans 6.1\xml2;C:\Program Files (x86)\NetBeans 6.1\apisupport1;C:\Program Files (x86)\NetBeans 6.1\enterprise5;C:\Program Files (x86)\NetBeans 6.1\profiler3;C:\Program Files (x86)\NetBeans 6.1\gsf1;C:\Program Files (x86)\NetBeans 6.1\visualweb2;C:\Program Files (x86)\NetBeans 6.1\identity2;C:\Program Files (x86)\NetBeans 6.1\harness" />
+    <property name="libs.PG8.4.javadoc" value="" />
+    <property name="java.ext.dirs" value="C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext;C:\Windows\Sun\Java\lib\ext" />
+    <property name="libs.exceptionhandler-runtime.src" value="" />
+    <property name="libs.absolutelayout.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\AbsoluteLayout.jar" />
+    <property name="libs.JDOM.maven-pom" value="" />
+    <property name="excludes" value="" />
+    <property name="libs.restlib.maven-pom" value="" />
+    <property name="platforms.JDK_1.6.bootclasspath" value="C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\resources.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\rt.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\sunrsasign.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\jsse.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\jce.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\charsets.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\modules\jdk.boot.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\classes;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\dnsns.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\localedata.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\sunjce_provider.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\sunmscapi.jar;C:\Program Files (x86)\Java\jdk1.6.0_31\jre\lib\ext\sunpkcs11.jar" />
+    <property name="apple.laf.useScreenMenuBar" value="true" />
+    <property name="java.class.path" value="C:\java\lucene\lucene-4.5.1\core\lucene-core-4.5.1.jar;C:\java\lucene\lucene-4.5.1\queryparser\lucene-queryparser-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\common\lucene-analyzers-common-4.5.1.jar;C:\java\lucene\lucene-4.5.1\analysis\morfologik;C:\java\lucene\lucene-4.5.1\analysis\phonetic;C:\java\postgresql\postgresql-8.4-703.jdbc3.jar;D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC\build\classes;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-3.8.2.jar;C:\Program Files (x86)\NetBeans 6.1\java2\modules\ext\junit-4.1.jar;D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC\build\test\classes;D:\Users\Julien\Documents\NetBeansProjects\JDONREF_LUCENE_POC;C:\Jeux\Minecraft;C:\Program Files (x86)\Java\jre6\lib\ext\QTJava.zip;C:\Program Files (x86)\NetBeans 6.1\java2\ant\lib\ant-launcher.jar;C:\Program Files (x86)\NetBeans 6.1\java2\ant\lib\ant.jar;C:\Program Files (x86)\NetBeans 6.1\java2\ant\lib\ant-junit.jar" />
+    <property name="libs.webui-designtime.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\visualweb2\docs\webui-doc.zip" />
+    <property name="libs.absolutelayout.src" value="" />
+    <property name="os.version" value="6.1" />
+    <property name="application.args" value="" />
+    <property name="libs.toplink.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\docs\javaee5-doc-api.zip" />
+    <property name="sun.desktop" value="windows" />
+    <property name="libs.restlib.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\enterprise5\docs\jsr311-api-doc.zip" />
+    <property name="platforms.JDK_1.5.bootclasspath" value="C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\rt.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\i18n.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\sunrsasign.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\jsse.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\jce.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\charsets.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\classes;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\ext\dnsns.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\ext\localedata.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\ext\sunjce_provider.jar;C:\Program Files (x86)\Java\jdk1.5.0_12\jre\lib\ext\sunpkcs11.jar" />
+    <property name="libs.beans-binding.javadoc" value="C:\Program Files (x86)\NetBeans 6.1\java2\docs\beansbinding-1.2.1-doc.zip" />
+    <property name="java.awt.graphicsenv" value="sun.awt.Win32GraphicsEnvironment" />
+    <property name="rave.version" value="2.0.0" />
+    <property name="java.vm.vendor" value="Sun Microsystems Inc." />
+    <property name="libs.CopyLibs.classpath" value="C:\Program Files (x86)\NetBeans 6.1\java2\ant\extra\org-netbeans-modules-java-j2seproject-copylibstask.jar" />
+    <property name="libs.spring-webmvc.maven-pom" value="" />
+    <property name="run.jvmargs" value="" />
+    <property name="libs.spring-framework.javadoc" value="" />
+    <property name="libs.PostgreSQLDriver.classpath" value="C:\Program Files (x86)\NetBeans 6.1\ide9\modules\ext\postgresql-8.3-603.jdbc3.jar" />
+    <property name="libs.jsf12.maven-pom" value="" />
+    <property name="libs.junit.src" value="" />
+    <property name="main.class" value="jdonref_lucene_poc.Main" />
+    <property name="libs.CopyLibs.src" value="" />
+    <property name="build.dir" value="build" />
+    <property name="ant.version" value="Apache Ant version 1.7.0 compiled on December 13 2006" />
+    <property name="libs.JTS.src" value="" />
+    <property name="libs.Lucene_4.5.src" value="" />
+    <property name="file.encoding" value="Cp1252" />
+    <property name="build.classes.excludes" value="**/*.java,**/*.form" />
+    <property name="javadoc.nonavbar" value="false" />
+    <property name="platform.active" value="JDK_1.6" />
+    <property name="awt.toolkit" value="sun.awt.windows.WToolkit" />
+  </properties>
+  <testcase classname="jdonref_lucene_poc.tests.Valide" name="valideTestsAfterIndexation" time="3.115" />
+  <system-out><![CDATA[Démarrage de l'indexation
+Départements
+1 départements traités
+dpt 75 : voies
+1 voies traitées
+dpt 75 : troncons droits
+0 troncons droits traitées
+dpt 75 : troncons gauche
+0 troncons gauches traitées
+Communes
+1 communes traitées
+Indexation complète en 2187 millis.
+-------------
+Cherche hopital paris
+Cherche exactement  fullName:hopital^10 fullName:paris^10 numero:AUCUN
+fullName:hopital^10.0 fullName:pari^10.0 numero:aucun
+73 millis
+Found 5 hits.
+1 (2.0921447) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+2 (2.0921447) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+3 (1.9552699) :RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+4 (1.009274) :BD DE PARIS 93000 BOBIGNY
+5 (0.7299987) :1  BOULEVARD DE L HOPITAL 75005 PARIS 05
+-------------
+Cherche 15 hopital paris
+Cherche exactement  code_departement:15^0.5 code_arrondissement:15^0.5 numero:15^2.5 numero:AUCUN fullName:hopital^10 fullName:paris^10
+code_departement:15^0.5 code_arrondissement:15^0.5 numero:15^2.5 numero:aucun fullName:hopital^10.0 fullName:pari^10.0
+7 millis
+Found 5 hits.
+1 (1.7635989) :15  BOULEVARD DE L HOPITAL 75005 PARIS 05
+2 (1.7052342) :15  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+3 (0.9724467) :15  BD DE PARIS 93000 BOBIGNY
+4 (0.89210975) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+5 (0.89210975) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+-------------
+Cherche 15 hopital 75 paris
+Cherche exactement  code_departement:15^0.5 code_arrondissement:15^0.5 numero:15^2.5 numero:AUCUN fullName:hopital^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris^10
+code_departement:15^0.5 code_arrondissement:15^0.5 numero:15^2.5 numero:aucun fullName:hopital^10.0 code_departement:75^2.0 code_arrondissement:75^2.0 numero:75 numero:aucun fullName:pari^10.0
+75 millis
+Found 5 hits.
+1 (1.2939838) :15  BOULEVARD DE L HOPITAL 75005 PARIS 05
+2 (1.2844137) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+3 (1.2844137) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+4 (1.2538956) :15  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+5 (1.2343036) :RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+-------------
+Cherche 75 hopital 75 paris
+Cherche exactement  code_departement:75^0.5 code_arrondissement:75^0.5 numero:75^2.5 numero:AUCUN fullName:hopital^10 fullName:paris^10
+code_departement:75^0.5 code_arrondissement:75^0.5 numero:75^2.5 numero:aucun fullName:hopital^10.0 fullName:pari^10.0
+42 millis
+Found 5 hits.
+1 (2.4559135) :75  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+2 (1.2262514) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+3 (1.2262514) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+4 (1.1486431) :RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+5 (1.0440266) :75  BD DE PARIS 93000 BOBIGNY
+-------------
+Cherche bd hopital 75 paris
+Cherche exactement  fullName:bd^10 fullName:hopital^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris^10
+fullName:bd^10.0 fullName:hopital^10.0 code_departement:75^2.0 code_arrondissement:75^2.0 numero:75 numero:aucun fullName:pari^10.0
+4 millis
+Cherche approximativement  fullName:bd~^10 fullName:hopital~^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris~^10
+224 millis
+Found 5 hits.
+1 (0.9390094) :75  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+2 (0.8681301) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+3 (0.8681301) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+4 (0.82076734) :RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+5 (0.77638227) :75  BD DE PARIS 93000 BOBIGNY
+-------------
+Cherche bd hapitol 75 paris
+Cherche exactement  fullName:bd^10 fullName:hapitol^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris^10
+fullName:bd^10.0 fullName:hapitol^10.0 code_departement:75^2.0 code_arrondissement:75^2.0 numero:75 numero:aucun fullName:pari^10.0
+9 millis
+Cherche approximativement  fullName:bd~^10 fullName:hapitol~^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris~^10
+51 millis
+Found 5 hits.
+1 (0.9360984) :75  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+2 (0.8599454) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+3 (0.8599454) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+4 (0.8341483) :75  BD DE PARIS 93000 BOBIGNY
+5 (0.81945544) :RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+-------------
+Cherche 24 bd hapitol 75 paris
+Cherche exactement  code_departement:24^0.5 code_arrondissement:24^0.5 numero:24^2.5 numero:AUCUN fullName:bd^10 fullName:hapitol^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris^10
+code_departement:24^0.5 code_arrondissement:24^0.5 numero:24^2.5 numero:aucun fullName:bd^10.0 fullName:hapitol^10.0 code_departement:75^2.0 code_arrondissement:75^2.0 numero:75 numero:aucun fullName:pari^10.0
+6 millis
+Cherche approximativement  code_departement:24^0.5 code_arrondissement:24^0.5 numero:24^2.5 numero:AUCUN fullName:bd~^10 fullName:hapitol~^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris~^10
+24 millis
+Found 5 hits.
+1 (1.0001184) :24  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+2 (0.9480081) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+3 (0.9480081) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+4 (0.9189636) :RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+5 (0.8594629) :BD DE PARIS 93000 BOBIGNY
+-------------
+Cherche 24 bd hopital 75 paris
+Cherche exactement  code_departement:24^0.5 code_arrondissement:24^0.5 numero:24^2.5 numero:AUCUN fullName:bd^10 fullName:hopital^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris^10
+code_departement:24^0.5 code_arrondissement:24^0.5 numero:24^2.5 numero:aucun fullName:bd^10.0 fullName:hopital^10.0 code_departement:75^2.0 code_arrondissement:75^2.0 numero:75 numero:aucun fullName:pari^10.0
+8 millis
+Cherche approximativement  code_departement:24^0.5 code_arrondissement:24^0.5 numero:24^2.5 numero:AUCUN fullName:bd~^10 fullName:hopital~^10 code_departement:75^2 code_arrondissement:75^2 numero:75 numero:AUCUN fullName:paris~^10
+29 millis
+Found 5 hits.
+1 (0.98207164) :24  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+2 (0.94279456) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+3 (0.94279456) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+4 (0.90838766) :RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+5 (0.8101244) :BD DE PARIS 93000 BOBIGNY
+-------------
+Cherche 75 paris
+Cherche exactement  code_departement:75^0.5 code_arrondissement:75^0.5 numero:75^2.5 numero:AUCUN fullName:paris^10
+code_departement:75^0.5 code_arrondissement:75^0.5 numero:75^2.5 numero:aucun fullName:pari^10.0
+3 millis
+Found 5 hits.
+1 (2.547862) :75  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+2 (1.6880044) :75  BD DE PARIS 93000 BOBIGNY
+3 (1.0567546) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+4 (1.0567546) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+5 (1.0241052) :RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+-------------
+Cherche 75
+Cherche exactement  code_departement:75^0.5 code_arrondissement:75^0.5 numero:75^2.5 numero:AUCUN
+code_departement:75^0.5 code_arrondissement:75^0.5 numero:75^2.5 numero:aucun
+2 millis
+Found 5 hits.
+1 (2.5670967) :75  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+2 (1.2567048) :75  AVENUE  PAUL ELUARD 93000 BOBIGNY
+3 (1.2567048) :75  BD DE PARIS 93000 BOBIGNY
+4 (0.916689) :BOULEVARD DE L HOPITAL 75005 PARIS 05
+5 (0.916689) :BOULEVARD DE L HOPITAL 75013 PARIS 13
+-------------
+Cherche 93
+Cherche exactement  code_departement:93^0.5 code_arrondissement:93^0.5 numero:93^2.5 numero:AUCUN
+code_departement:93^0.5 code_arrondissement:93^0.5 numero:93^2.5 numero:aucun
+2 millis
+Found 5 hits.
+1 (2.5559156) :93  AVENUE  PAUL ELUARD 93000 BOBIGNY
+2 (2.5559156) :93  BD DE PARIS 93000 BOBIGNY
+3 (1.257212) :93  RUE DE L HOPITAL SAINT LOUIS 75013 PARIS 13
+4 (0.9048416) :AVENUE  PAUL ELUARD 93000 BOBIGNY
+5 (0.9048416) :BD DE PARIS 93000 BOBIGNY
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
