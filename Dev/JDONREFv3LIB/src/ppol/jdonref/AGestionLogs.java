@@ -52,7 +52,6 @@ public abstract class AGestionLogs implements IGestionLogs {
      * Ce booleen a été crée pour éviter d'inscrire une erreur dans les logs lorsque le système de log
      * ne fonctionne pas.
      */
-    
     String repertoire = null;
 //  logEchecValidation
     final String logEchecValidation_0 = ":0:";
@@ -166,7 +165,7 @@ public abstract class AGestionLogs implements IGestionLogs {
 
         return max;
     }
-    
+
     /**
      * Définit le répertoire où sont placés les fichiers de log.
      * @param repertoire le répertoire
@@ -178,7 +177,18 @@ public abstract class AGestionLogs implements IGestionLogs {
         }
         this.repertoire = repertoire;
     }
+    JDONREFParams param;
+
     
+    
+    public JDONREFParams getParam() {
+        return param;
+    }
+
+    public void setParam(JDONREFParams param) {
+        this.param = param;
+
+    }
 }
 
 

@@ -46,6 +46,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.DefaultRepositorySelector;
 import org.apache.log4j.spi.RootLogger;
+import org.jdom.JDOMException;
 import ppol.jdonref.utils.DateUtils;
 import ppol.log4j.AdminLogger;
 import ppol.log4j.AdminLoggerFactory;
@@ -91,24 +92,39 @@ import ppol.log4j.AdminLoggerFactory;
  */
 public class GestionLogs2 extends AGestionLogs{
 
-    private final Logger monLogger;
-    private final AdminLogger logAdmin;
+    private Logger monLogger;
+    private AdminLogger logAdmin;
 //private final Logger logAdmin;
-    private final Logger logMetaAdmin;
-    private final Logger logUser;
+    private Logger logMetaAdmin;
+    private Logger logUser;
   
-    private  static GestionLogs2 instance = null;
-
-    private GestionLogs2() {
-        //LogManager.setRepositorySelector(new DefaultRepositorySelector(new Hierarchy(new RootLogger(Level.DEBUG))), null);
-
-        monLogger = Logger.getLogger("monLogger");
+    protected void initLog4J()
+    {
+        String configPah = param.obtientConfigPath();
+        LogManager.setRepositorySelector(new DefaultRepositorySelector(new Hierarchy(new RootLogger(Level.DEBUG))), null);
+        PropertyConfigurator.configureAndWatch(configPah + "log4j.properties");
+        
+         monLogger = Logger.getLogger("monLogger");
         logAdmin = (AdminLogger) Logger.getLogger("logAdmin");
         //logAdmin = Logger.getLogger("logAdmin");
         logMetaAdmin = Logger.getLogger("logMetaAdmin");
         logUser = Logger.getLogger("logUser");
     }
 
+    public void setParam(JDONREFParams param) {
+        this.param = param;
+        initLog4J();
+        
+    }
+    
+    public GestionLogs2() {
+        //LogManager.setRepositorySelector(new DefaultRepositorySelector(new Hierarchy(new RootLogger(Level.DEBUG))), null);
+
+       
+    }
+
+
+    private  static GestionLogs2 instance = null;
     /**
      * Obtient une instance de GestionLogs2.
      * @return l'unique instance de GestionLogs2 (singleton).
@@ -122,10 +138,10 @@ public class GestionLogs2 extends AGestionLogs{
     }
 
 
-    public void logs(String message){
+    public void logs(String classeName,String message){
         this.monLogger.fatal(message);
     }
-    public void logs(String message, Throwable thrown){
+    public void logs(String classeName,String message, Throwable thrown){
         this.monLogger.fatal(message,thrown);
     }
 
@@ -596,16 +612,21 @@ public class GestionLogs2 extends AGestionLogs{
 
 
     public static void main(String[] args) {
-
-        JDONREFParams param = new JDONREFParams();
-        String configPah = param.obtientConfigPath();
-        LogManager.setRepositorySelector(new DefaultRepositorySelector(new Hierarchy(new RootLogger(Level.DEBUG))), null);
-        PropertyConfigurator.configureAndWatch(configPah + "log4j.properties");
-        //monLogger.fatal("msg d'erreur fatale");
-
         try {
-            GestionLogs2 gl = GestionLogs2.getInstance();
-            gl.definitRepertoire("./logs");
+
+
+//        String configPah = param.obtientConfigPath();
+//        LogManager.setRepositorySelector(new DefaultRepositorySelector(new Hierarchy(new RootLogger(Level.DEBUG))), null);
+//        PropertyConfigurator.configureAndWatch(configPah + "log4j.properties");
+//            GestionLogs2 gl = GestionLogs2.getInstance();
+//             
+//
+//
+            JDONREFParams param = new JDONREFParams();
+            param.load("params.xml");
+            GestionLogs2 gl = new GestionLogs2();
+            gl.setParam(param);
+            gl.definitRepertoire("logs");
 
             gl.logEchecValidation(2, true);
             gl.logNormalisation(2, FLAG_NORMALISE_1, true);
@@ -623,13 +644,16 @@ public class GestionLogs2 extends AGestionLogs{
 
             gl.logEchecValidation(2, true);
             gl.logNormalisation(2, FLAG_NORMALISE_RESTRUCTURE, true);
-
-        // ecrit();
-
-
+        } catch (JDOMException ex) {
+            java.util.logging.Logger.getLogger(GestionLogs2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger(GestionLogs2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (JDONREFException ex) {
-          // Logger.getLogger(GestionLogs2.class.getName()).log(Level.SEVERE, null, ex);
-            //monLogger.fatal(null, ex);
+            java.util.logging.Logger.getLogger(GestionLogs2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-    }
+        } 
+//monLogger.fatal(null, ex);
+
+
+    
 }

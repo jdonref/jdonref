@@ -67,6 +67,7 @@ public class JDONREFParams {
     private int notePourCommuneValide = 15;
     private int notePourCommuneSelectionnee = 10;
     private int notePourCodePostal = 6;    // 
+
     private int notePourTypeDeVoie = 3;
     private int notePourPaysValide = 15;
     private int notePourNumero = 2;
@@ -122,23 +123,42 @@ public class JDONREFParams {
     private int pourcentagePourLigne6 = 80;
     private int pourcentagePourLigne7 = 80;
     private int tailleAbbreviationMminimalePoizon = 2;
-    
-    private String routerClassName="";
-    
+    private String routerClassName = "";
     private int projectionSpheroidPardefaut = 4326;
     private String spheroidPardefaut = "SPHEROID[\"WGS 84\",6378137,298.257223563]";
+    private String logClasseName = "ppol.jdonref.GestionLogs";
+
+    
+    
+    public String getLogClasseName() {
+        return logClasseName;
+    }
+
+    public String setLogClasseName(String classeName) {
+        return logClasseName = classeName;
+    }
+
+    public IGestionLogs getGestionLog() throws ClassNotFoundException, InstantiationException, IllegalAccessException, JDONREFException {
+        Class c = Class.forName(getLogClasseName());
+        IGestionLogs i = (IGestionLogs) c.newInstance();
+        i.definitRepertoire(obtientLogPath());
+        i.setParam(this);
+
+        return i;
+    }
 
     public String obtientConfigPath() {
         return configPath;
     }
+
     /**
      * setConfigPath recupere le chemin d'acces au fichier donné en parametre 
      * @param file
      */
-    public void setConfigPath(String file){
-       // int i=file.lastIndexOf("/");
-        int i=file.lastIndexOf(File.separatorChar);
-        configPath=file.substring(0, i+1);
+    public void setConfigPath(String file) {
+        // int i=file.lastIndexOf("/");
+        int i = file.lastIndexOf(File.separatorChar);
+        configPath = file.substring(0, i + 1);
     }
 
     /**
@@ -311,7 +331,7 @@ public class JDONREFParams {
             }
             if (!error) {
                 res = new String[count];
-                for (int i = 0,  j = 0; i < valuetab.length; i++) {
+                for (   int i = 0, j = 0; i < valuetab.length; i++) {
                     if (valuetab[i].length() > 0) {
                         res[j++] = valuetab[i];
                     }
@@ -360,7 +380,7 @@ public class JDONREFParams {
                 res.add(baseDir);
             }
         } catch (SecurityException se) {
-        // ignoré.
+            // ignoré.
         }
 
         // Cherche les enfants du répertoire
@@ -378,7 +398,7 @@ public class JDONREFParams {
                 }
             }
         } catch (SecurityException se) {
-        // ignoré.
+            // ignoré.
         }
 
         return res;
@@ -416,7 +436,7 @@ public class JDONREFParams {
                 }
             }
         } catch (SecurityException se) {
-        // ignoré
+            // ignoré
         }
 
         if (res.size() == 1) {
@@ -436,7 +456,7 @@ public class JDONREFParams {
      */
     public void load(String file) throws JDOMException, IOException, JDONREFException {
         setConfigPath(file);
-        
+
         SAXBuilder sb = new SAXBuilder();
         Document d = sb.build(file);
 
@@ -448,6 +468,7 @@ public class JDONREFParams {
         }
 
         logPath = getString(root, "logpath", logPath);
+        logClasseName = getString(root, "logClasseName", logClasseName);
         version = getString(root, "version", version);
         notePourCodePostal = getInt(root, "notepourcodepostal", notePourCodePostal);
         malusDeTypeDeVoie = getInt(root, "malusdetypedevoie", malusDeTypeDeVoie);
@@ -513,9 +534,9 @@ public class JDONREFParams {
         pourcentagePourLigne7 = getInt(root, "pourcentagepourligne7", pourcentagePourLigne7);
 
         tailleAbbreviationMminimalePoizon = getInt(root, "tailleabbreviationmminimalepoizon", tailleAbbreviationMminimalePoizon);
-        
+
         routerClassName = getString(root, "routerclassname", routerClassName);
-        
+
         projectionSpheroidPardefaut = getInt(root, "projectionspheroidpardefaut", projectionSpheroidPardefaut);
         spheroidPardefaut = getString(root, "spheroidpardefaut", spheroidPardefaut);
     }
@@ -1381,17 +1402,19 @@ public class JDONREFParams {
     public void definitSpheroidPardefaut(String spheroidPardefaut) {
         this.spheroidPardefaut = spheroidPardefaut;
     }
-    
-    public static void main(String[] args){
+
+    public static void main(String[] args) {
         JDONREFParams params = new JDONREFParams();
-        try{
-        params.load("C:\\JDONREF_v3\\Dev\\Src\\JDONREFv3LIB\\params.xml");
-        System.out.println(params.obtientSpheroidPardefaut());
-        }catch(Exception e){
+
+        try {
+            // params.load("C:\\JDONREF_v3\\Dev\\Src\\JDONREFv3LIB\\params.xml");
+            params.load("C:\\Users\\akchana\\Desktop\\jdonref-code2\\Dev\\JDONREFv3LIB\\params.xml");
+            System.out.println(params.obtientSpheroidPardefaut());
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
+
     }
-    
-    
 }

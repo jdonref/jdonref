@@ -38,6 +38,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdom.JDOMException;
 import ppol.jdonref.utils.DateUtils;
 
 /**
@@ -85,7 +86,7 @@ public class GestionLogs extends AGestionLogs{
 //    private final static SimpleDateFormat sdtimeformat = new SimpleDateFormat("HH:mm",Locale.FRANCE);
     private final static DateUtils.DateFormatType sdformat = DateUtils.DateFormatType.SimpleDashed;
     private final static DateUtils.DateFormatType sdtimeformat = DateUtils.DateFormatType.SimpleTime;
-    static GestionLogs instance = null;
+    
     /**
      * Ce booleen a été crée pour éviter d'inscrire une erreur dans les logs lorsque le système de log
      * ne fonctionne pas.
@@ -94,9 +95,11 @@ public class GestionLogs extends AGestionLogs{
     
 
 
-    private GestionLogs() {
+    public  GestionLogs() {
     }
-
+    
+    
+    private static GestionLogs instance = null;
     /**
      * Obtient une instance de GestionLogs.
      * @return l'unique instance de GestionLogs (singleton).
@@ -107,16 +110,15 @@ public class GestionLogs extends AGestionLogs{
         }
         return instance;
     }
+
     
-    
-    public void logs(String message){
-        //Logger.getLogger(getClass().getSimpleName()).log(Level.SEVERE, message);
-        Logger.getLogger(getClass().getName()).log(Level.SEVERE, message);  
+  
+    public void logs(String classeName, String message){
+        Logger.getLogger(classeName).log(Level.SEVERE, message);
     }
 
-    public void logs(String message, Throwable thrown){
-        //Logger.getLogger(getClass().getSimpleName()).log(Level.SEVERE, message,thrown); 
-        Logger.getLogger(getClass().getName()).log(Level.SEVERE, message,thrown); 
+    public void logs(String classeName, String message, Throwable thrown){
+         Logger.getLogger(classeName).log(Level.SEVERE, message,thrown); 
     }
     
     final static String ecrit_utf8 = "UTF-8";
@@ -691,9 +693,16 @@ public class GestionLogs extends AGestionLogs{
     public static void main(String[] args) {
         try {
 
-            GestionLogs gl = GestionLogs.getInstance();
-            gl.definitRepertoire(".");
+//         GestionLogs gl = GestionLogs.getInstance();
+//         gl.definitRepertoire(".");   
+            
+             JDONREFParams jDONREFParams = new JDONREFParams();
+             jDONREFParams.load("params.xml");
 
+            IGestionLogs gl = null;
+            gl = jDONREFParams.getGestionLog();
+            gl.setParam(jDONREFParams);
+            
             gl.logEchecValidation(2, true);
             gl.logNormalisation(2, FLAG_NORMALISE_1, true);
             gl.logValidation(2, "75", FLAG_VALIDE_CODEPOSTAL + FLAG_VALIDE_ARRONDISSEMENT + FLAG_VALIDE_LIBELLE, true);
@@ -710,8 +719,19 @@ public class GestionLogs extends AGestionLogs{
 
             gl.logEchecValidation(2, true);
             gl.logNormalisation(2, FLAG_NORMALISE_RESTRUCTURE, true);
+        } catch (JDOMException ex) {
+            Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
         } catch (JDONREFException ex) {
             Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
+ 
         }
     }
 }
