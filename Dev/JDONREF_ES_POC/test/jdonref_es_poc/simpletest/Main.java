@@ -28,6 +28,8 @@ public class Main
     public void main()
     {
         String url = "192.168.0.12:9200";
+        int size = 2000;
+        boolean nowait = true;
         
         ElasticSearchUtil m = new ElasticSearchUtil();
         Client client = Client.create();
@@ -35,23 +37,27 @@ public class Main
         m.showHealth(client,url);
         m.showDeleteIndex(client,url,"jdonref");
         
-        m.showIndexResource(client,url,"jdonref","commune",getJSONCommune("PARIS"));
-        m.showIndexResource(client,url,"jdonref","commune",getJSONCommune("PARIS 12"));
-        m.showIndexResource(client,url,"jdonref","commune",getJSONCommune("PARIS 13"));
-        m.showIndexResource(client,url,"jdonref","commune",getJSONCommune("PARIS 14"));
+        for(int i=0;i<size;i++)
+        {
+            if (i%1000==1) System.out.println((i-1)+" communes indexed");
+            m.indexResource(client,url,"jdonref","commune",getJSONCommune("PARIS "+i));
+        }
         
-        // Wait for indexation !
-        try {
+        if (!nowait)
+        {
+            // Wait for indexation !
+            try {
 
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                Thread.sleep(3000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         m.showSearch(client, url, "jdonref","commune" , "nom:PARIS");
         
         m.showIndexStats(client,url,"jdonref");
         
-        m.showDeleteIndex(client,url,"jdonref");
+        //m.showDeleteIndex(client,url,"jdonref");
     }
 }
