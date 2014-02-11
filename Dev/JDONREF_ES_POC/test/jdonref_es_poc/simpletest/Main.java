@@ -3,6 +3,8 @@ package jdonref_es_poc.simpletest;
 import com.sun.ws.rest.api.client.Client;
 import com.sun.ws.rest.api.client.ClientResponse;
 import com.sun.ws.rest.api.client.WebResource;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import jdonref_es_poc.index.ElasticSearchUtil;
@@ -14,8 +16,6 @@ import org.junit.Test;
  */
 public class Main
 {
-    
-    
     public static String getJSONCommune(String nom)
     {
         JsonObject model = Json.createObjectBuilder()
@@ -39,6 +39,16 @@ public class Main
         m.showIndexResource(client,url,"jdonref","commune",getJSONCommune("PARIS 12"));
         m.showIndexResource(client,url,"jdonref","commune",getJSONCommune("PARIS 13"));
         m.showIndexResource(client,url,"jdonref","commune",getJSONCommune("PARIS 14"));
+        
+        // Wait for indexation !
+        try {
+
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        m.showSearch(client, url, "jdonref","commune" , "nom:PARIS");
         
         m.showIndexStats(client,url,"jdonref");
         

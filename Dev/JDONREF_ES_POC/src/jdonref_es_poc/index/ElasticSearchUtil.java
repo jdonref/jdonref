@@ -86,4 +86,40 @@ public class ElasticSearchUtil
         
         System.out.println("index : "+output);
     }
+    
+    public String search(Client client,String url, String index,String object,String query)
+    {
+        WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/_search?q="+query);
+        
+        ClientResponse response = webResource.accept("application/json").get(ClientResponse.class);
+        
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+
+    public void showSearch(Client client,String url,String index,String object,String query)
+    {
+        String output = search(client, url, index,object,query);
+        
+        System.out.println("index : "+output);
+    }
+    
+    public String resource(Client client,String url, String index,String object, int i)
+    {
+        WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/"+i);
+        
+        ClientResponse response = webResource.accept("application/json").get(ClientResponse.class);
+        
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    public void showResource(Client client, String url, String index, String object, int i)
+    {
+        String output = resource(client, url, index, object,i);
+        
+        System.out.println("index : "+output);
+    }
 }
