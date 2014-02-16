@@ -3,6 +3,11 @@ package jdonref_es_poc.index;
 import com.sun.ws.rest.api.client.Client;
 import com.sun.ws.rest.api.client.ClientResponse;
 import com.sun.ws.rest.api.client.WebResource;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  *
@@ -10,7 +15,35 @@ import com.sun.ws.rest.api.client.WebResource;
  */
 public class ElasticSearchUtil
 {
-    public String getHealth(Client client,String url)
+    String url;
+    Client client;
+    String index;
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+    
+    public String getHealth()
     {
         WebResource webResource = client.resource("http://"+url+"/_cluster/health");
         
@@ -26,14 +59,14 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showHealth(Client client,String url)
+    public void showHealth()
     {
-        String output = getHealth(client,url);
+        String output = getHealth();
         
         System.out.println("health : "+output);
     }
     
-    public String indexResource(Client client,String url, String index,String object,String data)
+    public String indexResource(String object,String data)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/");
         
@@ -44,14 +77,14 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showIndexResource(Client client, String url, String index, String object, String data)
+    public void showIndexResource(String object, String data)
     {
-        String output = indexResource(client, url, index, object, data);
+        String output = indexResource(object, data);
         
         System.out.println("index : "+output);
     }
     
-    public String deleteIndex(Client client,String url,String index)
+    public String deleteIndex()
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/");
         
@@ -62,14 +95,14 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showDeleteIndex(Client client,String url,String index)
+    public void showDeleteIndex()
     {
-        String output = deleteIndex(client, url, index);
+        String output = deleteIndex();
         
         System.out.println("index : "+output);
     }
     
-    public String indexStats(Client client,String url, String index)
+    public String indexStats( )
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/_stats");
         
@@ -80,14 +113,37 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showIndexStats(Client client,String url,String index)
+    public void showIndexStats( )
     {
-        String output = indexStats(client, url, index);
+        String output = indexStats();
         
         System.out.println("index : "+output);
     }
     
-    public String search(Client client,String url, String index,String object,String query)
+    public String search(String query)
+    {
+        WebResource webResource = client.resource("http://"+url+"/"+index+"/_search?q="+query);
+        
+        JsonObjectBuilder order = Json.createObjectBuilder().add("order", "desc");
+        JsonObjectBuilder score = Json.createObjectBuilder().add("_score",order);
+        JsonArrayBuilder sort_array = Json.createArrayBuilder().add(score);
+        JsonObject sort = Json.createObjectBuilder().add("sort", sort_array).build();
+        
+        ClientResponse response = webResource.accept("application/json").post(ClientResponse.class,sort.toString());
+        
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    public void showSearch(String object,String query)
+    {
+        String output = search(object,query);
+        
+        System.out.println("index : "+output);
+    }
+
+    public String search(String object,String query)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/_search?q="+query);
         
@@ -97,15 +153,15 @@ public class ElasticSearchUtil
         
         return output;
     }
-
-    public void showSearch(Client client,String url,String index,String object,String query)
+    
+    public void showSearch(String query)
     {
-        String output = search(client, url, index,object,query);
+        String output = search(query);
         
         System.out.println("index : "+output);
     }
-    
-    public String resource(Client client,String url, String index,String object, int i)
+
+    public String resource(String object, int i)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/"+i);
         
@@ -116,9 +172,9 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showResource(Client client, String url, String index, String object, int i)
+    public void showResource( String object, int i)
     {
-        String output = resource(client, url, index, object,i);
+        String output = resource( object,i);
         
         System.out.println("index : "+output);
     }

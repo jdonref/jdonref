@@ -27,21 +27,26 @@ public class Main
     @Test
     public void main()
     {
-        String url = "192.168.0.12:9200";
-        int size = 2000;
+        String url = "192.168.0.11:9200";
+        int size = 100;
         boolean nowait = true;
         
         ElasticSearchUtil m = new ElasticSearchUtil();
         Client client = Client.create();
+        m.setClient(client);
+        m.setUrl(url);
+        m.setIndex("jdonref");
         
-        m.showHealth(client,url);
-        m.showDeleteIndex(client,url,"jdonref");
+        m.showHealth();
+        m.showDeleteIndex();
         
         for(int i=0;i<size;i++)
         {
             if (i%1000==1) System.out.println((i-1)+" communes indexed");
-            m.indexResource(client,url,"jdonref","commune",getJSONCommune("PARIS "+i));
+            m.indexResource("commune",getJSONCommune("PARIS "+i));
         }
+        if ((size-1)%1000!=1)
+            System.out.println(size+" communes indexed");
         
         if (!nowait)
         {
@@ -54,10 +59,11 @@ public class Main
             }
         }
         
-        m.showSearch(client, url, "jdonref","commune" , "nom:PARIS");
+        m.showSearch("commune" , "nom:PARIS");
+        m.showSearch( "nom:PARIS");
         
-        m.showIndexStats(client,url,"jdonref");
+        m.showIndexStats();
         
-        //m.showDeleteIndex(client,url,"jdonref");
+        m.showDeleteIndex();
     }
 }
