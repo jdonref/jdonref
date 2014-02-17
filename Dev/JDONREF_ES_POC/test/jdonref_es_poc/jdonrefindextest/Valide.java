@@ -111,20 +111,24 @@ public class Valide
             JsonArray hits;
 //            hits = adresseBO.valide("BOULEVARD DE L HOPITAL 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
 
-            hits = adresseBO.valide("hopital paris"); // problème : propose les numéros plutôt que hopital saint louis !
-            hits = adresseBO.valide("15 hopital paris"); // problème : propose les numéros plutôt que hopital saint louis !
-            hits = adresseBO.valide("15 hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
-            hits = adresseBO.valide("75 hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
+            // fonctionne avec un mot unique !
+            hits = adresseBO.valide("hopital");
+            hits = adresseBO.valide("hapitol"); // pietre performances avec 1 VM de 450000 objets 5 shards (2.5 sec)
+//            hits = adresseBO.valide("hopital paris"); // problème : propose les numéros plutôt que hopital saint louis !
+//            hits = adresseBO.valide("15 hopital paris"); // problème : propose les numéros plutôt que hopital saint louis !
+//            hits = adresseBO.valide("15 hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
+//            hits = adresseBO.valide("75 hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
 
-            hits = adresseBO.valide("bd hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
-            hits = adresseBO.valide("bd hapitol 75 paris"); // problème : propose les arrondissements !
-            hits = adresseBO.valide("24 bd hapitol 75 paris"); // problème : propose la route 24 !
-            hits = adresseBO.valide("24 bd hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
-            hits = adresseBO.valide("75 paris");
-            hits = adresseBO.valide("75"); // problème : uniquement en recherche approchée !
-            hits = adresseBO.valide("93"); // problème : uniquement en recherche approchée !
-
+//            hits = adresseBO.valide("bd hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
+//            hits = adresseBO.valide("bd hapitol 75 paris"); // problème : propose les arrondissements !
+//            hits = adresseBO.valide("24 bd hapitol 75 paris"); // problème : propose la route 24 !
+//            hits = adresseBO.valide("24 bd hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
+//            hits = adresseBO.valide("75 paris");
+//            hits = adresseBO.valide("75"); // problème : uniquement en recherche approchée !
+//            hits = adresseBO.valide("93"); // problème : uniquement en recherche approchée !
         } catch (IOException ex) {
+            Logger.getLogger(Valide.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
             Logger.getLogger(Valide.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

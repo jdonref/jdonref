@@ -122,14 +122,19 @@ public class ElasticSearchUtil
     
     public String search(String query)
     {
-        WebResource webResource = client.resource("http://"+url+"/"+index+"/_search?q="+query);
+        String resource = "http://"+url+"/"+index+"/_search?q="+query;
         
+        WebResource webResource = client.resource(resource);
+        /*
         JsonObjectBuilder order = Json.createObjectBuilder().add("order", "desc");
         JsonObjectBuilder score = Json.createObjectBuilder().add("_score",order);
         JsonArrayBuilder sort_array = Json.createArrayBuilder().add(score);
         JsonObject sort = Json.createObjectBuilder().add("sort", sort_array).build();
         
-        ClientResponse response = webResource.accept("application/json").post(ClientResponse.class,sort.toString());
+        JsonObject query_string = Json.createObjectBuilder().add("query",query).build();
+        JsonObject queryJson = Json.createObjectBuilder().add("sort",sort_array).add("query_string",query_string).build();
+        */
+        ClientResponse response = webResource.accept("application/json").post(ClientResponse.class);//,queryJson.toString());
         
         String output = response.getEntity(String.class);
         

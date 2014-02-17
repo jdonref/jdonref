@@ -67,10 +67,10 @@ public class AdresseBusiness
             for(int i=0;i<obj.size();++i) {
                 
                 JsonObject d = obj.getJsonObject(i);
-                int docId = d.getInt("_id");
-                String score =d.getString("_score");
+                String docId = d.getString("_id");
+                long score = d.getJsonNumber("_score").longValue();
                 
-                String fullNames = d.getString("toString");
+                String fullNames = d.getJsonObject("_source").getString("toString");
                 System.out.print((i + 1)+ " ("+score+") :");
                 //for(int j=0;j<fullNames.length;j++)
                     System.out.println(fullNames);
@@ -82,23 +82,32 @@ public class AdresseBusiness
     {
         if (hits.size()==0) return false;
         
-        if (Float.parseFloat(hits.getJsonObject(0).getString("_score"))>=limit) return true;
+        if (hits.getJsonObject(0).getJsonNumber("_score").longValue()>=limit) return true;
         
         return false;
     }
     
-    public JsonArray valide(String querystr) throws IOException
+    public JsonArray valide(String querystr) throws IOException, Exception
     {
         System.out.println("-------------");
         System.out.println("Cherche "+querystr);
         //querystr = qp.escape(querystr); // warning : valideApprox ajoute ~ à la fin des mots. Les effets de bords n'ont pas été traités.
         
         JsonObject obj = valideExact(querystr);
+        if (obj.containsKey("status") && obj.getInt("status")!=200)
+        {
+            throw(new Exception(obj.getString("error")));
+        }
+        
         JsonArray hits = obj.getJsonObject("hits").getJsonArray("hits");
         
         if (!isOk(hits, limit))
         {
             obj = valideApprox(querystr);
+            if (obj.containsKey("status") && obj.getInt("status")!=200)
+            {
+                throw(new Exception(obj.getString("error")));
+            }
             hits = obj.getJsonObject("hits").getJsonArray("hits");
         }
         
@@ -109,7 +118,7 @@ public class AdresseBusiness
     
     public JsonObject valideExact(String querystr) throws IOException
     {
-        querystr = getQueryStrExact(querystr);
+        //querystr = getQueryStrExact(querystr);
         System.out.println("Cherche exactement "+querystr);
 
         long start = Calendar.getInstance().getTimeInMillis();
@@ -126,7 +135,7 @@ public class AdresseBusiness
     public JsonObject valideApprox(String querystr) throws IOException
     {
         querystr = addTilde(querystr);
-        querystr = getQueryStrExact(querystr);
+        //querystr = getQueryStrExact(querystr);
         System.out.println("Cherche approximativement " + querystr);
         
         long start = Calendar.getInstance().getTimeInMillis();

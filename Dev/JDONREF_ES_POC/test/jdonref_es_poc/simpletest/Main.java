@@ -29,13 +29,13 @@ public class Main
     {
         String url = "192.168.0.11:9200";
         int size = 100;
-        boolean nowait = true;
+        boolean nowait = false;
         
         ElasticSearchUtil m = new ElasticSearchUtil();
         Client client = Client.create();
         m.setClient(client);
         m.setUrl(url);
-        m.setIndex("jdonref");
+        m.setIndex("jdonrefsimpletest");
         
         m.showHealth();
         m.showDeleteIndex();
