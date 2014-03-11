@@ -14,6 +14,10 @@
             <name>JDONREFv3</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
+                <library files="1">
+                    <file>${file.reference.servlet-api.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
                 <library files="17">
                     <file>${libs.jaxws21.classpath}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
@@ -164,10 +168,6 @@
                 </library>
                 <library files="1">
                     <file>${file.reference.xml-apis.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
-                </library>
-                <library files="1">
-                    <file>${libs.tomcat6.classpath}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
             </web-module-libraries>

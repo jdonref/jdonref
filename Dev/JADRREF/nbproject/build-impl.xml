@@ -510,6 +510,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest" name="do-dist"/>
     <target depends="init" if="dist.ear.dir" name="library-inclusion-in-manifest">
+        <basename file="${file.reference.JDONREFv3LIB.jar}" property="included.lib.file.reference.JDONREFv3LIB.jar"/>
+        <copy-ear-war file="${file.reference.JDONREFv3LIB.jar}" propname="included.lib.file.reference.JDONREFv3LIB.jar.X"/>
         <basename file="${file.reference.activation.jar}" property="included.lib.file.reference.activation.jar"/>
         <copy-ear-war file="${file.reference.activation.jar}" propname="included.lib.file.reference.activation.jar.X"/>
         <basename file="${file.reference.asm-3.1.jar}" property="included.lib.file.reference.asm-3.1.jar"/>
@@ -582,17 +584,14 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy-ear-war file="${file.reference.xercesSamples.jar}" propname="included.lib.file.reference.xercesSamples.jar.X"/>
         <basename file="${file.reference.xml-apis.jar}" property="included.lib.file.reference.xml-apis.jar"/>
         <copy-ear-war file="${file.reference.xml-apis.jar}" propname="included.lib.file.reference.xml-apis.jar.X"/>
-        <basename file="${file.reference.JDONREFv3LIB.jar}" property="included.lib.file.reference.JDONREFv3LIB.jar"/>
-        <copy-ear-war file="${file.reference.JDONREFv3LIB.jar}" propname="included.lib.file.reference.JDONREFv3LIB.jar.X"/>
-        <basename file="${libs.tomcat6.classpath}" property="included.lib.libs.tomcat6.classpath"/>
-        <copy-ear-war file="${libs.tomcat6.classpath}" propname="included.lib.libs.tomcat6.classpath.X"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${included.lib.file.reference.activation.jar} ${included.lib.file.reference.asm-3.1.jar} ${included.lib.file.reference.FastInfoset.jar} ${included.lib.file.reference.grizzly-http-webserver-1.7.2.jar} ${included.lib.file.reference.http.jar} ${included.lib.file.reference.jaxb-api.jar} ${included.lib.file.reference.jaxb-impl.jar} ${included.lib.file.reference.jaxb-xjc.jar} ${included.lib.file.reference.jaxws-api.jar} ${included.lib.file.reference.jaxws-rt.jar} ${included.lib.file.reference.jaxws-tools.jar} ${included.lib.file.reference.jdom-1.0.jar} ${included.lib.file.reference.jdom.jar} ${included.lib.file.reference.jersey.jar} ${included.lib.file.reference.jettison-1.0-RC1.jar} ${included.lib.file.reference.jsp-api-2.0-20040521.jar} ${included.lib.file.reference.jsr173_api.jar} ${included.lib.file.reference.jsr181-api.jar} ${included.lib.file.reference.jsr250-api.jar} ${included.lib.file.reference.jsr311-api.jar} ${included.lib.file.reference.jts-1.7.jar} ${included.lib.file.reference.mail.jar} ${included.lib.file.reference.persistence-api-1.0.jar} ${included.lib.file.reference.postgresql-8.0-322.jdbc3.jar} ${included.lib.file.reference.resolver.jar} ${included.lib.file.reference.rome-0.9.jar} ${included.lib.file.reference.saaj-api.jar} ${included.lib.file.reference.saaj-impl.jar} ${included.lib.file.reference.serializer.jar} ${included.lib.file.reference.sjsxp.jar} ${included.lib.file.reference.stax-ex.jar} ${included.lib.file.reference.streambuffer.jar} ${included.lib.file.reference.wadl2java.jar} ${included.lib.file.reference.xercesImpl.jar} ${included.lib.file.reference.xercesSamples.jar} ${included.lib.file.reference.xml-apis.jar} ${included.lib.file.reference.JDONREFv3LIB.jar} ${included.lib.libs.tomcat6.classpath} "/>
+            <attribute name="Class-Path" value="${included.lib.file.reference.JDONREFv3LIB.jar} ${included.lib.file.reference.activation.jar} ${included.lib.file.reference.asm-3.1.jar} ${included.lib.file.reference.FastInfoset.jar} ${included.lib.file.reference.grizzly-http-webserver-1.7.2.jar} ${included.lib.file.reference.http.jar} ${included.lib.file.reference.jaxb-api.jar} ${included.lib.file.reference.jaxb-impl.jar} ${included.lib.file.reference.jaxb-xjc.jar} ${included.lib.file.reference.jaxws-api.jar} ${included.lib.file.reference.jaxws-rt.jar} ${included.lib.file.reference.jaxws-tools.jar} ${included.lib.file.reference.jdom-1.0.jar} ${included.lib.file.reference.jdom.jar} ${included.lib.file.reference.jersey.jar} ${included.lib.file.reference.jettison-1.0-RC1.jar} ${included.lib.file.reference.jsp-api-2.0-20040521.jar} ${included.lib.file.reference.jsr173_api.jar} ${included.lib.file.reference.jsr181-api.jar} ${included.lib.file.reference.jsr250-api.jar} ${included.lib.file.reference.jsr311-api.jar} ${included.lib.file.reference.jts-1.7.jar} ${included.lib.file.reference.mail.jar} ${included.lib.file.reference.persistence-api-1.0.jar} ${included.lib.file.reference.postgresql-8.0-322.jdbc3.jar} ${included.lib.file.reference.resolver.jar} ${included.lib.file.reference.rome-0.9.jar} ${included.lib.file.reference.saaj-api.jar} ${included.lib.file.reference.saaj-impl.jar} ${included.lib.file.reference.serializer.jar} ${included.lib.file.reference.sjsxp.jar} ${included.lib.file.reference.stax-ex.jar} ${included.lib.file.reference.streambuffer.jar} ${included.lib.file.reference.wadl2java.jar} ${included.lib.file.reference.xercesImpl.jar} ${included.lib.file.reference.xercesSamples.jar} ${included.lib.file.reference.xml-apis.jar} "/>
         </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
     <target depends="init" name="library-inclusion-in-archive" unless="dist.ear.dir">
+        <copy file="${file.reference.JDONREFv3LIB.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.activation.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.asm-3.1.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.FastInfoset.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
@@ -629,8 +628,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy file="${file.reference.xercesImpl.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.xercesSamples.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.xml-apis.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.JDONREFv3LIB.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.tomcat6.classpath}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest" name="do-ear-dist">
         <dirname file="${dist.ear.war}" property="dist.jar.dir"/>
