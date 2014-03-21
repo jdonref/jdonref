@@ -28,16 +28,18 @@
  */
 package ppol.jdonref.referentiel;
 
-import ppol.jdonref.*;
+//import ppol.jdonref.*;
 import ppol.jdonref.utils.MiscUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import ppol.jdonref.AGestionLogs;
 import ppol.jdonref.GestionConnection;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 import ppol.jdonref.JDONREFException;
+import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.RefConnection;
 import ppol.jdonref.mots.GestionMots;
 import ppol.jdonref.referentiel.reversegeocoding.GestionInverse;
@@ -68,6 +70,8 @@ public class GestionAdr {
     private final GestionMots gestionMots;
     private final GestionReferentiel gestionReferentiel;
     private final GestionInverse gestionInverse;
+    protected JDONREFParams params;
+    
 
     public GestionAdr(
             GestionConnection gestionConnection,
@@ -78,7 +82,25 @@ public class GestionAdr {
         this.gestionMots = gestionMots;
         this.gestionReferentiel = gestionReferentiel;
         this.gestionInverse = gestionInverse;
+
     }
+    
+    
+    /**
+     * Définit les paramètres de JDONREF utilisés par cette classe.
+     * @param params
+     */
+    public void definitJDONREFParams(JDONREFParams params) {
+        this.params = params;
+    }
+
+    /**
+     * Obtient les paramètres de JDONREF utilisés par cette classe.
+     * @param params
+     */
+    public JDONREFParams obtientJDONREFParams() {
+        return params;
+    }    
 
     /**
      * Revalide une adresse validée au préalable.
@@ -93,12 +115,14 @@ public class GestionAdr {
         final List<String[]> listRet = new ArrayList<String[]>();
         //TODO write your implementation code here:
         if (gestionConnection == null) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+//            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
             listRet.add(new String[]{"0", "1", "GestionConnection non initialisé."});
             return listRet;
         }
         if (dateValidation == null) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+//            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
             listRet.add(new String[]{"0", "5", "La date de validation n'a pas été mentionnée."});
             return listRet;
         }
@@ -108,16 +132,18 @@ public class GestionAdr {
             refconnection = gestionConnection.obtientConnection();
         } catch (SQLException ex) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connexion n'a pas pu être effectuée.", ex);
-            GestionLogs.getInstance().logRevalidation(application, false);
-
+//            GestionLogs.getInstance().logRevalidation(application, false);
+              params.getGestionLog().logRevalidation(application, false);
             listRet.add(new String[]{"0", "3", "Problème SQL durant la revalidation."});
             return listRet;
         } catch (JDONREFException je) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "Ne devrait pas se produire.", je);
-            GestionLogs.getInstance().logRevalidation(application, false);
+//            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
         } catch (Exception ex) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connexion n'a pas pu être effectuée.", ex);
-            GestionLogs.getInstance().logRevalidation(application, false);
+//            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
             listRet.add(new String[]{"0", "7", "Erreur non répertoriée durant la revalidation."});
             return listRet;
         }
@@ -126,7 +152,8 @@ public class GestionAdr {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE,
                     "La connection n'a pas pu être effectuée.");
 
-            GestionLogs.getInstance().logRevalidation(application, false);
+//            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
             listRet.add(new String[]{"0", "3", "Problème SQL durant la revalidation."});
             return listRet;
         }
@@ -149,7 +176,8 @@ public class GestionAdr {
 
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
 
-            GestionLogs.getInstance().logRevalidation(application, false);
+//            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
 
             listRet.add(new String[]{"0", "3", "Problème SQL durant la validation."});
             return listRet;
@@ -190,11 +218,13 @@ public class GestionAdr {
 
         final List<String[]> listRet = new ArrayList<String[]>();
         if (gestionConnection == null) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{"0", "1", "GestionConnection non initialisé."});
         }
         if (date == null) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{"0", "5", "La date n'a pas été mentionnée."});
         }
         RefConnection refconnection = null;
@@ -204,22 +234,26 @@ public class GestionAdr {
         } catch (SQLException ex) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connection n'a pas pu être effectuée.", ex);
 
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{"0", "3", "Problème SQL durant le géocodage."});
         } catch (JDONREFException je) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "Ne devrait pas se produire.", je);
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{"0", "7", "Problème indéterminé durant le géocodage."});
         } catch (Exception ex) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connection n'a pas pu être effectuée.", ex);
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{"0", "7", "Problème indéterminé durant le géocodage."});
         }
 
         if (refconnection == null || refconnection.connection == null) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connection n'a pas pu être effectuée.");
 
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{"0", "3", "Problème SQL durant la revalidation."});
         }
 
@@ -244,7 +278,8 @@ public class GestionAdr {
             sb.append("date : " + date + "\r\n");
 
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), sqle);
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{"0", "3", "Problème SQL durant le géocodage."});
         } catch (Exception e) {
             StringBuilder sb = new StringBuilder();
@@ -256,7 +291,8 @@ public class GestionAdr {
             sb.append("date : " + date + "\r\n");
 
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), e);
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{"0", "7", "Une erreur non répertoriée est survenue."});
         } finally {
             if (refconnection != null) {
@@ -299,7 +335,8 @@ public class GestionAdr {
 
 
         if (gestionConnection == null) {
-            GestionLogs.getInstance().logDecoupage(application, false);
+//            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             return new String[]{"0", "1", "GestionConnection non initialisé."};
         }
 
@@ -308,16 +345,19 @@ public class GestionAdr {
         try {
             refconnection = gestionConnection.obtientConnection();
         } catch (SQLException ex) {
-            GestionLogs.getInstance().logDecoupage(application, false);
+//            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connection n'a pas pu être effectuée.", ex);
 
             return new String[]{"0", "3", "Problème SQL durant le découpage."};
         } catch (JDONREFException je) {
-            GestionLogs.getInstance().logDecoupage(application, false);
+//            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "Ne devrait pas se produire.", je);
             return new String[]{"0", "7", "Problème indéterminé durant le découpage."};
         } catch (Exception ex) {
-            GestionLogs.getInstance().logDecoupage(application, false);
+//            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connection n'a pas pu être effectuée.", ex);
             return new String[]{"0", "7", "Problème indéterminé durant le découpage."};
         }
@@ -326,7 +366,8 @@ public class GestionAdr {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE,
                     "La connection n'a pas pu être effectuée.");
 
-            GestionLogs.getInstance().logDecoupage(application, false);
+//            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             return new String[]{"0", "3", "Problème SQL durant la revalidation."};
         }
 
@@ -346,7 +387,8 @@ public class GestionAdr {
                 sb.append(natures[i]);
             }
 
-            GestionLogs.getInstance().logDecoupage(application, false);
+//            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
 
             return new String[]{"0", "3", "Problème SQL durant le découpage."};
@@ -361,7 +403,8 @@ public class GestionAdr {
                 sb.append(natures[i]);
             }
 
-            GestionLogs.getInstance().logDecoupage(application, false);
+//            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
             return new String[]{"0", "7", "Problème indéterminé durant le découpage."};
         } finally {
@@ -405,13 +448,15 @@ public class GestionAdr {
         // Vérifications préalables.
         if ((operation & (1 + 2 + 4)) != 0) {
             if (gestionMots == null) {
-                GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                GestionLogs.getInstance().logNormalisation(application, operation, false);
+                params.getGestionLog().logNormalisation(application, operation, false);
                 return new String[]{"0", "1", "GestionMots non initialisé"};
             }
         }
         if ((operation & 2) != 0) {
             if (gestionConnection == null) {
-                GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                GestionLogs.getInstance().logNormalisation(application, operation, false);
+                params.getGestionLog().logNormalisation(application, operation, false);
                 return new String[]{"0", "1", "GestionConnection non initialisé"};
             }
         }
@@ -430,7 +475,8 @@ public class GestionAdr {
                 for (int i = 0; i < lignes.length; i++) {
                     sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                 }
-                GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                GestionLogs.getInstance().logNormalisation(application, operation, false);
+                params.getGestionLog().logNormalisation(application, operation, false);
                 Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
 
                 return new String[]{
@@ -443,7 +489,8 @@ public class GestionAdr {
                 for (int i = 0; i < lignes.length; i++) {
                     sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                 }
-                GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                GestionLogs.getInstance().logNormalisation(application, operation, false);
+                params.getGestionLog().logNormalisation(application, operation, false);
                 Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), je);
                 return new String[]{"0", "7", "Problème indéterminé durant la normalisation."};
             } catch (Exception ex) {
@@ -453,13 +500,15 @@ public class GestionAdr {
                 for (int i = 0; i < lignes.length; i++) {
                     sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                 }
-                GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                GestionLogs.getInstance().logNormalisation(application, operation, false);
+                params.getGestionLog().logNormalisation(application, operation, false);
                 Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
                 return new String[]{"0", "7", "Problème indéterminé durant la normalisation."};
             }
 
             if (refconnection == null || refconnection.connection == null) {
-                GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                GestionLogs.getInstance().logNormalisation(application, operation, false);
+                params.getGestionLog().logNormalisation(application, operation, false);
                 Logger.getLogger("JDONREFv2").log(Level.SEVERE,
                         "La connection n'a pas pu être effectuée.");
 
@@ -475,9 +524,11 @@ public class GestionAdr {
             if ((operation & 1) != 0) {
                 try {
                     adresse = gestionMots.normalise_1(adresse);
-                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_1, true);
+//                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_1, true);
+                    params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_1, true);
                 } catch (Exception e) {
-                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+                    params.getGestionLog().logNormalisation(application, operation, false);
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE,
                             "La normalisation 1 n'a pas pu être effectuée.");
 
@@ -521,7 +572,8 @@ public class GestionAdr {
                         }
                     }
 
-                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
+//                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
+                    params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
                 } catch (java.lang.StringIndexOutOfBoundsException sqle) {
                     StringBuilder sb = new StringBuilder();
 
@@ -529,7 +581,8 @@ public class GestionAdr {
                     for (int i = 0; i < lignes.length; i++) {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
-                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+                    params.getGestionLog().logNormalisation(application, operation, false);
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), sqle);
 
                     return new String[]{"0", "7", "Erreur durant la restructuration."};
@@ -540,7 +593,8 @@ public class GestionAdr {
                     for (int i = 0; i < lignes.length; i++) {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
-                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+                    params.getGestionLog().logNormalisation(application, operation, false);
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), sqle);
 
                     return new String[]{
@@ -553,7 +607,8 @@ public class GestionAdr {
                     for (int i = 0; i < lignes.length; i++) {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
-                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+                    params.getGestionLog().logNormalisation(application, operation, false);
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
                     return new String[]{
                         "0", "7", "Problème indéterminé durant la restructuration."
@@ -571,9 +626,11 @@ public class GestionAdr {
                     adresse = gestionMots.normalise_2(adresse, numerosSupplementaires, abbrevie, desabbrevie, gestionPays,
                             str_departements, refconnection.connection);
                     if (abbrevie) {
-                        GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_2_38, true);
+//                        GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_2_38, true);
+                        params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_2_38, true);
                     } else {
-                        GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_2, true);
+//                        GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_2, true);
+                        params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_2, true);
                     }
                 } catch (SQLException ex) {
                     StringBuilder sb = new StringBuilder();
@@ -583,7 +640,8 @@ public class GestionAdr {
                         sb.append("Ligne " + i + ":" + adresse[i] + "\r\n");
                     }
 
-                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+                    params.getGestionLog().logNormalisation(application, operation, false);
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
 
                     return new String[]{
@@ -596,7 +654,8 @@ public class GestionAdr {
                     for (int i = 0; i < lignes.length; i++) {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
-                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+                    params.getGestionLog().logNormalisation(application, operation, false);
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
                     return new String[]{
                         "0", "7", "Problème indéterminé durant la normalisation 2."
@@ -608,7 +667,8 @@ public class GestionAdr {
             if ((operation & 16) != 0) {
                 try {
                     adresse = gestionMots.phonetise(adresse);
-                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_PHONETISE, true);
+//                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_PHONETISE, true);
+                    params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_PHONETISE, true);
                 } catch (Exception ex) {
                     StringBuilder sb = new StringBuilder();
 
@@ -616,7 +676,8 @@ public class GestionAdr {
                     for (int i = 0; i < lignes.length; i++) {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
-                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                    GestionLogs.getInstance().logNormalisation(application, operation, false);
+                    params.getGestionLog().logNormalisation(application, operation, false);
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
                     return new String[]{
                         "0", "7", "Problème indéterminé durant la phonétisation."
@@ -644,7 +705,8 @@ public class GestionAdr {
                 }
                 return fres;
             } else {
-                GestionLogs.getInstance().logNormalisation(application, operation, false);
+//                GestionLogs.getInstance().logNormalisation(application, operation, false);
+                params.getGestionLog().logNormalisation(application, operation, false);
                 return new String[]{
                     "0", "5", "L'opération demandée ne correspond à rien"
                 };
@@ -718,16 +780,19 @@ public class GestionAdr {
         } catch (SQLException ex) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE,
                     "La connection n'a pas pu être effectuée.", ex);
-            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+            params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
             listRet.add(new String[]{"0", "3", "Problème SQL durant la validation."});
             return listRet;
         } catch (JDONREFException je) {
-            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+            params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "Ne devrait pas se produire.", je);
             listRet.add(new String[]{"0", "7", "Problème indéterminé durant la connection."});
             return listRet;
         } catch (Exception ex) {
-            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+            params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connection n'a pas pu être effectuée.", ex);
             listRet.add(new String[]{"0", "7", "Problème indéterminé durant la connection."});
             return listRet;
@@ -735,7 +800,8 @@ public class GestionAdr {
 
         if (refconnection == null || refconnection.connection == null) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connection n'a pas pu être effectuée.");
-            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+            params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
             listRet.add(new String[]{"0", "3", "Problème SQL durant la validation."});
             return listRet;
         }
@@ -745,7 +811,8 @@ public class GestionAdr {
             if ((operation & 1) != 0) {
                 try {
                     adresse = gestionMots.normalise_1(adresse);
-                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_1, true);
+//                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_1, true);
+                    params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_1, true);
                 } catch (Exception ex) {
                     StringBuilder sb = new StringBuilder();
 
@@ -753,7 +820,8 @@ public class GestionAdr {
                     for (int i = 0; i < lignes.length; i++) {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
-                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                    params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
                     listRet.add(new String[]{"0", "7", "Problème indéterminé durant la normalisation 1."});
                     return listRet;
@@ -778,7 +846,8 @@ public class GestionAdr {
                         }
                         adresse = tmp_adresse;
                     }
-                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
+//                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
+                    params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
                 } catch (java.lang.StringIndexOutOfBoundsException sqle) {
                     StringBuilder sb = new StringBuilder();
 
@@ -787,7 +856,8 @@ public class GestionAdr {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), sqle);
-                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                    params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
 
                     listRet.add(new String[]{"0", "7", "Erreur durant la restructuration."});
                     return listRet;
@@ -799,7 +869,8 @@ public class GestionAdr {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), sqle);
-                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                    params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
 
                     listRet.add(new String[]{"0", "3", "Problème SQL durant la restructuration."});
                     return listRet;
@@ -811,7 +882,8 @@ public class GestionAdr {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
-                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                    params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                     listRet.add(new String[]{"0", "7", "Problème indéterminé durant la restructuration."});
                     return listRet;
                 }
@@ -827,9 +899,11 @@ public class GestionAdr {
                             str_departements, refconnection.connection);
 
                     if (!abbrevie) {
-                        GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_2, true);
+//                        GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_2, true);
+                        params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_2, true);
                     } else {
-                        GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_2_38, true);
+//                        GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_2_38, true);
+                        params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_2_38, true);
                     }
                 } catch (SQLException ex) {
                     StringBuilder sb = new StringBuilder();
@@ -840,7 +914,8 @@ public class GestionAdr {
                     }
 
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
-                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                    params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
 
                     listRet.add(new String[]{"0", "3", "Problème SQL durant la normalisation 2."});
                     return listRet;
@@ -852,7 +927,8 @@ public class GestionAdr {
                         sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                     }
                     Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
-                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                    params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                     listRet.add(new String[]{"0", "7", "Problème indéterminé durant la normalisation 2."});
                     return listRet;
                 }
@@ -880,7 +956,8 @@ public class GestionAdr {
                     sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                 }
                 Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
-                GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//                GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
 
                 listRet.add(new String[]{"0", "3", "Problème SQL durant la validation."});
                 return listRet;
@@ -892,7 +969,8 @@ public class GestionAdr {
                     sb.append("Ligne" + i + " : " + lignes[i] + "\r\n");
                 }
                 Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), ex);
-                GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//                GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                params.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                 listRet.add(new String[]{"0", "7", "Problème indéterminé durant la validation."});
                 return listRet;
             }
@@ -932,15 +1010,18 @@ public class GestionAdr {
         } catch (SQLException ex) {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE,
                     "La connection n'a pas pu être effectuée.", ex);
-            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+//            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+            params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_ERREUR, false);
 
             return new String[]{"0", "3", "Problème SQL durant le reverse geocoding."};
         } catch (JDONREFException je) {
-            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+//            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+            params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_ERREUR, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "Ne devrait pas se produire.", je);
             return new String[]{"0", "7", "Problème indéterminé durant la connection."};
         } catch (Exception ex) {
-            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+//            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+            params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_ERREUR, false);
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, "La connection n'a pas pu être effectuée.", ex);
             return new String[]{"0", "7", "Problème indéterminé durant la connection."};
         }
@@ -949,7 +1030,8 @@ public class GestionAdr {
             Logger.getLogger("JDONREFv2").log(Level.SEVERE,
                     "La connection n'a pas pu être effectuée.");
 
-            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+//            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+            params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_ERREUR, false);
             return new String[]{
                 "0", "3", "Problème SQL durant le reverse geocoding."
             };
@@ -987,7 +1069,8 @@ public class GestionAdr {
             }
 
             Logger.getLogger("JDONREFv2").log(Level.SEVERE, sb.toString(), e);
-            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+//            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+            params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_ERREUR, false);
             return new String[]{"0", "7", "Une erreur non répertoriée est survenue."};
         } finally {
             if (refconnection != null) {

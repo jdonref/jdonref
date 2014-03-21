@@ -53,7 +53,8 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 import ppol.jdonref.Algos;
-import ppol.jdonref.GestionLogs;
+
+import ppol.jdonref.JDONREFException;
 import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.referentiel.GestionCodesDepartements;
 import ppol.jdonref.referentiel.GestionReferentiel;
@@ -74,6 +75,8 @@ public class GestionMots {
     private Arbre arbre_mots = new Arbre();
     private GestionReferentiel referentiel = null;
     private JDONREFParams params = null;
+
+    
     /**
      * Utilisé pour optimisation de obtientRue. Doit être remis à null lorsque la liste mots
      * est vidée.
@@ -9025,7 +9028,8 @@ public class GestionMots {
     public String[] decoupe(int application, String[] lignes, int[] natures, int[] numeroslignes, Connection referentiel) throws
             SQLException {
         if (lignes.length == 0 || natures.length == 0 || numeroslignes.length != lignes.length) {
-            GestionLogs.getInstance().logDecoupage(application, true);
+//            GestionLogs.getInstance().logDecoupage(application, true);
+            params.getGestionLog().logDecoupage(application, true);
             return new String[]{"1"};
         }
 
@@ -9165,7 +9169,8 @@ public class GestionMots {
             res[i + 1] = sb.toString();
         }
 
-        GestionLogs.getInstance().logDecoupage(application, true);
+//        GestionLogs.getInstance().logDecoupage(application, true);      
+       params.getGestionLog().logDecoupage(application, true);
         return res;
     }
 }

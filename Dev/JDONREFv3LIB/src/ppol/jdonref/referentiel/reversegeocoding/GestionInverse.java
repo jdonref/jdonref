@@ -48,7 +48,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 import ppol.jdonref.JDONREFException;
 import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.Tables.GestionTables;
@@ -394,7 +394,8 @@ public class GestionInverse {
             try {
                 date = DateUtils.parseStringToDate(strdate, sdformat);
             } catch (java.text.ParseException pe) {
-                GestionLogs.getInstance().logInverse(application, operation, false);
+//                GestionLogs.getInstance().logInverse(application, operation, false);
+                jdonrefParams.getGestionLog().logInverse(application, operation, false);
                 return new String[]{"0", "5", "La date est mal formée."};
             }
         }
@@ -407,19 +408,22 @@ public class GestionInverse {
         try {
             dst = Double.parseDouble(distance);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "La distance est mal formée."};
         }
         try {
             x = Double.parseDouble(position[0]);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "La latitude est mal formée."};
         }
         try {
             y = Double.parseDouble(position[1]);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "La longitude est mal formée."};
         }
 
@@ -430,7 +434,8 @@ public class GestionInverse {
         try {
             io = extractOptions(options);
         } catch (JDONREFException je) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "Problème dans l'analyse des options."};
         }
 
@@ -487,10 +492,12 @@ public class GestionInverse {
             // Formate le résultat.
             return formateGeocodageInverse(res);
         } catch (SQLException sqle) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "Problème avec la base de données"};
         } catch (ParseException pe) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "10", "Erreur de géométrie"};
         }
     }
@@ -504,7 +511,8 @@ public class GestionInverse {
             try {
                 date = DateUtils.parseStringToDate(strdate, sdformat);
             } catch (java.text.ParseException pe) {
-                GestionLogs.getInstance().logInverse(application, operation, false);
+//                GestionLogs.getInstance().logInverse(application, operation, false);
+                jdonrefParams.getGestionLog().logInverse(application, operation, false);
                 return new String[]{"0", "5", "La date est mal formée."};
             }
         }
@@ -517,19 +525,22 @@ public class GestionInverse {
         try {
             dst = Double.parseDouble(distance);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "La distance est mal formée."};
         }
         try {
             x = Double.parseDouble(position[0]);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "La latitude est mal formée."};
         }
         try {
             y = Double.parseDouble(position[1]);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "La longitude est mal formée."};
         }
 
@@ -540,7 +551,8 @@ public class GestionInverse {
         try {
             io = extractOptions(options);
         } catch (JDONREFException je) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "Problème dans l'analyse des options."};
         }
         boolean servicePays = false;
@@ -628,10 +640,12 @@ public class GestionInverse {
             return formateGeocodageInverse(res);
 
         } catch (SQLException sqle) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "Problème avec la base de données"};
         } catch (ParseException pe) {
-            GestionLogs.getInstance().logInverse(application, operation, false);
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "10", "Erreur de géométrie"};
         }
     }

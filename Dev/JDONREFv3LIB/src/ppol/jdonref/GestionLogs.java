@@ -701,7 +701,7 @@ public class GestionLogs extends AGestionLogs{
 
             IGestionLogs gl = null;
             gl = jDONREFParams.getGestionLog();
-            gl.setParam(jDONREFParams);
+           // gl.setParam(jDONREFParams);
             
             gl.logEchecValidation(2, true);
             gl.logNormalisation(2, FLAG_NORMALISE_1, true);
@@ -725,13 +725,6 @@ public class GestionLogs extends AGestionLogs{
             Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
         } catch (JDONREFException ex) {
             Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(GestionLogs.class.getName()).log(Level.SEVERE, null, ex);
- 
         }
     }
 }

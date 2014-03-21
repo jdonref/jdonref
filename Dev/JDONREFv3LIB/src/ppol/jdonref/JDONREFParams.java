@@ -126,6 +126,7 @@ public class JDONREFParams {
     private String routerClassName = "";
     private int projectionSpheroidPardefaut = 4326;
     private String spheroidPardefaut = "SPHEROID[\"WGS 84\",6378137,298.257223563]";
+    
     private String logClasseName = "ppol.jdonref.GestionLogs";
 
     
@@ -138,14 +139,27 @@ public class JDONREFParams {
         return logClasseName = classeName;
     }
 
-    public IGestionLogs getGestionLog() throws ClassNotFoundException, InstantiationException, IllegalAccessException, JDONREFException {
-        Class c = Class.forName(getLogClasseName());
-        IGestionLogs i = (IGestionLogs) c.newInstance();
-        i.definitRepertoire(obtientLogPath());
+    public IGestionLogs getGestionLog()  {
+        Class c = null;
+        IGestionLogs i = null;
+        try {
+            c = Class.forName(getLogClasseName());
+            i = (IGestionLogs) c.newInstance();
+            i.definitRepertoire(obtientLogPath());
+        } catch (JDONREFException ex) {
+            Logger.getLogger(JDONREFParams.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(JDONREFParams.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(JDONREFParams.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(JDONREFParams.class.getName()).log(Level.SEVERE, null, ex);
+        }
         i.setParam(this);
-
         return i;
     }
+    
+
 
     public String obtientConfigPath() {
         return configPath;

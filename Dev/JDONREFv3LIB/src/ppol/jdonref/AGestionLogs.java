@@ -173,14 +173,19 @@ public abstract class AGestionLogs implements IGestionLogs {
     public void definitRepertoire(String repertoire) throws JDONREFException {
         File f = new File(repertoire);
         if (!f.exists()) {
-            throw (new JDONREFException("Le répertoire " + repertoire + " n'a pas été trouvé."));
+            System.out.println("***************************************");
+            System.out.println("creation du repertoire : "+repertoire);
+            f.mkdir();
+            System.out.println("***************************************");
+//            throw (new JDONREFException("Le répertoire " + repertoire + " n'a pas été trouvé."));
         }
         this.repertoire = repertoire;
     }
+    
+    
+    
     JDONREFParams param;
 
-    
-    
     public JDONREFParams getParam() {
         return param;
     }

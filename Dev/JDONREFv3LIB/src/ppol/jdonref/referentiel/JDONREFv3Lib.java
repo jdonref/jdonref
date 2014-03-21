@@ -188,6 +188,7 @@ public class JDONREFv3Lib {
 
             // Définit le gestionnaire d'adresses.
             gestionAdr = new GestionAdr(gestionConnection, gestionMots, gestionReferentiel, gestionInverse);
+            gestionAdr.definitJDONREFParams(params);
 
             Logger.getLogger(JDONREFv3Lib.class.getName()).log(Level.INFO, "...Fin d'initialisation de JDONREFv3Lib.");
 
