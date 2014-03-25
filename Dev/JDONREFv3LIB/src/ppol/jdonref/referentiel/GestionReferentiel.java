@@ -51,8 +51,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import ppol.jdonref.AGestionLogs;
 import ppol.jdonref.Algos;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 import ppol.jdonref.JDONREFParams;
 
 import ppol.jdonref.Processus;
@@ -383,9 +384,10 @@ public class GestionReferentiel {
             en_cours, maj, lancement
         };
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, mise_a_jour_0);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, mise_a_jour_1 + code_departement);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, mise_a_jour_2 + flags);
+//        GestionLogs.getInstance().logAdmin(p.numero, p.version, mise_a_jour_0);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, mise_a_jour_0);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, mise_a_jour_1 + code_departement);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, mise_a_jour_2 + flags);
         p.resultat.add(mise_a_jour_0);
         p.resultat.add(mise_a_jour_1 + code_departement);
         p.resultat.add(mise_a_jour_2 + flags);
@@ -405,7 +407,7 @@ public class GestionReferentiel {
             String[] marqueurs = null;
 
             p.state[2] = mise_a_jour_3;
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, mise_a_jour_3);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, mise_a_jour_3);
             // Supprime d'éventuels marqueurs oubliés.
             GestionMarqueurs.purgeMarqueurs(code_departement, flags, connectionMaj);
             if ((flags & MAJ_VOIES) != 0) // WA 09/2011 utilisation de GestionTables.getXXTableName
@@ -416,7 +418,7 @@ public class GestionReferentiel {
             }
 
             p.state[2] = mise_a_jour_4;
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, mise_a_jour_4);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, mise_a_jour_4);
             // Met à jour la structure du référentiel (la crée éventuellement)
             GestionStructure.creeStructures(code_departement, flags, connectionReferentiel, date);
 
@@ -431,19 +433,19 @@ public class GestionReferentiel {
                 p.state = new String[]{
                     erreur, "La table de troncon n'a pas été identifiée."
                 };
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "La table de troncon n'a pas été identifiée.");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "La table de troncon n'a pas été identifiée.");
             } else {
                 if (p.stop) {
                     p.state = new String[]{
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_TABLEVOIES) != 0) {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREE LA TABLE DE VOIES");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREE LA TABLE DE VOIES");
                     p.state = new String[]{
                         en_cours, maj, "CREE LA TABLE DE VOIES", lancement, "TRONCONS TRAITES", "0", "SUR 0"
                     };
@@ -460,12 +462,12 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_TABLECODEPOSTAUX) != 0) {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREE LA TABLE DES CODES POSTAUX");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREE LA TABLE DES CODES POSTAUX");
                     p.state = new String[]{
                         en_cours, maj, "CREE LA TABLE DES CODES POSTAUX", lancement, "VOIES TRAITEES", "0"
                     };
@@ -479,12 +481,12 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 p.state[2] = "CREE LES INDEX";
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREE LES INDEX");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREE LES INDEX");
                 // crée les index nécessaires sur le référentiel et  la mise à jour
                 GestionStructure.creeIndexesMaj(code_departement, flags, connectionMaj);
                 GestionStructure.creeIndexesReferentiel(code_departement, nomTableTroncon, flags, connectionReferentiel);
@@ -492,7 +494,7 @@ public class GestionReferentiel {
                 // Crée les marqueurs sur les tables sources
                 // Les marques utilisées sont 1 pour identique, et 2 pour modifié
                 p.state[2] = "CREE LES MARQUEURS";
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREE LES MARQUEURS");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREE LES MARQUEURS");
                 marqueurs = GestionMarqueurs.ajouteMarqueursMaj(code_departement, flags, connectionMaj);
 
                 p.state = new String[]{
@@ -505,7 +507,7 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
@@ -515,7 +517,7 @@ public class GestionReferentiel {
                     p.state[5] = "ADRESSES TRAITEES";
                     p.state[6] = "0";
 
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INVALIDATION DES ADRESSES");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INVALIDATION DES ADRESSES");
                     // Invalide les adresses et marque les autres
                     // logs dans la méthode
                     gestionMiseAJour.invalideObjets(p, "adr_id",
@@ -535,12 +537,12 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_CODEPOSTAUX) != 0) {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INVALIDATION DES CODES POSTAUX");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INVALIDATION DES CODES POSTAUX");
                     p.state = new String[] // Exception, les autres seront corrigés au fur et à mesure (pour le total)
                         {
                         en_cours, maj, "INVALIDATION", "CODES POSTAUX",
@@ -566,12 +568,12 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_VOIES) != 0) {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INVALIDATION DES VOIES");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INVALIDATION DES VOIES");
                     // Invalide les voies et marque les autres
                     p.state[3] = "VOIES";
                     p.state[4] = lancement;
@@ -591,12 +593,12 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_TRONCONS) != 0) {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INVALIDATION DES TRONCONS");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INVALIDATION DES TRONCONS");
                     // Invalide les troncons et marque les autres
                     p.state[3] = "TRONCONS";
                     p.state[4] = lancement;
@@ -616,12 +618,12 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_COMMUNES) != 0) {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INVALIDATION DES COMMUNES");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INVALIDATION DES COMMUNES");
                     // Invalide les communes et arrondissements
                     p.state[3] = "COMMUNES ET ARRONDISSEMENTS";
                     p.state[4] = lancement;
@@ -642,12 +644,12 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_DEPARTEMENTS) != 0) {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INVALIDATION DES DEPARTEMENTS");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INVALIDATION DES DEPARTEMENTS");
                     // Invalide les départements
                     p.state[3] = "DEPARTEMENTS";
                     p.state[4] = lancement;
@@ -669,7 +671,7 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
@@ -681,7 +683,7 @@ public class GestionReferentiel {
 
                 if ((flags & MAJ_DEPARTEMENTS) != 0) {
                     // crée les nouveaux départements
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREATION DES DEPARTEMENTS");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREATION DES DEPARTEMENTS");
                     p.state[3] = "DEPARTEMENTS";
                     p.state[4] = lancement;
                     p.state[5] = "DEPARTEMENTS TRAITES";
@@ -699,13 +701,13 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_COMMUNES) != 0) {
                     // crée les nouvelles communes et arrondissements
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREATION DES COMMUNES");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREATION DES COMMUNES");
                     p.state[3] = "COMMUNES ET ARRONDISSEMENTS";
                     p.state[4] = lancement;
                     p.state[5] = "COMMUNES TRAITEES";
@@ -722,13 +724,13 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_TRONCONS) != 0) {
                     // crée les nouveaux troncons
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREATION DES TRONCONS");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREATION DES TRONCONS");
                     p.state[3] = "TRONCONS";
                     p.state[4] = lancement;
                     p.state[5] = "TRONCONS TRAITES";
@@ -754,13 +756,13 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_VOIES) != 0) {
                     // crée les nouvelles voies
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREATION DES VOIES");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREATION DES VOIES");
                     p.state[3] = "VOIES";
                     p.state[4] = lancement;
                     p.state[5] = "VOIES TRAITEES";
@@ -778,13 +780,13 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_CODEPOSTAUX) != 0) {
                     // Crée les nouveaux code postaux
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREATION DES CODES POSTAUX");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREATION DES CODES POSTAUX");
                     p.state[3] = "CODEPOSTAUX";
                     p.state[4] = lancement;
                     p.state[5] = "VOIES TRAITEES";
@@ -801,13 +803,13 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_ADRESSES) != 0) {
                     // crée les nouvelles adresses
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREATION DES ADRESSES");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREATION DES ADRESSES");
                     p.state[3] = "ADRESSES";
                     p.state[4] = lancement;
                     p.state[5] = "ADRESSES TRAITEES";
@@ -826,14 +828,14 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & (MAJ_COMMUNES + MAJ_VOIES)) != 0 && // les voies ou les communes peuvent faire évoluer
                         (flags & GestionReferentiel.MAJ_VOIESAMBIGUES) == 0) // cette catégorie d'ambiguités
                 {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CALCULE AMBIGUITE COMMUNE DANS VOIE");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CALCULE AMBIGUITE COMMUNE DANS VOIE");
                     p.state = new String[]{
                         en_cours, maj, "CALCULE AMBIGUITE",
                         "COMMUNE DANS VOIE", lancement,
@@ -852,14 +854,14 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 if ((flags & MAJ_COMMUNES) != 0 && // les voies ou les communes peuvent faire évoluer
                         (flags & GestionReferentiel.MAJ_VOIESAMBIGUES) == 0) // cette catégorie d'ambiguités
                 {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "CALCULE AMBIGUITE CLES DANS COMMUNE");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CALCULE AMBIGUITE CLES DANS COMMUNE");
                     p.state = new String[]{
                         en_cours, maj, "CALCULE AMBIGUITE",
                         "CLES DANS COMMUNE", lancement,
@@ -878,13 +880,13 @@ public class GestionReferentiel {
                         "TERMINE"
                     };
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                     return;
                 }
 
                 // Retire les marqueurs
                 try {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "SUPPRIME LES MARQUEURS");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "SUPPRIME LES MARQUEURS");
                     p.state = new String[]{
                         en_cours, maj, "SUPPRIME MARQUEURS"
                     };
@@ -926,12 +928,12 @@ public class GestionReferentiel {
         int count = 0;
 
         try {
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "DECOUPE NUMEROS");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "table     :" + table);
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "id        :" + id);
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "source    :" + source);
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "numeros   :" + numero);
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "repetition:" + repetition);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "DECOUPE NUMEROS");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "table     :" + table);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "id        :" + id);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "source    :" + source);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "numeros   :" + numero);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "repetition:" + repetition);
 
             p.resultat.add("DECOUPE NUMEROS");
             p.resultat.add("table     :" + table);
@@ -1040,7 +1042,7 @@ public class GestionReferentiel {
             PreparedStatement psUpdate = connection.prepareStatement(sb.toString());
 
             p.state[1] = "CHERCHE LES LIGNES";
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "CHERCHE LES LIGNES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CHERCHE LES LIGNES");
             Statement sCherche = connection.createStatement();
             ResultSet rsCherche = sCherche.executeQuery(rqCherche);
 
@@ -1049,14 +1051,14 @@ public class GestionReferentiel {
                     "TERMINE"
                 };
                 p.resultat.add("INTERRUPTION UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
                 return;
             }
 
             p.state = new String[]{
                 en_cours, "TRAITEMENT", "LIGNES EFFECTUEES", "0", "SUR " + compte
             };
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRAITEMENT DE " + compte + " numeros");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRAITEMENT DE " + compte + " numeros");
             while (!p.stop && rsCherche.next()) {
                 // debut_droit
                 ArrayList<RefNumero> numeros = gestionMots.trouveNumeros(rsCherche.getString(2));
@@ -1146,13 +1148,13 @@ public class GestionReferentiel {
             sCherche.close();
 
             if (p.stop) {
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
                 p.resultat.add("INTERRUPTION UTILISATEUR");
             }
 
         } finally {
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "DECOUPAGE NUMEROS TERMINE");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "Nombre de lignes traitées: " + count);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "DECOUPAGE NUMEROS TERMINE");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Nombre de lignes traitées: " + count);
             p.resultat.add("Nombre de lignes traitées:");
             p.resultat.add(Integer.toString(count));
         }
@@ -1211,10 +1213,10 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, preparation
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, preparation);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, preparation);
 
         if (decoupage.length == 0 || champs.length == 0) {
-            GestionLogs.getInstance().logAdmin(p.numero, p.version,
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version,
                     "Aucun découpage effectué (pas de champs à découper ou de découpage à produire.");
             p.resultat.add("Aucun découpage effectué (pas de champs à découper ou de découpage à produire.");
             return;
@@ -1261,7 +1263,7 @@ public class GestionReferentiel {
         try {
             idx_ajoute = GestionTables.ajouteIndex(nomTable, idx, connection);
         } catch (GestionReferentielException ex) {
-            GestionLogs.getInstance().logAdmin(p.numero, p.version,
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version,
                     "L'index " + nomTable + "_" + id + " doit être supprimé si ses colonnes ne sont pas correctes.");
             Logger.getLogger(gestion_referentiel).log(Level.SEVERE,
                     "L'index " + nomTable + "_" + id + " doit être supprimé si ses colonnes ne sont pas correctes.", ex);
@@ -1307,12 +1309,12 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
             return;
         }
 
         p.state[1] = "CHERCHE LES VOIES";
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "CHERCHE LES VOIES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CHERCHE LES VOIES");
         ResultSet rsSelect = stSelect.executeQuery(rqCherche);
         int count = 0;
         String[] adresse;
@@ -1331,7 +1333,7 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
@@ -1339,12 +1341,12 @@ public class GestionReferentiel {
         connection.setAutoCommit(false);
 
         p.state[1] = "DEBUTE LE TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "DEBUTE LE TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "DEBUTE LE TRAITEMENT");
         if (rsSelect.next()) {
             p.state = new String[]{
                 en_cours, "TRAITEMENT", "LIGNES TRAITEES", "0"
             };
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRAITEMENT");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRAITEMENT");
 
             do {
                 numerosSupplementaires.clear();
@@ -1504,15 +1506,15 @@ public class GestionReferentiel {
 
         if (p.stop) {
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
         }
 
         if (idx_ajoute) {
             GestionTables.supprimeIndex(idx, connection);
         }
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "DECOUPAGE D'ADRESSES");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "LIGNES TRAITEES:" + count);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "DECOUPAGE D'ADRESSES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "LIGNES TRAITEES:" + count);
 
         p.resultat.add("DECOUPAGE D'ADRESSES");
         p.resultat.add("LIGNES TRAITEES:" + count);
@@ -1613,8 +1615,8 @@ public class GestionReferentiel {
      */
     public void prepareMajReferentiel(Processus p, String code_departement, Connection connectionOrigine, Connection connectionDestination)
             throws SQLException, GestionReferentielException {
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARE MISE A JOUR REFERENTIEL");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "departement : " + code_departement);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARE MISE A JOUR REFERENTIEL");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "departement : " + code_departement);
         p.resultat.add("PREPARE MISE A JOUR REFERENTIEL");
         p.resultat.add("departement : " + code_departement);
 
@@ -1631,7 +1633,7 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, "PREPARE INDEX"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARE INDEX");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARE INDEX");
         // Crée les index nécessaires.
         Index idx_geometrie = new Index();
         idx_geometrie.setNom("tr" + code_departement + "_id_geometrie");
@@ -1651,7 +1653,7 @@ public class GestionReferentiel {
                 connectionDestination);
 
         p.state[1] = "PREPARE REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARE REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARE REQUETES");
 
         // Prépare la requête permettant d'énumérer les tronçons à modifier.
         StringBuilder sb = new StringBuilder();
@@ -1693,7 +1695,7 @@ public class GestionReferentiel {
         WKTReader reader = new WKTReader();
 
         p.state[1] = "CHERCHE LES TRONCONS";
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "CHERCHE LES TRONCONS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CHERCHE LES TRONCONS");
         ResultSet rsCherche = sCherche.executeQuery(requeteCherche);
 
         if (p.stop) {
@@ -1704,14 +1706,14 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
         p.state = new String[]{
             en_cours, "TRAITEMENT", "TRONCONS TRAITES", "0"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRAITEMENT");
         // Pour chaque auTroncon
         while (!p.stop && rsCherche.next()) {
             String id_troncon = null;
@@ -1766,14 +1768,14 @@ public class GestionReferentiel {
                 // S'il y a plus d'un tronçon pour cette géométrie, affiche un avertissement
                 if (psUpdate.getUpdateCount() > 1) {
                     p.resultat.add("Pb ds la maj : plusieurs troncons vont avoir l'id " + id_troncon + " (même géométrie)");
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version,
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version,
                             "Pb ds la maj : plusieurs troncons vont avoir l'id " + id_troncon + " (même géométrie)");
                 }
 
                 while (rsChercheCorrespondance.next()) {
                     p.resultat.add(
                             "Pb ds le référentiel : le troncon " + rsChercheCorrespondance.getString(1) + " est similaire au tronçon " + id_troncon);
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "Pb ds le référentiel : le troncon " + rsChercheCorrespondance.getString(1) + " est similaire au tronçon " + id_troncon);
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Pb ds le référentiel : le troncon " + rsChercheCorrespondance.getString(1) + " est similaire au tronçon " + id_troncon);
                 }
             }
 
@@ -1794,12 +1796,12 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
         // Supprime les index si nécessaire.
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "SUPPRIME INDEX");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "SUPPRIME INDEX");
         p.state = new String[]{
             en_cours, "SUPPRIME INDEX"
         };
@@ -1810,9 +1812,9 @@ public class GestionReferentiel {
             GestionTables.supprimeIndex(idx_noms_insees, connectionDestination);
         }
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARATION DE LA MISE A JOUR");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "Troncons apparies: " + troncon_apparies);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "Dont troncons qui ont un id de voie: " + troncon_voie_apparies);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARATION DE LA MISE A JOUR");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Troncons apparies: " + troncon_apparies);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Dont troncons qui ont un id de voie: " + troncon_voie_apparies);
         p.resultat.add("PREPARATION DE LA MISE A JOUR");
         p.resultat.add("Troncons apparies: " + troncon_apparies);
         p.resultat.add("Dont troncons qui ont un id de voie: " + troncon_voie_apparies);
@@ -1833,9 +1835,9 @@ public class GestionReferentiel {
         int voiesnoncorrespondantes = 0;
         int voiestraitees = 0;
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, lancement);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARE CHANGEMENT REFERENTIEL");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "departement : " + code_departement);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, lancement);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARE CHANGEMENT REFERENTIEL");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "departement : " + code_departement);
         p.state = new String[]{
             en_cours, lancement
         };
@@ -1846,13 +1848,13 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, "TRAITEMENT TABLES", "CREE TABLE VOIES", "", "TRONCONS TRAITES", "0", "SUR 0"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREE TABLE VOIES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREE TABLE VOIES");
         // WA 09/2011 utilisation de GestionTables.getXXTableName
 //        gestionMiseAJour.creeTableVoieMaj(p,code_departement,"tro_troncons_"+code_departement,"voi_voies_"+code_departement,"idvoies",connectionDestination);
         gestionMiseAJour.creeTableVoieMaj(p, code_departement, GestionTables.getTroTronconsTableName(code_departement),
                 "voi_voies_" + code_departement, "idvoies", connectionDestination);
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "MANAGE LES TABLES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "MANAGE LES TABLES");
         p.state = new String[]{
             en_cours, "MANAGE LES TABLES"
         };
@@ -1874,7 +1876,7 @@ public class GestionReferentiel {
 //        String marqueurVoie = GestionMarqueurs.ajouteMarqueur("voi_voies_"+code_departement,connectionDestination);
         String marqueurVoie = GestionMarqueurs.ajouteMarqueur(voiTableName, connectionDestination);
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARE LES REQUETES");
         p.state = new String[]{
             en_cours, "PREPARE LES REQUETES"
         };
@@ -1930,11 +1932,11 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "CHERCHE LES VOIES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CHERCHE LES VOIES");
         p.state = new String[]{
             en_cours, "CHERCHE LES VOIES"
         };
@@ -1955,12 +1957,12 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
         try {
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRAITEMENT CORRESPONDANCES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRAITEMENT CORRESPONDANCES");
             p.state = new String[]{
                 en_cours, "TRAITEMENT CORRESPONDANCES", "VOIES TRAITEES", "0"
             };
@@ -2047,7 +2049,7 @@ public class GestionReferentiel {
                     "TERMINE"
                 };
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                 return;
             }
 
@@ -2068,7 +2070,7 @@ public class GestionReferentiel {
             /////////////////////////////////////////////////////////////////////////
             // Ajoute les voies qui n'ont pas été marquées, donc sans correspondances
             /////////////////////////////////////////////////////////////////////////
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "CHERCHE LES NON CORRESPONDANCES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CHERCHE LES NON CORRESPONDANCES");
             p.state = new String[]{
                 en_cours, "CHERCHE LES NON CORRESPONDANCES"
             };
@@ -2082,11 +2084,11 @@ public class GestionReferentiel {
                     "TERMINE"
                 };
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                 return;
             }
 
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRAITEMENT DES NON CORRESPONDANCES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRAITEMENT DES NON CORRESPONDANCES");
             p.state = new String[]{
                 en_cours, "TRAITEMENT DES NON CORRESPONDANCES", "VOIES TRAITEES", "0"
             };
@@ -2118,12 +2120,12 @@ public class GestionReferentiel {
                     "TERMINE"
                 };
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                 return;
             }
 
             try {
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "SUPPRESSION DU MARQUEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "SUPPRESSION DU MARQUEUR");
                 p.state = new String[]{
                     en_cours, "SUPPRESSION DU MARQUEUR"
                 };
@@ -2136,9 +2138,9 @@ public class GestionReferentiel {
         } finally {
             connectionDestination.setAutoCommit(autocommit);
         }
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARATION DU CHANGEMENT DE REFERENTIEL TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "Voies correspondantes: " + voiecorrespondantes);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "Voies non correspondantes: " + voiesnoncorrespondantes);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARATION DU CHANGEMENT DE REFERENTIEL TERMINE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Voies correspondantes: " + voiecorrespondantes);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Voies non correspondantes: " + voiesnoncorrespondantes);
         p.resultat.add("PREPARATION DU CHANGEMENT DE REFERENTIEL TERMINE");
         p.resultat.add("Voies correspondantes: " + voiecorrespondantes);
         p.resultat.add("Voies non correspondantes: " + voiesnoncorrespondantes);
@@ -2170,14 +2172,14 @@ public class GestionReferentiel {
             ColonneException {
         flags |= 4 + 8 + 32; // Les voies et troncons sont obligatoires
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "ChangementReferentiel");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "departement : " + code_departement);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "flags : " + flags);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "ChangementReferentiel");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "departement : " + code_departement);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "flags : " + flags);
         p.resultat.add("ChangementReferentiel");
         p.resultat.add("departement : " + code_departement);
         p.resultat.add("flags : " + flags);
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "MAJ IDENTIFIANTS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "MAJ IDENTIFIANTS");
         p.state = new String[]{
             en_cours, "MAJ IDENTIFIANTS"
         };
@@ -2188,7 +2190,7 @@ public class GestionReferentiel {
             p.state = new String[]{
                 "TERMINE"
             };
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
             return;
         }
@@ -2196,7 +2198,7 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, "INVALIDATION DES TRONCONS"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "INVALIDATION DES TRONCONS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INVALIDATION DES TRONCONS");
         // Invalide les troncons de l'ancien référentiel
         Timestamp tsdate = new Timestamp(date.getTime());
         Timestamp tsdatemoinsun = obtientDateMoinsUn(date);
@@ -2208,7 +2210,7 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
@@ -2220,7 +2222,7 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, maj
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, maj);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, maj);
         // logs dans la méthode
         mise_a_jour(p, code_departement, flags, connectionOrigine, connectionDestination, date);
     }
@@ -2489,7 +2491,8 @@ public class GestionReferentiel {
         int nbLinesAddr = gererPays ? 7 : 6;
 
         if (lignes == null || lignes.length < nbLinesAddr) {
-            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+//            jdonrefParams.getGestionLog().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+            jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
             return new String[]{"0", "5", "L'adresse spécifiée ne comporte pas ses " + nbLinesAddr + " lignes"};
         }
 
@@ -2515,7 +2518,7 @@ public class GestionReferentiel {
                 // date = sdformat.parse(strdate);
                 date = DateUtils.parseStringToDate(strdate, sdformat);
             } catch (java.text.ParseException pe) {
-                GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                 return new String[]{"0", "5", "La date est mal formée."};
             }
         }
@@ -2554,7 +2557,7 @@ public class GestionReferentiel {
                 }
             }
             if (!continuerValidation) {
-                GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_PAYS, false);
+                jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_PAYS, false);
                 return paysValides;
             } else {
                 pays = pays + ";" + codeAcs3; // INSERE LE CODE PAYS DANS TOUS LES RESULTATS.
@@ -2652,11 +2655,11 @@ public class GestionReferentiel {
 
         // Si on n'a rien trouve de probant dans l'adresse mais q'on avait un pays valide, on valide au pays.
         if (gererPays && continuerValidation) {
-            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_PAYS, false);
+            jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_PAYS, false);
             return paysValides;
         }
 
-        GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+        jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
         return new String[]{
             "0", "8", "L'adresse ne comprend ni code postal ni nom de commune."
         };
@@ -2669,7 +2672,7 @@ public class GestionReferentiel {
         int nbLinesAddr = gererPays ? 7 : 6;
 
         if (lignes == null || lignes.length < nbLinesAddr) {
-            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+            jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
             listRet.add(new String[]{"0", "5", "L'adresse spécifiée ne comporte pas ses " + nbLinesAddr + " lignes"}); // RETURN
         }
 
@@ -2696,7 +2699,7 @@ public class GestionReferentiel {
                 // date = sdformat.parse(strdate);
                 date = DateUtils.parseStringToDate(strdate, sdformat);
             } catch (java.text.ParseException pe) {
-                GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                 listRet.add(new String[]{"0", "5", "La date est mal formée."}); // RETURN
             }
         }
@@ -2751,7 +2754,7 @@ public class GestionReferentiel {
                 if (codepostal.length() > 0) {
                     listRet.add(gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, paysLigneId7, connection));
                 } else {
-                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                    jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                     listRet.add(new String[]{"0", "8", "L'adresse ne comprend pas de code postal."});
                 }
             } else if (id == SERVICE_COMMUNE) {
@@ -2767,7 +2770,7 @@ public class GestionReferentiel {
                     listRet.add(gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, pays, connection));
 
                 } else {
-                    GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                    jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                     listRet.add(new String[]{"0", "8", "L'adresse ne comprend pas de nom de commune ni de code postal."});
                 }
             } else { // TRONCON ET VOIE
@@ -2837,7 +2840,7 @@ public class GestionReferentiel {
                                 }
                             }
                         } else {
-                            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                            jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                             listRet.add(new String[]{"0", "8", "L'adresse ne comprend pas de nom de voie."});
                         }
                     } else {
@@ -2845,7 +2848,7 @@ public class GestionReferentiel {
                             listRet.add(gestionValidation.valideVoieCodePostalCommune(application, lignes, refcodepostal, refcommune, date,
                                     auTroncon, force, gererPays, paysLigneId7, connection));
                         } else {
-                            GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                            jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                             listRet.add(new String[]{"0", "8", "L'adresse ne comprend pas de nom de voie."});
                         }
                     }
@@ -2853,7 +2856,7 @@ public class GestionReferentiel {
                     if (ligne4.length() > 0) {
                         listRet.add(gestionValidation.valideVoieCodePostal(application, lignes, date, auTroncon, force, gererPays, paysLigneId7, connection));
                     } else {
-                        GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_ERREUR, false);
+                        jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                         listRet.add(new String[]{"0", "8", "L'adresse ne comprend pas de nom de voie."});
                     }
                 }
@@ -2896,7 +2899,7 @@ public class GestionReferentiel {
     public String[] revalide(int application, String[] lignes, String strdateValidation, String strdate, Connection connection) throws
             SQLException {
         if (lignes.length < 6) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            jdonrefParams.getGestionLog().logRevalidation(application, false);
             return new String[]{"0", "5", "L'adresse ne comporte pas ses 6 lignes"};
         }
 
@@ -2912,7 +2915,7 @@ public class GestionReferentiel {
             dateValidation = DateUtils.parseStringToDate(strdateValidation, sdformat);
 
         } catch (java.text.ParseException pe) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            jdonrefParams.getGestionLog().logRevalidation(application, false);
             return new String[]{"0", "5", "La date de validation est mal formée."};
         }
         Date date;
@@ -2922,7 +2925,7 @@ public class GestionReferentiel {
 //                date=sdformat.parse(strdate);
                 date = DateUtils.parseStringToDate(strdate, sdformat);
             } catch (java.text.ParseException pe) {
-                GestionLogs.getInstance().logRevalidation(application, false);
+                jdonrefParams.getGestionLog().logRevalidation(application, false);
                 return new String[]{
                     "0", "5", "La date de revalidation est mal formée."
                 };
@@ -2962,7 +2965,7 @@ public class GestionReferentiel {
         // WA gestion Dpts les codes dpt ne font plus forcement 2 cars
 //        if(codedepartement.obtientMot().length() != 2)
         if (codedepartement.obtientMot().length() < 2) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            jdonrefParams.getGestionLog().logRevalidation(application, false);
             return new String[]{"0", "8", "Le département de l'adresse spécifiée n'a pas été trouvé."};
         }
 
@@ -2973,7 +2976,7 @@ public class GestionReferentiel {
         RefCle commune = gestionMots.trouveNomVille(ligne6, codepostal);
 
         if (codepostal.obtientMot().length() == 0 || commune.obtientMot().length() == 0) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            jdonrefParams.getGestionLog().logRevalidation(application, false);
             return new String[]{"0", "8", "Il manque la commune ou le code postal à l'adresse."};
         }
 
@@ -2995,7 +2998,7 @@ public class GestionReferentiel {
         if (!rsChercheCommune.next()) {
             rsChercheCommune.close();
             psChercheCommune.close();
-            GestionLogs.getInstance().logRevalidation(application, false);
+            jdonrefParams.getGestionLog().logRevalidation(application, false);
             return new String[]{"0", "8", "La commune spécifiée dans l'adresse n'a pas été trouvée."};
         }
 
@@ -3081,7 +3084,7 @@ public class GestionReferentiel {
                 res[blockSize + 1 + blockSize * i] = DateUtils.formatDateToString(dt1, sdformat);
             }
 
-            GestionLogs.getInstance().logRevalidation(application, true);
+            jdonrefParams.getGestionLog().logRevalidation(application, true);
             return res;
         } else // Sinon, il s'agit de chercher les mises à jour de la voie complète.
         {
@@ -3116,7 +3119,7 @@ public class GestionReferentiel {
             if (!rsVoie.next()) {
                 rsVoie.close();
                 psChercheVoie.close();
-                GestionLogs.getInstance().logRevalidation(application, false);
+                jdonrefParams.getGestionLog().logRevalidation(application, false);
                 return new String[]{
                     "0", "8", "La voie spécifiée n'a pas été trouvée."
                 };
@@ -3272,7 +3275,7 @@ public class GestionReferentiel {
                 res[blockSize + 1 + blockSize * i] = DateUtils.formatDateToString(dt1, sdformat);
             }
 
-            GestionLogs.getInstance().logRevalidation(application, true);
+            jdonrefParams.getGestionLog().logRevalidation(application, true);
             return res;
         }
     }
@@ -3283,7 +3286,7 @@ public class GestionReferentiel {
 
         // VERIFICATION DES PARAMETRES
         if (lignes.length < 6) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            jdonrefParams.getGestionLog().logRevalidation(application, false);
             listRet.add(new String[]{"0", "5", "L'adresse ne comporte pas ses 6 lignes"});
             return listRet;
         }
@@ -3300,7 +3303,7 @@ public class GestionReferentiel {
             dateValidation = DateUtils.parseStringToDate(strdateValidation, sdformat);
 
         } catch (java.text.ParseException pe) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            jdonrefParams.getGestionLog().logRevalidation(application, false);
             listRet.add(new String[]{"0", "5", "La date de validation est mal formée."});
             return listRet;
         }
@@ -3311,7 +3314,7 @@ public class GestionReferentiel {
                 // date=sdformat.parse(strdate);
                 date = DateUtils.parseStringToDate(strdate, sdformat);
             } catch (java.text.ParseException pe) {
-                GestionLogs.getInstance().logRevalidation(application, false);
+                jdonrefParams.getGestionLog().logRevalidation(application, false);
                 listRet.add(new String[]{"0", "5", "La date de revalidation est mal formée."});
                 return listRet;
             }
@@ -3358,7 +3361,7 @@ public class GestionReferentiel {
                 // WA gestion Dpts les codes dpt ne font plus forcement 2 cars
                 // if(codedepartement.obtientMot().length() != 2)
                 if (codedepartement.obtientMot().length() < 2) {
-                    GestionLogs.getInstance().logRevalidation(application, false);
+                    jdonrefParams.getGestionLog().logRevalidation(application, false);
                     listRet.add(new String[]{"0", "8", "Le département de l'adresse spécifiée n'a pas été trouvé."});
                     break; // PASSE AU SERVICE SUIVANT
                 }
@@ -3369,7 +3372,7 @@ public class GestionReferentiel {
                 RefCle commune = gestionMots.trouveNomVille(ligne6, codepostal);
 
                 if (codepostal.obtientMot().length() == 0 || commune.obtientMot().length() == 0) {
-                    GestionLogs.getInstance().logRevalidation(application, false);
+                    jdonrefParams.getGestionLog().logRevalidation(application, false);
                     listRet.add(new String[]{"0", "8", "Il manque la commune ou le code postal à l'adresse."});
                     break; // PASSE AU SERVICE SUIVANT
                 }
@@ -3392,7 +3395,7 @@ public class GestionReferentiel {
                 if (!rsChercheCommune.next()) {
                     rsChercheCommune.close();
                     psChercheCommune.close();
-                    GestionLogs.getInstance().logRevalidation(application, false);
+                    jdonrefParams.getGestionLog().logRevalidation(application, false);
                     listRet.add(new String[]{"0", "8", "La commune spécifiée dans l'adresse n'a pas été trouvée."});
                     break; // PASSE AU SERVICE SUIVANT
                 }
@@ -3478,7 +3481,7 @@ public class GestionReferentiel {
                         resCom[blockSizeCom + 1 + blockSizeCom * i] = DateUtils.formatDateToString(dt1Com, sdformat);
                     }
 
-                    GestionLogs.getInstance().logRevalidation(application, true);
+                    jdonrefParams.getGestionLog().logRevalidation(application, true);
                     listRet.add(resCom);
 
                 } else {
@@ -3513,7 +3516,7 @@ public class GestionReferentiel {
                     if (!rsVoie.next()) {
                         rsVoie.close();
                         psChercheVoie.close();
-                        GestionLogs.getInstance().logRevalidation(application, false);
+                        jdonrefParams.getGestionLog().logRevalidation(application, false);
                         listRet.add(new String[]{"0", "8", "La voie spécifiée n'a pas été trouvée."});
                     }
 
@@ -3666,7 +3669,7 @@ public class GestionReferentiel {
                         resVoie[blockSizeVoie + 1 + blockSizeVoie * i] = DateUtils.formatDateToString(dt1, sdformat);
                     }
 
-                    GestionLogs.getInstance().logRevalidation(application, true);
+                    jdonrefParams.getGestionLog().logRevalidation(application, true);
                     listRet.add(resVoie);
                 }
             }
@@ -3739,17 +3742,17 @@ public class GestionReferentiel {
             int ligne, Connection connection, Connection connectionReferentiel) throws SQLException, Exception {
         int index = 0;
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "Création des index");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Création des index");
         p.state = new String[]{
             en_cours, "CREATION DES INDEX"
         };
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "NORMALISATION");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "table  : " + nomTable);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "source : " + columnSource);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "destination : " + columnDestination);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "flags : " + flags);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "ligne : " + ligne);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "NORMALISATION");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "table  : " + nomTable);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "source : " + columnSource);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "destination : " + columnDestination);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "flags : " + flags);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "ligne : " + ligne);
         p.resultat.add("NORMALISE");
         p.resultat.add("table  : " + nomTable);
         p.resultat.add("source : " + columnSource);
@@ -3779,12 +3782,12 @@ public class GestionReferentiel {
             sb.append(columnSource);
             sb.append(").");
             String message = sb.toString();
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, message);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, message);
             p.resultat.add(message);
             Logger.getLogger(gestion_referentiel).log(Level.INFO, message, ex);
         }
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARATION DES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARATION DES REQUETES");
         p.state[1] = "PREPARATION DES REQUETES";
 
         StringBuilder sb = new StringBuilder();
@@ -3840,7 +3843,7 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
@@ -3848,7 +3851,7 @@ public class GestionReferentiel {
             boolean abbrevie = (flags & 8) != 0;
             boolean desabbrevie = (flags & 32) != 0;
 
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "RECHERCHE DES VOIES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "RECHERCHE DES VOIES");
             p.state = new String[]{
                 en_cours, "RECHERCHE DES VOIES"
             };
@@ -3900,7 +3903,7 @@ public class GestionReferentiel {
                         sb_error.append(nomval);
                         sb_error.append("' dépasse 32 caractères.");
                         String error = sb.toString();
-                        GestionLogs.getInstance().logAdmin(p.numero, p.version, error);
+                        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, error);
                         p.resultat.add(error);
                     } else {
                         psUpdateVoie.setString(1, nomval);
@@ -3908,7 +3911,7 @@ public class GestionReferentiel {
                         psUpdateVoie.execute();
                     }
                 } catch (Exception e) {
-                    GestionLogs.getInstance().logAdmin(p.numero, p.version, "Problème avec la voie " + nomval);
+                    jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Problème avec la voie " + nomval);
                     p.resultat.add("Problème avec la voie " + nomval);
                     throw (e);
                 }
@@ -3927,13 +3930,13 @@ public class GestionReferentiel {
                     "TERMINE"
                 };
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
                 return;
             }
 
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "NORMALISATION");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "lignes traitées: " + index);
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "sur " + compte);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "NORMALISATION");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "lignes traitées: " + index);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "sur " + compte);
             p.resultat.add("NORMALISATION");
             p.resultat.add("lignes traitées: " + index);
             p.resultat.add("sur " + compte);
@@ -3943,11 +3946,11 @@ public class GestionReferentiel {
             stChercheVoie.close();
             psUpdateVoie.close();
         } catch (SQLException sqle) {
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, sqle.getMessage());
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, sqle.getMessage());
             p.resultat.add(sqle.getMessage());
             throw (sqle);
         } finally {
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "SUPPRESSION DES INDEX");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "SUPPRESSION DES INDEX");
             p.state = new String[]{
                 en_cours, "SUPPRESSION DES INDEX"
             };
@@ -4024,12 +4027,12 @@ public class GestionReferentiel {
 //            date=sdformat.parse();
             date = DateUtils.parseStringToDate(dateValidation, sdformat);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             return new String[]{
                 "0", "5", "La date est mal formatée (" + dateValidation + ")."
             };
         } catch (java.text.ParseException ex) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             return new String[]{
                 "0", "5", "La date est mal formatée (" + dateValidation + ")."
             };
@@ -4040,7 +4043,7 @@ public class GestionReferentiel {
             final GestionGeocodage gg = new GestionGeocodage(jdonrefParams);
             res = gg.geocodeAdresse(application, voi_id, numero, repetition, code_insee, paysSovAc3, projection, jdonrefParams.obtientProjectionPaysParDefaut(), date, connection);
         } catch (GestionReferentielException ex) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             return new String[]{
                 "0", "11", ex.getMessage()
             };
@@ -4069,12 +4072,12 @@ public class GestionReferentiel {
         try {
             date = DateUtils.parseStringToDate(dateValidation, sdformat);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{
                 "0", "5", "La date est mal formatée (" + dateValidation + ")."
             });
         } catch (java.text.ParseException ex) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{
                 "0", "5", "La date est mal formatée (" + dateValidation + ")."
             });
@@ -4084,7 +4087,7 @@ public class GestionReferentiel {
             final GestionGeocodage gg = new GestionGeocodage(jdonrefParams);
             listRet.addAll(gg.geocodeAdresse(application, services, voi_id, numero, repetition, code_insee, paysSovAc3, projection, jdonrefParams.obtientProjectionPaysParDefaut(), date, connection));
         } catch (GestionReferentielException ex) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{
                 "0", "11", ex.getMessage()
             });
@@ -4114,12 +4117,12 @@ public class GestionReferentiel {
         try {
             date = DateUtils.parseStringToDate(dateValidation, sdformat);
         } catch (NumberFormatException nfe) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{
                 "0", "5", "La date est mal formatée (" + dateValidation + ")."
             });
         } catch (java.text.ParseException ex) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{
                 "0", "5", "La date est mal formatée (" + dateValidation + ")."
             });
@@ -4133,7 +4136,7 @@ public class GestionReferentiel {
                 listRet.addAll(gg.geocodeAdresse(application, services, voi_id, numero, repetition, code_insee, paysSovAc3, projection, jdonrefParams.obtientProjectionPaysParDefaut(), date, connection));
             }
         } catch (GestionReferentielException ex) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             listRet.add(new String[]{
                 "0", "11", ex.getMessage()
             });
@@ -4151,10 +4154,10 @@ public class GestionReferentiel {
      */
     public void phonetise(Processus p, String colonneSource, String colonneDestination, String table, Connection connection) throws
             SQLException {
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PHONETISE");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "table : " + table);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "source :" + colonneSource);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "destination :" + colonneDestination);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PHONETISE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "table : " + table);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "source :" + colonneSource);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "destination :" + colonneDestination);
 
         p.resultat.add("PHONETISE");
         p.resultat.add("table : " + table);
@@ -4164,7 +4167,7 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, "CREE L'INDEX"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREE L'INDEX");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREE L'INDEX");
         Index idx = new Index();
         idx.setNom(table + "_" + colonneSource);
         idx.ajouteColonne(colonneSource);
@@ -4173,7 +4176,7 @@ public class GestionReferentiel {
             idx_cree = GestionTables.ajouteIndex(table, idx, connection);
         } catch (GestionReferentielException ex) {
             // L'index n'est alors pas pris en compte.
-            GestionLogs.getInstance().logAdmin(p.numero, p.version,
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version,
                     "La phonétisation de " + colonneSource + " de " + table + " est effectuée sans index.");
             p.resultat.add("La phonétisation de " + colonneSource + " de " + table + " est effectuée sans index.");
             Logger.getLogger(gestion_referentiel).log(Level.INFO,
@@ -4184,7 +4187,7 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, "PREPARE LES TABLES"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARE LES TABLES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARE LES TABLES");
 
         // Prépare la requête permettant de lister toutes les valeurs à phonétiser.
         StringBuilder sb = new StringBuilder();
@@ -4213,7 +4216,7 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
@@ -4221,7 +4224,7 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, "CHERCHE LES NOMS"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "CHERCHE LES NOMS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CHERCHE LES NOMS");
         ResultSet rsCherche = psCherche.executeQuery();
 
         if (p.stop) {
@@ -4232,14 +4235,14 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
         p.state = new String[]{
             en_cours, "TRAITEMENT", "NOMS TRAITEES", "0"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRAITEMENT");
         int compte = 0;
         while (!p.stop && rsCherche.next()) {
             String valeurSource = rsCherche.getString(1);
@@ -4259,7 +4262,7 @@ public class GestionReferentiel {
 
         // supprime l'index éventuel
         if (idx_cree) {
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "SUPPRIME L'INDEX");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "SUPPRIME L'INDEX");
             p.state = new String[]{
                 en_cours, "SUPPRIME L'INDEX"
             };
@@ -4274,7 +4277,7 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION PAR L UTILISATEUR");
             return;
         }
 
@@ -4283,8 +4286,8 @@ public class GestionReferentiel {
         rsCherche.close();
         psCherche.close();
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PHONETISATION de " + colonneSource + " de " + table + " TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "Noms traités : " + compte);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PHONETISATION de " + colonneSource + " de " + table + " TERMINE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Noms traités : " + compte);
         p.resultat.add("PHONETISATION de " + colonneSource + " de " + table);
         p.resultat.add("Noms traités : " + compte);
     }
@@ -4633,17 +4636,17 @@ public class GestionReferentiel {
      */
     public void genereFantoir(Processus p, String nomTable, String id, String fantoire, Connection connection) throws SQLException,
             GestionReferentielException {
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "GENERE FANTOIR");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "table    : " + nomTable);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "id       : " + id);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "fantoire : " + fantoire);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "GENERE FANTOIR");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "table    : " + nomTable);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "id       : " + id);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "fantoire : " + fantoire);
 
         p.resultat.add("GENERE FANTOIR");
         p.resultat.add("table    : " + nomTable);
         p.resultat.add("id       : " + id);
         p.resultat.add("fantoire : " + fantoire);
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARE LES REQUETES ET LES TABLES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARE LES REQUETES ET LES TABLES");
         p.state = new String[]{
             en_cours, "PREPARE LES REQUETES ET LES TABLES"
         };
@@ -4731,7 +4734,7 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
             return;
         }
 
@@ -4744,14 +4747,14 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
             return;
         }
 
         p.state = new String[]{
             en_cours, "TRAITEMENT", "LIGNES TRAITEES", "0"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRAITEMENT");
         int count = 0;
         while (!p.stop && rsCherche.next()) {
             String idval = rsCherche.getString(1);
@@ -4787,13 +4790,13 @@ public class GestionReferentiel {
 
         if (p.stop) {
             p.resultat.add("INTERRUPTION UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
         }
 
         p.state = new String[]{
             en_cours, "RESTAURE LES TABLES"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "RESTAURE LES TABLES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "RESTAURE LES TABLES");
         // Supprime l'index
         if (idvoies_code_fantoire_bis_cree) {
             GestionTables.supprimeIndex(idvoies_code_fantoire_bis, connection);
@@ -4801,8 +4804,8 @@ public class GestionReferentiel {
         // Supprime la colonne ajoutée        
         GestionTables.supprimeColonne(nomTable, code_fantoire_bis, connection);
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "CREATION DES FANTOIRES");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "Lignes traitées: " + count);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CREATION DES FANTOIRES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Lignes traitées: " + count);
         p.resultat.add("CREATION DES FANTOIRES");
         p.resultat.add("Lignes traitées: " + count);
     }
@@ -4813,9 +4816,9 @@ public class GestionReferentiel {
      */
     public String[] restructure(Processus p, String nomTable, String id, String[] columns, String[] restructuration, Connection connection,
             Connection referentiel) throws SQLException {
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "RESTRUCTURE");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "table : " + nomTable);
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "id    : " + id);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "RESTRUCTURE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "table : " + nomTable);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "id    : " + id);
         p.resultat.add("RESTRUCTURE");
         p.resultat.add("table : " + nomTable);
         p.resultat.add("id    : " + id);
@@ -4825,19 +4828,19 @@ public class GestionReferentiel {
             sb.append(' ');
         }
         p.resultat.add("colonnes : " + sb.toString());
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "colonnes : " + sb.toString());
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "colonnes : " + sb.toString());
         sb.setLength(0);
         for (int i = 0; i < restructuration.length; i++) {
             sb.append(restructuration[i]);
             sb.append(' ');
         }
         p.resultat.add("restructuration : " + sb.toString());
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "restructuration : " + sb.toString());
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "restructuration : " + sb.toString());
 
         p.state = new String[]{
             en_cours, preparation
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, preparation);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, preparation);
         sb.setLength(0);
         sb.append("SELECT \"");
         sb.append(id);
@@ -4877,7 +4880,7 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
             return new String[]{
                 "1"
             };
@@ -4891,7 +4894,7 @@ public class GestionReferentiel {
                 "TERMINE"
             };
             p.resultat.add("INTERRUPTION UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
             return new String[]{
                 "1"
             };
@@ -4900,7 +4903,7 @@ public class GestionReferentiel {
         p.state = new String[]{
             en_cours, "TRAITEMENT", "ADRESSES TRAITEES", "0"
         };
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRAITEMENT");
         int count = 0;
         String[] adresse = new String[columns.length];
         while (!p.stop && rsCherche.next()) {
@@ -4935,11 +4938,11 @@ public class GestionReferentiel {
 
         if (p.stop) {
             p.resultat.add("INTERRUPTION UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
         }
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "RESTRUCTURATION TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "ADRESSE TRAITEES:" + count);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "RESTRUCTURATION TERMINE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "ADRESSE TRAITEES:" + count);
         p.resultat.add("RESTRUCTURATION");
         p.resultat.add("ADRESSE TRAITEES:" + count);
 
@@ -4960,12 +4963,12 @@ public class GestionReferentiel {
      */
     public void genereIdTroncon(Processus p, String code_departement, Connection connection) throws GestionReferentielException,
             SQLException {
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "GENERE ID TRONCON");
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "Departement : " + code_departement);
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "GENERE ID TRONCON");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "Departement : " + code_departement);
         p.resultat.add("GENERE ID TRONCON");
         p.resultat.add("Departement : " + code_departement);
 
-        GestionLogs.getInstance().logAdmin(p.numero, p.version, "PREPARE LES TABLES ET REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "PREPARE LES TABLES ET REQUETES");
         p.state = new String[]{
             en_cours, "PREPARE LES TABLES ET REQUETES"
         };
@@ -5025,7 +5028,7 @@ public class GestionReferentiel {
             PreparedStatement psInsertId = connection.prepareStatement(sb.toString());
 
             if (p.stop) {
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
                 p.state = new String[]{
                     "TERMINE"
                 };
@@ -5033,7 +5036,7 @@ public class GestionReferentiel {
                 return;
             }
 
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "CHERCHE LES TRONCONS");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "CHERCHE LES TRONCONS");
             p.state[1] = "CHERCHE LES TRONCONS";
             ResultSet rsCherche = sCherche.executeQuery(rqCherche);
             p.state = new String[]{
@@ -5041,7 +5044,7 @@ public class GestionReferentiel {
             };
 
             if (p.stop) {
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
                 p.state = new String[]{
                     "TERMINE"
                 };
@@ -5070,7 +5073,7 @@ public class GestionReferentiel {
                 }
             }
 
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "SUPPRIME LES INDEX");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "SUPPRIME LES INDEX");
             p.state = new String[]{
                 en_cours, "SUPPRIME LES INDEX"
             };
@@ -5082,12 +5085,12 @@ public class GestionReferentiel {
             }
 
             if (p.stop) {
-                GestionLogs.getInstance().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "INTERRUPTION UTILISATEUR");
                 p.resultat.add("INTERRUPTION UTILISATEUR");
             }
 
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "GENERATION D'IDENTIFIANTS DE TRONCON");
-            GestionLogs.getInstance().logAdmin(p.numero, p.version, "TRONCONS TRAITES :" + troncons);
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "GENERATION D'IDENTIFIANTS DE TRONCON");
+            jdonrefParams.getGestionLog().logAdmin(p.numero, p.version, "TRONCONS TRAITES :" + troncons);
             p.resultat.add("GENERATION D'IDENTIFIANTS DE TRONCON");
             p.resultat.add("TRONCONS TRAITES :" + troncons);
         } finally {

@@ -96,7 +96,24 @@ public class GestionAdministration
     GestionIdentifiants gi = null;
     
     NumerosProcessus np = new NumerosProcessus();
+    JDONREFParams params = null;
     
+    
+        /**
+     * Définit les paramètres de JDONREF utilisés par cette classe.
+     * @param params
+     */
+    public void definitJDONREFParams(JDONREFParams params) {
+        this.params = params;
+    }
+
+    /**
+     * Obtient les paramètres de JDONREF utilisés par cette classe.
+     * @param params
+     */
+    public JDONREFParams obtientJDONREFParams() {
+        return params;
+    }
 
     // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
 //    static final SimpleDateFormat sdformat = new SimpleDateFormat("dd/MM/yyyy",Locale.FRANCE);
@@ -107,7 +124,7 @@ public class GestionAdministration
      * @param referentiel
      * @param mots
      */
-    public GestionAdministration(GestionReferentiel referentiel,GestionMots mots,GestionConnection gc,GestionMiseAJour gmaj,GestionIdentifiants gi)
+    public GestionAdministration(GestionReferentiel referentiel,GestionMots mots,GestionConnection gc,GestionMiseAJour gmaj,GestionIdentifiants gi, JDONREFParams params)
     {
         this.referentiel = referentiel;
         this.mots = mots;
@@ -116,6 +133,7 @@ public class GestionAdministration
         this.gi = gi;
         
         np.add(0,null); // L'état de JDONREF est géré par GestionConnection, GestionMots, ...
+        this.params = params;
     }
     
     /**
@@ -138,8 +156,9 @@ public class GestionAdministration
         res[2] = Integer.toString(this.mots.obtientCompteMots());
         res[3] = Integer.toString(this.mots.obtientCompteAbbreviation());
         
-        GestionLogs.getInstance().logMetaAdmin(2,1,"0:L'état de JDONREF a été récupéré");
-        GestionLogs.getInstance().logGetState(application,true);
+//        GestionLogs.getInstance().logMetaAdmin(2,1,"0:L'état de JDONREF a été récupéré");
+        params.getGestionLog().logMetaAdmin(2,1,"0:L'état de JDONREF a été récupéré");
+        params.getGestionLog().logGetState(application,true);
         
         return res;
     }
@@ -168,12 +187,12 @@ public class GestionAdministration
         
         if (p==null)
         {
-            GestionLogs.getInstance().logMetaAdmin(2,0,processus+":Le processus "+processus+" n'a pas été trouvé");
+            params.getGestionLog().logMetaAdmin(2,0,processus+":Le processus "+processus+" n'a pas été trouvé");
             return new String[]{"0","5","Aucun processus ne correspond au numéro demandé."};
         }
         
         String[] res = p.getState();
-        GestionLogs.getInstance().logMetaAdmin(2,1,processus+":L'état du processus "+processus+" a été récupéré");
+        params.getGestionLog().logMetaAdmin(2,1,processus+":L'état du processus "+processus+" a été récupéré");
         return res;
     }
     
@@ -209,7 +228,7 @@ public class GestionAdministration
             else
                 res[3*i+1] = "null";
         }
-        GestionLogs.getInstance().logMetaAdmin(5,1,"Récupération de la liste des processus");
+        params.getGestionLog().logMetaAdmin(5,1,"Récupération de la liste des processus");
         return res;
     }
     
@@ -233,7 +252,7 @@ public class GestionAdministration
         {
             int total = np.count();
             
-            GestionLogs.getInstance().logMetaAdmin(4,1,"s'apprête à libérer "+(total-1)+" processus");
+            params.getGestionLog().logMetaAdmin(4,1,"s'apprête à libérer "+(total-1)+" processus");
             
             for(int i=1; i<total; i++) // l'état 0 est réservé à JDONREF.
             {
@@ -244,7 +263,7 @@ public class GestionAdministration
                 {
                     if (np.remove(numero))
                     {
-                        GestionLogs.getInstance().logMetaAdmin(4,1,numero+":Le processus "+numero+" a été libéré");
+                        params.getGestionLog().logMetaAdmin(4,1,numero+":Le processus "+numero+" a été libéré");
                         i--;
                         total--;
                         count++;
@@ -263,7 +282,7 @@ public class GestionAdministration
                     int numero = processus[i];
                     if (np.remove(numero))
                     {
-                        GestionLogs.getInstance().logMetaAdmin(4,1,numero+":Le processus "+numero+" a été libéré");
+                        params.getGestionLog().logMetaAdmin(4,1,numero+":Le processus "+numero+" a été libéré");
                         count++;
                     }
                 }
@@ -288,11 +307,11 @@ public class GestionAdministration
         
         if (p==null)
         {
-            GestionLogs.getInstance().logMetaAdmin(1,0,processus+":Le processus "+processus+" n'a pas été trouvé");
+            params.getGestionLog().logMetaAdmin(1,0,processus+":Le processus "+processus+" n'a pas été trouvé");
             return new String[]{"0","5","Aucun processus ne correspond au numéro demandé"};
         }
         
-        GestionLogs.getInstance().logMetaAdmin(1,1,processus+":Arrêt du processus : "+processus);
+        params.getGestionLog().logMetaAdmin(1,1,processus+":Arrêt du processus : "+processus);
         p.stop = true;
         
         return new String[]{"1"};
@@ -317,13 +336,13 @@ public class GestionAdministration
         
         if (p==null)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,0,processus+":Lancement d'un processus inconnu : "+processus);
+            params.getGestionLog().logMetaAdmin(0,0,processus+":Lancement d'un processus inconnu : "+processus);
             return new String[]{"0","5","Aucun processus ne correspond au numéro demandé."};
         }
         
         if (p.state!=null && p.state.length>0 && p.state[0].compareTo("EN COURS")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,1,processus+":Lancement d'un processus en cour d'exécution : "+processus);
+            params.getGestionLog().logMetaAdmin(0,1,processus+":Lancement d'un processus en cour d'exécution : "+processus);
             return new String[]{"0","12","Le processus est déjà en cour d'exécution."};
         }
         
@@ -335,110 +354,110 @@ public class GestionAdministration
         
         if (operation.compareTo("normalise")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de normalisation, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de normalisation, processus "+processus);
             // logs dans la méthode
             res = normalise(p);
         }
         else if (operation.compareTo("changementReferentiel")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de changement de référentiel, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de changement de référentiel, processus "+processus);
             // logs dans la méthode
             res = changementReferentiel(p);
         }
         else if (operation.compareTo("prepareChangement")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de préparation de changement de référentiel, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de préparation de changement de référentiel, processus "+processus);
             // logs dans la méthode
             res = prepareChangement(p);
         }
         else if (operation.compareTo("phonetise")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de phonétisation, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de phonétisation, processus "+processus);
             // logs dans la méthode
             res = phonetise(p);
         }
         else if (operation.compareTo("prepareMaj")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de préparation de mise à jour, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de préparation de mise à jour, processus "+processus);
             // logs dans la méthode
             res = prepareMaj(p);
         }
         else if (operation.compareTo("genereFantoirs")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de génération de codes fantoirs, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de génération de codes fantoirs, processus "+processus);
             // logs dans la méthode
             res = genereFantoir(p);
         }
         else if (operation.compareTo("calculeClesAmbiguesDansVoies")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de calcul de cles ambigues dans les voies, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de calcul de cles ambigues dans les voies, processus "+processus);
             // logs dans la méthode
             res = calculeClesAmbiguesDansVoies(p);
         }
         else if (operation.compareTo("calculeCommunesAmbiguesDansVoies")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de calcul de communes ambigues dans les voies, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de calcul de communes ambigues dans les voies, processus "+processus);
             // logs dans la méthode
             res = calculeCommunesAmbiguesDansVoies(p);
         }
         else if (operation.compareTo("calculeClesAmbiguesDansCommunes")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de cles ambigues dans les communes, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de cles ambigues dans les communes, processus "+processus);
             // logs dans la méthode
             res = calculeClesAmbiguesDansCommunes(p);
         }
         else if (operation.compareTo("changeId")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de changement d'identifiants, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de changement d'identifiants, processus "+processus);
             // logs dans la méthode
             res = changeId(p);
         }
         else if (operation.compareTo("creeTableVoie")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de création de table de voies, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de création de table de voies, processus "+processus);
             // logs dans la méthode
             res = creeTableVoie(p);
         }
         else if (operation.compareTo("decoupe")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de découpage, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de découpage, processus "+processus);
             // logs dans la méthode
             res = decoupe(p);
         }
         else if (operation.compareTo("restructure")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de restructuration, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de restructuration, processus "+processus);
             // logs dans la méthode
             res = restructure(p);
         }
         else if (operation.compareTo("maj")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de mise à jour, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de mise à jour, processus "+processus);
             // logs dans la méthode
             res = maj(p);
         }
         else if (operation.compareTo("decoupeNumeros")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de découpage de numéros, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de découpage de numéros, processus "+processus);
             // logs dans la méthode
             res = decoupeNumeros(p);
         }
         else if (operation.compareTo("genereIdTroncons")==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération de génération de tronçons, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération de génération de tronçons, processus "+processus);
             // logs dans la méthode
             res = genereIdTroncons(p);
         }
         else
         {
-            GestionLogs.getInstance().logMetaAdmin(0,2,processus+":Lancement d'une opération non supportée, processus "+processus);
+            params.getGestionLog().logMetaAdmin(0,2,processus+":Lancement d'une opération non supportée, processus "+processus);
             res = new String[]{"0","5","Opération non supportée"};
         }
         
         Calendar t1=Calendar.getInstance();
         
         long delta = t1.getTimeInMillis()-t0.getTimeInMillis();
-        GestionLogs.getInstance().logMetaAdmin(0,3,processus+":Fin d'éxécution du processus "+processus+" après "+delta+" ms");
+        params.getGestionLog().logMetaAdmin(0,3,processus+":Fin d'éxécution du processus "+processus+" après "+delta+" ms");
         p.resultat.add("Délai d'exécution: "+delta+" ms");
         
         p.finished = true;
@@ -509,7 +528,7 @@ public class GestionAdministration
     {
         if (parametres.length==0)
         {
-            GestionLogs.getInstance().logMetaAdmin(3,0,"Attribution d'un processus avec des paramètres incorrect : "+name);
+            params.getGestionLog().logMetaAdmin(3,0,"Attribution d'un processus avec des paramètres incorrect : "+name);
             return new String[]{"0","5","Les paramètres sont incorrects."};
         }
         
@@ -517,7 +536,7 @@ public class GestionAdministration
         
         if (!checkOperation(parametres[0]))
         {
-            GestionLogs.getInstance().logMetaAdmin(3,1,"Attribution d'un processus avec une méthode inconnue ("+parametres[0]+") : "+name);
+            params.getGestionLog().logMetaAdmin(3,1,"Attribution d'un processus avec une méthode inconnue ("+parametres[0]+") : "+name);
             return new String[]{"0","5","L'opération spécifiée n'existe pas."};
         }
         
@@ -530,11 +549,11 @@ public class GestionAdministration
 
         p.numero = numero;
         // Obtient un numéro de log.
-        p.version = GestionLogs.getInstance().obtientNumeroVersion(numero);
+        p.version = params.getGestionLog().obtientNumeroVersion(numero);
         
         np.add(numero,p);
         
-        GestionLogs.getInstance().logMetaAdmin(3,2,numero+":Attribution du processus "+numero+" : "+name);
+        params.getGestionLog().logMetaAdmin(3,2,numero+":Attribution du processus "+numero+" : "+name);
         return new String[]{"1",Integer.toString(numero)};
     }
 
@@ -557,7 +576,7 @@ public class GestionAdministration
         
         if (parametres.length<6)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -571,7 +590,7 @@ public class GestionAdministration
         
         Connection c1;
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.finished = false;
         try
         {
@@ -579,7 +598,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -588,7 +607,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -604,7 +623,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la restructuration: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la restructuration: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la restructuration: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -614,7 +633,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la restructuration: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la restructuration: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant la restructuration: "+e.getMessage()
@@ -651,7 +670,7 @@ public class GestionAdministration
         
         if (parametres.length<10)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -666,7 +685,7 @@ public class GestionAdministration
         }
         catch(NumberFormatException nfe)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Le nombre de colonnes est incorrect :"+parametres[3]);
+            params.getGestionLog().logAdmin(p.numero,p.version,"Le nombre de colonnes est incorrect :"+parametres[3]);
             p.state = new String[]{"ERREUR","Le nombre de colonnes est incorrect :"+parametres[3]};
             p.finished = true;
             return new String[]{"0","5","Le nombre de colonnes est incorrect :"+parametres[3]};
@@ -683,7 +702,7 @@ public class GestionAdministration
         Connection c1;
         Connection c2;
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.finished = false;
         try
         {
@@ -691,7 +710,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -700,7 +719,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -714,7 +733,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Les paramètres de la connection 2 sont mal formatés :"+ex.getMessage());
@@ -723,7 +742,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 2: "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
@@ -739,7 +758,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la restructuration: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la restructuration: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la restructuration: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -749,7 +768,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la restructuration. "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la restructuration. "+e.getMessage());
             p.state = new String[]{"ERREUR","Problème indéterminé durant la restructuration. "+e.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
@@ -800,7 +819,7 @@ public class GestionAdministration
         
         if (parametres.length<5)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -815,7 +834,7 @@ public class GestionAdministration
         }
         catch(NumberFormatException nfe)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Le nombre de colonnes est incorrect :"+parametres[3]);
+            params.getGestionLog().logAdmin(p.numero,p.version,"Le nombre de colonnes est incorrect :"+parametres[3]);
             p.state = new String[]{"ERREUR","Le nombre de colonnes est incorrect :"+parametres[3]};
             p.finished = true;
             return new String[]{"0","5","Le nombre de colonnes est incorrect :"+parametres[3]};
@@ -832,7 +851,7 @@ public class GestionAdministration
         }
         catch(NumberFormatException nfe)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Le nombre de découpages est incorrect :"+parametres[4+nb_columns]);
+            params.getGestionLog().logAdmin(p.numero,p.version,"Le nombre de découpages est incorrect :"+parametres[4+nb_columns]);
             p.state = new String[]{"ERREUR","Le nombre de découpages est incorrect :"+parametres[4+nb_columns]};
             p.finished = true;
             return new String[]{"0","5","Le nombre de découpages est incorrect :"+parametres[4+nb_columns]};
@@ -848,7 +867,7 @@ public class GestionAdministration
             }
             catch(NumberFormatException nfe)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"La nature numéro "+i+" est incorrecte :"+parametres[5+nb_columns+2*i+1]);
+                params.getGestionLog().logAdmin(p.numero,p.version,"La nature numéro "+i+" est incorrecte :"+parametres[5+nb_columns+2*i+1]);
                 p.state = new String[]{"ERREUR","La nature numéro "+i+" est incorrecte :"+parametres[5+nb_columns+2*i+1]};
                 p.finished = true;
                 return new String[]{"0","5","La nature numéro "+i+" est incorrecte :"+parametres[5+nb_columns+2*i+1]};                
@@ -870,7 +889,7 @@ public class GestionAdministration
                 }
                 catch(NumberFormatException nfe)
                 {
-                    GestionLogs.getInstance().logAdmin(p.numero,p.version,
+                    params.getGestionLog().logAdmin(p.numero,p.version,
                             "La ligne numéro "+i+" est incorrecte :"+parametres[5+nb_columns+2*nb_decoupages+i]);
                     p.state=new String[]
                             {
@@ -897,7 +916,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -906,7 +925,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -920,7 +939,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Les paramètres de la connection 2 sont mal formatés :"+ex.getMessage());
@@ -929,7 +948,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 2: "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
@@ -945,7 +964,7 @@ public class GestionAdministration
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             p.state = new String[]{"ERREUR",gre.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(gre.getMessage());
@@ -954,7 +973,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant le découpage: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant le découpage: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant le découpage: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -964,7 +983,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant le découpage: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant le découpage: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant le découpage: "+e.getMessage()
@@ -1025,14 +1044,14 @@ public class GestionAdministration
         
         if (parametres.length!=5)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
         }
         
         Connection c1;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
         p.finished = false;
         try
@@ -1041,12 +1060,12 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             return erreur(p,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage(),5,ex,true);
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             return erreur(p,"Problème durant l'établissement de la connection 1 : "+ex.getMessage(),3,ex,true);
         }
 
@@ -1056,24 +1075,24 @@ public class GestionAdministration
         String nomTableIdVoies = parametres[4];
         try
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREATION TABLE VOIE");
+            params.getGestionLog().logAdmin(p.numero,p.version,"CREATION TABLE VOIE");
             p.state = new String[]{"EN COURS","CREATION","TABLE VOIE","LANCEMENT","TRONCONS TRAITES","0","SUR 0"};
             // logs dans la méthode
             gmaj.creeTableVoieReferentiel(p,codeDepartement,nomTableTroncon,nomTableVoies, nomTableIdVoies, c1);
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             return erreur(p,gre.getMessage(),gre.obtientNumeroErreur(),gre,false);
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la création de la table: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la création de la table: "+ex.getMessage());
             return erreur(p,"Problème SQL durant la création de la table: "+ex.getMessage(),3,ex,true);
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la création de la table: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la création de la table: "+e.getMessage());
             return erreur(p,"Problème indéterminé durant la création de la table: "+e.getMessage(),7,e,true);
         }
         return new String[]{"1"};
@@ -1096,7 +1115,7 @@ public class GestionAdministration
         
         if (parametres.length!=3)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -1104,7 +1123,7 @@ public class GestionAdministration
         
         Connection c1;
         Connection c2;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
         p.finished = false;
         try
@@ -1113,7 +1132,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1122,7 +1141,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1136,7 +1155,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Les paramètres de la connection 2 sont mal formatés :"+ex.getMessage());
@@ -1145,7 +1164,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 2: "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
@@ -1163,7 +1182,7 @@ public class GestionAdministration
         }
         catch(ColonneException ce)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,ce.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,ce.getMessage());
             p.state = new String[]{"ERREUR",ce.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(ce.getMessage());
@@ -1172,7 +1191,7 @@ public class GestionAdministration
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             p.state = new String[]{"ERREUR",gre.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(gre.getMessage());
@@ -1181,7 +1200,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la mise à jour des identifiants: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la mise à jour des identifiants: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la mise à jour des identifiants: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -1191,7 +1210,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la mise à jour des identifiants: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la mise à jour des identifiants: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant la mise à jour des identifiants: "+e.getMessage()
@@ -1217,7 +1236,7 @@ public class GestionAdministration
         
         if (parametres.length!=2)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -1225,7 +1244,7 @@ public class GestionAdministration
         
         Connection c1;
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.finished = false;
         try
         {
@@ -1233,7 +1252,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1242,7 +1261,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1254,7 +1273,7 @@ public class GestionAdministration
         String code_departement = parametres[1];
         if (code_departement==null || code_departement.length()==0)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Le code de département est incorrect");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Le code de département est incorrect");
             p.state = new String[]{"ERREUR","Le code de département est incorrect"};
             p.finished = true;
             return new String[]{"0","5","Le code de département est incorrect."};
@@ -1262,14 +1281,14 @@ public class GestionAdministration
         
         try
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"CALCULE CLES AMBIGUES DANS COMMUNES");
+            params.getGestionLog().logAdmin(p.numero,p.version,"CALCULE CLES AMBIGUES DANS COMMUNES");
             p.state = new String[]{"EN COURS","CALCULE CLES AMBIGUES DANS COMMUNES","","","","COMMUNES TRAITEES","0"};
             // logs dans la méthode.
             gmaj.calculeClesAmbiguesDansCommunes(p,code_departement,c1);
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la création des ambiguités: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la création des ambiguités: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la création des ambiguités: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -1279,7 +1298,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la création des ambiguités: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la création des ambiguités: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant la création des ambiguités: "+e.getMessage()
@@ -1308,14 +1327,14 @@ public class GestionAdministration
         
         if (parametres.length!=2)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
         }
         
         Connection c1;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
         p.finished = false;
         try
@@ -1324,7 +1343,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1333,7 +1352,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1345,14 +1364,14 @@ public class GestionAdministration
         String codeDepartement = parametres[1];
         try
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"CALCULE COMMUNES AMBIGUES DANS VOIES");
+            params.getGestionLog().logAdmin(p.numero,p.version,"CALCULE COMMUNES AMBIGUES DANS VOIES");
             p.state = new String[]{"EN COURS","CALCULE COMMUNES AMBIGUES DANS VOIES","","","","VOIES TRAITEES","0"};
             // logs dans la méthode
             gmaj.calculeCommunesAmbiguesDansVoies(p,codeDepartement, c1);
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la création des ambiguités: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la création des ambiguités: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la création des ambiguités: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -1362,7 +1381,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la création des ambiguités: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la création des ambiguités: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant la création des ambiguités: "+e.getMessage()
@@ -1391,14 +1410,14 @@ public class GestionAdministration
         
         if (parametres.length!=2)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects.");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects.");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
         }
         
         Connection c1;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
         p.finished = false;
         try
@@ -1407,7 +1426,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1416,7 +1435,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1433,7 +1452,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la création des ambiguités: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la création des ambiguités: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la création des ambiguités: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -1443,7 +1462,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la création des ambiguités: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la création des ambiguités: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant la création des ambiguités: "+e.getMessage()
@@ -1476,14 +1495,14 @@ public class GestionAdministration
         
         if (parametres.length!=4)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
         }
         
         Connection c1;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
         p.finished = false;
         try
@@ -1492,7 +1511,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1501,7 +1520,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1520,7 +1539,7 @@ public class GestionAdministration
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             p.state = new String[]{"ERREUR",gre.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(gre.getMessage());
@@ -1529,7 +1548,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la création des codes fantoirs: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la création des codes fantoirs: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la création des codes fantoirs: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -1539,7 +1558,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la création des codes fantoirs: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la création des codes fantoirs: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant la création des codes fantoirs: "+e.getMessage()
@@ -1573,7 +1592,7 @@ public class GestionAdministration
         
         if (parametres.length!=4)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -1583,14 +1602,14 @@ public class GestionAdministration
         {
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            params.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return new String[]{"1"};
         }
         
         Connection c1;
         Connection c2;
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.finished = false;
         try
         {
@@ -1598,7 +1617,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1607,7 +1626,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1622,7 +1641,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Les paramètres de la connection 2 sont mal formatés :"+ex.getMessage());
@@ -1631,7 +1650,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 2: "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
@@ -1650,7 +1669,7 @@ public class GestionAdministration
         }
         catch(ParseException pe)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"La date est invalide :"+pe.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"La date est invalide :"+pe.getMessage());
             p.state = new String[]{"ERREUR","La date est invalide :"+pe.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("La date est invalide : "+pe.getMessage());
@@ -1664,7 +1683,7 @@ public class GestionAdministration
         }
         catch(NumberFormatException nfe)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les drapeaux sont invalides");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les drapeaux sont invalides");
             p.state = new String[]{"ERREUR","Les drapeaux sont invalides"};
             p.resultat.add("ERREUR");
             p.resultat.add("Les drapeaux sont invalides");
@@ -1678,7 +1697,7 @@ public class GestionAdministration
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             p.resultat.add("ERREUR");
             p.resultat.add(gre.getMessage());
             p.state = new String[]{"ERREUR",gre.getMessage()};
@@ -1687,7 +1706,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,ex.getMessage());
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la mise à jour: "+ex.getMessage()};
@@ -1697,7 +1716,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la mise à jour: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la mise à jour: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant la mise à jour: "+e.getMessage()
@@ -1729,7 +1748,7 @@ public class GestionAdministration
         
         if (parametres.length!=2)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -1737,7 +1756,7 @@ public class GestionAdministration
         
         Connection c1;
         Connection c2;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
         p.finished = false;
         try
@@ -1746,7 +1765,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1755,7 +1774,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1769,7 +1788,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Les paramètres de la connection 2 sont mal formatés :"+ex.getMessage());
@@ -1778,7 +1797,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 2: "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
@@ -1796,7 +1815,7 @@ public class GestionAdministration
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             p.state = new String[]{"ERREUR",gre.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(gre.getMessage());
@@ -1805,7 +1824,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la préparation de la mise à jour de référentiel: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la préparation de la mise à jour de référentiel: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la préparation de la mise à jour de référentiel: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -1815,7 +1834,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la préparation de la mise à jour de référentiel "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la préparation de la mise à jour de référentiel "+e.getMessage());
             p.state = new String[]{"ERREUR","Problème indéterminé durant la préparation de la mise à jour de référentiel "+e.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
@@ -1842,7 +1861,7 @@ public class GestionAdministration
         
         if (parametres.length!=4)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -1857,7 +1876,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1866,7 +1885,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1886,7 +1905,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la phonétisation: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la phonétisation: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la phonétisation: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -1896,7 +1915,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la phonétisation: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la phonétisation: "+e.getMessage());
                 p.state = new String[]{"ERREUR","Problème indéterminé durant la phonétisation: "+e.getMessage()};
                 p.resultat.add("ERREUR");
                 p.resultat.add(e.getMessage());
@@ -1922,7 +1941,7 @@ public class GestionAdministration
         
         if (parametres.length!=2)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -1930,7 +1949,7 @@ public class GestionAdministration
         
         Connection c1;
         Connection c2;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
         p.finished = false;
         try
@@ -1939,7 +1958,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -1948,7 +1967,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -1962,7 +1981,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Les paramètres de la connection 2 sont mal formatés :"+ex.getMessage());
@@ -1971,7 +1990,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 2: "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
@@ -1989,7 +2008,7 @@ public class GestionAdministration
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             p.state = new String[]{"ERREUR",gre.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(gre.getMessage());
@@ -1998,7 +2017,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la préparation du changement de référentiel: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la préparation du changement de référentiel: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la préparation du changement de référentiel: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -2008,7 +2027,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la préparation du changement de référentiel "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la préparation du changement de référentiel "+e.getMessage());
             p.state = new String[]{"ERREUR","Problème indéterminé durant la préparation du changement de référentiel "+e.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
@@ -2043,7 +2062,7 @@ public class GestionAdministration
         
         if (parametres.length!=6)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects"};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -2052,7 +2071,7 @@ public class GestionAdministration
         Connection c1;
         Connection c2;
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.finished = false;
         try
         {
@@ -2060,7 +2079,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -2069,7 +2088,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -2083,7 +2102,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Les paramètres de la connection 2 sont mal formatés :"+ex.getMessage());
@@ -2092,7 +2111,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 2: "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
@@ -2111,7 +2130,7 @@ public class GestionAdministration
         }
         catch(ParseException pe)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"La date est invalide :"+pe.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"La date est invalide :"+pe.getMessage());
             p.state = new String[]{"ERREUR","La date est invalide :"+pe.getMessage()};
             p.finished = true;
             return new String[]{"0","5","La date est invalide."};
@@ -2124,7 +2143,7 @@ public class GestionAdministration
         }
         catch(NumberFormatException nfe)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les drapeaux sont invalides");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les drapeaux sont invalides");
             p.state = new String[]{"ERREUR","Les drapeaux sont invalides"};
             p.resultat.add("ERREUR");
             p.resultat.add("Les drapeaux sont invalides");
@@ -2138,7 +2157,7 @@ public class GestionAdministration
         }
         catch(ColonneException ce)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,ce.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,ce.getMessage());
             p.state = new String[]{"ERREUR",ce.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(ce.getMessage());
@@ -2147,7 +2166,7 @@ public class GestionAdministration
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             p.state = new String[]{"ERREUR",gre.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(gre.getMessage());
@@ -2156,7 +2175,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant le changement de Referentiel: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant le changement de Referentiel: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant le changement de Referentiel: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -2166,7 +2185,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant le changement de Referentiel: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant le changement de Referentiel: "+e.getMessage());
             p.state=new String[]
                     {
                         "ERREUR","Problème indéterminé durant le changement de Referentiel: "+e.getMessage()
@@ -2204,7 +2223,7 @@ public class GestionAdministration
         
         if (parametres.length==1)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Obtient la documentation de la méthode");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Obtient la documentation de la méthode");
             p.state = new String[]{"DOCUMENTATION"};
             p.resultat.add("DOCUMENTATION");
             p.resultat.add("Normalise le champ spécifié d'une table dans un autre de ses champs.");
@@ -2228,7 +2247,7 @@ public class GestionAdministration
         
         if (parametres.length!=7)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects."};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
@@ -2236,7 +2255,7 @@ public class GestionAdministration
         
         try
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"crée les connexions");
+            params.getGestionLog().logAdmin(p.numero,p.version,"crée les connexions");
             p.state=new String[]
                     {
                         "EN COURS","CREE LES CONNEXIONS"
@@ -2248,7 +2267,7 @@ public class GestionAdministration
             }
             catch(JDONREFException ex)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés "+ex.getMessage());
+                params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés "+ex.getMessage());
                 p.state=new String[]
                         {
                             "ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()
@@ -2263,7 +2282,7 @@ public class GestionAdministration
             }
             catch(SQLException ex)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+                params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
                 p.state=new String[]
                         {
                             "ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()
@@ -2283,7 +2302,7 @@ public class GestionAdministration
             }
             catch(JDONREFException ex)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
+                params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage());
                 p.state=new String[]
                         {
                             "ERREUR","Les paramètres de la connection 2 sont mal formatés : "+ex.getMessage()
@@ -2298,7 +2317,7 @@ public class GestionAdministration
             }
             catch(SQLException ex)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
+                params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 2: "+ex.getMessage());
                 p.state=new String[]
                         {
                             "ERREUR","Problème durant l'établissement de la connection 2: "+ex.getMessage()
@@ -2327,7 +2346,7 @@ public class GestionAdministration
             }
             catch(NumberFormatException nfe)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Le paramètre flags est mal formaté ("+parametres[5]+")");
+                params.getGestionLog().logAdmin(p.numero,p.version,"Le paramètre flags est mal formaté ("+parametres[5]+")");
                 p.state=new String[]
                         {
                             "ERREUR","Le paramètre flags est mal formaté ("+parametres[5]+")."
@@ -2345,7 +2364,7 @@ public class GestionAdministration
             }
             catch(NumberFormatException nfe)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Le paramètre ligne est mal formaté.");
+                params.getGestionLog().logAdmin(p.numero,p.version,"Le paramètre ligne est mal formaté.");
                 p.state=new String[]
                         {
                             "ERREUR","Le paramètre ligne est mal formaté."
@@ -2365,7 +2384,7 @@ public class GestionAdministration
             }
             catch(SQLException ex)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la normalisation: "+ex.getMessage());
+                params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la normalisation: "+ex.getMessage());
                 p.state=new String[]
                         {
                             "ERREUR","Problème SQL durant la normalisation: "+ex.getMessage()
@@ -2381,14 +2400,14 @@ public class GestionAdministration
             }
             catch(Exception e)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la normalisation: "+e.getMessage());
+                params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la normalisation: "+e.getMessage());
                 p.state = new String[]{"ERREUR","Problème indéterminé durant la normalisation: "+e.getMessage()};
                 p.resultat.add("ERREUR");
                 p.resultat.add(e.getMessage());
                 Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la normalisation.",e);
                 return new String[]{"0","7","Problème indéterminé durant la normalisation"};
             }
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Processus terminé.");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Processus terminé.");
             return new String[]
                     {
                         "1"
@@ -2396,7 +2415,7 @@ public class GestionAdministration
         }
         finally
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Fermeture des connexions.");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Fermeture des connexions.");
             try { if (c1!=null) c1.close();} catch(SQLException sqle){}
             try { if (c2!=null) c2.close();} catch(SQLException sqle){}
         }
@@ -2418,14 +2437,14 @@ public class GestionAdministration
         
         if (parametres.length!=2)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres sont incorrects.");
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres sont incorrects.");
             p.state = new String[]{"ERREUR","Les paramètres sont incorrects."};
             p.finished = true;
             return new String[]{"0","5","Les paramètres sont incorrects."};
         }
 
         Connection c1;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"CREE LES CONNEXIONS");
         p.state = new String[]{"EN COURS","CREE LES CONNEXIONS"};
         p.finished = false;
         try
@@ -2434,7 +2453,7 @@ public class GestionAdministration
         }
         catch(JDONREFException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Les paramètres de la connection 1 sont mal formatés : "+ex.getMessage()};
             p.finished = true;
             p.resultat.add("ERREUR");
@@ -2443,7 +2462,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème durant l'établissement de la connection 1 : "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème durant l'établissement de la connection 1 : "+ex.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
@@ -2461,7 +2480,7 @@ public class GestionAdministration
         }
         catch(GestionReferentielException gre)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,gre.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,gre.getMessage());
             p.state = new String[]{"ERREUR",gre.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(gre.getMessage());
@@ -2470,7 +2489,7 @@ public class GestionAdministration
         }
         catch(SQLException ex)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème SQL durant la génération des id de troncon: "+ex.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème SQL durant la génération des id de troncon: "+ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la génération des id de troncon: "+ex.getMessage()};
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
@@ -2480,7 +2499,7 @@ public class GestionAdministration
         }
         catch(Exception e)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème indéterminé durant la génération des id de troncon: "+e.getMessage());
+            params.getGestionLog().logAdmin(p.numero,p.version,"Problème indéterminé durant la génération des id de troncon: "+e.getMessage());
             p.state = new String[]
                     {
                         "ERREUR","Problème indéterminé durant la génération des id de troncon: "+e.getMessage()
@@ -2510,9 +2529,9 @@ public class GestionAdministration
             params.load("params.xml");
             GestionMots gm = new GestionMots();
             GestionConnection gc=new GestionConnection(params);
-            GestionAdministration ga=new GestionAdministration(null,gm,gc,null,null);
+            GestionAdministration ga=new GestionAdministration(null,gm,gc,null,null,params);
 
-            GestionLogs.getInstance().repertoire="test";
+//            GestionLogs.getInstance().repertoire="test";
             System.out.println("\r\nAttribue des processus");
             int p1=Integer.parseInt(ga.attribueProcessus("test",
                     new String[]{"calculeClesAmbiguesDansVoies","75"},null,null)[1]);

@@ -37,7 +37,7 @@ import java.sql.Statement;
 import java.util.Calendar;
 import java.util.Random;
 import ppol.jdonref.Algos;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.Processus;
 import ppol.jdonref.Tables.ColonneException;
@@ -199,13 +199,15 @@ public class GestionIdentifiants
      */
     private static void mise_a_jour_identifiants_origine(Processus p, String code_departement, Connection connectionOrigine, Connection connectionDestination) throws SQLException, GestionReferentielException, ColonneException
     {
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"MAJ IDENTIFIANTS");
+//        GestionLogs.getInstance().logAdmin(p.numero,p.version,"MAJ IDENTIFIANTS");
+        params.getGestionLog().logAdmin(p.numero,p.version,"MAJ IDENTIFIANTS");
         p.state = new String[]{"EN COURS","MAJ IDENTIFIANTS","LANCEMENT"};
         
         int voies_modifies = 0;
         int voies_maj = 0;
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+//        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        params.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         p.state[2] = "PREPARE LES REQUETES";
         
         // Prépare la requête de mise à jour des identifiants des voies
@@ -252,11 +254,11 @@ public class GestionIdentifiants
         
         try
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES CORRESPONDANCES");
+            params.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES CORRESPONDANCES");
             p.state[2] = "CHERCHE LES CORRESPONDANCES";
             ResultSet rsChercheCorrespond = stChercheCorrespond.executeQuery(rqChercheCorrespond);
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT DES CORRESPONDANCES");
+            params.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT DES CORRESPONDANCES");
             p.state = new String[]{"EN COURS","MAJ IDENTIFIANTS","TRAITEMENT DES CORRESPONDANCES","VOIES TRAITEES","0"};
             
             // Pour chaque modification d'identifiant
@@ -355,7 +357,7 @@ public class GestionIdentifiants
             rsChercheCorrespond.close();
             stChercheCorrespond.close();
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"RECHERCHE DES ORPHELINS");
+            params.getGestionLog().logAdmin(p.numero,p.version,"RECHERCHE DES ORPHELINS");
             p.state = new String[]{"EN COURS","MAJ IDENTIFIANTS","RECHERCHE DES ORPHELINS"};
             
             Statement stChercheCorrespondPas = connectionDestination.createStatement();
@@ -364,7 +366,7 @@ public class GestionIdentifiants
             
             int id_traites = 0;
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT DES ORPHELINS");
+            params.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT DES ORPHELINS");
             p.state = new String[]{"EN COURS","MAJ IDENTIFIANTS","TRAITEMENT DES ORPHELINS","VOIES TRAITEES","0"};
             
             // Pour chaque identifiant de la destination qui n'a pas son équivalent,
@@ -447,9 +449,9 @@ public class GestionIdentifiants
             connectionDestination.setAutoCommit(autocommitDestination);
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"MISE A JOUR IDENTIFIANTS TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"identifiants reattribués "+voies_modifies);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"identifiants maj "+voies_maj);
+        params.getGestionLog().logAdmin(p.numero,p.version,"MISE A JOUR IDENTIFIANTS TERMINE");
+        params.getGestionLog().logAdmin(p.numero,p.version,"identifiants reattribués "+voies_modifies);
+        params.getGestionLog().logAdmin(p.numero,p.version,"identifiants maj "+voies_maj);
         p.resultat.add("MISE A JOUR IDENTIFIANTS TERMINE");
         p.resultat.add("identifiants reattribués "+voies_modifies);
         p.resultat.add("identifiants maj "+voies_maj);
@@ -461,13 +463,13 @@ public class GestionIdentifiants
      */
     private static void mise_a_jour_identifiants_destination(Processus p, String code_departement, Connection connectionOrigine, Connection connectionDestination) throws SQLException, GestionReferentielException, ColonneException
     {   
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"LANCEMENT");
+        params.getGestionLog().logAdmin(p.numero,p.version,"LANCEMENT");
         p.state = new String[]{"EN COURS","MAJ IDENTIFIANTS","LANCEMENT"};
         
         int voies_modifies = 0;
         int voies_maj = 0;
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARATION DES REQUETES");
+        params.getGestionLog().logAdmin(p.numero,p.version,"PREPARATION DES REQUETES");
         p.state[2] = "PREPARATION DES REQUETES";
         // Prépare la requête de mise à jour des identifiants des tron�ons
         // WA 09/2011 utilisation de GestionTables.getXXTableName
@@ -499,11 +501,11 @@ public class GestionIdentifiants
 
         try
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"RECHERCHE DES CORRESPONDANCES");
+            params.getGestionLog().logAdmin(p.numero,p.version,"RECHERCHE DES CORRESPONDANCES");
             p.state[2] = "RECHERCHE DES CORRESPONDANCES";
             ResultSet rsChercheCorrespond = stChercheCorrespond.executeQuery(rqChercheCorrespond);
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT DES CORRESPONDANCES");
+            params.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT DES CORRESPONDANCES");
             p.state = new String[]{"EN COURS","MAJ IDENTIFIANTS","TRAITEMENT CORRESPONDANCES","VOIES TRAITEES","0"};
             // Pour chaque modification d'identifiant
             while(rsChercheCorrespond.next())
@@ -569,7 +571,7 @@ public class GestionIdentifiants
             rsChercheCorrespond.close();
             stChercheCorrespond.close();
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"RECHERCHE DES ORPHELINS");
+            params.getGestionLog().logAdmin(p.numero,p.version,"RECHERCHE DES ORPHELINS");
             p.state = new String[]{"EN COURS","MAJ IDENTIFIANTS","RECHERCHE DES ORPHELINS"};
             Statement stChercheCorrespondPas = connectionDestination.createStatement();
             String rqChercheCorrespondPas = "SELECT voi_id_source from \"lvo_lien_voies_"+code_departement+"\" where (voi_id_destination='' or voi_id_destination is null) and voi_id_source<>'' and not voi_id_source is null and (\""+marker+"\"=0 or \""+marker+"\" is null) LIMIT 1";
@@ -577,7 +579,7 @@ public class GestionIdentifiants
             
             int voies_traitees = 0;
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT DES ORPHELINS");
+            params.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT DES ORPHELINS");
             p.state = new String[]{"EN COURS","MAJ IDENTIFIANTS","TRAITEMENT DES ORPHELINS","VOIES TRAITEES","0"};
             // Pour chaque identifiant de la destination qui n'a pas son équivalent,
             while(rsChercheCorrespondPas.next())
@@ -644,9 +646,9 @@ public class GestionIdentifiants
         }
         
         p.finished = true;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"MISE A JOUR IDENTIFIANTS TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"identifiants reattribués "+voies_modifies);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"identifiants maj "+voies_maj);
+        params.getGestionLog().logAdmin(p.numero,p.version,"MISE A JOUR IDENTIFIANTS TERMINE");
+        params.getGestionLog().logAdmin(p.numero,p.version,"identifiants reattribués "+voies_modifies);
+        params.getGestionLog().logAdmin(p.numero,p.version,"identifiants maj "+voies_maj);
         p.resultat.add("MISE A JOUR IDENTIFIANTS TERMINE");
         p.resultat.add("identifiants reattribués "+voies_modifies);
         p.resultat.add("identifiants maj "+voies_maj);

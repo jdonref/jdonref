@@ -37,8 +37,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import ppol.jdonref.AGestionLogs;
 import ppol.jdonref.Algos;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.Tables.GestionTables;
 import ppol.jdonref.dao.PayPaysBean;
@@ -174,7 +175,8 @@ public class GestionValidation {
         }
 
         String[] res = formateResultForPays(lignes, paysFound, rechercheexacte);
-        GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_PAYS, true);
+//        GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_PAYS, true);
+        jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_PAYS, true);
         return res;
     }
 
@@ -502,7 +504,7 @@ public class GestionValidation {
             res = insertPaysIntoRes(res, 7, pays);
         }
 
-        GestionLogs.getInstance().logValidation(application, null, GestionLogs.FLAG_VALIDE_COMMUNE, true);
+        jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_COMMUNE, true);
         return res;
     }
     private final static String valideCommuneEtCodePostal_psTime_0 = "SELECT communes.t0,communes.t1,cdp_codes_postaux.t0,cdp_codes_postaux.t1 FROM com_communes as communes,cdp_codes_postaux WHERE communes.com_code_insee=cdp_codes_postaux.com_code_insee AND communes.com_code_insee=? AND com_nom=? AND cdp_codes_postaux.cdp_code_postal=? AND communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<communes.t0)";
@@ -812,8 +814,8 @@ public class GestionValidation {
         if (gererPays) {
             res = insertPaysIntoRes(res, 7, pays);
         }
-        GestionLogs.getInstance().logValidation(application, code_departement,
-                GestionLogs.FLAG_VALIDE_COMMUNE + GestionLogs.FLAG_VALIDE_CODEPOSTAL, true);
+        jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                AGestionLogs.FLAG_VALIDE_COMMUNE + AGestionLogs.FLAG_VALIDE_CODEPOSTAL, true);
         return res;
     }
     private final static String valideCodePostal_psTime_0 = "SELECT t0,t1 FROM cdp_codes_postaux WHERE com_code_insee=? AND cdp_code_postal=? AND t0<=?";
@@ -1010,7 +1012,7 @@ public class GestionValidation {
         if (gererPays) {
             res = insertPaysIntoRes(res, 7, pays);
         }
-        GestionLogs.getInstance().logValidation(application, codedepartement, GestionLogs.FLAG_VALIDE_CODEPOSTAL, true);
+        jdonrefParams.getGestionLog().logValidation(application, codedepartement, AGestionLogs.FLAG_VALIDE_CODEPOSTAL, true);
         return res;
     }
     private final static String valideVoieCodePostal_sbtime_0 = "SELECT voies.t0,voies.t1,communes.t0,communes.t1,voi_min_numero,voi_max_numero FROM \"";
@@ -1435,11 +1437,11 @@ public class GestionValidation {
             res = insertPaysIntoRes(res, 6, payS);
         }
         if (stypedevoie_present) {
-            GestionLogs.getInstance().logValidation(application, code_departement,
-                    GestionLogs.FLAG_VALIDE_CODEPOSTAL + GestionLogs.FLAG_VALIDE_LIBELLE + GestionLogs.FLAG_VALIDE_TYPEDEVOIE, true);
+            jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                    AGestionLogs.FLAG_VALIDE_CODEPOSTAL + AGestionLogs.FLAG_VALIDE_LIBELLE + AGestionLogs.FLAG_VALIDE_TYPEDEVOIE, true);
         } else {
-            GestionLogs.getInstance().logValidation(application, code_departement,
-                    GestionLogs.FLAG_VALIDE_CODEPOSTAL + GestionLogs.FLAG_VALIDE_LIBELLE, true);
+            jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                    AGestionLogs.FLAG_VALIDE_CODEPOSTAL + AGestionLogs.FLAG_VALIDE_LIBELLE, true);
         }
 
         return res;
@@ -1824,11 +1826,11 @@ public class GestionValidation {
             res = insertPaysIntoRes(res, 6, payS);
         }
         if (stypedevoie_present) {
-            GestionLogs.getInstance().logValidation(application, code_departement,
-                    GestionLogs.FLAG_VALIDE_CODEPOSTAL + GestionLogs.FLAG_VALIDE_LIBELLE + GestionLogs.FLAG_VALIDE_TYPEDEVOIE, true);
+            jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                    AGestionLogs.FLAG_VALIDE_CODEPOSTAL + AGestionLogs.FLAG_VALIDE_LIBELLE + AGestionLogs.FLAG_VALIDE_TYPEDEVOIE, true);
         } else {
-            GestionLogs.getInstance().logValidation(application, code_departement,
-                    GestionLogs.FLAG_VALIDE_CODEPOSTAL + GestionLogs.FLAG_VALIDE_LIBELLE, true);
+            jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                    AGestionLogs.FLAG_VALIDE_CODEPOSTAL + AGestionLogs.FLAG_VALIDE_LIBELLE, true);
         }
 
         return res;
@@ -2382,12 +2384,12 @@ public class GestionValidation {
         }
 
         if (typedevoie_present) {
-            GestionLogs.getInstance().logValidation(application, code_departement,
-                    GestionLogs.FLAG_VALIDE_COMMUNE + GestionLogs.FLAG_VALIDE_CODEPOSTAL + GestionLogs.FLAG_VALIDE_LIBELLE + GestionLogs.FLAG_VALIDE_TYPEDEVOIE,
+            jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                    AGestionLogs.FLAG_VALIDE_COMMUNE + AGestionLogs.FLAG_VALIDE_CODEPOSTAL + AGestionLogs.FLAG_VALIDE_LIBELLE + AGestionLogs.FLAG_VALIDE_TYPEDEVOIE,
                     true);
         } else {
-            GestionLogs.getInstance().logValidation(application, code_departement,
-                    GestionLogs.FLAG_VALIDE_COMMUNE + GestionLogs.FLAG_VALIDE_CODEPOSTAL + GestionLogs.FLAG_VALIDE_LIBELLE, true);
+            jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                    AGestionLogs.FLAG_VALIDE_COMMUNE + AGestionLogs.FLAG_VALIDE_CODEPOSTAL + AGestionLogs.FLAG_VALIDE_LIBELLE, true);
         }
 
         return res;
@@ -2883,12 +2885,12 @@ public class GestionValidation {
         }
 
         if (typedevoie_present) {
-            GestionLogs.getInstance().logValidation(application, code_departement,
-                    GestionLogs.FLAG_VALIDE_COMMUNE + GestionLogs.FLAG_VALIDE_CODEPOSTAL + GestionLogs.FLAG_VALIDE_LIBELLE + GestionLogs.FLAG_VALIDE_TYPEDEVOIE,
+            jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                    AGestionLogs.FLAG_VALIDE_COMMUNE + AGestionLogs.FLAG_VALIDE_CODEPOSTAL + AGestionLogs.FLAG_VALIDE_LIBELLE + AGestionLogs.FLAG_VALIDE_TYPEDEVOIE,
                     true);
         } else {
-            GestionLogs.getInstance().logValidation(application, code_departement,
-                    GestionLogs.FLAG_VALIDE_COMMUNE + GestionLogs.FLAG_VALIDE_CODEPOSTAL + GestionLogs.FLAG_VALIDE_LIBELLE, true);
+            jdonrefParams.getGestionLog().logValidation(application, code_departement,
+                    AGestionLogs.FLAG_VALIDE_COMMUNE + AGestionLogs.FLAG_VALIDE_CODEPOSTAL + AGestionLogs.FLAG_VALIDE_LIBELLE, true);
         }
 
         return res;

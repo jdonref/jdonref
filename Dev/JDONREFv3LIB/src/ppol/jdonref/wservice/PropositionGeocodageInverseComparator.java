@@ -5,7 +5,7 @@
 package ppol.jdonref.wservice;
 
 import java.util.Comparator;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 
 /**
  *

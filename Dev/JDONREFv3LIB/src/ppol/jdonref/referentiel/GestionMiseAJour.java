@@ -46,7 +46,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import ppol.jdonref.Processus;
 import ppol.jdonref.Algos;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.Tables.Colonne;
 import ppol.jdonref.Tables.ColonneException;
@@ -418,7 +418,8 @@ public class GestionMiseAJour
         int plusvalables=0, traitees=0, inchangees=0, modifiees=0;
         
         p.state[4] = "PREPARE LES REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+//        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         
         // Prépare la requête permettant de trouver la mise à jour d'un objet.
         StringBuilder sb = new StringBuilder();
@@ -507,16 +508,16 @@ public class GestionMiseAJour
             psInvalide.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         // Pour toutes les objets valides à la date,
         p.state[4] = "CHERCHE LES OBJETS";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES OBJETS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES OBJETS");
         ResultSet rsCherche = psCherche.executeQuery();
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         while(!p.stop && rsCherche.next())
         {
             String id_value = rsCherche.getString(id);
@@ -552,12 +553,12 @@ public class GestionMiseAJour
                 catch(ParseException pe)
                 {
                     p.resultat.add("Erreur de géométrie sur "+p.state[3]+": "+id_value);
-                    GestionLogs.getInstance().logAdmin(p.numero,p.version,"Erreur de géométrie sur "+p.state[3]+": "+id_value);
+                    jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Erreur de géométrie sur "+p.state[3]+": "+id_value);
                 }
                 catch(NullPointerException npe)
                 {
                     p.resultat.add("Erreur de géométrie sur "+p.state[3]+": "+id_value);
-                    GestionLogs.getInstance().logAdmin(p.numero,p.version,"Erreur de géométrie sur "+p.state[3]+": "+id_value);                    
+                    jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Erreur de géométrie sur "+p.state[3]+": "+id_value);                    
                 }
             }
             else
@@ -584,15 +585,15 @@ public class GestionMiseAJour
         
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
 
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"INVALIDATION DES "+p.state[3]+" TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets invalidés = "+plusvalables);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets inchangés = "+inchangees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets modifiés = "+modifiees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets traités = "+traitees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INVALIDATION DES "+p.state[3]+" TERMINE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets invalidés = "+plusvalables);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets inchangés = "+inchangees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets modifiés = "+modifiees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets traités = "+traitees);
         
         p.state[4] = "TERMINE";
         p.resultat.add("INVALIDATION DES "+p.state[3]);
@@ -616,7 +617,7 @@ public class GestionMiseAJour
     {
         int invalidees=0, traitees=0, inchangees=0;
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE REQUETES");
         p.state[4] = "PREPARE REQUETES";
         
         // Prépare la requête permettant de compter les lignes à traiter.
@@ -671,13 +672,13 @@ public class GestionMiseAJour
             psCorrige.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
         p.state[7] = "SUR "+compte;
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT DE "+compte+" codes postaux");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT DE "+compte+" codes postaux");
         
         while(!p.stop && rsCherche.next())
         {
@@ -718,7 +719,7 @@ public class GestionMiseAJour
         
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
         
@@ -728,11 +729,11 @@ public class GestionMiseAJour
         psMarque.close();
         psCorrige.close();
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"INVALIDATION DES CODES POSTAUX TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CODES POSTAUX INCHANGES: "+inchangees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CODES POSTAUX INVALIDES: "+invalidees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CODES POSTAUX TRAITEES: "+traitees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CODES POSTAUX TOTAL: "+compte);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INVALIDATION DES CODES POSTAUX TERMINE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CODES POSTAUX INCHANGES: "+inchangees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CODES POSTAUX INVALIDES: "+invalidees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CODES POSTAUX TRAITEES: "+traitees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CODES POSTAUX TOTAL: "+compte);
         p.resultat.add("INVALIDATION DES CODES POSTAUX");
         p.resultat.add("CODES POSTAUX INCHANGES: "+inchangees);
         p.resultat.add("CODES POSTAUX INVALIDES: "+invalidees);
@@ -765,7 +766,7 @@ public class GestionMiseAJour
         int invalidees=0, traitees=0, inchangees=0, modifiees=0;
         
         p.state[4] = "PREPARE REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE REQUETES");
         
         // Prépare la requête permettant de trouver la mise à jour d'un troncon.
         StringBuilder sb = new StringBuilder();
@@ -839,7 +840,7 @@ public class GestionMiseAJour
         
         // Pour tous les objets valides à la date,
         p.state[4] = "CHERCHE LES TRONCONS";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES TRONCONS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES TRONCONS");
         ResultSet rsCherche = psCherche.executeQuery();
         
         if (p.stop)
@@ -852,12 +853,12 @@ public class GestionMiseAJour
             psInvalide.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         while(!p.stop && rsCherche.next())
         {
             String id_value = rsCherche.getString(1);
@@ -959,15 +960,15 @@ public class GestionMiseAJour
         
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"INVALIDATION DES TRONCONS");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre de troncons invalidés = "+invalidees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre de troncons inchangés = "+inchangees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre de troncons modifiés = "+modifiees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre de troncons traités = "+traitees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INVALIDATION DES TRONCONS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre de troncons invalidés = "+invalidees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre de troncons inchangés = "+inchangees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre de troncons modifiés = "+modifiees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre de troncons traités = "+traitees);
         p.state[4] = "TERMINE";
         p.resultat.add("INVALIDATION DES TRONCONS");
         p.resultat.add("Nombre de troncons invalidés = "+invalidees);
@@ -996,7 +997,7 @@ public class GestionMiseAJour
         int invalidees=0, traitees=0, inchangees=0, modifiees=0;
         
         p.state[4] = "PREPARE LES REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         
         // Prépare la requête permettant de trouver la mise à jour d'un objet.
         StringBuilder sb = new StringBuilder();
@@ -1029,7 +1030,7 @@ public class GestionMiseAJour
         
         // Pour toutes les objets valides à la date,
         p.state[4] = "CHERCHE LES COMMUNES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES COMMUNES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES COMMUNES");
         ResultSet rsCherche = psCherche.executeQuery();
         
         if (p.stop)
@@ -1040,12 +1041,12 @@ public class GestionMiseAJour
             psInvalide.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         while(!p.stop && rsCherche.next())
         {
             String id_value = rsCherche.getString(1);
@@ -1120,15 +1121,15 @@ public class GestionMiseAJour
 
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"INVALIDATION DES COMMUNES ET ARRONDISSEMENTS");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets invalidés = "+invalidees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets inchangés = "+inchangees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets modifiées = "+modifiees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets traitées = "+traitees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INVALIDATION DES COMMUNES ET ARRONDISSEMENTS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets invalidés = "+invalidees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets inchangés = "+inchangees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets modifiées = "+modifiees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets traitées = "+traitees);
         p.state[4] = "TERMINE";
         p.resultat.add("INVALIDATION DES COMMUNES ET ARRONDISSEMENTS");
         p.resultat.add("Nombre d'objets invalidés = "+invalidees);
@@ -1153,7 +1154,7 @@ public class GestionMiseAJour
         int invalidees=0, traitees=0, inchangees=0, modifiees=0;
         
         p.state[4] = "Prepare les requêtes";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Prepare les requêtes");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Prepare les requêtes");
         
         // Prépare la requête permettant de trouver la mise à jour d'un objet.
         StringBuilder sb = new StringBuilder();
@@ -1195,7 +1196,7 @@ public class GestionMiseAJour
         
         // Pour toutes les objets valides à la date,
         p.state[4] = "CHERCHE LES VOIES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES VOIES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES VOIES");
         ResultSet rsCherche = psCherche.executeQuery();
         
         if (p.stop)
@@ -1206,12 +1207,12 @@ public class GestionMiseAJour
             psInvalide.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         while(!p.stop && rsCherche.next())
         {
             String id_value = rsCherche.getString(1);
@@ -1273,15 +1274,15 @@ public class GestionMiseAJour
         
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"INVALIDATION DES VOIES TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets invalidés = "+invalidees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets inchangés = "+inchangees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets modifiées = "+modifiees);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre d'objets traitées = "+traitees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INVALIDATION DES VOIES TERMINE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets invalidés = "+invalidees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets inchangés = "+inchangees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets modifiées = "+modifiees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre d'objets traitées = "+traitees);
         p.state[4] = "TERMINE";
         p.resultat.add("INVALIDATION DES VOIES");
         p.resultat.add("Nombre d'objets invalidés = "+invalidees);
@@ -1320,7 +1321,7 @@ public class GestionMiseAJour
     {
         int objetscrees = 0;
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         p.state[4] = "PREPARE LES REQUETES";
         
         // Prépare la requête permettant d'énumérer les objets à créer.
@@ -1349,7 +1350,7 @@ public class GestionMiseAJour
         psInsert.setTimestamp(5,tsinfini);
         
         // Pour chaque objet à créer ,
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES OBJETS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES OBJETS");
         p.state[4] = "CHERCHE LES OBJETS";
         ResultSet rsCherche = psCherche.executeQuery();
         
@@ -1360,12 +1361,12 @@ public class GestionMiseAJour
             psInsert.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         while(!p.stop && rsCherche.next())
         {
             psInsert.setString(2,rsCherche.getString(1));
@@ -1378,7 +1379,7 @@ public class GestionMiseAJour
             }
             catch(SQLException sqle)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème avec l'objet code postal "+rsCherche.getString(1)+", code insee "+rsCherche.getString(2));
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Problème avec l'objet code postal "+rsCherche.getString(1)+", code insee "+rsCherche.getString(2));
                 p.resultat.add("Problème avec l'objet code postal "+rsCherche.getString(1)+", code insee "+rsCherche.getString(2));
                 throw(sqle);
             }
@@ -1397,12 +1398,12 @@ public class GestionMiseAJour
         
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREATION DE CODES POSTAUX "+p.state[3]);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nouveaux objets :"+objetscrees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CREATION DE CODES POSTAUX "+p.state[3]);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nouveaux objets :"+objetscrees);
         p.resultat.add("CREATION DE CODES POSTAUX "+p.state[3]);
         p.resultat.add("Nouveaux objets :"+objetscrees);
     }
@@ -1418,7 +1419,7 @@ public class GestionMiseAJour
         int objetscrees = 0;
         
         p.state[4] = "PREPARE LES REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         
         // Prépare la requête permettant d'énumérer les objets à créer.
         StringBuilder sb = new StringBuilder();
@@ -1469,7 +1470,7 @@ public class GestionMiseAJour
         
         // Pour chaque objet à créer ,
         p.state[4] = "CHERCHE LES OBJETS";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES OBJETS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES OBJETS");
         ResultSet rsChercheAdresse = sCherche.executeQuery(requeteCherche);
         
         if (p.stop)
@@ -1479,12 +1480,12 @@ public class GestionMiseAJour
             psInsert.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         while(!p.stop && rsChercheAdresse.next())
         {
             // Initialise la requête de création
@@ -1519,7 +1520,7 @@ public class GestionMiseAJour
             catch(SQLException sqle)
             {
                 p.resultat.add("Problème avec l'objet "+rsChercheAdresse.getString(1));
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème avec l'objet "+rsChercheAdresse.getString(1));
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Problème avec l'objet "+rsChercheAdresse.getString(1));
                 throw(sqle);
             }
             objetscrees++;
@@ -1538,11 +1539,11 @@ public class GestionMiseAJour
         if (p.stop)
         {
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Creation de "+p.state[3]);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nouveaux objets :"+objetscrees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Creation de "+p.state[3]);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nouveaux objets :"+objetscrees);
         p.resultat.add("Creation de "+p.state[3]);
         p.resultat.add("Nouveaux objets :"+objetscrees);
     }
@@ -1564,7 +1565,7 @@ public class GestionMiseAJour
         int objetscrees = 0;
         
         p.state[4] = "PREPARE LES REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         
         // Prépare la requête permettant d'énumérer les objets à créer.
         StringBuilder sb = new StringBuilder();
@@ -1592,7 +1593,7 @@ public class GestionMiseAJour
         
         // Pour chaque objet à créer ,
         p.state[4] = "CHERCHE LES COMMUNES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES COMMUNES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES COMMUNES");
         ResultSet rsCherche = sCherche.executeQuery(requeteCherche);
         
         if (p.stop)
@@ -1601,12 +1602,12 @@ public class GestionMiseAJour
             psInsert.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         while(!p.stop && rsCherche.next())
         {
             // code_insee,code_departement,code_postal,nom,geometrie
@@ -1637,7 +1638,7 @@ public class GestionMiseAJour
                 }
                 catch(SQLException sqle)
                 {
-                    GestionLogs.getInstance().logAdmin(p.numero,p.version,"Problème avec la commune "+code_insee);
+                    jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Problème avec la commune "+code_insee);
                     p.resultat.add("Problème avec la commune "+code_insee);
                     throw(sqle);
                 }
@@ -1657,12 +1658,12 @@ public class GestionMiseAJour
         
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Creation des Communes");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nouveaux objets :"+objetscrees);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Creation des Communes");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nouveaux objets :"+objetscrees);
         p.resultat.add("Creation des Communes");
         p.resultat.add("Nouveaux objets :"+objetscrees);
     }
@@ -1685,7 +1686,7 @@ public class GestionMiseAJour
         int objetscrees = 0,ambiguitees=0;
         
         p.state[4] = "PREPARE LES REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         
         // Prépare la requête permettant d'énumérer les objets à créer.
         StringBuilder sb = new StringBuilder();
@@ -1755,7 +1756,7 @@ public class GestionMiseAJour
         
         // Pour chaque objet à créer,
         p.state[4] = "CHERCHE LES VOIES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES VOIES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES VOIES");
         ResultSet rsCherche = sCherche.executeQuery(requeteCherche);
         
         if (p.stop)
@@ -1766,12 +1767,12 @@ public class GestionMiseAJour
             psInsert.close();
             p.state = new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         while(!p.stop && rsCherche.next())
         {
             String voi_id = rsCherche.getString(1);
@@ -1831,7 +1832,7 @@ public class GestionMiseAJour
             }
             catch(SQLException sqle)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"Pb pour la voie "+voi_id+" "+code_insee);
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Pb pour la voie "+voi_id+" "+code_insee);
                 p.resultat.add("Pb pour la voie "+voi_id+" "+code_insee);
                 throw(sqle);
             }
@@ -1909,14 +1910,14 @@ public class GestionMiseAJour
         
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Creation des Voies");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"Creation des Voies");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Creation des Voies");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Creation des Voies");
         if (voiesambigues)
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nouvelles ambiguitées :"+ambiguitees);
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nouvelles ambiguitées :"+ambiguitees);
         p.resultat.add("Creation des Voies");
         p.resultat.add("Nouvelles voies :"+objetscrees);
         if (voiesambigues)
@@ -2159,7 +2160,7 @@ public class GestionMiseAJour
     {
         if (GestionTables.tableExiste(nomTableTroncon,connection))
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES TABLES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES TABLES");
             p.state[3] = "PREPARE LES TABLES";
             
             // Vérifie la structure de la table de troncon.
@@ -2230,19 +2231,19 @@ public class GestionMiseAJour
             nomTableVoies = GestionTables.formateNom(nomTableVoies);
             nomTableIdVoies = GestionTables.formateNom(nomTableIdVoies);
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"NETTOYE "+nomTableVoies);
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"NETTOYE "+nomTableVoies);
             p.state[3] = "NETTOYE "+nomTableVoies;
             GestionTables.nettoye(nomTableVoies,connection);
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"NETTOYE "+nomTableTroncon);
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"NETTOYE "+nomTableTroncon);
             p.state[3] = "NETTOYE "+nomTableTroncon;
             GestionTables.nettoye(nomTableTroncon,connection);
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"NETTOYE "+nomTableIdVoies);
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"NETTOYE "+nomTableIdVoies);
             p.state[3] = "NETTOYE "+nomTableIdVoies;
             GestionTables.nettoye(nomTableIdVoies,connection);
             
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
             p.state[3] = "PREPARE LES REQUETES";
             
             StringBuilder sb = new StringBuilder();
@@ -2341,7 +2342,7 @@ public class GestionMiseAJour
             sb.append(nomTableTroncon);
             sb.append("");
             p.state[3] = "CHERCHE LES TRONCONS";
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES TRONCONS");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES TRONCONS");
             ResultSet rsTroncons=stTroncons.executeQuery(sb.toString());
 
             if (p.stop)
@@ -2354,7 +2355,7 @@ public class GestionMiseAJour
                 psMajGauche.close();
                 p.state=new String[]{"TERMINE"};
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
                 return;
             }
             
@@ -2388,7 +2389,7 @@ public class GestionMiseAJour
             try
             {
                 p.state[3] = "TRAITEMENT";
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT de "+compte+" troncons");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT de "+compte+" troncons");
                 while(!p.stop && rsTroncons.next())
                 {
                     boolean misajour = false;
@@ -2419,11 +2420,11 @@ public class GestionMiseAJour
                 if (p.stop)
                 {
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                    GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
                 }
                 
                 p.state[3] = "SUPPRIME LES INDEX";
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"SUPPRIME LES INDEX");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"SUPPRIME LES INDEX");
                 if (idx_id_troncon_ajoute)
                     GestionTables.supprimeIndex(idx_id_troncon,connection);
                 if (idx_voi_id_ajoute)
@@ -2434,14 +2435,14 @@ public class GestionMiseAJour
                     GestionTables.supprimeIndex(idx_code_fantoir_bis,connection);
                 
                 p.state[3] = "SUPPRIME LA COLONNE";
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"SUPPRIME LA COLONNE");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"SUPPRIME LA COLONNE");
                 GestionTables.supprimeColonne(nomTableIdVoies,code_fantoire_bis,connection);                
             }
             finally
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREATION DE LA TABLE VOIE TERMINE");
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRONCONS PARCOURUS :"+index);
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"SUR "+compte);
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CREATION DE LA TABLE VOIE TERMINE");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRONCONS PARCOURUS :"+index);
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"SUR "+compte);
                 p.state[3] = "TERMINE";
                 p.resultat.add("CREATION DE LA TABLE VOIE");
                 p.resultat.add("TRONCONS PARCOURUS :"+index);
@@ -2480,7 +2481,7 @@ public class GestionMiseAJour
         if (GestionTables.tableExiste(nomTableTroncon,connection))
         {
             p.state[3] = "PREPARE LES TABLES";
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES TABLES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES TABLES");
             
             // Vérifie la structure de la table de troncon.
             DescriptionTable dttroncon = GestionTables.obtientDescription(nomTableTroncon,connection);
@@ -2517,7 +2518,7 @@ public class GestionMiseAJour
                 }
                 else if (contient==Colonne.TYPEDIFFERENT)
                 {
-                    GestionLogs.getInstance().logAdmin(p.numero,p.version,"Une colonne code_fantoir_bis existe déjà avec le mauvais type. Type attendu : character varying 10");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Une colonne code_fantoir_bis existe déjà avec le mauvais type. Type attendu : character varying 10");
                     throw (new GestionReferentielException(
                             "Une colonne code_fantoir_bis existe déjà avec le mauvais type. Type attendu : character varying 10",
                             GestionReferentielException.COLONNEERRONEE,10));
@@ -2662,7 +2663,7 @@ public class GestionMiseAJour
                 psMajGauche.close();
                 p.state=new String[]{"TERMINE"};
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
                 return;
             }
             
@@ -2696,7 +2697,7 @@ public class GestionMiseAJour
             try
             {
                 p.state[3] = "TRAITEMENT";
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
                 while(!p.stop && rsTroncons.next())
                 {
                     boolean misajour = false;
@@ -2731,7 +2732,7 @@ public class GestionMiseAJour
                 
                 if (p.stop)
                 {
-                    GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+                    jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
                     p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
                 }
 
@@ -2748,10 +2749,10 @@ public class GestionMiseAJour
             }
             finally
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"TERMINE");
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREATION DE LA TABLE VOIE");
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"troncons parcourus :"+index);
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"sur "+compte);
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TERMINE");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CREATION DE LA TABLE VOIE");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"troncons parcourus :"+index);
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"sur "+compte);
                 p.state[3] = "TERMINE";
                 p.resultat.add("CREATION DE LA TABLE VOIE");
                 p.resultat.add("troncons parcourus :"+index);
@@ -2777,7 +2778,7 @@ public class GestionMiseAJour
 //        if (GestionTables.tableExiste("voi_voies_"+code_departement,connection))
         if (GestionTables.tableExiste(GestionTables.getVoiVoiesTableName(code_departement),connection))
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES TABLES ET INDEX");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES TABLES ET INDEX");
             p.state[3]="PREPARE LES TABLES ET INDEX";
             
             // Crée la table de codes postaux
@@ -2824,7 +2825,7 @@ public class GestionMiseAJour
                 psUnique.close();
                 p.state=new String[]{"TERMINE"};
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
                 return;
             }
             
@@ -2867,14 +2868,14 @@ public class GestionMiseAJour
             if (p.stop)
             {
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             }
             
             p.resultat.add("TERMINE");
             p.resultat.add("CREATION DE LA TABLE DES CODES POSTAUX");
             p.resultat.add(count+" codes postaux ajoutés.");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"CREATION DE LA TABLE DES CODES POSTAUX TERMINE");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,count+" codes postaux ajoutés.");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CREATION DE LA TABLE DES CODES POSTAUX TERMINE");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,count+" codes postaux ajoutés.");
             
             if (idx_code_insee_postal_cree)
             {
@@ -2892,7 +2893,7 @@ public class GestionMiseAJour
      */
     public void calculeClesAmbiguesDansVoies(Processus p,String code_departement,Connection connection) throws SQLException
     {
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"MANAGE LES TABLES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"MANAGE LES TABLES");
         p.state = new String[]{"EN COURS","MANAGE LES TABLES"};
 
         // WA 09/2011 utilisation de GestionTables.getXXTableName
@@ -2941,7 +2942,7 @@ public class GestionMiseAJour
         int count = 0,ambiguesajoutees=0,ambiguestrouvees=0;
         try
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES VOIES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES VOIES");
             p.state[1] = "CHERCHE LES VOIES";
             ResultSet rsCherche=stCherche.executeQuery(rqCherche);
             
@@ -2952,12 +2953,12 @@ public class GestionMiseAJour
                 psInsertVoieAmbigue.close();
                 p.state=new String[]{"TERMINE"};
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
                 return;
             }
             
             // Pour chaque voie,
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
             p.state = new String[]{"EN COURS","TRAITEMENT","VOIES TRAITEES","0"};
             while(!p.stop && rsCherche.next())
             {
@@ -3042,16 +3043,16 @@ public class GestionMiseAJour
             
             if (p.stop)
             {
-                GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+                jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
                 p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
             }
         }
         finally
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"CALCULE DES VOIES AMBIGUES");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Ambiguites trouvées:"+ambiguestrouvees);
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Ambiguites ajoutées:"+ambiguesajoutees);
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"Nombre de voies traitees:"+count);
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CALCULE DES VOIES AMBIGUES");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Ambiguites trouvées:"+ambiguestrouvees);
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Ambiguites ajoutées:"+ambiguesajoutees);
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"Nombre de voies traitees:"+count);
             p.resultat.add("CALCULE DES VOIES AMBIGUES");
             p.resultat.add("Ambiguites trouvées:"+ambiguestrouvees);
             p.resultat.add("Ambiguites ajoutées:"+ambiguesajoutees);
@@ -3074,7 +3075,7 @@ public class GestionMiseAJour
     public void calculeClesAmbiguesDansCommunes(Processus p,String code_departement,Connection connection) throws SQLException
     {
         p.state[4] = "PREPARE LES REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         
         // Crée la table voiesambigues si nécessaire
         DescriptionTable dtVoiesAmbigues = GestionDescriptionTables.creeDescriptionTableVoiesAmbiguesReferentiel();
@@ -3108,7 +3109,7 @@ public class GestionMiseAJour
         PreparedStatement psInsertAmbiguite = connection.prepareStatement(sb.toString());
         
         p.state[4] = "CHERCHE LES COMMUNES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES COMMUNES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES COMMUNES");
         ResultSet rsCherche = psCherche.executeQuery();
       
         if (p.stop)
@@ -3119,12 +3120,12 @@ public class GestionMiseAJour
             psChercheAmbiguite.close();
             p.state=new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENT";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENT");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENT");
         int count = 0,ambiguite=0;
         while(!p.stop && rsCherche.next())
         {
@@ -3165,14 +3166,14 @@ public class GestionMiseAJour
         
         if (p.stop)
         {
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
         }
         
         p.state[4] = "TERMINE";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"RECHERCHE DE CLES DANS COMMUNE TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"communes traitées : "+count);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"ambiguités trouvées : "+ambiguite);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"RECHERCHE DE CLES DANS COMMUNE TERMINE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"communes traitées : "+count);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"ambiguités trouvées : "+ambiguite);
         p.resultat.add("RECHERCHE DE CLES DANS COMMUNE");
         p.resultat.add("communes traitées : "+count);
         p.resultat.add("ambiguités trouvées : "+ambiguite);
@@ -3193,7 +3194,7 @@ public class GestionMiseAJour
     public void calculeCommunesAmbiguesDansVoies(Processus p,String code_departement,Connection connection) throws SQLException
     {
         p.state[4] = "PREPARE LES REQUETES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"PREPARE LES REQUETES");
         
         // Crée la table voiesambigues si nécessaire
         DescriptionTable dtVoiesAmbigues = GestionDescriptionTables.creeDescriptionTableVoiesAmbiguesReferentiel();
@@ -3241,7 +3242,7 @@ public class GestionMiseAJour
         
         // Pour chaque voie,
         p.state[4] = "CHERCHE LES VOIES";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"CHERCHE LES VOIES");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"CHERCHE LES VOIES");
         ResultSet rsChercheVoie = psChercheVoie.executeQuery();
         
         if (p.stop)
@@ -3252,12 +3253,12 @@ public class GestionMiseAJour
             psInsertAmbiguite.close();
             p.state=new String[]{"TERMINE"};
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
             return;
         }
         
         p.state[4] = "TRAITEMENTS";
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"TRAITEMENTS");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"TRAITEMENTS");
         int count = 0,ambiguite=0;
         while(!p.stop && rsChercheVoie.next())
         {
@@ -3318,12 +3319,12 @@ public class GestionMiseAJour
         if (p.stop)
         {
             p.resultat.add("INTERRUPTION PAR L UTILISATEUR");
-            GestionLogs.getInstance().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
+            jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"INTERRUPTION PAR L UTILISATEUR");
         }
         
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"RECHERCHE DES COMMUNES DANS LES VOIES TERMINE");
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"voies traitées:"+count);
-        GestionLogs.getInstance().logAdmin(p.numero,p.version,"ambiguite trouvées:"+ambiguite);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"RECHERCHE DES COMMUNES DANS LES VOIES TERMINE");
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"voies traitées:"+count);
+        jdonrefParams.getGestionLog().logAdmin(p.numero,p.version,"ambiguite trouvées:"+ambiguite);
         
         p.state[4] = "TERMINE";
         p.resultat.add("RECHERCHE DES COMMUNES DANS LES VOIES");

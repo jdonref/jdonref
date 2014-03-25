@@ -44,8 +44,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import ppol.jdonref.AGestionLogs;
 import ppol.jdonref.Algos;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.Tables.GestionTables;
 import ppol.jdonref.dao.GeometryDao;
@@ -2115,10 +2116,12 @@ public class GestionGeocodage {
         if ((voi_id == null) && (code_insee == null)) {
             RetourGeocodage rg = geocodePays(paysSovAc3, date, defaultWorldProj, projection, connection);
             if ((!rg.nontrouve) && (rg.errorcode == 0)) {
-                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PAYS, true);
+//                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PAYS, true);
+           jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PAYS, true);
                 return formateResultatGeocodage(rg, 8, date, new String[]{rg.getProjectionText(), rg.getReferentielText()});
             } else {
-                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+//                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                 return formateResultatGeocodage(rg);
             }
 
@@ -2140,7 +2143,7 @@ public class GestionGeocodage {
             if (code_insee.length() == 5) {
                 RetourGeocodage rg = geocodeCommune(code_insee, date, projection, connection);
                 if (!rg.nontrouve && rg.errorcode == 0) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_COMMUNE, true);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_COMMUNE, true);
                     return formateResultatGeocodage(rg, 6, date, projectionEtReferentiel);
                 }
             // Comportement par défaut : si un problème se pose avec le géocodage à la commune,
@@ -2149,7 +2152,7 @@ public class GestionGeocodage {
 
             RetourGeocodage rg = geocodeDepartement(code_departement, date, projection, connection);
             if (!rg.nontrouve && rg.errorcode == 0) {
-                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_DEPARTEMENT, true);
+                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_DEPARTEMENT, true);
                 return formateResultatGeocodage(rg, 7, date, projectionEtReferentiel);
             }
 
@@ -2162,7 +2165,7 @@ public class GestionGeocodage {
         // Si ils existent, retourne le résultat
         RetourGeocodage res = geocodePointAdresse(voi_id, numero, repetition, code_departement, date, projection, connection);
         if (!res.nontrouve && res.errorcode == 0) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PLAQUE, true);
+             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PLAQUE, true);
             return formateResultatGeocodage(res, 1, date, projectionEtReferentiel);
         }
 
@@ -2173,7 +2176,7 @@ public class GestionGeocodage {
         if (tableTroncons == null) {
             res.errorcode = 10;
             res.message = "Le département spécifié n'existe pas à la date mentionnée.";
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             return formateResultatGeocodage(res);
         }
 
@@ -2202,14 +2205,14 @@ public class GestionGeocodage {
                 if (classiqueoumetrique) {
                     res = geocodeInterpolationPointAdresse(gf, voi_id, numero, repetition, t, code_departement, date, projection, connection);
                     if (!res.nontrouve && res.errorcode == 0) {
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_PLAQUE, true);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_PLAQUE, true);
                         return formateResultatGeocodage(res, 2, date, projectionEtReferentiel);
                     }
 
                 }
 
                 if (t.geometrie == null) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     return new String[]{ // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
                         "0", "10",
                         "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
@@ -2220,14 +2223,14 @@ public class GestionGeocodage {
                 try {   // WA 03/2012 WKTReader semble de pas etre thread-safe : remplace par GeometryUtils
                     g = GeometryUtils.readGeometryFromWKT(t.geometrie);
                 } catch (ParseException pe) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     return new String[]{ // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
                         "0", "10",
                         "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
                         " à " + /*sdformat.format(date)*/ DateUtils.formatDateToString(date, sdformat)
                     };
                 } catch (NullPointerException npe) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     return new String[]{ // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
                         "0", "10",
                         "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
@@ -2239,7 +2242,7 @@ public class GestionGeocodage {
                 if (classiqueoumetrique) {
                     res = geocodeInterpolationMetriqueTroncon(numero, g, t.numero_debut, t.numero_fin);
                     if (!res.nontrouve && res.errorcode == 0) {
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                         return formateResultatGeocodage(res, 3, date, projectionEtReferentiel);
                     }
 
@@ -2256,7 +2259,7 @@ public class GestionGeocodage {
                         // retourne le centroide du troncon.
                         res = geocodeCentroideTroncon(gf, g, t.numero_debut <= t.numero_fin);
                         if (!res.nontrouve && res.errorcode == 0) {
-                            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_CENTROIDE_TRONCON, true);
+                             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_CENTROIDE_TRONCON, true);
                             return formateResultatGeocodage(res, 4, date, projectionEtReferentiel);
                         }
                     case 1: // extrémité de troncon
@@ -2266,7 +2269,7 @@ public class GestionGeocodage {
                         res.x = c.x;
                         res.y = c.y;
                         res.setService(GestionReferentiel.SERVICE_TRONCON);
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                         return formateResultatGeocodage(res, 3, date, projectionEtReferentiel);
                     case 2: // extrémité de troncon
                         cs = g.getCoordinates();
@@ -2275,7 +2278,7 @@ public class GestionGeocodage {
                         res.x = c.x;
                         res.y = c.y;
                         res.setService(GestionReferentiel.SERVICE_TRONCON);
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                         return formateResultatGeocodage(res, 3, date, projectionEtReferentiel);
                 }
 
@@ -2293,7 +2296,7 @@ public class GestionGeocodage {
         // ou que les méthodes précédentes échoue,
         // essaye une interpolation métrique à la voie.
         res = geocodeCentroideVoie(gf, voi_id, date, projection, tableTroncons, connection);
-        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_CENTROIDE_VOIE, true);
+         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_CENTROIDE_VOIE, true);
         return formateResultatGeocodage(res, 5, date, projectionEtReferentiel);
     }
 
@@ -2303,10 +2306,10 @@ public class GestionGeocodage {
         if ((voi_id == null) && (code_insee == null)) {
             RetourGeocodage rg = geocodePays(paysSovAc3, date, defaultWorldProj, projection, connection);
             if ((!rg.nontrouve) && (rg.errorcode == 0)) {
-                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PAYS, true);
+                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PAYS, true);
                 return formateResultatGeocodage(rg, 8, date, new String[]{rg.getProjectionText(), rg.getReferentielText()});
             } else {
-                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                 return formateResultatGeocodage(rg);
             }
 
@@ -2328,7 +2331,7 @@ public class GestionGeocodage {
             if (code_insee.length() == 5) {
                 RetourGeocodage rg = geocodeCommune(code_insee, date, projection, connection);
                 if (!rg.nontrouve && rg.errorcode == 0) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_COMMUNE, true);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_COMMUNE, true);
                     return formateResultatGeocodage(rg, 6, date, projectionEtReferentiel);
                 }
             // Comportement par défaut : si un problème se pose avec le géocodage à la commune,
@@ -2337,7 +2340,7 @@ public class GestionGeocodage {
 
             RetourGeocodage rg = geocodeDepartement(code_departement, date, projection, connection);
             if (!rg.nontrouve && rg.errorcode == 0) {
-                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_DEPARTEMENT, true);
+                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_DEPARTEMENT, true);
                 return formateResultatGeocodage(rg, 7, date, projectionEtReferentiel);
             }
 
@@ -2350,7 +2353,7 @@ public class GestionGeocodage {
         // Si ils existent, retourne le résultat
         RetourGeocodage res = geocodePointAdresse(voi_id, numero, repetition, code_departement, date, projection, connection);
         if (!res.nontrouve && res.errorcode == 0) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PLAQUE, true);
+             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PLAQUE, true);
             return formateResultatGeocodage(res, 1, date, projectionEtReferentiel);
         }
 
@@ -2361,7 +2364,7 @@ public class GestionGeocodage {
         if (tableTroncons == null) {
             res.errorcode = 10;
             res.message = "Le département spécifié n'existe pas à la date mentionnée.";
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             return formateResultatGeocodage(res);
         }
 
@@ -2390,14 +2393,14 @@ public class GestionGeocodage {
                 if (classiqueoumetrique) {
                     res = geocodeInterpolationPointAdresse(gf, voi_id, numero, repetition, t, code_departement, date, projection, connection);
                     if (!res.nontrouve && res.errorcode == 0) {
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_PLAQUE, true);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_PLAQUE, true);
                         return formateResultatGeocodage(res, 2, date, projectionEtReferentiel);
                     }
 
                 }
 
                 if (t.geometrie == null) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     return new String[]{ // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
                         "0", "10",
                         "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
@@ -2408,14 +2411,14 @@ public class GestionGeocodage {
                 try {   // WA 03/2012 WKTReader semble de pas etre thread-safe : remplace par GeometryUtils
                     g = GeometryUtils.readGeometryFromWKT(t.geometrie);
                 } catch (ParseException pe) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     return new String[]{ // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
                         "0", "10",
                         "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
                         " à " + /*sdformat.format(date)*/ DateUtils.formatDateToString(date, sdformat)
                     };
                 } catch (NullPointerException npe) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     return new String[]{ // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
                         "0", "10",
                         "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
@@ -2427,7 +2430,7 @@ public class GestionGeocodage {
                 if (classiqueoumetrique) {
                     res = geocodeInterpolationMetriqueTroncon(numero, g, t.numero_debut, t.numero_fin, distance, t.isCoteDroit);
                     if (!res.nontrouve && res.errorcode == 0) {
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                         return formateResultatGeocodage(res, 3, date, projectionEtReferentiel);
                     }
 
@@ -2444,7 +2447,7 @@ public class GestionGeocodage {
                         // retourne le centroide du troncon.
                         res = geocodeCentroideTroncon(gf, g, t.numero_debut <= t.numero_fin);
                         if (!res.nontrouve && res.errorcode == 0) {
-                            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_CENTROIDE_TRONCON, true);
+                             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_CENTROIDE_TRONCON, true);
                             return formateResultatGeocodage(res, 4, date, projectionEtReferentiel);
                         }
                         break;
@@ -2471,7 +2474,7 @@ public class GestionGeocodage {
                             res.y = c.y;
                         }
                         res.setService(GestionReferentiel.SERVICE_TRONCON);
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                         return formateResultatGeocodage(res, 3, date, projectionEtReferentiel);
                     case 2: // extrémité de troncon (debut)
                         cs = g.getCoordinates();
@@ -2496,7 +2499,7 @@ public class GestionGeocodage {
                             res.y = c.y;
                         }
                         res.setService(GestionReferentiel.SERVICE_TRONCON);
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                         return formateResultatGeocodage(res, 3, date, projectionEtReferentiel);
                 }
 
@@ -2514,7 +2517,7 @@ public class GestionGeocodage {
         // ou que les méthodes précédentes échoue,
         // essaye une interpolation métrique à la voie.
         res = geocodeCentroideVoie(gf, voi_id, date, projection, tableTroncons, connection);
-        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_CENTROIDE_VOIE, true);
+         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_CENTROIDE_VOIE, true);
         return formateResultatGeocodage(res, 5, date, projectionEtReferentiel);
     }
 
@@ -2527,10 +2530,10 @@ public class GestionGeocodage {
             } else if (service == GestionReferentiel.SERVICE_PAYS) {
                 RetourGeocodage rgPay = geocodePays(paysSovAc3, date, defaultWorldProj, projection, connection);
                 if ((!rgPay.nontrouve) && (rgPay.errorcode == 0)) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PAYS, true);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PAYS, true);
                     listRet.add(formateResultatGeocodage(rgPay, 8, date, new String[]{rgPay.getProjectionText(), rgPay.getReferentielText()}));
                 } else {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     listRet.add(formateResultatGeocodage(rgPay));
                 }
             } else {
@@ -2548,7 +2551,7 @@ public class GestionGeocodage {
                         case GestionReferentiel.SERVICE_DEPARTEMENT:
                             RetourGeocodage rgDep = geocodeDepartement(code_departement, date, projection, connection);
                             if (!rgDep.nontrouve && rgDep.errorcode == 0) {
-                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_DEPARTEMENT, true);
+                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_DEPARTEMENT, true);
                                 listRet.add(formateResultatGeocodage(rgDep, 7, date, projectionEtReferentiel));
                             }
                             break;
@@ -2556,7 +2559,7 @@ public class GestionGeocodage {
                             if (code_insee.length() == 5) {
                                 RetourGeocodage rgCom = geocodeCommune(code_insee, date, projection, connection);
                                 if (!rgCom.nontrouve && rgCom.errorcode == 0) {
-                                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_COMMUNE, true);
+                                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_COMMUNE, true);
                                     listRet.add(formateResultatGeocodage(rgCom, 6, date, projectionEtReferentiel));
                                 }
                             }
@@ -2566,7 +2569,7 @@ public class GestionGeocodage {
                             // Si ils existent, retourne le résultat
                             RetourGeocodage rgAdr = geocodePointAdresse(voi_id, numero, repetition, code_departement, date, projection, connection);
                             if (!rgAdr.nontrouve && rgAdr.errorcode == 0) {
-                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PLAQUE, true);
+                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PLAQUE, true);
                                 listRet.add(formateResultatGeocodage(rgAdr, 1, date, projectionEtReferentiel));
                             }
                             break;
@@ -2578,14 +2581,14 @@ public class GestionGeocodage {
                         RetourGeocodage rg = new RetourGeocodage();
                         rg.errorcode = 10;
                         rg.message = "Le département spécifié n'existe pas à la date mentionnée.";
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                         listRet.add(formateResultatGeocodage(rg));
                     } else {
                         switch (service) {
                             case GestionReferentiel.SERVICE_VOIE:
                                 RetourGeocodage rgVoi = new RetourGeocodage();
                                 rgVoi = geocodeCentroideVoie(gf, voi_id, date, projection, tableTroncons, connection);
-                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_CENTROIDE_VOIE, true);
+                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_CENTROIDE_VOIE, true);
                                 listRet.add(formateResultatGeocodage(rgVoi, 5, date, projectionEtReferentiel));
                                 break;
                             case GestionReferentiel.SERVICE_TRONCON:
@@ -2614,7 +2617,7 @@ public class GestionGeocodage {
                                                 "metrique") == 0;
 
                                         if (t.geometrie == null) {
-                                            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                                             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                                             listRet.add(new String[]{
                                                 "0", "10",
                                                 "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
@@ -2625,14 +2628,14 @@ public class GestionGeocodage {
                                         try {
                                             g = GeometryUtils.readGeometryFromWKT(t.geometrie);
                                         } catch (ParseException pe) {
-                                            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                                             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                                             listRet.add(new String[]{ // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
                                                 "0", "10",
                                                 "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
                                                 " à " + DateUtils.formatDateToString(date, sdformat)
                                             });
                                         } catch (NullPointerException npe) {
-                                            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                                             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                                             listRet.add(new String[]{
                                                 "0", "10",
                                                 "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
@@ -2644,7 +2647,7 @@ public class GestionGeocodage {
                                         if (classiqueoumetrique) {
                                             rgTro = geocodeInterpolationMetriqueTroncon(numero, g, t.numero_debut, t.numero_fin);
                                             if (!rgTro.nontrouve && rgTro.errorcode == 0) {
-                                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                                                 listRet.add(formateResultatGeocodage(rgTro, 3, date, projectionEtReferentiel));
                                                 break;
                                             }
@@ -2662,7 +2665,7 @@ public class GestionGeocodage {
                                                 // retourne le centroide du troncon.
                                                 rgTro = geocodeCentroideTroncon(gf, g, t.numero_debut <= t.numero_fin);
                                                 if (!rgTro.nontrouve && rgTro.errorcode == 0) {
-                                                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_CENTROIDE_TRONCON, true);
+                                                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_CENTROIDE_TRONCON, true);
                                                     listRet.add(formateResultatGeocodage(rgTro, 4, date, projectionEtReferentiel));
                                                 }
                                                 break;
@@ -2673,7 +2676,7 @@ public class GestionGeocodage {
                                                 rgTro.x = c.x;
                                                 rgTro.y = c.y;
                                                 rgTro.setService(GestionReferentiel.SERVICE_TRONCON);
-                                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                                                 listRet.add(formateResultatGeocodage(rgTro, 3, date, projectionEtReferentiel));
                                                 break;
                                             case 2: // extrémité de troncon
@@ -2683,7 +2686,7 @@ public class GestionGeocodage {
                                                 rgTro.x = c.x;
                                                 rgTro.y = c.y;
                                                 rgTro.setService(GestionReferentiel.SERVICE_TRONCON);
-                                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                                                 listRet.add(formateResultatGeocodage(rgTro, 3, date, projectionEtReferentiel));
                                                 break;
                                         }
@@ -2717,10 +2720,10 @@ public class GestionGeocodage {
             } else if (service == GestionReferentiel.SERVICE_PAYS) {
                 RetourGeocodage rgPay = geocodePays(paysSovAc3, date, defaultWorldProj, projection, connection);
                 if ((!rgPay.nontrouve) && (rgPay.errorcode == 0)) {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PAYS, true);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PAYS, true);
                     listRet.add(formateResultatGeocodage(rgPay, 8, date, new String[]{rgPay.getProjectionText(), rgPay.getReferentielText()}));
                 } else {
-                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     listRet.add(formateResultatGeocodage(rgPay));
                 }
             } else {
@@ -2738,7 +2741,7 @@ public class GestionGeocodage {
                         case GestionReferentiel.SERVICE_DEPARTEMENT:
                             RetourGeocodage rgDep = geocodeDepartement(code_departement, date, projection, connection);
                             if (!rgDep.nontrouve && rgDep.errorcode == 0) {
-                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_DEPARTEMENT, true);
+                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_DEPARTEMENT, true);
                                 listRet.add(formateResultatGeocodage(rgDep, 7, date, projectionEtReferentiel));
                             }
                             break;
@@ -2746,7 +2749,7 @@ public class GestionGeocodage {
                             if (code_insee.length() == 5) {
                                 RetourGeocodage rgCom = geocodeCommune(code_insee, date, projection, connection);
                                 if (!rgCom.nontrouve && rgCom.errorcode == 0) {
-                                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_COMMUNE, true);
+                                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_COMMUNE, true);
                                     listRet.add(formateResultatGeocodage(rgCom, 6, date, projectionEtReferentiel));
                                 }
                             }
@@ -2756,7 +2759,7 @@ public class GestionGeocodage {
                             // Si ils existent, retourne le résultat
                             RetourGeocodage rgAdr = geocodePointAdresse(voi_id, numero, repetition, code_departement, date, projection, connection);
                             if (!rgAdr.nontrouve && rgAdr.errorcode == 0) {
-                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_PLAQUE, true);
+                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PLAQUE, true);
                                 listRet.add(formateResultatGeocodage(rgAdr, 1, date, projectionEtReferentiel));
                             }
                             break;
@@ -2768,14 +2771,14 @@ public class GestionGeocodage {
                         RetourGeocodage rg = new RetourGeocodage();
                         rg.errorcode = 10;
                         rg.message = "Le département spécifié n'existe pas à la date mentionnée.";
-                        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                         jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                         listRet.add(formateResultatGeocodage(rg));
                     } else {
                         switch (service) {
                             case GestionReferentiel.SERVICE_VOIE:
                                 RetourGeocodage rgVoi = new RetourGeocodage();
                                 rgVoi = geocodeCentroideVoie(gf, voi_id, date, projection, tableTroncons, connection);
-                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_CENTROIDE_VOIE, true);
+                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_CENTROIDE_VOIE, true);
                                 listRet.add(formateResultatGeocodage(rgVoi, 5, date, projectionEtReferentiel));
                                 break;
                             case GestionReferentiel.SERVICE_TRONCON:
@@ -2804,7 +2807,7 @@ public class GestionGeocodage {
                                                 "metrique") == 0;
 
                                         if (t.geometrie == null) {
-                                            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                                             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                                             listRet.add(new String[]{
                                                 "0", "10",
                                                 "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
@@ -2815,14 +2818,14 @@ public class GestionGeocodage {
                                         try {
                                             g = GeometryUtils.readGeometryFromWKT(t.geometrie);
                                         } catch (ParseException pe) {
-                                            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                                             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                                             listRet.add(new String[]{ // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
                                                 "0", "10",
                                                 "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
                                                 " à " + DateUtils.formatDateToString(date, sdformat)
                                             });
                                         } catch (NullPointerException npe) {
-                                            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                                             jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                                             listRet.add(new String[]{
                                                 "0", "10",
                                                 "Erreur de géométrie dans le géocodage de " + numero + " " + repetition + " dans " + voi_id +
@@ -2834,7 +2837,7 @@ public class GestionGeocodage {
                                         if (classiqueoumetrique) {
                                             rgTro = geocodeInterpolationMetriqueTroncon(numero, g, t.numero_debut, t.numero_fin, distance, t.isCoteDroit);
                                             if (!rgTro.nontrouve && rgTro.errorcode == 0) {
-                                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                                                 listRet.add(formateResultatGeocodage(rgTro, 3, date, projectionEtReferentiel));
                                                 break;
                                             }
@@ -2852,7 +2855,7 @@ public class GestionGeocodage {
                                                 // retourne le centroide du troncon.
                                                 rgTro = geocodeCentroideTroncon(gf, g, t.numero_debut <= t.numero_fin);
                                                 if (!rgTro.nontrouve && rgTro.errorcode == 0) {
-                                                    GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_CENTROIDE_TRONCON, true);
+                                                     jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_CENTROIDE_TRONCON, true);
                                                     listRet.add(formateResultatGeocodage(rgTro, 4, date, projectionEtReferentiel));
                                                 }
                                                 break;
@@ -2879,7 +2882,7 @@ public class GestionGeocodage {
                                                     rgTro.y = c.y;
                                                 }
                                                 rgTro.setService(GestionReferentiel.SERVICE_TRONCON);
-                                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                                                 listRet.add(formateResultatGeocodage(rgTro, 3, date, projectionEtReferentiel));
                                                 break;
                                             case 2: // extrémité de troncon (debut)
@@ -2905,7 +2908,7 @@ public class GestionGeocodage {
                                                     rgTro.y = c.y;
                                                 }
                                                 rgTro.setService(GestionReferentiel.SERVICE_TRONCON);
-                                                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
+                                                 jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_INTERPOLATION_TRONCON, true);
                                                 listRet.add(formateResultatGeocodage(rgTro, 3, date, projectionEtReferentiel));
                                                 break;
                                         }

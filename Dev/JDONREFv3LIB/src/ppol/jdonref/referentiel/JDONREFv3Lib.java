@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdom.JDOMException;
 import ppol.jdonref.GestionConnection;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
 import ppol.jdonref.GestionMail;
 import ppol.jdonref.JDONREFException;
 import ppol.jdonref.JDONREFParams;
@@ -181,7 +181,8 @@ public class JDONREFv3Lib {
             gestionMots.definitJDONREFParams(params);
 
             // Définit le répertoire des logs.
-            GestionLogs.getInstance().definitRepertoire(params.obtientLogPath());
+//            GestionLogs.getInstance().definitRepertoire(params.obtientLogPath());
+            params.getGestionLog();
 
             // Définit les paramètres du gestionnaire de description de tables.
             GestionDescriptionTables.definitJDONREFParams(params);
