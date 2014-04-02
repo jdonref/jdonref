@@ -112,9 +112,12 @@ public class Base
         if (con==null || !isConnectionOk(con))
         {
             if (con==null)
-                Logger.getLogger("GestionConnection").log(Level.INFO,"Initialise la connection : "+toString());
+//                Logger.getLogger("GestionConnection").log(Level.INFO,"Initialise la connection : "+toString());
+                params.getGestionLog().logs_INFO("GestionConnection","Initialise la connection : "+toString());
+                
             else
-                Logger.getLogger("GestionConnection").log(Level.INFO,"La connection est fermée, réinitialise la connection : "+toString());
+//                Logger.getLogger("GestionConnection").log(Level.INFO,"La connection est fermée, réinitialise la connection : "+toString());
+                params.getGestionLog().logs_INFO("GestionConnection","La connection est fermée, réinitialise la connection : "+toString());
             try
             {
                 connecte(index);
@@ -185,8 +188,8 @@ public class Base
         }
         catch(SQLException sqle)
         {
-            Logger.getLogger("Connection").log(Level.SEVERE,
-                    "La connection "+toString()+" n'a pas pu etre établie.");
+//            Logger.getLogger("Connection").log(Level.SEVERE,"La connection "+toString()+" n'a pas pu etre établie.");
+            params.getGestionLog().logs_SEVERE("Connection","La connection "+toString()+" n'a pas pu etre établie.");
         }
         try
         {
@@ -195,7 +198,8 @@ public class Base
         }
         catch(SQLException sqle)
         {
-            Logger.getLogger("Connection").log(Level.SEVERE,"Les paramètres n'ont pas pu être chargées sur cette connexion.",sqle);
+//            Logger.getLogger("Connection").log(Level.SEVERE,"Les paramètres n'ont pas pu être chargées sur cette connexion.",sqle);
+            params.getGestionLog().logs_SEVERE("Connection","Les paramètres n'ont pas pu être chargées sur cette connexion.",sqle);
         }
         connections.set(index,connection);
     }    

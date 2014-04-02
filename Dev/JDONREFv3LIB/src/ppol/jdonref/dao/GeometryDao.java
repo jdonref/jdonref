@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import ppol.jdonref.JDONREFParams;
+import ppol.jdonref.referentiel.JDONREFv3Lib;
 
 /**
  *
@@ -118,7 +119,8 @@ public class GeometryDao {
                 result.setReferentielText(rsCountryWkt.getString("pay_referentiel"));
             }
         } catch (SQLException sqlEx) {
-            Logger.getLogger("RecherchesDao").log(Level.SEVERE, "Erreur JDBC lors de l'obtention de la geometry de pays. " + sqlEx.getLocalizedMessage());
+//            Logger.getLogger("RecherchesDao").log(Level.SEVERE, "Erreur JDBC lors de l'obtention de la geometry de pays. " + sqlEx.getLocalizedMessage());
+            JDONREFv3Lib.getInstance().getParams().getGestionLog().logs_SEVERE("RecherchesDao", "Erreur JDBC lors de l'obtention de la geometry de pays. " + sqlEx.getLocalizedMessage());
             throw sqlEx;
         } finally {
             DbUtils.close(rsCountryWkt);
@@ -162,7 +164,8 @@ public class GeometryDao {
                 result.setReferentielText(rsCountryWkt.getString("pay_referentiel"));
             }
         } catch (SQLException sqlEx) {
-            Logger.getLogger("RecherchesDao").log(Level.SEVERE, "Erreur JDBC lors de l'obtention de la geometry de pays. " + sqlEx.getLocalizedMessage());
+//            Logger.getLogger("RecherchesDao").log(Level.SEVERE, "Erreur JDBC lors de l'obtention de la geometry de pays. " + sqlEx.getLocalizedMessage());
+            jdonrefparams.getGestionLog().logs_SEVERE("RecherchesDao", "Erreur JDBC lors de l'obtention de la geometry de pays. " + sqlEx.getLocalizedMessage());
             throw sqlEx;
         } finally {
             DbUtils.close(rsCountryWkt);

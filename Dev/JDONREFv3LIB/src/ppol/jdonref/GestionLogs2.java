@@ -124,26 +124,33 @@ public class GestionLogs2 extends AGestionLogs{
     }
 
 
-    private  static GestionLogs2 instance = null;
-    /**
-     * Obtient une instance de GestionLogs2.
-     * @return l'unique instance de GestionLogs2 (singleton).
-     */
-    
-    public static GestionLogs2 getInstance() {
-        if (instance == null) {
-            instance = new GestionLogs2();
-        }
-        return instance;
-    }
+//    private  static GestionLogs2 instance = null;
+//    /**
+//     * Obtient une instance de GestionLogs2.
+//     * @return l'unique instance de GestionLogs2 (singleton).
+//     */
+//    
+//    public static GestionLogs2 getInstance() {
+//        if (instance == null) {
+//            instance = new GestionLogs2();
+//        }
+//        return instance;
+//    }
 
 
-    public void logs(String classeName,String message){
+    public void logs_SEVERE(String classeName,String message){
         this.monLogger.fatal(message);
     }
-    public void logs(String classeName,String message, Throwable thrown){
+    public void logs_SEVERE(String classeName,String message, Throwable thrown){
         this.monLogger.fatal(message,thrown);
     }
+    public void logs_INFO(String classeName,String message){
+        this.monLogger.info(message);
+    }
+    public void logs_INFO(String classeName,String message, Throwable thrown){
+        this.monLogger.info(message,thrown);
+    }
+
 
     /**
      * Permet de adminLogger qu'un échec de validation d'adresse.<br>
@@ -626,7 +633,7 @@ public class GestionLogs2 extends AGestionLogs{
             param.load("params.xml");
             GestionLogs2 gl = new GestionLogs2();
             gl.setParam(param);
-            gl.definitRepertoire("logs");
+            gl.definitRepertoire("jdonrefv3lib_logs");
 
             gl.logEchecValidation(2, true);
             gl.logNormalisation(2, FLAG_NORMALISE_1, true);

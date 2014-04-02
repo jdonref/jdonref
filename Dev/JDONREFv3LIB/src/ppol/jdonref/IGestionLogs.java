@@ -28,11 +28,13 @@ public interface IGestionLogs {
     public void logMetaAdmin(int numero, int code, String message);
     public void logAdmin(int processus, int version, String message);
     
-    public void logs(String classeName, String message);
-    public void logs(String classeName, String message, Throwable thrown);
+    public void logs_SEVERE(String classeName, String message);
+    public void logs_SEVERE(String classeName, String message, Throwable thrown);
+    public void logs_INFO(String classeName, String message);
+    public void logs_INFO(String classeName, String message, Throwable thrown);
+    
    
     public JDONREFParams getParam();
- 
     public void setParam(JDONREFParams param);
         
 

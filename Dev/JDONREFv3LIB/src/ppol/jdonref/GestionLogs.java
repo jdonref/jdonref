@@ -98,27 +98,34 @@ public class GestionLogs extends AGestionLogs{
     public  GestionLogs() {
     }
     
-    
-    private static GestionLogs instance = null;
-    /**
-     * Obtient une instance de GestionLogs.
-     * @return l'unique instance de GestionLogs (singleton).
-     */
-    public static GestionLogs getInstance() {
-        if (instance == null) {
-            instance = new GestionLogs();
-        }
-        return instance;
-    }
+//    
+//    private static GestionLogs instance = null;
+//    /**
+//     * Obtient une instance de GestionLogs.
+//     * @return l'unique instance de GestionLogs (singleton).
+//     */
+//    public static GestionLogs getInstance() {
+//        if (instance == null) {
+//            instance = new GestionLogs();
+//        }
+//        return instance;
+//    }
 
     
   
-    public void logs(String classeName, String message){
+    public void logs_SEVERE(String classeName, String message){
         Logger.getLogger(classeName).log(Level.SEVERE, message);
     }
 
-    public void logs(String classeName, String message, Throwable thrown){
+    public void logs_SEVERE(String classeName, String message, Throwable thrown){
          Logger.getLogger(classeName).log(Level.SEVERE, message,thrown); 
+    }
+    public void logs_INFO(String classeName, String message){
+        Logger.getLogger(classeName).log(Level.INFO, message);
+    }
+
+    public void logs_INFO(String classeName, String message, Throwable thrown){
+         Logger.getLogger(classeName).log(Level.INFO, message,thrown); 
     }
     
     final static String ecrit_utf8 = "UTF-8";

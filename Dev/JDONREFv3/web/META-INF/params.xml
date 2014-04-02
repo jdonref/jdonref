@@ -2,7 +2,8 @@
 
 <version>3.0.5</version>
 
-<logpath>logs/</logpath>
+<logpath>logs/jdonrefv3_logs/</logpath>
+<logClasseName>ppol.jdonref.GestionLogs2</logClasseName>
 
 <malusdetypedevoie>1</malusdetypedevoie>
 <maluspasdemot>4</maluspasdemot>

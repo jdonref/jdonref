@@ -127,6 +127,7 @@ public class JDONREFParams {
     private int projectionSpheroidPardefaut = 4326;
     private String spheroidPardefaut = "SPHEROID[\"WGS 84\",6378137,298.257223563]";
     
+    
     private String logClasseName = "ppol.jdonref.GestionLogs";
 
     

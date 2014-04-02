@@ -23,8 +23,10 @@ import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
-import ppol.jdonref.GestionLogs;
+//import ppol.jdonref.GestionLogs;
+import ppol.jdonref.AGestionLogs;
 import ppol.jdonref.GestionMail;
+import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.JDONREFv3Exception;
 import ppol.jdonref.dao.PoizonBean;
 import ppol.jdonref.poizon.GestionPoizon;
@@ -53,6 +55,7 @@ public class JPOIZONREF implements IJDONREFv3 {
     private static ServletContext servletContext;
     private JDONREFv3Lib jdonrefv3lib;
     private final static DateUtils.DateFormatType sdformat = DateUtils.DateFormatType.SimpleSlashed;
+    JDONREFParams params=null ;
 
     public JPOIZONREF() {
         //jdonrefv3lib = JDONREFv3Lib.getInstance();
@@ -104,10 +107,12 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // VERIFICATION DES DONNEES
         if (donnees == null || donnees.length < 1 || donnees[0] == null || donnees[0].trim().equals("")) {
-            GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_ERREUR, false);
+//            GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_ERREUR, false);
+            params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_ERREUR, false);
             final ResultatNormalisation resultatRet = new ResultatNormalisation();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -120,7 +125,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         // EXECUTION DU SERVICE
         final GestionPoizon service = jdonrefv3lib.getGestionPoizon();
         final ResultatNormalisation resultatRet = ResultAdapter.adapteNormalise(service.normalise(services, operation, donnees));
-        GestionLogs.getInstance().logNormalisation(application, operation, true);
+        params.getGestionLog().logNormalisation(application, operation, true);
 
         return resultatRet;
 
@@ -156,10 +161,11 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // VERIFICATION DES DONNEES
         if (donnees == null || donnees.length < 1 || donnees[0] == null || donnees[0].trim().equals("")) {
-            GestionLogs.getInstance().logValidation(application, "", GestionLogs.FLAG_VALIDE_ERREUR, false);
+            params.getGestionLog().logValidation(application, "", AGestionLogs.FLAG_VALIDE_ERREUR, false);
             final ResultatValidation resultatRet = new ResultatValidation();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -197,7 +203,7 @@ public class JPOIZONREF implements IJDONREFv3 {
             try {
                 date = DateUtils.parseStringToDate(dateOption, sdformat);
             } catch (ParseException pe) {
-                GestionLogs.getInstance().logValidation(application, "", GestionLogs.FLAG_VALIDE_ERREUR, false);
+                params.getGestionLog().logValidation(application, "", AGestionLogs.FLAG_VALIDE_ERREUR, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Le format de la date n'est pas valide.", pe);
                 final ResultatValidation resultatRet = new ResultatValidation();
                 resultatRet.setCodeRetour(0);
@@ -214,7 +220,7 @@ public class JPOIZONREF implements IJDONREFv3 {
             try {
                 force = Boolean.parseBoolean(forceOption);
             } catch (Exception ex) {
-                GestionLogs.getInstance().logValidation(application, "", GestionLogs.FLAG_VALIDE_ERREUR, false);
+                params.getGestionLog().logValidation(application, "", AGestionLogs.FLAG_VALIDE_ERREUR, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Le format de l'option force n'est pas valide.", ex);
                 final ResultatValidation resultatRet = new ResultatValidation();
                 resultatRet.setCodeRetour(0);
@@ -233,7 +239,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         try {
             list.addAll(service.valide(services, operation, donnees, ids, force, date));
         } catch (JDONREFv3Exception jde) {
-            GestionLogs.getInstance().logValidation(application, "", GestionLogs.FLAG_VALIDE_ERREUR, false);
+            params.getGestionLog().logValidation(application, "", AGestionLogs.FLAG_VALIDE_ERREUR, false);
             Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, jde.getMessage(), jde);
             final ResultatValidation resultatRet = new ResultatValidation();
             resultatRet.setCodeRetour(0);
@@ -244,7 +250,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
             return resultatRet;
         }
-        GestionLogs.getInstance().logValidation(application, "", GestionLogs.FLAG_VALIDE_POIZON, true);
+        params.getGestionLog().logValidation(application, "", AGestionLogs.FLAG_VALIDE_POIZON, true);
         final ResultatValidation resultatRet = ResultAdapter.adapteValide(list);
 
         return resultatRet;
@@ -264,10 +270,11 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
-
+        params = jdonrefv3lib.getParams();
+        
         // VERIFICATION DES DONNEES
         if (donnees == null || donnees.length < 1 || donnees[0] == null || donnees[0].trim().equals("")) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             final ResultatGeocodage resultatRet = new ResultatGeocodage();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -279,7 +286,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         }
 
         if (ids == null || ids.length < 1 || ids[0] == null || ids[0].trim().equals("")) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             final ResultatGeocodage resultatRet = new ResultatGeocodage();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -311,7 +318,7 @@ public class JPOIZONREF implements IJDONREFv3 {
             try {
                 date = DateUtils.parseStringToDate(dateOption, sdformat);
             } catch (ParseException pe) {
-                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Le format de la date n'est pas valide.", pe);
                 final ResultatGeocodage resultatRet = new ResultatGeocodage();
                 resultatRet.setCodeRetour(0);
@@ -330,7 +337,7 @@ public class JPOIZONREF implements IJDONREFv3 {
             try {
                 projection = Integer.parseInt(projectionOption);
             } catch (NumberFormatException nfe) {
-                GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+                params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "La projection n'est pas un nombre.", nfe);
                 final ResultatGeocodage resultatRet = new ResultatGeocodage();
                 resultatRet.setCodeRetour(0);
@@ -350,7 +357,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         try {
             list.addAll(service.geocode(services, donnees, ids, date, projection));
         } catch (JDONREFv3Exception jde) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, jde.getMessage(), jde);
             final ResultatGeocodage resultatRet = new ResultatGeocodage();
             resultatRet.setCodeRetour(0);
@@ -363,7 +370,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         }
         final ResultatGeocodage resultatRet = ResultAdapter.adapteGeocode(list);
-        GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_POIZON, true);
+        params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_POIZON, true);
 
         return resultatRet;
     }
@@ -382,10 +389,11 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // VERIFICATION DES IDS
         if (ids == null || ids.length < 1 || ids[0] == null || ids[0].trim().equals("")) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
             final ResultatRevalidation resultatRet = new ResultatRevalidation();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -402,7 +410,7 @@ public class JPOIZONREF implements IJDONREFv3 {
             try {
                 dateParam = DateUtils.parseStringToDate(date, sdformat);
             } catch (ParseException pe) {
-                GestionLogs.getInstance().logRevalidation(application, false);
+                params.getGestionLog().logRevalidation(application, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Le format de la date n'est pas valide.", pe);
                 final ResultatRevalidation resultatRet = new ResultatRevalidation();
                 resultatRet.setCodeRetour(0);
@@ -414,7 +422,7 @@ public class JPOIZONREF implements IJDONREFv3 {
                 return resultatRet;
             }
         } else {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
             final ResultatRevalidation resultatRet = new ResultatRevalidation();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -442,7 +450,7 @@ public class JPOIZONREF implements IJDONREFv3 {
             try {
                 dateOptionnelle = DateUtils.parseStringToDate(dateOption, sdformat);
             } catch (ParseException pe) {
-                GestionLogs.getInstance().logRevalidation(application, false);
+                params.getGestionLog().logRevalidation(application, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Le format de la date optionnelle n'est pas valide.", pe);
                 final ResultatRevalidation resultatRet = new ResultatRevalidation();
                 resultatRet.setCodeRetour(0);
@@ -462,7 +470,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         try {
             list.addAll(service.revalide(services, ids, dateParam, dateOptionnelle));
         } catch (JDONREFv3Exception jde) {
-            GestionLogs.getInstance().logRevalidation(application, false);
+            params.getGestionLog().logRevalidation(application, false);
             Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, jde.getMessage(), jde);
             final ResultatRevalidation resultatRet = new ResultatRevalidation();
             resultatRet.setCodeRetour(0);
@@ -475,7 +483,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         }
         final ResultatRevalidation resultatRet = ResultAdapter.adapteRevalide(list);
-        GestionLogs.getInstance().logRevalidation(application, true);
+        params.getGestionLog().logRevalidation(application, true);
 
         return resultatRet;
     }
@@ -493,6 +501,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // TRAITEMENT DES DONNEES
         String[] position = new String[donnees.length];
@@ -522,7 +531,7 @@ public class JPOIZONREF implements IJDONREFv3 {
             try {
                 date = DateUtils.parseStringToDate(dateOption, sdformat);
             } catch (ParseException pe) {
-                GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+                params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_ERREUR, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Le format de la date n'est pas valide.", pe);
                 final ResultatGeocodageInverse resultatRet = new ResultatGeocodageInverse();
                 resultatRet.setCodeRetour(0);
@@ -541,7 +550,7 @@ public class JPOIZONREF implements IJDONREFv3 {
             try {
                 projection = Integer.parseInt(projectionOption);
             } catch (NumberFormatException nfe) {
-                GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+                params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_ERREUR, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Le format de la projection n'est pas valide.", nfe);
                 final ResultatGeocodageInverse resultatRet = new ResultatGeocodageInverse();
                 resultatRet.setCodeRetour(0);
@@ -561,7 +570,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         try {
             list.addAll(service.geocodeInverse(services, position, distance, date, projection));
         } catch (JDONREFv3Exception jde) {
-            GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_ERREUR, false);
+            params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_ERREUR, false);
             Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, jde.getMessage(), jde);
             final ResultatGeocodageInverse resultatRet = new ResultatGeocodageInverse();
             resultatRet.setCodeRetour(0);
@@ -574,7 +583,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         }
         final ResultatGeocodageInverse resultatRet = ResultAdapter.adapteGeocodeInverse(list);
-        GestionLogs.getInstance().logInverse(application, GestionLogs.FLAG_INVERSE_POIZON, true);
+        params.getGestionLog().logInverse(application, AGestionLogs.FLAG_INVERSE_POIZON, true);
 
         return resultatRet;
     }
@@ -613,10 +622,11 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // TRAITEMENT DES DONNEES
         if (donnees == null || donnees.length < 1 || donnees[0] == null || donnees[0].trim().equals("")) {
-            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             final ResultatDecoupage resultatRet = new ResultatDecoupage();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -633,7 +643,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         try {
             list.addAll(service.decoupe(services, operations, donnees));
         } catch (JDONREFv3Exception jde) {
-            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, jde.getMessage(), jde);
             final ResultatDecoupage resultatRet = new ResultatDecoupage();
             resultatRet.setCodeRetour(0);
@@ -644,7 +654,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
             return resultatRet;
         }
-        GestionLogs.getInstance().logDecoupage(application, true);
+        params.getGestionLog().logDecoupage(application, true);
         final ResultatDecoupage resultatRet = ResultAdapter.adapteDecoupe(list);
 
         return resultatRet;
@@ -663,6 +673,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // TRAITEMENT DES OPTIONS
         String emetteur = "";
@@ -691,7 +702,7 @@ public class JPOIZONREF implements IJDONREFv3 {
                 sb.append(";ligne" + i + "=");
                 sb.append(donnees[i]);
             }
-            GestionLogs.getInstance().logContacte(application, false);
+            params.getGestionLog().logContacte(application, false);
             Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, sb.toString());
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -701,10 +712,10 @@ public class JPOIZONREF implements IJDONREFv3 {
         } else {
             try {
                 gm.envoieMail(emetteur, titre, String.valueOf(application), donnees);
-                GestionLogs.getInstance().logContacte(application, true);
+                params.getGestionLog().logContacte(application, true);
                 resultatRet.setCodeRetour(1);
             } catch (MessagingException ex) {
-                GestionLogs.getInstance().logContacte(application, false);
+                params.getGestionLog().logContacte(application, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Un problème a été rencontré durant l'envoi d'un mail à l'administrateur de JDONREF.", ex);
                 resultatRet.setCodeRetour(0);
                 final ResultatErreur erreur = new ResultatErreur();
@@ -712,7 +723,7 @@ public class JPOIZONREF implements IJDONREFv3 {
                 erreur.setMessage("Un problème a été rencontré durant l'envoi d'un mail à l'administrateur de JDONREF.");
                 resultatRet.setErreurs(new ResultatErreur[]{erreur});
             } catch (Exception ex) {
-                GestionLogs.getInstance().logContacte(application, false);
+                params.getGestionLog().logContacte(application, false);
                 Logger.getLogger(JPOIZONREF.class.getName()).log(Level.SEVERE, "Un problème inconnu a été rencontré", ex);
                 resultatRet.setCodeRetour(0);
                 final ResultatErreur erreur = new ResultatErreur();
@@ -735,6 +746,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // EXECUTION DU SERVICE
         final ResultatVersion resultatRet = new ResultatVersion();
@@ -743,7 +755,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         proposition.setNom("Jdonref");
         proposition.setVersion(jdonrefv3lib.getParams().getVersion());
         resultatRet.setPropositions(new PropositionVersion[]{proposition});
-        GestionLogs.getInstance().logVersion(application);
+        params.getGestionLog().logVersion(application);
 
         return resultatRet;
     }

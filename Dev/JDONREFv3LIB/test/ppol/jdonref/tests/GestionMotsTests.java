@@ -272,171 +272,173 @@ public class GestionMotsTests
 //        testVoieAmbigue(gm,"BD DE L ESCALIER",true);
 //    }
 //    
-//    /**
-//     * Teste le découpage de ligne4,ligne6
-//     */
-//    void testDecoupe(GestionMots gm,String ligne4,String ligne6, String ligne7, int[] natures,Connection connection,String[] resultat) throws SQLException, Exception
-//    {
-//        String[] res = gm.decoupe(2,new String[]{ligne4,ligne6, ligne7},natures,new int[]{4,6,7},connection);
-//        
-//        if (res[0].compareTo("1")==0)
-//        {
-//            boolean error = false;
-//            for(int i=0;(i<resultat.length)&&!error;i++)
-//            {
-//                if (res[i+1].compareTo(resultat[i])!=0)
-//                    error = true;
-//            }
-//            if (error)
-//            {
-//                String message = "ERREUR";
-//                for(int i=0;i<res.length;i++)
-//                {
-//                    message += res[i];
-//                }
-//                throw(new Exception(message));
-//            }
-//        }
-//        else
-//        {
-//            String message = "";
-//            for(int i=0;i<res.length;i++)
-//            {
-//                message += res[i];
-//            }
-//            throw(new Exception(message));
-//        }
-//    }
-//
-//    private void testDecoupeFull(GestionMots gm,String[] lignes, int[] natures, int[] numeroslignes, Connection connection, String[] resultatAttendu) throws Exception
-//    {
-//        String[] res = gm.decoupe(2, lignes, natures, numeroslignes, connection);
-//        if (res[0].compareTo("1")==0)
-//        {
-//            boolean error = false;
-//            for(int i=0;(i<resultatAttendu.length)&&!error;i++)
-//            {
-//                if (res[i+1].compareTo(resultatAttendu[i])!=0)
-//                    error = true;
-//            }
-//            if (error)
-//            {
-//                String message = "ERREUR";
-//                for(int i=0;i<res.length;i++)
-//                {
-//                    message += res[i];
-//                }
-//                throw(new Exception(message));
-//            }
-//        }
-//        else
-//        {
-//            String message = "";
-//            for(int i=0;i<res.length;i++)
-//            {
-//                message += res[i];
-//            }
-//            throw(new Exception(message));
-//        }
-//    }
-//    
-//    @Test
-//    public void testDecoupe() throws GestionMotsException, JDOMException, IOException, ClassNotFoundException, SQLException, JDONREFException, GestionReferentielException, Exception
-//    {
-//        JDONREFParams params = new JDONREFParams();
-//        params.load("params.xml");
-//        GestionConnection gc=new GestionConnection(params);
-//        gc.load("connections.xml");
-//        Connection db1 = gc.obtientConnection().connection;
-//
-//        if(params.isUtilisationDeLaGestionDesDepartements())    // si ce parametre n'est pas a true : tous les test de corse et domtom echoueront.
-//            GestionCodesDepartements.getInstance().loadDptCodes(db1, "departementsSynonymes.xml", "algosCP-Departements.xml");
-//        
-//        GestionMots gm = new GestionMots();
-//        GestionMiseAJour gmaj = new GestionMiseAJour(gm,params);
-//        GestionReferentiel gr = new GestionReferentiel(gm,gmaj,params);
-//        gm.definitGestionReferentiel(gr);
+    /**
+     * Teste le découpage de ligne4,ligne6
+     */
+    void testDecoupe(GestionMots gm,String ligne4,String ligne6, String ligne7, int[] natures,Connection connection,String[] resultat) throws SQLException, Exception
+    {
+        String[] res = gm.decoupe(2,new String[]{ligne4,ligne6, ligne7},natures,new int[]{4,6,7},connection);
+        
+        if (res[0].compareTo("1")==0)
+        {
+            boolean error = false;
+            for(int i=0;(i<resultat.length)&&!error;i++)
+            {
+                if (res[i+1].compareTo(resultat[i])!=0)
+                    error = true;
+            }
+            if (error)
+            {
+                String message = "ERREUR";
+                for(int i=0;i<res.length;i++)
+                {
+                    message += res[i];
+                }
+                throw(new Exception(message));
+            }
+        }
+        else
+        {
+            String message = "";
+            for(int i=0;i<res.length;i++)
+            {
+                message += res[i];
+            }
+            throw(new Exception(message));
+        }
+    }
+
+    private void testDecoupeFull(GestionMots gm,String[] lignes, int[] natures, int[] numeroslignes, Connection connection, String[] resultatAttendu) throws Exception
+    {
+        String[] res = gm.decoupe(2, lignes, natures, numeroslignes, connection);
+        if (res[0].compareTo("1")==0)
+        {
+            boolean error = false;
+            for(int i=0;(i<resultatAttendu.length)&&!error;i++)
+            {
+                if (res[i+1].compareTo(resultatAttendu[i])!=0)
+                    error = true;
+            }
+            if (error)
+            {
+                String message = "ERREUR";
+                for(int i=0;i<res.length;i++)
+                {
+                    message += res[i];
+                }
+                throw(new Exception(message));
+            }
+        }
+        else
+        {
+            String message = "";
+            for(int i=0;i<res.length;i++)
+            {
+                message += res[i];
+            }
+            throw(new Exception(message));
+        }
+    }
+    
+    @Test
+    public void testDecoupe() throws GestionMotsException, JDOMException, IOException, ClassNotFoundException, SQLException, JDONREFException, GestionReferentielException, Exception
+    {
+        JDONREFParams params = new JDONREFParams();
+        params.load("params.xml");
+        GestionConnection gc=new GestionConnection(params);
+        gc.load("connections.xml");
+        Connection db1 = gc.obtientConnection().connection;
+
+        if(params.isUtilisationDeLaGestionDesDepartements())    // si ce parametre n'est pas a true : tous les test de corse et domtom echoueront.
+            GestionCodesDepartements.getInstance().loadDptCodes(db1, "departementsSynonymes.xml", "algosCP-Departements.xml");
+        
+        GestionMots gm = new GestionMots();
+        GestionMiseAJour gmaj = new GestionMiseAJour(gm,params);
+        GestionReferentiel gr = new GestionReferentiel(gm,gmaj,params);
+        gm.definitGestionReferentiel(gr);
+        gm.definitJDONREFParams(params);
 //        GestionLogs.getInstance().definitRepertoire(".");
-//        GestionCodesDepartements gestDpt = GestionCodesDepartements.getInstance();
-//        if(params.isUtilisationDeLaGestionDesDepartements())
-//        {
-//            gestDpt.loadDptCodes(db1, "departementsSynonymes.xml", "algosCP-Departements.xml");
-//        }
-//        
-//        gm.loadAbbreviation("abbreviations.xml");
-//        gm.loadCles("cles.xml");
-//        gm.loadPrenoms("prenoms.txt");        
-//        gm.loadAbbreviation("abbreviations.xml");
-//     
-//     /*
-//     * <ul>
-//     * <li>1 pour numero</li>
-//     * <li>2 pour repetition</li>
-//     * <li>4 pour autres numeros</li>
-//     * <li>8 pour type de voie</li>
-//     * <li>16 pour article</li>
-//     * <li>32 pour libelle</li>
-//     * <li>64 pour mot déterminant</li>
-//     * <li>128 pour code postal</li>
-//     * <li>256 pour commune</li>
-//     * <li>512 pour numero d'arrondissement</li>
-//     * <li>1024 pour cedex</li>
-//     * <li>2048 pour le code cedex</li>
-//     * <li>4096 pour ligne1</li>
-//     * <li>8192 pour ligne2</li>
-//     * <li>16384 pour ligne3</li>
-//     * <li>32768 pour ligne5</li>
-//     * </ul>
-//     */
-//        testDecoupe(gm,"BOULEVARD DE L HOPITAL","75005 PARIS", "",new int[]{8,16,32,128+256},db1,
-//                       new String[]{"BOULEVARD","DE L","HOPITAL","75005 PARIS"});
-//        testDecoupe(gm,"24 26 BOULEVARD DE L HOPITAL","75005 PARIS", "",new int[]{1+8+16+32,4,128,256},db1,
-//                       new String[]{"24 BOULEVARD DE L HOPITAL","26","75005","PARIS"});
-//        testDecoupe(gm,"24 R DE L HOPITAL","PARIS", "",new int[]{1,2,8+16+32,128+256},db1,
-//                       new String[]{"24","","R DE L HOPITAL","PARIS"});
-//        testDecoupe(gm,"24 R","", "",new int[]{1,2},db1,
-//                       new String[]{"24","R"});
-//        testDecoupe(gm,"24 26 RPT DE L HOPITAL","75005", "",new int[]{1+2+8+16+32,128,256},db1,
-//                       new String[]{"24 RPT DE L HOPITAL","75005",""});
-//        testDecoupe(gm,"RUE DU VIEUX BOURG","01189", "",new int[]{8,32,64},db1,
-//                       new String[]{"RUE","VIEUX BOURG","BOURG"});
-//        // WA 09/2011 Maintenant que l'on a la liste des departement du referentiel, on sait que 7 n'est pas un code dpt valide
-//        if( ! params.isUtilisationDeLaGestionDesDepartements())
-//            testDecoupe(gm,"AVENUE PORTE GENTILLY","7 5 PARIS", "",new int[]{128,256},db1,new String[]{"7",""});
-//        else
-//            testDecoupe(gm,"AVENUE PORTE GENTILLY","7 5 PARIS", "",new int[]{128,256},db1,new String[]{"",""});
-//        
-//        testDecoupe(gm,"AVENUE PORTE GENTILLY","75 4 ARIS", "",new int[]{128,256},db1,new String[]{"75",""});
-//        
-//        testDecoupe(gm,"AVENUE PORTE GENTILLY","H 75 PARIS", "",new int[]{128,256},db1,new String[]{"75","PARIS"});
-//
-//        // WA 09/2011 Corse
-//        if(params.isUtilisationDeLaGestionDesDepartements())
-//        {
-//            if (gestDpt.isDptCodePresent("20 A"))
-//            {
-//                testDecoupe(gm,"AVENUE PORTE GENTILLY","H 20 A AJACCIO", "",new int[]{128,256},db1,new String[]{"20 A","AJACCIO"});
-//                testDecoupe(gm,"2 B AVENUE PORTE GENTILLY","H 2 A AJACCIO", "",new int[]{128,256},db1,new String[]{"2 A","AJACCIO"});
-//            }
-//            if (gestDpt.isDptCodePresent("20 B"))
-//            {
-//                testDecoupe(gm,"20 A AVENUE PORTE GENTILLY","H 20 B AJACCIO", "",new int[]{128,256},db1,new String[]{"20 B","AJACCIO"});
-//                testDecoupe(gm,"AVENUE PORTE GENTILLY","H 2 B AJACCIO", "",new int[]{128,256},db1,new String[]{"2 B","AJACCIO"});
-//            }
-//        }
-//
-//        // WA 01/2012 Pays
-//        testDecoupe(gm, "BOULEVARD DE L HOPITAL", "75005 PARIS", "FRANCE", new int[]{8, 128, 256, 65536}, db1,
-//                new String[]{"BOULEVARD", "75005", "PARIS", "FRANCE"});
-//        testDecoupe(gm, "BOULEVARD DE L HOPITAL", "75005 PARIS", "L ETAT PLURINATIONAL DE BOLIVIE", new int[]{8, 128, 256, 65536}, db1,
-//                new String[]{"BOULEVARD", "75005", "PARIS", "L ETAT PLURINATIONAL DE BOLIVIE"});
-//
-//        testDecoupeFull(gm, new String[]{"", "", "", "BOULEVARD DE L HOPITAL", "", "75005 PARIS", "L ETAT PLURINATIONAL DE BOLIVIE"},
-//                new int[]{8, 128, 256, 8, 8, 8, 65536}, new int[] {1,2,3,4,5,6,7}, db1,
-//                new String[]{"BOULEVARD", "75005", "PARIS", "BOULEVARD", "BOULEVARD", "BOULEVARD", "L ETAT PLURINATIONAL DE BOLIVIE"});
-//
-//    }
-//
+//        params.getGestionLog();
+        GestionCodesDepartements gestDpt = GestionCodesDepartements.getInstance();
+        if(params.isUtilisationDeLaGestionDesDepartements())
+        {
+            gestDpt.loadDptCodes(db1, "departementsSynonymes.xml", "algosCP-Departements.xml");
+        }
+        
+        gm.loadAbbreviation("abbreviations.xml");
+        gm.loadCles("cles.xml");
+        gm.loadPrenoms("prenoms.txt");        
+        gm.loadAbbreviation("abbreviations.xml");
+     
+     /*
+     * <ul>
+     * <li>1 pour numero</li>
+     * <li>2 pour repetition</li>
+     * <li>4 pour autres numeros</li>
+     * <li>8 pour type de voie</li>
+     * <li>16 pour article</li>
+     * <li>32 pour libelle</li>
+     * <li>64 pour mot déterminant</li>
+     * <li>128 pour code postal</li>
+     * <li>256 pour commune</li>
+     * <li>512 pour numero d'arrondissement</li>
+     * <li>1024 pour cedex</li>
+     * <li>2048 pour le code cedex</li>
+     * <li>4096 pour ligne1</li>
+     * <li>8192 pour ligne2</li>
+     * <li>16384 pour ligne3</li>
+     * <li>32768 pour ligne5</li>
+     * </ul>
+     */
+        testDecoupe(gm,"BOULEVARD DE L HOPITAL","75005 PARIS", "",new int[]{8,16,32,128+256},db1,
+                       new String[]{"BOULEVARD","DE L","HOPITAL","75005 PARIS"});
+        testDecoupe(gm,"24 26 BOULEVARD DE L HOPITAL","75005 PARIS", "",new int[]{1+8+16+32,4,128,256},db1,
+                       new String[]{"24 BOULEVARD DE L HOPITAL","26","75005","PARIS"});
+        testDecoupe(gm,"24 R DE L HOPITAL","PARIS", "",new int[]{1,2,8+16+32,128+256},db1,
+                       new String[]{"24","","R DE L HOPITAL","PARIS"});
+        testDecoupe(gm,"24 R","", "",new int[]{1,2},db1,
+                       new String[]{"24","R"});
+        testDecoupe(gm,"24 26 RPT DE L HOPITAL","75005", "",new int[]{1+2+8+16+32,128,256},db1,
+                       new String[]{"24 RPT DE L HOPITAL","75005",""});
+        testDecoupe(gm,"RUE DU VIEUX BOURG","01189", "",new int[]{8,32,64},db1,
+                       new String[]{"RUE","VIEUX BOURG","BOURG"});
+        // WA 09/2011 Maintenant que l'on a la liste des departement du referentiel, on sait que 7 n'est pas un code dpt valide
+        if( ! params.isUtilisationDeLaGestionDesDepartements())
+            testDecoupe(gm,"AVENUE PORTE GENTILLY","7 5 PARIS", "",new int[]{128,256},db1,new String[]{"7",""});
+        else
+            testDecoupe(gm,"AVENUE PORTE GENTILLY","7 5 PARIS", "",new int[]{128,256},db1,new String[]{"",""});
+        
+        testDecoupe(gm,"AVENUE PORTE GENTILLY","75 4 ARIS", "",new int[]{128,256},db1,new String[]{"75",""});
+        
+        testDecoupe(gm,"AVENUE PORTE GENTILLY","H 75 PARIS", "",new int[]{128,256},db1,new String[]{"75","PARIS"});
+
+        // WA 09/2011 Corse
+        if(params.isUtilisationDeLaGestionDesDepartements())
+        {
+            if (gestDpt.isDptCodePresent("20 A"))
+            {
+                testDecoupe(gm,"AVENUE PORTE GENTILLY","H 20 A AJACCIO", "",new int[]{128,256},db1,new String[]{"20 A","AJACCIO"});
+                testDecoupe(gm,"2 B AVENUE PORTE GENTILLY","H 2 A AJACCIO", "",new int[]{128,256},db1,new String[]{"2 A","AJACCIO"});
+            }
+            if (gestDpt.isDptCodePresent("20 B"))
+            {
+                testDecoupe(gm,"20 A AVENUE PORTE GENTILLY","H 20 B AJACCIO", "",new int[]{128,256},db1,new String[]{"20 B","AJACCIO"});
+                testDecoupe(gm,"AVENUE PORTE GENTILLY","H 2 B AJACCIO", "",new int[]{128,256},db1,new String[]{"2 B","AJACCIO"});
+            }
+        }
+
+        // WA 01/2012 Pays
+        testDecoupe(gm, "BOULEVARD DE L HOPITAL", "75005 PARIS", "FRANCE", new int[]{8, 128, 256, 65536}, db1,
+                new String[]{"BOULEVARD", "75005", "PARIS", "FRANCE"});
+        testDecoupe(gm, "BOULEVARD DE L HOPITAL", "75005 PARIS", "L ETAT PLURINATIONAL DE BOLIVIE", new int[]{8, 128, 256, 65536}, db1,
+                new String[]{"BOULEVARD", "75005", "PARIS", "L ETAT PLURINATIONAL DE BOLIVIE"});
+
+        testDecoupeFull(gm, new String[]{"", "", "", "BOULEVARD DE L HOPITAL", "", "75005 PARIS", "L ETAT PLURINATIONAL DE BOLIVIE"},
+                new int[]{8, 128, 256, 8, 8, 8, 65536}, new int[] {1,2,3,4,5,6,7}, db1,
+                new String[]{"BOULEVARD", "75005", "PARIS", "BOULEVARD", "BOULEVARD", "BOULEVARD", "L ETAT PLURINATIONAL DE BOLIVIE"});
+
+    }
+
 //    /**
 //     * Teste la normalisation des lignes 3 4 et 6
 //     */

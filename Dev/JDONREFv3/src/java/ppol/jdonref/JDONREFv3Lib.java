@@ -100,7 +100,8 @@ public class JDONREFv3Lib {
             gestionMots.definitJDONREFParams(params);
 
             // Définit le répertoire des logs.
-            GestionLogs.getInstance().definitRepertoire(params.obtientLogPath());
+//            GestionLogs.getInstance().definitRepertoire(params.obtientLogPath());
+            params.getGestionLog();
 
             // Définit les paramètres du gestionnaire de description de tables.
             GestionDescriptionTables.definitJDONREFParams(params);

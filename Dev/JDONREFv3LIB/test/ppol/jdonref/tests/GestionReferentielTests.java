@@ -2578,7 +2578,7 @@ public class GestionReferentielTests implements Runnable
         gm.loadCles("cles.xml");
         gm.loadPrenoms("prenoms.txt");
         GestionReferentiel referentiel = new GestionReferentiel(gm, gmaj, params);
-        GestionLogs.getInstance().definitRepertoire(".");
+//        GestionLogs.getInstance().definitRepertoire(".");
         GestionValidation validation = new GestionValidation();
         validation.setGestionMots(gm);
         validation.setJdonrefParams(params);
@@ -3928,118 +3928,118 @@ public class GestionReferentielTests implements Runnable
         }
     }
 
-    void testNormalise(GestionReferentiel r, String table, String nom_original, String nom, String code_departement, int flags, int ligne,
-            Connection c2, Connection c1)
-    {
-        Processus p = new Processus();
-        p.state = new String[]
-                {
-                    "ATTENTE"
-                };
-
-        GestionReferentielTests tests = new GestionReferentielTests();
-        tests.r = r;
-        tests.nom_original = nom_original;
-        tests.table = table;
-        tests.c1 = c1;
-        tests.nom = nom;
-        tests.c2 = c2;
-        tests.methode = 0;
-        tests.code_departement = code_departement;
-        tests.p = p;
-        tests.ligne = ligne;
-        tests.flags = flags;
-
-        launch(tests);
-    }
-
-    //@Test
-    // nécessite un échantillon test et des critères de test
-    public void testsNormalise() throws ClassNotFoundException, SQLException, Exception
-    {
-        JDONREFParams params = new JDONREFParams();
-        params.load("params.xml");
-        GestionConnection gc1 = new GestionConnection(params);
-        gc1.load("connections.xml");
-        Connection db1 = gc1.obtientConnection().connection;
-        GestionConnection gc2 = new GestionConnection(params);
-        gc2.load("connections.xml");
-        Connection db2 = gc2.obtientConnection().connection;
-
-        GestionDescriptionTables.definitJDONREFParams(params);
-        Base.loadParameters(db1, params);
-        GestionIdentifiants.setParams(params);
-        GestionMots gm = new GestionMots();
-        gm.loadAbbreviation("abbreviations.xml");
-        gm.loadCles("cles.xml");
-        gm.loadPrenoms("prenoms.txt");
-        GestionMiseAJour gmaj = new GestionMiseAJour(gm, params);
-        GestionReferentiel referentiel = new GestionReferentiel(gm, gmaj, params);
-        GestionLogs.getInstance().definitRepertoire(".");
-        GestionValidation validation = new GestionValidation();
-        validation.setGestionMots(gm);
-        validation.setJdonrefParams(params);
-
-        try
-        {
-            testNormalise(referentiel, "tro_troncons_75", "tro_nom_original_droit", "tro_nom_droit", "75", 13, 4, db2, db1);
-            testNormalise(referentiel, "tro_troncons_75", "tro_nom_original_gauche", "tro_nom_gauche", "75", 13, 4, db2, db1);
-        } finally
-        {
-            db2.close();
-        }
-    }
-
-    @Test
-    // Pas d'erreur à remonter. Critères de tests à proposer ?
-    public void testsComptes() throws ClassNotFoundException, JDOMException, IOException, JDONREFException, SQLException,
-            GestionMotsException
-    {
-        JDONREFParams params = new JDONREFParams();
-        params.load("params.xml");
-        GestionConnection gc1 = new GestionConnection(params);
-        gc1.load("connections.xml");
-        Connection db1 = gc1.obtientConnection().connection;
-        GestionConnection gc2 = new GestionConnection(params);
-        gc2.load("connections.xml");
-        Connection db2 = gc2.obtientConnection().connection;
-
-        GestionDescriptionTables.definitJDONREFParams(params);
-        Base.loadParameters(db1, params);
-        GestionIdentifiants.setParams(params);
-        GestionMots gm = new GestionMots();
-        gm.loadAbbreviation("abbreviations.xml");
-        gm.loadCles("cles.xml");
-        gm.loadPrenoms("prenoms.txt");
-        GestionMiseAJour gmaj = new GestionMiseAJour(gm, params);
-        GestionReferentiel referentiel = new GestionReferentiel(gm, gmaj, params);
-        GestionLogs.getInstance().definitRepertoire(".");
-        GestionValidation validation = new GestionValidation();
-        validation.setGestionMots(gm);
-        validation.setJdonrefParams(params);
-
-        String[] total_voies = referentiel.obtientTotalVoies(db1);
-        String[] total_troncons = referentiel.obtientTotalTroncons(db1);
-        String[] total_communes = referentiel.obtientTotalCommunes(db1);
-        String[] total_codes_postaux = referentiel.obtientTotalCodesPostaux(db1);
-
-        System.out.println("Nombre de voies : " + total_voies[0]);
-        System.out.println("Nombre de voies maximum : " + total_voies[3] + " dans " + total_voies[4]);
-        System.out.println("Nombre de voies minimum : " + total_voies[1] + " dans " + total_voies[2]);
-
-        System.out.println("Nombre de troncons : " + total_troncons[0]);
-        System.out.println("Nombre de troncons maximum : " + total_troncons[3] + " dans " + total_troncons[4]);
-        System.out.println("Nombre de troncons minimum : " + total_troncons[1] + " dans " + total_troncons[2]);
-
-        System.out.println("Nombre de codes postaux : " + total_codes_postaux[0]);
-        System.out.println("Nombre de codes postaux maximum : " + total_codes_postaux[3] + " dans " + total_codes_postaux[4]);
-        System.out.println("Nombre de codes postaux minimum : " + total_codes_postaux[1] + " dans " + total_codes_postaux[2]);
-
-        System.out.println("Nombre de communes : " + total_communes[0]);
-        System.out.println("Nombre de communes maximum : " + total_communes[3] + " dans " + total_communes[4]);
-        System.out.println("Nombre de communes minimum : " + total_communes[1] + " dans " + total_communes[2]);
-    }
-
+//    void testNormalise(GestionReferentiel r, String table, String nom_original, String nom, String code_departement, int flags, int ligne,
+//            Connection c2, Connection c1)
+//    {
+//        Processus p = new Processus();
+//        p.state = new String[]
+//                {
+//                    "ATTENTE"
+//                };
+//
+//        GestionReferentielTests tests = new GestionReferentielTests();
+//        tests.r = r;
+//        tests.nom_original = nom_original;
+//        tests.table = table;
+//        tests.c1 = c1;
+//        tests.nom = nom;
+//        tests.c2 = c2;
+//        tests.methode = 0;
+//        tests.code_departement = code_departement;
+//        tests.p = p;
+//        tests.ligne = ligne;
+//        tests.flags = flags;
+//
+//        launch(tests);
+//    }
+//
+//    //@Test
+//    // nécessite un échantillon test et des critères de test
+//    public void testsNormalise() throws ClassNotFoundException, SQLException, Exception
+//    {
+//        JDONREFParams params = new JDONREFParams();
+//        params.load("params.xml");
+//        GestionConnection gc1 = new GestionConnection(params);
+//        gc1.load("connections.xml");
+//        Connection db1 = gc1.obtientConnection().connection;
+//        GestionConnection gc2 = new GestionConnection(params);
+//        gc2.load("connections.xml");
+//        Connection db2 = gc2.obtientConnection().connection;
+//
+//        GestionDescriptionTables.definitJDONREFParams(params);
+//        Base.loadParameters(db1, params);
+//        GestionIdentifiants.setParams(params);
+//        GestionMots gm = new GestionMots();
+//        gm.loadAbbreviation("abbreviations.xml");
+//        gm.loadCles("cles.xml");
+//        gm.loadPrenoms("prenoms.txt");
+//        GestionMiseAJour gmaj = new GestionMiseAJour(gm, params);
+//        GestionReferentiel referentiel = new GestionReferentiel(gm, gmaj, params);
+//        GestionLogs.getInstance().definitRepertoire(".");
+//        GestionValidation validation = new GestionValidation();
+//        validation.setGestionMots(gm);
+//        validation.setJdonrefParams(params);
+//
+//        try
+//        {
+//            testNormalise(referentiel, "tro_troncons_75", "tro_nom_original_droit", "tro_nom_droit", "75", 13, 4, db2, db1);
+//            testNormalise(referentiel, "tro_troncons_75", "tro_nom_original_gauche", "tro_nom_gauche", "75", 13, 4, db2, db1);
+//        } finally
+//        {
+//            db2.close();
+//        }
+//    }
+//
+//    @Test
+//    // Pas d'erreur à remonter. Critères de tests à proposer ?
+//    public void testsComptes() throws ClassNotFoundException, JDOMException, IOException, JDONREFException, SQLException,
+//            GestionMotsException
+//    {
+//        JDONREFParams params = new JDONREFParams();
+//        params.load("params.xml");
+//        GestionConnection gc1 = new GestionConnection(params);
+//        gc1.load("connections.xml");
+//        Connection db1 = gc1.obtientConnection().connection;
+//        GestionConnection gc2 = new GestionConnection(params);
+//        gc2.load("connections.xml");
+//        Connection db2 = gc2.obtientConnection().connection;
+//
+//        GestionDescriptionTables.definitJDONREFParams(params);
+//        Base.loadParameters(db1, params);
+//        GestionIdentifiants.setParams(params);
+//        GestionMots gm = new GestionMots();
+//        gm.loadAbbreviation("abbreviations.xml");
+//        gm.loadCles("cles.xml");
+//        gm.loadPrenoms("prenoms.txt");
+//        GestionMiseAJour gmaj = new GestionMiseAJour(gm, params);
+//        GestionReferentiel referentiel = new GestionReferentiel(gm, gmaj, params);
+//        GestionLogs.getInstance().definitRepertoire(".");
+//        GestionValidation validation = new GestionValidation();
+//        validation.setGestionMots(gm);
+//        validation.setJdonrefParams(params);
+//
+//        String[] total_voies = referentiel.obtientTotalVoies(db1);
+//        String[] total_troncons = referentiel.obtientTotalTroncons(db1);
+//        String[] total_communes = referentiel.obtientTotalCommunes(db1);
+//        String[] total_codes_postaux = referentiel.obtientTotalCodesPostaux(db1);
+//
+//        System.out.println("Nombre de voies : " + total_voies[0]);
+//        System.out.println("Nombre de voies maximum : " + total_voies[3] + " dans " + total_voies[4]);
+//        System.out.println("Nombre de voies minimum : " + total_voies[1] + " dans " + total_voies[2]);
+//
+//        System.out.println("Nombre de troncons : " + total_troncons[0]);
+//        System.out.println("Nombre de troncons maximum : " + total_troncons[3] + " dans " + total_troncons[4]);
+//        System.out.println("Nombre de troncons minimum : " + total_troncons[1] + " dans " + total_troncons[2]);
+//
+//        System.out.println("Nombre de codes postaux : " + total_codes_postaux[0]);
+//        System.out.println("Nombre de codes postaux maximum : " + total_codes_postaux[3] + " dans " + total_codes_postaux[4]);
+//        System.out.println("Nombre de codes postaux minimum : " + total_codes_postaux[1] + " dans " + total_codes_postaux[2]);
+//
+//        System.out.println("Nombre de communes : " + total_communes[0]);
+//        System.out.println("Nombre de communes maximum : " + total_communes[3] + " dans " + total_communes[4]);
+//        System.out.println("Nombre de communes minimum : " + total_communes[1] + " dans " + total_communes[2]);
+//    }
+//
     /**
      * Exécute la méthode choisie avec les paramètres choisis.
      */

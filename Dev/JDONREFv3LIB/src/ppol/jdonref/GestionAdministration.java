@@ -612,7 +612,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         
@@ -628,7 +629,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la restructuration.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la restructuration.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la restructuration.",ex);
             return new String[]{"0","3","Problème SQL durant la retructuration."};
         }
         catch(Exception e)
@@ -640,7 +642,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la restructuration.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la restructuration.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la restructuration.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant la restructuration"
@@ -724,7 +727,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         try
@@ -747,7 +751,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 2.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 2."};
         }
         
@@ -763,7 +768,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la restructuration.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la restructuration.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la restructuration.",ex);
             return new String[]{"0","3","Problème SQL durant la retructuration."};
         }
         catch(Exception e)
@@ -772,7 +778,8 @@ public class GestionAdministration
             p.state = new String[]{"ERREUR","Problème indéterminé durant la restructuration. "+e.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la restructuration.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la restructuration.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la restructuration.",e);
             return new String[]{"0","7","Problème indéterminé durant la restructuration."};
         }
         return new String[]{"1"};
@@ -930,7 +937,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         try
@@ -953,7 +961,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 2.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 2."};
         }
         
@@ -978,7 +987,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant le découpage.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant le découpage.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant le découpage.",ex);
             return new String[]{"0","3","Problème SQL durant le découpage."};
         }
         catch(Exception e)
@@ -990,7 +1000,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant le découpage.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant le découpage.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant le découpage.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant le découpage"
@@ -1011,7 +1022,8 @@ public class GestionAdministration
     {
         if (log)
         {
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,message);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,message);
+            params.getGestionLog().logs_SEVERE("GestionAdministration",message);
         }
         p.resultat.add("ERREUR");
         p.resultat.add(ex.getMessage());
@@ -1019,7 +1031,8 @@ public class GestionAdministration
         {
             p.resultat.add(ex.getStackTrace()[i].toString());
             if (log)
-                Logger.getLogger("GestionAdministration").log(Level.SEVERE,ex.getStackTrace()[i].toString());
+//                Logger.getLogger("GestionAdministration").log(Level.SEVERE,ex.getStackTrace()[i].toString());
+                params.getGestionLog().logs_SEVERE("GestionAdministration",ex.getStackTrace()[i].toString());
         }
         p.finished=true;
         p.state=new String[]{"ERREUR",message};
@@ -1146,7 +1159,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         try
@@ -1169,7 +1183,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 2.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 2."};
         }
 
@@ -1205,7 +1220,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la mise à jour des identifiants.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la mise à jour des identifiants.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la mise à jour des identifiants.",ex);
             return new String[]{"0","3","Problème SQL durant la mise à jour des identifiants."};
         }
         catch(Exception e)
@@ -1217,7 +1233,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la mise à jour des identifiants.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la mise à jour des identifiants.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la mise à jour des identifiants.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant la mise à jour des identifiants"
@@ -1266,7 +1283,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         
@@ -1293,7 +1311,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la création des ambiguités.",ex);
             return new String[]{"0","3","Problème SQL durant la création des ambiguités."};
         }
         catch(Exception e)
@@ -1305,7 +1324,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la création des ambiguités.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant la création des ambiguités"
@@ -1357,7 +1377,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         
@@ -1376,7 +1397,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la création des ambiguités.",ex);
             return new String[]{"0","3","Problème SQL durant la création des ambiguités."};
         }
         catch(Exception e)
@@ -1388,7 +1410,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la création des ambiguités.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant la création des ambiguités"
@@ -1440,7 +1463,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         
@@ -1457,7 +1481,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la création des ambiguités.",ex);
             return new String[]{"0","3","Problème SQL durant la création des ambiguités."};
         }
         catch(Exception e)
@@ -1469,7 +1494,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des ambiguités.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la création des ambiguités.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant la création des ambiguités"
@@ -1525,7 +1551,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         
@@ -1553,7 +1580,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des codes fantoirs.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des codes fantoirs.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la création des codes fantoirs.",ex);
             return new String[]{"0","3","Problème SQL durant la création des codes fantoirs."};
         }
         catch(Exception e)
@@ -1565,7 +1593,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des codes fantoirs.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la création des codes fantoirs.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la création des codes fantoirs.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant la création des codes fantoirs"
@@ -1631,7 +1660,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         
@@ -1655,7 +1685,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 2.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 2."};
         }
 
@@ -1711,7 +1742,8 @@ public class GestionAdministration
             p.resultat.add(ex.getMessage());
             p.state = new String[]{"ERREUR","Problème SQL durant la mise à jour: "+ex.getMessage()};
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la mise à jour.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la mise à jour.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la mise à jour.",ex);
             return new String[]{"0","3","Problème SQL durant la mise à jour."};
         }
         catch(Exception e)
@@ -1723,7 +1755,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème indéterminé durant la mise à jour.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème indéterminé durant la mise à jour.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème indéterminé durant la mise à jour.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant la mise à jour"
@@ -1779,7 +1812,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         try
@@ -1802,7 +1836,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 2.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 2."};
         }
 
@@ -1829,7 +1864,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la préparation de la mise à jour de référentiel.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la préparation de la mise à jour de référentiel.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la préparation de la mise à jour de référentiel.",ex);
             return new String[]{"0","3","Problème SQL durant la préparation de la mise à jour de référentiel."};
         }
         catch(Exception e)
@@ -1838,7 +1874,8 @@ public class GestionAdministration
             p.state = new String[]{"ERREUR","Problème indéterminé durant la préparation de la mise à jour de référentiel "+e.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la préparation de la mise à jour de référentiel.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la préparation de la mise à jour de référentiel.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la préparation de la mise à jour de référentiel.",e);
             return new String[]{"0","7","Problème indéterminé durant la préparation de la mise à jour de référentiel"};
         }
         return new String[]{"1"};
@@ -1890,7 +1927,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         
@@ -1910,7 +1948,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la phonétisation.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la phonétisation.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la phonétisation.",ex);
             return new String[]{"0","3","Problème SQL durant la phonétisation."};
         }
         catch(Exception e)
@@ -1919,7 +1958,8 @@ public class GestionAdministration
                 p.state = new String[]{"ERREUR","Problème indéterminé durant la phonétisation: "+e.getMessage()};
                 p.resultat.add("ERREUR");
                 p.resultat.add(e.getMessage());
-                Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la phonétisation.",e);
+//                Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la phonétisation.",e);
+                params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la phonétisation.",e);
                 return new String[]{"0","7","Problème indéterminé durant la phonétisation"};
         }
         return new String[]{"1"};
@@ -1972,7 +2012,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         try
@@ -1995,7 +2036,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 2.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 2."};
         }
 
@@ -2022,7 +2064,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la préparation du changement de référentiel.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la préparation du changement de référentiel.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la préparation du changement de référentiel.",ex);
             return new String[]{"0","3","Problème SQL durant la préparation du changement de référentiel."};
         }
         catch(Exception e)
@@ -2031,7 +2074,8 @@ public class GestionAdministration
             p.state = new String[]{"ERREUR","Problème indéterminé durant la préparation du changement de référentiel "+e.getMessage()};
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la préparation du changement de référentiel.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la préparation du changement de référentiel.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la préparation du changement de référentiel.",e);
             return new String[]{"0","7","Problème indéterminé durant la préparation du changement de référentiel"};
         }
         return new String[]{"1"};
@@ -2093,7 +2137,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         try
@@ -2116,7 +2161,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 2.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 2."};
         }
         
@@ -2180,7 +2226,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant le changement de Referentiel.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant le changement de Referentiel.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant le changement de Referentiel.",ex);
             return new String[]{"0","3","Problème SQL durant le changement de Referentiel."};
         }
         catch(Exception e)
@@ -2192,7 +2239,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant le changement de Referentiel.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant le changement de Referentiel.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant le changement de Referentiel.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant le changement de Referentiel"
@@ -2290,7 +2338,8 @@ public class GestionAdministration
                 p.resultat.add("ERREUR");
                 p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
                 p.finished=true;
-                Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//                Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+                params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
                 return new String[]
                         {
                             "0","3","Problème durant l'établissement de la connection 1."
@@ -2325,7 +2374,8 @@ public class GestionAdministration
                 p.resultat.add("ERREUR");
                 p.resultat.add("Problème durant l'établissement de la connection 2 :"+ex.getMessage());
                 p.finished=true;
-                Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+//                Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 2.",ex);
+                params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 2.",ex);
                 return new String[]
                         {
                             "0","3","Problème durant l'établissement de la connection 2."
@@ -2392,7 +2442,8 @@ public class GestionAdministration
                 p.resultat.add("ERREUR SQL");
                 p.resultat.add(ex.getMessage());
                 p.finished=true;
-                Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la normalisation.",ex);
+//                Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la normalisation.",ex);
+                params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la normalisation.",ex);
                 return new String[]
                         {
                             "0","3","Problème SQL durant la normalisation."
@@ -2404,7 +2455,8 @@ public class GestionAdministration
                 p.state = new String[]{"ERREUR","Problème indéterminé durant la normalisation: "+e.getMessage()};
                 p.resultat.add("ERREUR");
                 p.resultat.add(e.getMessage());
-                Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la normalisation.",e);
+//                Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la normalisation.",e);
+                params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la normalisation.",e);
                 return new String[]{"0","7","Problème indéterminé durant la normalisation"};
             }
             params.getGestionLog().logAdmin(p.numero,p.version,"Processus terminé.");
@@ -2467,7 +2519,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR");
             p.resultat.add("Problème durant l'établissement de la connection 1 :"+ex.getMessage());
             p.finished = true;
-            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+//            Logger.getLogger("JDONREF").log(Level.SEVERE,"Problème durant l'établissement de la connection 1.",ex);
+            params.getGestionLog().logs_SEVERE("JDONREF","Problème durant l'établissement de la connection 1.",ex);
             return new String[]{"0","3","Problème durant l'établissement de la connection 1."};
         }
         
@@ -2494,7 +2547,8 @@ public class GestionAdministration
             p.resultat.add("ERREUR SQL");
             p.resultat.add(ex.getMessage());
             p.finished = true;
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la génération des id de troncon.",ex);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la génération des id de troncon.",ex);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la génération des id de troncon.",ex);
             return new String[]{"0","3","Problème SQL durant la génération des id de troncon."};
         }
         catch(Exception e)
@@ -2506,7 +2560,8 @@ public class GestionAdministration
                     };
             p.resultat.add("ERREUR");
             p.resultat.add(e.getMessage());
-            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la génération des id de troncon.",e);
+//            Logger.getLogger("GestionAdministration").log(Level.SEVERE,"Problème sql durant la génération des id de troncon.",e);
+            params.getGestionLog().logs_SEVERE("GestionAdministration","Problème sql durant la génération des id de troncon.",e);
             return new String[]
                     {
                         "0","7","Problème indéterminé durant la génération des id de troncon"
@@ -2622,6 +2677,7 @@ public class GestionAdministration
         catch(ClassNotFoundException ex)
         {
             Logger.getLogger(GestionAdministration.class.getName()).log(Level.SEVERE,null,ex);
+//            params.getGestionLog().logs_SEVERE(GestionAdministration.class.getName(),null,ex);
         }        catch(JDOMException ex)
         {
             Logger.getLogger(GestionAdministration.class.getName()).log(Level.SEVERE,null,ex);
