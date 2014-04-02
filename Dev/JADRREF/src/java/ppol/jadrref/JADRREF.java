@@ -87,6 +87,8 @@ public class JADRREF implements IJDONREFv3 {
     private WebServiceContext context;
     private static ServletContext servletContext;
     private JDONREFv3Lib jdonrefv3lib;
+    JDONREFParams params = null;
+
 
     /**
      * Constructeur du service web.
@@ -112,6 +114,11 @@ public class JADRREF implements IJDONREFv3 {
         }
         return lib;
     }
+    
+   
+    
+    
+    
 
     /**
      * Effectue les opérations de normalisation demandées.
@@ -146,11 +153,14 @@ public class JADRREF implements IJDONREFv3 {
 //            jdonrefv3lib = JDONREFv3Lib.getInstance(getContext(context).getInitParameter("file"));
 //        }
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
+        
 
         // TRAITEMENT DES DONNEES
         if (donnees == null || donnees.length < 1) {
-            GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_ERREUR, false);
+//            GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_ERREUR, false);
+            params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_ERREUR, false);
             final ResultatNormalisation resultatRet = new ResultatNormalisation();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -257,10 +267,11 @@ public class JADRREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // VERIFICATION DES DONNEES
         if (donnees == null || donnees.length < 1) {
-            GestionLogs.getInstance().logValidation(application, "", GestionLogs.FLAG_VALIDE_ERREUR, false);
+            params.getGestionLog().logValidation(application, "", AGestionLogs.FLAG_VALIDE_ERREUR, false);
             final ResultatValidation resultatRet = new ResultatValidation();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -325,10 +336,11 @@ public class JADRREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // VERIFICATION DES DONNEES
         if (donnees == null || donnees.length < 1) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             final ResultatGeocodage resultatRet = new ResultatGeocodage();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -348,7 +360,7 @@ public class JADRREF implements IJDONREFv3 {
 
         // VERIFICATION DES IDS
         if (ids == null || ids.length < 1) {
-            GestionLogs.getInstance().logGeocodage(application, GestionLogs.FLAG_GEOCODE_ERREUR, false);
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
             final ResultatGeocodage resultatRet = new ResultatGeocodage();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -428,10 +440,11 @@ public class JADRREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // VERIFICATION DES DONNEES
         if (donnees == null || donnees.length < 1) {
-            GestionLogs.getInstance().logValidation(application, "", GestionLogs.FLAG_VALIDE_ERREUR, false);
+            params.getGestionLog().logValidation(application, "", AGestionLogs.FLAG_VALIDE_ERREUR, false);
             final ResultatRevalidation resultatRet = new ResultatRevalidation();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -484,6 +497,7 @@ public class JADRREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // TRAITEMENT DES DONNEES
         String[] position = new String[donnees.length];
@@ -619,10 +633,11 @@ public class JADRREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // TRAITEMENT DES DONNEES
         if (donnees == null || donnees.length < 1) {
-            GestionLogs.getInstance().logDecoupage(application, false);
+            params.getGestionLog().logDecoupage(application, false);
             final ResultatDecoupage resultatRet = new ResultatDecoupage();
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -679,6 +694,7 @@ public class JADRREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // TRAITEMENT DES OPTIONS
         String emetteur = "";
@@ -708,7 +724,7 @@ public class JADRREF implements IJDONREFv3 {
                 sb.append(";ligne" + i + "=");
                 sb.append(donnees[i]);
             }
-            GestionLogs.getInstance().logContacte(application, false);
+            params.getGestionLog().logContacte(application, false);
             Logger.getLogger(JADRREF.class.getName()).log(Level.SEVERE, sb.toString());
             resultatRet.setCodeRetour(0);
             final ResultatErreur erreur = new ResultatErreur();
@@ -718,10 +734,10 @@ public class JADRREF implements IJDONREFv3 {
         } else {
             try {
                 gm.envoieMail(emetteur, titre, String.valueOf(application), donnees);
-                GestionLogs.getInstance().logContacte(application, true);
+                params.getGestionLog().logContacte(application, true);
                 resultatRet.setCodeRetour(1);
             } catch (MessagingException ex) {
-                GestionLogs.getInstance().logContacte(application, false);
+                params.getGestionLog().logContacte(application, false);
                 Logger.getLogger(JADRREF.class.getName()).log(Level.SEVERE, "Un problème a été rencontré durant l'envoi d'un mail à l'administrateur de JDONREF.", ex);
                 resultatRet.setCodeRetour(0);
                 final ResultatErreur erreur = new ResultatErreur();
@@ -729,7 +745,7 @@ public class JADRREF implements IJDONREFv3 {
                 erreur.setMessage("Un problème a été rencontré durant l'envoi d'un mail à l'administrateur de JDONREF.");
                 resultatRet.setErreurs(new ResultatErreur[]{erreur});
             } catch (Exception ex) {
-                GestionLogs.getInstance().logContacte(application, false);
+                params.getGestionLog().logContacte(application, false);
                 Logger.getLogger(JADRREF.class.getName()).log(Level.SEVERE, "Un problème inconnu a été rencontré", ex);
                 resultatRet.setCodeRetour(0);
                 final ResultatErreur erreur = new ResultatErreur();
@@ -752,6 +768,7 @@ public class JADRREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         // EXECUTION DU SERVICE
         final ResultatVersion resultatRet = new ResultatVersion();
@@ -760,7 +777,7 @@ public class JADRREF implements IJDONREFv3 {
         proposition.setNom("Jdonref");
         proposition.setVersion(jdonrefv3lib.getParams().getVersion());
         resultatRet.setPropositions(new PropositionVersion[]{proposition});
-        GestionLogs.getInstance().logVersion(application);
+        params.getGestionLog().logVersion(application);
 
         return resultatRet;
     }
@@ -769,6 +786,7 @@ public class JADRREF implements IJDONREFv3 {
 
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
+        params = jdonrefv3lib.getParams();
 
         final int operation = 1 + 2;
         final GestionAdr gestionAdr = jdonrefv3lib.getGestionAdr();
