@@ -3,7 +3,7 @@
 <version>3.0.7</version>
 
 <logpath>logs/jadrref_logs/</logpath>
-<logClasseName>ppol.jdonref.GestionLogs2</logClasseName>
+<logClasseName>ppol.jdonref.GestionLogs</logClasseName>
 <malusdetypedevoie>1</malusdetypedevoie>
 <maluspasdemot>4</maluspasdemot>
 <maluspasdemotdirecteur>7</maluspasdemotdirecteur>
