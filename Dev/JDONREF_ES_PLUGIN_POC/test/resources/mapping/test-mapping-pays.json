@@ -1,0 +1,11 @@
+{
+    "pays": {
+       "properties" : {
+           "codepays" : { "type" : "string" , "store" : true},
+           "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
+           "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
+           "ligne7" : { "type" : "string", "store": true},
+           "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"}
+      }
+   }
+ }
