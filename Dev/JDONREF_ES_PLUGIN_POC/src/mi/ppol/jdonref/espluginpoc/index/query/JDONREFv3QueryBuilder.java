@@ -1,4 +1,4 @@
-package mi.ppol.jdonref.lucenepoc.index.query;
+package mi.ppol.jdonref.espluginpoc.index.query;
 
 import java.io.IOException;
 import org.elasticsearch.common.xcontent.ToXContent.Params;

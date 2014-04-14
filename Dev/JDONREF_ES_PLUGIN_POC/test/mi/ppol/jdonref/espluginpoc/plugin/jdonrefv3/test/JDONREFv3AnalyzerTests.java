@@ -1,4 +1,4 @@
-package mi.ppol.jdonref.lucenepoc.plugin.jdonrefv3.test;
+package mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3.test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,8 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import mi.ppol.jdonref.lucenepoc.index.query.JDONREFv3QueryBuilder;
-import mi.ppol.jdonref.lucenepoc.plugin.jdonrefv3.JDONREFv3ESPlugin;
+import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryBuilder;
+import mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3.JDONREFv3ESPlugin;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
@@ -98,7 +98,7 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         publicRefresh();
     }
 
-    void searchPays(String pays)
+    void searchExactPays(String pays)
     {
         System.out.println("Searching "+pays);
         QueryBuilder qb = (QueryBuilder) new JDONREFv3QueryBuilder(pays);
@@ -106,6 +106,8 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         //QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne7",pays);
         SearchResponse search = client().prepareSearch().setQuery(qb).execute().actionGet();
         SearchHit[] hits = search.getHits().getHits();
+        
+        assertEquals(hits[0].getSource().get("ligne7"), pays);
         
         for(int i=0;i<hits.length;i++)
         {
@@ -116,10 +118,8 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
             System.out.println("No results");
     }
     
-    void test_pays() throws IOException, InterruptedException, ExecutionException
-    {    
-        importMapping();
-        
+    void indexPays() throws IOException, InterruptedException, ExecutionException
+    {
         publicIndex("pays","FR",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
                 .field("ligne7","FRANCE")
@@ -138,6 +138,12 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
                   .field("ligne7",randomLigne7)
                   .endObject());
         }
+    }
+    
+    void test_pays() throws IOException, InterruptedException, ExecutionException
+    {    
+        importMapping();
+        indexPays();
         
         ensureGreen();
         Thread.sleep(10000); // wait for indexation !
@@ -149,10 +155,9 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
-        searchPays("FRANCE");
-        searchPays("ALLEMAGNE");
+        searchExactPays("FRANCE");
+        searchExactPays("ALLEMAGNE");
     }
-    
     
     @Test
     public void test_analyzer_pays() throws Exception

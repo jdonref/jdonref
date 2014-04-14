@@ -1,4 +1,4 @@
-package mi.ppol.jdonref.lucenepoc.plugin.jdonrefv3;
+package mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3;
 
 /**
  *
@@ -9,7 +9,7 @@ import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.plugins.AbstractPlugin;
 
 import java.util.Collection;
-import mi.ppol.jdonref.lucenepoc.index.query.JDONREFv3QueryParser;
+import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryParser;
 import org.elasticsearch.common.collect.Lists;
 import org.elasticsearch.index.query.IndexQueryParserModule;
 import org.elasticsearch.index.query.QueryParser;

@@ -1,4 +1,4 @@
-package mi.ppol.jdonref.lucenepoc.plugin.jdonrefv3.test;
+package mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3.test;
 
 import java.io.BufferedReader;
 import java.io.File;

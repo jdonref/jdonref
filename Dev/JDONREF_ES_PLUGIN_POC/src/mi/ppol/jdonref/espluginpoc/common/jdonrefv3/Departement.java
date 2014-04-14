@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package mi.ppol.jdonref.lucenepoc.common.jdonrefv3;
+package mi.ppol.jdonref.espluginpoc.common.jdonrefv3;
 
 /**
  *
