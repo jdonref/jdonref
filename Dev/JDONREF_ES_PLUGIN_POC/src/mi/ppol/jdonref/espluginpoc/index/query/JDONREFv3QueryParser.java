@@ -176,7 +176,7 @@ public class JDONREFv3QueryParser implements QueryParser
                 }
                 else
                 {
-                    addMatchQueryClause(booleanQuery,mq,"fullName",stri,10,BooleanClause.Occur.SHOULD);
+                    addMatchQueryClause(booleanQuery,mq,"fullName_without_numbers",stri,10,BooleanClause.Occur.SHOULD);
                 }
             }
         }
