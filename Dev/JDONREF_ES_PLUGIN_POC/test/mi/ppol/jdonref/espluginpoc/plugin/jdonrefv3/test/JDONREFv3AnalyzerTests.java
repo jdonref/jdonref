@@ -107,7 +107,52 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         SearchResponse search = client().prepareSearch().setQuery(qb).execute().actionGet();
         SearchHit[] hits = search.getHits().getHits();
         
+        assertTrue(hits.length>0);
         assertEquals(hits[0].getSource().get("ligne7"), pays);
+        
+        for(int i=0;i<hits.length;i++)
+        {
+            SearchHit hit = hits[i];
+            System.out.println("hit "+i+" "+hit.getSourceAsString());
+        }
+        if (hits.length==0)
+            System.out.println("No results");
+    }
+    
+    void searchExactVoie(String voie,String assertion)
+    {
+        System.out.println("Searching "+voie);
+        QueryBuilder qb = (QueryBuilder) new JDONREFv3QueryBuilder(voie);
+        //QueryBuilder qb = (QueryBuilder)QueryBuilders.termQuery("ligne7",pays);
+        //QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne7",pays);
+        SearchResponse search = client().prepareSearch().setQuery(qb).execute().actionGet();
+        SearchHit[] hits = search.getHits().getHits();
+        
+        assertTrue(hits.length>0);
+        assertEquals(hits[0].getSource().get("fullName"), assertion);
+        assertEquals(hits[0].getSource().get("numero"),0);
+        
+        for(int i=0;i<hits.length;i++)
+        {
+            SearchHit hit = hits[i];
+            System.out.println("hit "+i+" "+hit.getSourceAsString());
+        }
+        if (hits.length==0)
+            System.out.println("No results");
+    }
+    
+    void searchExactAdresse(String voie,String assertion,int numero)
+    {
+        System.out.println("Searching "+voie);
+        QueryBuilder qb = (QueryBuilder) new JDONREFv3QueryBuilder(voie);
+        //QueryBuilder qb = (QueryBuilder)QueryBuilders.termQuery("ligne7",pays);
+        //QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne7",pays);
+        SearchResponse search = client().prepareSearch().setQuery(qb).execute().actionGet();
+        SearchHit[] hits = search.getHits().getHits();
+        
+        assertTrue(hits.length>0);
+        assertEquals(hits[0].getSource().get("fullName"), assertion);
+        assertEquals(hits[0].getSource().get("numero"), numero);
         
         for(int i=0;i<hits.length;i++)
         {
@@ -123,10 +168,28 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         publicIndex("pays","FR",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
                 .field("ligne7","FRANCE")
+                .field("fullName","FRANCE")
+                .field("numero",0)
                 .endObject());
         publicIndex("pays","DE",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","DE")
                 .field("ligne7","ALLEMAGNE")
+                .field("fullName","ALLEMAGNE")
+                .field("numero",0)
+                .endObject());
+        publicIndex("voie","1",XContentFactory.jsonBuilder().startObject()
+                .field("fullName","BOULEVARD DE L HOPITAL PARIS")
+                .field("numero",0)
+                .field("codedepartement","75")
+                .field("codepostal","75005")
+                .field("codeinsee","75013")
+                .endObject());
+        publicIndex("adresse","1",XContentFactory.jsonBuilder().startObject()
+                .field("fullName","BOULEVARD DE L HOPITAL PARIS")
+                .field("numero",24)
+                .field("codedepartement","75")
+                .field("codepostal","75005")
+                .field("codeinsee","75013")
                 .endObject());
         
         for(int i=0;i<10;i++)
@@ -157,6 +220,9 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         
         searchExactPays("FRANCE");
         searchExactPays("ALLEMAGNE");
+        
+        searchExactAdresse("24 BOULEVARD HOPITAL","BOULEVARD DE L HOPITAL PARIS",24);
+        searchExactVoie("BOULEVARD HOPITAL","BOULEVARD DE L HOPITAL PARIS");
     }
     
     @Test

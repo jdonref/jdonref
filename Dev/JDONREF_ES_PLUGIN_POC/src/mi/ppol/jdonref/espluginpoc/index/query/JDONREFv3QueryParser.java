@@ -1,30 +1,23 @@
 package mi.ppol.jdonref.espluginpoc.index.query;
 
 import java.io.IOException;
+import java.util.Hashtable;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.elasticsearch.cluster.ClusterService;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.lucene.BytesRefs;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.index.mapper.FieldMapper;
 import org.elasticsearch.index.mapper.MapperService;
-import org.elasticsearch.index.mapper.ParseContext;
-import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryParser;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.index.query.QueryParser;
 import org.elasticsearch.index.query.QueryParsingException;
 
 import org.elasticsearch.index.search.MatchQuery;
-import static org.elasticsearch.index.query.support.QueryParsers.wrapSmartNameQuery;
 
 /**
  *
@@ -97,12 +90,8 @@ public class JDONREFv3QueryParser implements QueryParser
 
         Query query = null;
         
-        
         if (query == null) {
-            MatchQuery mq = new MatchQuery(parseContext);
-            query = mq.parse(MatchQuery.Type.BOOLEAN,"ligne7",value);
-            //query = new TermQuery(new Term("ligne7",BytesRefs.toBytesRef(value)));
-            
+            query = getQueryExact((String)value,parseContext);
             query.setBoost(boost);
             
             if (filterName != null) {
@@ -110,22 +99,93 @@ public class JDONREFv3QueryParser implements QueryParser
             }
         }
         
-        System.out.println("query : "+query.toString());
-        
         return query;
     }
     
-    protected Analyzer getAnalyzer(FieldMapper mapper, MapperService.SmartNameFieldMappers smartNameFieldMappers,QueryParseContext parseContext) {
-        Analyzer analyzer = null;
-        if (mapper != null) {
-                analyzer = mapper.searchAnalyzer();
+    public boolean isInt(String str)
+    {
+        try
+        {
+            Integer.parseInt(str);
+            return true;
         }
-            if (analyzer == null && smartNameFieldMappers != null) {
-                analyzer = smartNameFieldMappers.searchAnalyzer();
+        catch(NumberFormatException nfe)
+        {
+            return false;
+        }
+    }
+    
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,String attr,String value,float boost,Occur occur) throws IOException
+    {
+        Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
+        if (query!=null)
+        {
+              query.setBoost(boost);
+              booleanQuery.add(new BooleanClause(query,occur));
+        }
+    }
+    
+    public Query getQueryExact(String find, QueryParseContext parseContext) throws IOException
+    {
+        Hashtable<String,Boolean> hash = new Hashtable<String,Boolean>();
+        
+        MatchQuery mq = new MatchQuery(parseContext);
+        BooleanQuery booleanQuery = new BooleanQuery();
+        
+        boolean isThereInt = false;
+        
+        String[] splitted = find.split(" ");
+        for(int i=0;i<splitted.length;i++)
+        {
+            String stri = splitted[i];
+            
+            if (hash.get(stri)==null)
+            {
+                hash.put(stri,true);
+                
+                if (isInt(stri))
+                {
+                    isThereInt = true;
+
+                    if (stri.length()==5)
+                    {
+                        addMatchQueryClause(booleanQuery,mq,"code_insee",stri,2,BooleanClause.Occur.SHOULD);
+                    }
+                    if (stri.length()==5)
+                    {
+                        addMatchQueryClause(booleanQuery,mq,"code_postal",stri,2,BooleanClause.Occur.SHOULD);
+                    }
+                    float dptBoost = 1.0f;
+                    if (i==0)
+                        dptBoost = 0.5f;
+                    if (i>0)
+                        dptBoost = 2.0f;
+                    addMatchQueryClause(booleanQuery,mq,"code_departement",stri,dptBoost,BooleanClause.Occur.SHOULD);
+                    
+                    float ardtBoost = 1.0f;
+                    if (i==0)
+                        ardtBoost = 0.5f;
+                    if (i>0)
+                        ardtBoost = 2.0f;
+                    addMatchQueryClause(booleanQuery,mq,"code_arrondissement",stri,ardtBoost,BooleanClause.Occur.SHOULD);
+                    
+                    float numBoost = 1.0f;
+                    if (i>0)
+                        numBoost = 2.5f;
+                    addMatchQueryClause(booleanQuery,mq,"numero",stri,numBoost,BooleanClause.Occur.SHOULD);
+                }
+                else
+                {
+                    addMatchQueryClause(booleanQuery,mq,"fullName",stri,10,BooleanClause.Occur.SHOULD);
+                }
             }
-            if (analyzer == null) {
-                analyzer = parseContext.mapperService().searchAnalyzer();
-            }
-        return analyzer;
+        }
+        
+        if (!isThereInt)
+        {
+            addMatchQueryClause(booleanQuery,mq,"numero","0",1.0f,BooleanClause.Occur.SHOULD);
+        }
+        
+        return booleanQuery;
     }
 }
