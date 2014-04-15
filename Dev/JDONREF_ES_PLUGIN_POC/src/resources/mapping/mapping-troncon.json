@@ -15,6 +15,7 @@
             "voie" : { "type" : "string", "store": true},
             "commune" : { "type" : "string" , "store": true},
             "codepostal" : { "type" : "string", "store": true},
+            "codearrondissement" : { "type" : "string", "store": true},
             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
             "ligne4" : { "type" : "string", "store": true},
