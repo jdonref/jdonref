@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryBuilder;
 import mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3.JDONREFv3ESPlugin;
+import org.apache.lucene.search.Explanation;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
@@ -97,27 +98,6 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         }
         publicRefresh();
     }
-
-    void searchExactPays(String pays)
-    {
-        System.out.println("Searching "+pays);
-        QueryBuilder qb = (QueryBuilder) new JDONREFv3QueryBuilder(pays);
-        //QueryBuilder qb = (QueryBuilder)QueryBuilders.termQuery("ligne7",pays);
-        //QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne7",pays);
-        SearchResponse search = client().prepareSearch().setQuery(qb).execute().actionGet();
-        SearchHit[] hits = search.getHits().getHits();
-        
-        assertTrue(hits.length>0);
-        assertEquals(hits[0].getSource().get("ligne7"), pays);
-        
-        for(int i=0;i<hits.length;i++)
-        {
-            SearchHit hit = hits[i];
-            System.out.println("hit "+i+" "+hit.getSourceAsString());
-        }
-        if (hits.length==0)
-            System.out.println("No results");
-    }
     
     void searchExactAdresse(String voie,String assertion)
     {
@@ -128,49 +108,99 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         SearchResponse search = client().prepareSearch().setQuery(qb).execute().actionGet();
         SearchHit[] hits = search.getHits().getHits();
         
+        if (hits.length==0)
+            System.out.println("No results");
         assertTrue(hits.length>0);
-        assertEquals(hits[0].getSource().get("fullName"), assertion);
         
+        System.out.println(hits.length+" hit(s)");
         for(int i=0;i<hits.length;i++)
         {
             SearchHit hit = hits[i];
             System.out.println("hit "+i+" "+hit.getSourceAsString());
+            System.out.println("score : "+hit.getScore());
+            Explanation ex = hits[i].explanation();
+            if (ex!=null)
+            {
+                System.out.println("explanation :"+ex.getDescription());
+                for(int j=0;j<ex.getDetails().length;j++)
+                    System.out.println(ex.getDetails()[j].getDescription());
+            }
         }
-        if (hits.length==0)
-            System.out.println("No results");
+        assertEquals(assertion,hits[0].getSource().get("fullName"));
     }
     
     void indexPays() throws IOException, InterruptedException, ExecutionException
     {
+        publicIndex("commune","PARIS",XContentFactory.jsonBuilder().startObject()
+                .field("codepostal","75000")
+                .field("codeinsee","75056")
+                .field("commune","PARIS")
+                .field("ligne6","PARIS")
+                .field("codepays","FR")
+                .field("ligne7","FRANCE")
+                .field("fullName","PARIS FRANCE")
+                .field("fullName_without_numbers","PARIS FRANCE")
+                .field("numero","0")
+                .endObject());
         publicIndex("pays","FR",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
                 .field("ligne7","FRANCE")
                 .field("fullName","FRANCE")
                 .field("fullName_without_numbers","FRANCE")
-                .field("numero",0)
+                .field("numero","0")
                 .endObject());
         publicIndex("pays","DE",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","DE")
                 .field("ligne7","ALLEMAGNE")
                 .field("fullName","ALLEMAGNE")
                 .field("fullName_without_numbers","ALLEMAGNE")
-                .field("numero",0)
+                .field("numero","0")
                 .endObject());
         publicIndex("voie","1",XContentFactory.jsonBuilder().startObject()
-                .field("fullName","BOULEVARD DE L HOPITAL 75005 PARIS")
-                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS")
-                .field("numero",0)
+                .field("codepays","FR")
+                .field("ligne7","FRANCE")
+                .field("fullName","BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
+                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
+                .field("numero","0")
                 .field("codedepartement","75")
                 .field("codepostal","75005")
                 .field("codeinsee","75013")
                 .endObject());
         publicIndex("adresse","1",XContentFactory.jsonBuilder().startObject()
-                .field("fullName","24 BOULEVARD DE L HOPITAL 75013 PARIS")
-                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS")
-                .field("numero",24)
+                .field("codepays","FR")
+                .field("ligne7","FRANCE")
+                .field("fullName","24 BOULEVARD DE L HOPITAL 75013 PARIS FRANCE")
+                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
+                .field("numero","24")
+                .field("codedepartement","75")
+                .field("codepostal","75013")
+                .field("codeinsee","75013")
+                .endObject());
+        publicIndex("adresse","2",XContentFactory.jsonBuilder().startObject()
+                .field("codepays","FR")
+                .field("ligne7","FRANCE")
+                .field("fullName","24 RUE DE LA FRANCE 75013 PARIS FRANCE")
+                .field("fullName_without_numbers","RUE DE LA FRANCE PARIS FRANCE")
+                .field("numero","24")
                 .field("codedepartement","75")
                 .field("codepostal","75005")
-                .field("codeinsee","75013")
+                .field("codeinsee","75113")
+                .endObject());
+        publicIndex("adresse","3",XContentFactory.jsonBuilder().startObject()
+                .field("codepays","FR")
+                .field("ligne7","FRANCE")
+                .field("fullName","75 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
+                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
+                .field("numero","75")
+                .field("codedepartement","75")
+                .field("codepostal","75005")
+                .field("codeinsee","75105")
+                .endObject());
+        publicIndex("departement","75",XContentFactory.jsonBuilder().startObject()
+                .field("fullName","75 FRANCE")
+                .field("fullName_without_numbers","75 FRANCE")
+                .field("numero","0")
+                .field("codedepartement","75")
                 .endObject());
         
         for(int i=0;i<10;i++)
@@ -199,11 +229,19 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
-        searchExactPays("FRANCE");
-        searchExactPays("ALLEMAGNE");
+        searchExactAdresse("FRANCE","FRANCE");
+        searchExactAdresse("ALLEMAGNE","ALLEMAGNE");
         
-        searchExactAdresse("24 BOULEVARD HOPITAL","24 BOULEVARD DE L HOPITAL 75013 PARIS");
-        searchExactAdresse("BOULEVARD HOPITAL","BOULEVARD DE L HOPITAL 75005 PARIS");
+        searchExactAdresse("24 BOULEVARD HOPITAL","24 BOULEVARD DE L HOPITAL 75013 PARIS FRANCE");
+        searchExactAdresse("BOULEVARD HOPITAL","BOULEVARD DE L HOPITAL 75005 PARIS FRANCE");
+        
+        searchExactAdresse("75 BOULEVARD HOPITAL PARIS","75 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE");
+        searchExactAdresse("BOULEVARD HOPITAL 75 PARIS","BOULEVARD DE L HOPITAL 75005 PARIS FRANCE");
+        
+        searchExactAdresse("PARIS","PARIS FRANCE");
+        
+        searchExactAdresse("75","75 FRANCE");
+        //searchExactAdresse("75 FRANCE","75 FRANCE"); // ne marche pas pour le moment !
     }
     
     @Test

@@ -125,6 +125,16 @@ public class JDONREFv3QueryParser implements QueryParser
         }
     }
     
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,String attr,int value,float boost,Occur occur) throws IOException
+    {
+        Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
+        if (query!=null)
+        {
+              query.setBoost(boost);
+              booleanQuery.add(new BooleanClause(query,occur));
+        }
+    }
+    
     public Query getQueryExact(String find, QueryParseContext parseContext) throws IOException
     {
         Hashtable<String,Boolean> hash = new Hashtable<String,Boolean>();
@@ -133,6 +143,7 @@ public class JDONREFv3QueryParser implements QueryParser
         BooleanQuery booleanQuery = new BooleanQuery();
         
         boolean isThereInt = false;
+        int firstNumber = -1;
         
         String[] splitted = find.split(" ");
         for(int i=0;i<splitted.length;i++)
@@ -145,6 +156,7 @@ public class JDONREFv3QueryParser implements QueryParser
                 
                 if (isInt(stri))
                 {
+                    if (firstNumber==-1) firstNumber = i;
                     isThereInt = true;
 
                     if (stri.length()==5)
@@ -158,33 +170,39 @@ public class JDONREFv3QueryParser implements QueryParser
                     float dptBoost = 1.0f;
                     if (i==0)
                         dptBoost = 0.5f;
-                    if (i>0)
+                    if (i>0 || splitted.length==1)
                         dptBoost = 2.0f;
                     addMatchQueryClause(booleanQuery,mq,"code_departement",stri,dptBoost,BooleanClause.Occur.SHOULD);
                     
                     float ardtBoost = 1.0f;
                     if (i==0)
                         ardtBoost = 0.5f;
-                    if (i>0)
+                    if (i>0 || splitted.length==1)
                         ardtBoost = 2.0f;
                     addMatchQueryClause(booleanQuery,mq,"code_arrondissement",stri,ardtBoost,BooleanClause.Occur.SHOULD);
                     
                     float numBoost = 1.0f;
-                    if (i>0)
+                    if (i==0 && splitted.length!=1)
                         numBoost = 2.5f;
+                    else if (i>0 || splitted.length==1)
+                        numBoost = 0.5f;
                     addMatchQueryClause(booleanQuery,mq,"numero",stri,numBoost,BooleanClause.Occur.SHOULD);
+                    
+                    addMatchQueryClause(booleanQuery,mq,"fullName_without_numbers",stri,0.5f,BooleanClause.Occur.SHOULD);
                 }
                 else
-                {
-                    addMatchQueryClause(booleanQuery,mq,"fullName_without_numbers",stri,10,BooleanClause.Occur.SHOULD);
-                }
+                    addMatchQueryClause(booleanQuery,mq,"fullName_without_numbers",stri,10f,BooleanClause.Occur.SHOULD);
             }
         }
         
-        if (!isThereInt)
-        {
-            addMatchQueryClause(booleanQuery,mq,"numero","0",1.0f,BooleanClause.Occur.SHOULD);
-        }
+        float num0Boost = 1.0f;
+        if (!isThereInt || firstNumber > 0 || splitted.length==1)
+            num0Boost = 2.5f;
+        else if (firstNumber==0)
+            num0Boost = 0.5f;
+        addMatchQueryClause(booleanQuery,mq,"numero","0",num0Boost,BooleanClause.Occur.SHOULD);
+        
+        System.out.println(booleanQuery.toString());
         
         return booleanQuery;
     }
