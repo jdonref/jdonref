@@ -141,6 +141,7 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
                 .field("fullName","PARIS FRANCE")
                 .field("fullName_without_numbers","PARIS FRANCE")
                 .field("numero","0")
+                .field("codedepartement","75")
                 .endObject());
         publicIndex("pays","FR",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
@@ -158,16 +159,20 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
                 .endObject());
         publicIndex("voie","1",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
+                .field("ligne4","BOULEVARD DE L HOPITAL")
+                .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
                 .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
                 .field("numero","0")
                 .field("codedepartement","75")
                 .field("codepostal","75005")
-                .field("codeinsee","75013")
+                .field("codeinsee","75105")
                 .endObject());
         publicIndex("adresse","1",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
+                .field("ligne4","24 BOULEVARD DE L HOPITAL")
+                .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","24 BOULEVARD DE L HOPITAL 75013 PARIS FRANCE")
                 .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
@@ -178,6 +183,8 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
                 .endObject());
         publicIndex("adresse","2",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
+                .field("ligne4","24 RUE DE LA FRANCE")
+                .field("ligne6","75013 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","24 RUE DE LA FRANCE 75013 PARIS FRANCE")
                 .field("fullName_without_numbers","RUE DE LA FRANCE PARIS FRANCE")
@@ -188,6 +195,8 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
                 .endObject());
         publicIndex("adresse","3",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
+                .field("ligne4","75 BOULEVARD DE L HOPITAL")
+                .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","75 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
                 .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
@@ -197,8 +206,10 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
                 .field("codeinsee","75105")
                 .endObject());
         publicIndex("departement","75",XContentFactory.jsonBuilder().startObject()
+                .field("ligne6","75")
+                .field("ligne7","FRANCE")
                 .field("fullName","75 FRANCE")
-                .field("fullName_without_numbers","75 FRANCE")
+                .field("fullName_without_numbers","FRANCE")
                 .field("numero","0")
                 .field("codedepartement","75")
                 .endObject());

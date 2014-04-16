@@ -22,12 +22,12 @@ public class JDONREFv3ESPlugin extends AbstractPlugin
 {
     @Override
     public String name() {
-        return "analysis-jdonrefv3es";
+        return "elasticsearch-jdonrefv3es";
     }
 
     @Override
     public String description() {
-        return "JDONREFv3 analysis support";
+        return "JDONREFv3 query support";
     }
     
  /*   @Override
