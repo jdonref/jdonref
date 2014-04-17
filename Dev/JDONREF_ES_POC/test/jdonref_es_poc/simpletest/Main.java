@@ -27,19 +27,16 @@ public class Main
     @Test
     public void main()
     {
-        String url = "192.168.0.11:9200";
+        String url = "10.213.93.83:9200";
         int size = 100;
         boolean nowait = false;
-        
         ElasticSearchUtil m = new ElasticSearchUtil();
         Client client = Client.create();
         m.setClient(client);
         m.setUrl(url);
         m.setIndex("jdonrefsimpletest");
-        
         m.showHealth();
         m.showDeleteIndex();
-        
         for(int i=0;i<size;i++)
         {
             if (i%1000==1) System.out.println((i-1)+" communes indexed");
@@ -64,6 +61,6 @@ public class Main
         
         m.showIndexStats();
         
-        m.showDeleteIndex();
+       // m.showDeleteIndex();
     }
 }

@@ -77,6 +77,19 @@ public class ElasticSearchUtil
         return output;
     }
     
+    public String indexResourceBulk(String bulk)
+    {
+        WebResource webResource = client.resource("http://"+url+"/_bulk");
+        
+        ClientResponse response = webResource.accept("application/json").post(ClientResponse.class,bulk);
+        
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    
+    
     public void showIndexResource(String object, String data)
     {
         String output = indexResource(object, data);

@@ -63,6 +63,7 @@ public class JDONREFIndex
         this.bouchon = bouchon;
     }
     
+    
     public JDONREFIndex(String url)
     {
         this.util = new ElasticSearchUtil();
@@ -110,7 +111,8 @@ public class JDONREFIndex
             System.out.println("Démarrage de l'indexation");
         long start = Calendar.getInstance().getTimeInMillis();
         
-        util.deleteIndex();
+        util.showDeleteIndex();
+        //util.deleteIndex();
         
         if (bouchon)
         {
@@ -119,13 +121,13 @@ public class JDONREFIndex
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
             dptIndex.indexJDONREFDepartements(getDepartements());
-            dptIndex.indexJDONREFDepartement(getVoies(), "75");
+//            dptIndex.indexJDONREFDepartement(getVoies(), "75");
         
-            CommuneIndex cIndex = new CommuneIndex();
-            cIndex.setVerbose(isVerbose());
-            cIndex.setConnection(connection);
-            cIndex.setUtil(util);
-            cIndex.indexJDONREFCommune(getCommunes());
+//            CommuneIndex cIndex = new CommuneIndex();
+//            cIndex.setVerbose(isVerbose());
+//            cIndex.setConnection(connection);
+//            cIndex.setUtil(util);
+//            cIndex.indexJDONREFCommune(getCommunes());
         }
         else
         {
@@ -136,16 +138,16 @@ public class JDONREFIndex
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
             dptIndex.indexJDONREFDepartements();
-            dptIndex.indexJDONREFDepartement("75");
-            dptIndex.indexJDONREFDepartement("92");
-            dptIndex.indexJDONREFDepartement("93");
-            dptIndex.indexJDONREFDepartement("94");
-        
-            CommuneIndex cIndex = new CommuneIndex();
-            cIndex.setVerbose(isVerbose());
-            cIndex.setConnection(connection);
-            cIndex.setUtil(util);
-            cIndex.indexJDONREFCommune();
+//            dptIndex.indexJDONREFDepartement("75");
+//            dptIndex.indexJDONREFDepartement("92");
+//            dptIndex.indexJDONREFDepartement("93");
+//            dptIndex.indexJDONREFDepartement("94");
+//        
+//            CommuneIndex cIndex = new CommuneIndex();
+//            cIndex.setVerbose(isVerbose());
+//            cIndex.setConnection(connection);
+//            cIndex.setUtil(util);
+//            cIndex.indexJDONREFCommune();
         }
         
         long end = Calendar.getInstance().getTimeInMillis();
