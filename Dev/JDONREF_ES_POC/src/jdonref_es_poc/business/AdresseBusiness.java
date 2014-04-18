@@ -1,6 +1,5 @@
 package jdonref_es_poc.business;
 
-import com.sun.ws.rest.api.client.Client;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Calendar;

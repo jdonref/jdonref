@@ -1,13 +1,9 @@
 package jdonref_es_poc.index;
 
-import com.sun.ws.rest.api.client.Client;
-import com.sun.ws.rest.api.client.ClientResponse;
-import com.sun.ws.rest.api.client.WebResource;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import org.codehaus.jettison.json.JSONObject;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+
 
 /**
  *

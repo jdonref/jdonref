@@ -1,8 +1,6 @@
 package jdonref_es_poc.simpletest;
 
-import com.sun.ws.rest.api.client.Client;
-import com.sun.ws.rest.api.client.ClientResponse;
-import com.sun.ws.rest.api.client.WebResource;
+import com.sun.jersey.api.client.Client;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;

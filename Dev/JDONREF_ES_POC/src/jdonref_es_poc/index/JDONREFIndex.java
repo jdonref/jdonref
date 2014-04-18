@@ -1,10 +1,8 @@
 package jdonref_es_poc.index;
 
-import com.sun.ws.rest.api.client.Client;
-import java.io.File;
+import com.sun.jersey.api.client.Client;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Calendar;
 import jdonref_es_poc.index.ElasticSearchUtil;
