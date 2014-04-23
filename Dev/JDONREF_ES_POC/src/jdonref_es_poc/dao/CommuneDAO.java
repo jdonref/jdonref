@@ -24,7 +24,14 @@ public class CommuneDAO
      */
     public ResultSet getAllCommunes(Connection connection) throws SQLException
     {
-        String sql = "SELECT com_communes.com_code_insee,com_nom,com_communes.dpt_code_departement,cdp_code_postal,com_code_insee_commune from com_communes, cdp_codes_postaux where com_communes.com_code_insee = cdp_codes_postaux.com_code_insee";
+//        String sql = "SELECT com_communes.com_code_insee,com_nom,com_communes.dpt_code_departement,cdp_code_postal,com_code_insee_commune " +
+//                    "from com_communes, cdp_codes_postaux " +
+//                    "where com_communes.com_code_insee = cdp_codes_postaux.com_code_insee";
+  
+        String sql="SELECT com_communes.com_code_insee,com_communes.dpt_code_departement,cdp_code_postal,com_nom,com_nom_desab,com_nom_origine,com_nom_pq,com_code_insee_commune,com_communes.t0,com_communes.t1 " +
+                "FROM com_communes, cdp_codes_postaux " +
+                "WHERE com_communes.com_code_insee = cdp_codes_postaux.com_code_insee";
+          
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         

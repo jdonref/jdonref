@@ -46,52 +46,13 @@ public class DepartementIndex
     public void setConnection(Connection connection) {
         this.connection = connection;
     }
+
     
-    public void indexJDONREFDepartement(Voie[] voies,String dpt) throws IOException
+    public void addDepartment(Departement departement) throws IOException
     {
-        VoieIndex vIndex = new VoieIndex();
-        vIndex.setUtil(util);
-        vIndex.setConnection(connection);
-        vIndex.setVerbose(isVerbose());
-        vIndex.indexJDONREFVoiesDepartement(voies, dpt);
+        JsonObject data = departement.toJSONDocument();
         
-        TronconIndex tIndex = new TronconIndex();
-        tIndex.setUtil(util);
-        tIndex.setConnection(connection);
-        tIndex.setVerbose(isVerbose());
-        tIndex.indexJDONREFTronconsDroitDepartement(voies, dpt);
-        tIndex.indexJDONREFTronconsGaucheDepartement(voies, dpt);
-    }
-    
-    public void indexJDONREFDepartement(String dpt) throws IOException, SQLException
-    {
-        VoieIndex vIndex = new VoieIndex();
-        vIndex.setUtil(util);
-        vIndex.setConnection(connection);
-        vIndex.setVerbose(isVerbose());
-        vIndex.indexJDONREFVoiesDepartement(dpt);
-        
-        TronconIndex tIndex = new TronconIndex();
-        tIndex.setUtil(util);
-        tIndex.setConnection(connection);
-        tIndex.setVerbose(isVerbose());
-        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
-        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
-    }
- 
-    public void indexJDONREFDepartements(Departement[] departements) throws IOException
-    {
-        if (isVerbose())
-            System.out.println("Départements");
-        
-        for(int i=0;i<departements.length;i++)
-        {
-            if (isVerbose() && (i++)%1000==0)
-                System.out.println(i+" départements traités");
-            Departement d = departements[i];
-            
-            addDepartment(d);
-        }
+        util.indexResource("departement", data.toString());
     }
     
     public void indexJDONREFDepartements() throws IOException, SQLException
@@ -129,7 +90,7 @@ public class DepartementIndex
 //            creation de l'objet metaDateDep plus haut
             metaDateDep.setId(i);
             bulk += metaDateDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
-            if(i%10==0){
+            if(i%100==0){
                 util.indexResourceBulk(bulk);
                 bulk="";
             }
@@ -140,10 +101,67 @@ public class DepartementIndex
         util.indexResourceBulk(bulk);
     }
     
-    public void addDepartment(Departement departement) throws IOException
+    public void indexJDONREFDepartements(Departement[] departements) throws IOException
     {
-        JsonObject data = departement.toJSONDocument();
+        if (isVerbose())
+            System.out.println("Départements");
         
-        util.indexResource("departement", data.toString());
+//      creation de l'objet metaDateDep
+        MetaData metaDateDep= new MetaData();
+        metaDateDep.setIndex(util.index);
+        metaDateDep.setType("departement");
+        String bulk ="";
+        int i=0;
+        for(int j=0;j<departements.length;j++)
+        {
+            if (isVerbose() && (i++)%1000==0)
+                System.out.println(i+" départements traités");
+            Departement d = departements[j];
+            
+//            addDepartment(d);
+            
+//            creation de l'objet metaDateDep plus haut
+            metaDateDep.setId(j+1);
+            bulk += metaDateDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
+            if(i%100==0){
+                util.indexResourceBulk(bulk);
+                bulk="";
+            }
+        }
+        util.indexResourceBulk(bulk);
     }
+    
+    public void indexJDONREFDepartement(Voie[] voies,String dpt) throws IOException
+    {
+        VoieIndex vIndex = new VoieIndex();
+        vIndex.setUtil(util);
+        vIndex.setConnection(connection);
+        vIndex.setVerbose(isVerbose());
+        vIndex.indexJDONREFVoiesDepartement(voies, dpt);
+        
+        TronconIndex tIndex = new TronconIndex();
+        tIndex.setUtil(util);
+        tIndex.setConnection(connection);
+        tIndex.setVerbose(isVerbose());
+        tIndex.indexJDONREFTronconsDroitDepartement(voies, dpt);
+        tIndex.indexJDONREFTronconsGaucheDepartement(voies, dpt);
+    }
+    
+    public void indexJDONREFDepartement(String dpt) throws IOException, SQLException
+    {
+        VoieIndex vIndex = new VoieIndex();
+        vIndex.setUtil(util);
+        vIndex.setConnection(connection);
+        vIndex.setVerbose(isVerbose());
+        vIndex.indexJDONREFVoiesDepartement(dpt);
+        
+        TronconIndex tIndex = new TronconIndex();
+        tIndex.setUtil(util);
+        tIndex.setConnection(connection);
+        tIndex.setVerbose(isVerbose());
+        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
+        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
+    }    
+
+    
 }

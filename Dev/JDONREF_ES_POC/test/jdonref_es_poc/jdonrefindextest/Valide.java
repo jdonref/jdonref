@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonArray;
@@ -22,13 +23,27 @@ public class Valide
 {
     
     
+//    public Departement[] getDepartements()
+//    {
+//        Departement[] d = new Departement[2];
+//        
+//        int i=0;
+//        d[i++] = new Departement("75");
+//        d[i++] = new Departement("93");
+//        
+//        return d;
+//    }
+    
+    
     public Departement[] getDepartements()
     {
         Departement[] d = new Departement[2];
         
         int i=0;
-        d[i++] = new Departement("75");
-        d[i++] = new Departement("93");
+        Date t0 = new Date(2014, 02, 01, 00, 00, 00);
+        Date t1 = new Date(2014, 02, 01, 00, 00, 00);
+        d[i++] = new Departement("75","WGS84","IGN2014",t0,t1);
+        d[i++] = new Departement("93","WGS84","IGN2014",t0,t1);
         
         return d;
     }
@@ -38,10 +53,17 @@ public class Valide
         Commune[] c = new Commune[4];
         
         int i=0;
-        c[i++] = new Commune("PARIS","75056","75000",null);
-        c[i++] = new Commune("PARIS","75105","75005","75056");
-        c[i++] = new Commune("BOBIGNY","93000","93000",null);
-        c[i++] = new Commune("PARIS","75113","75013","75056");
+//        c[i++] = new Commune("PARIS","75056","75000",null);
+//        c[i++] = new Commune("PARIS","75105","75005","75056");
+//        c[i++] = new Commune("BOBIGNY","93000","93000",null);
+//        c[i++] = new Commune("PARIS","75113","75013","75056");
+        
+         Date t0 = new Date(2014, 02, 01, 00, 00, 00);
+         Date t1 = new Date(2014, 02, 01, 00, 00, 00);
+         c[i++] = new Commune("75056", "75", "75000", "PARIS", "PARIS", "Paris", "PARIS", null, t0, t1);
+         c[i++] = new Commune("75105", "75", "75005", "PARIS 5 E ARRONDISSEMENT", "PARIS 5 E ARRONDISSEMENT", "Paris 5e Arrondissement", "PARIS K4K E AR1DI5EN1", "75056", t0, t1);
+         c[i++] = new Commune("93008", "93", "93000", "BOBIGNY", "BOBIGNY", "Bobigny", "BOBIGNI", null, t0, t1);
+         c[i++] = new Commune("75113", "75", "75003", "PARIS 13 E ARRONDISSEMENT", "PARIS 13 E ARRONDISSEMENT", "Paris 13e Arrondissement", "PARIS TRYZE E AR1DI5EN1", "75056", t0, t1);
         
         return c;
     }
@@ -104,16 +126,17 @@ public class Valide
         try {
             JDONREFIndex index = getJDONREFIndex(bouchon,reindex,verboseIndexation,url,connectionString,user,passwd);
             
-            AdresseBusiness adresseBO = new AdresseBusiness(index);
-            adresseBO.setHitsPerPage(5);
-            adresseBO.setLimit(1.0f);
-            
-            JsonArray hits;
+//            AdresseBusiness adresseBO = new AdresseBusiness(index);
+//            adresseBO.setHitsPerPage(5);
+//            adresseBO.setLimit(1.0f);
+//            
+//            JsonArray hits;
 //            hits = adresseBO.valide("BOULEVARD DE L HOPITAL 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !
 
             // fonctionne avec un mot unique !
-            hits = adresseBO.valide("hopital");
-            hits = adresseBO.valide("hapitol"); // pietre performances avec 1 VM de 450000 objets 5 shards (2.5 sec)
+//            hits = adresseBO.valide("hopital");
+//            hits = adresseBO.valide("hapitol"); // pietre performances avec 1 VM de 450000 objets 5 shards (2.5 sec)
+
 //            hits = adresseBO.valide("hopital paris"); // problème : propose les numéros plutôt que hopital saint louis !
 //            hits = adresseBO.valide("15 hopital paris"); // problème : propose les numéros plutôt que hopital saint louis !
 //            hits = adresseBO.valide("15 hopital 75 paris"); // problème : propose les numéros plutôt que hopital saint louis !

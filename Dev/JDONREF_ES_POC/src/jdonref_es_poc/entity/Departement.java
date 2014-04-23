@@ -38,9 +38,7 @@ public class Departement {
         return code_departement;
 
     }
-    
-    
-    
+
     
     public JsonObject toJSONDocument()
     {

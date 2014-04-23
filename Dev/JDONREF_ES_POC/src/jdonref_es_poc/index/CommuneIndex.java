@@ -8,6 +8,7 @@ import javax.json.JsonObject;
 import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.dao.CommuneDAO;
 import jdonref_es_poc.entity.Commune;
+import jdonref_es_poc.entity.MetaData;
 
 /**
  *
@@ -57,32 +58,76 @@ public class CommuneIndex
         
         CommuneDAO dao = new CommuneDAO();
         ResultSet rs = dao.getAllCommunes(connection);
+//      creation de l'objet metaDateDep
+        MetaData metaDateDep= new MetaData();
+        metaDateDep.setIndex(util.index);
+        metaDateDep.setType("commune");
         
         int i =0;
+        String bulk ="";
         while(rs.next())
         {
             if (isVerbose() && (i++)%1000==0)
                 System.out.println(i+" communes traitées");
             
-            Commune commune = new Commune(rs,new int[]{1,4,2,5});
+//            Commune commune = new Commune(rs,new int[]{1,4,2,5});
+            Commune commune = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,10});
             
-            addCommune(commune);
+//            addCommune(commune);
+            
+//            creation de l'objet metaDateDep plus haut
+            metaDateDep.setId(i);
+            bulk += metaDateDep.toJSONMetaData().toString()+"\n"+commune.toJSONDocument().toString()+"\n";
+            if(i%3000==0){
+//                System.out.println("affichage du fichier bulk : i = "+i+"\n"+bulk);
+                util.indexResourceBulk(bulk);
+                bulk="";
+            }
         }
+        util.indexResourceBulk(bulk);
     }
 
     void indexJDONREFCommune(Commune[] communes) throws IOException
     {
         if (isVerbose())
             System.out.println("Communes");
+
+//      creation de l'objet metaDateDep
+        MetaData metaDateDep= new MetaData();
+        metaDateDep.setIndex(util.index);
+        metaDateDep.setType("commune");
+        String bulk ="";
+        int i=0;
         
-        for(int i=0;i<communes.length;i++)
+        for(int j=0;j<communes.length;j++)
         {
             if (isVerbose() && (i++)%1000==0)
                 System.out.println(i+" communes traitées");
             
-            Commune commune = communes[i];
+            Commune commune = communes[j];
             
-            addCommune(commune);
+//            addCommune(commune);
+            //            creation de l'objet metaDateDep plus haut
+            metaDateDep.setId(j+1);
+            bulk += metaDateDep.toJSONMetaData().toString()+"\n"+commune.toJSONDocument().toString()+"\n";
+            if(i%100==0){
+                util.indexResourceBulk(bulk);
+                bulk="";
+            }
         }
+        util.indexResourceBulk(bulk);
     }
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
