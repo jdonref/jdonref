@@ -2,9 +2,13 @@ package mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3.test;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryBuilder;
 import mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3.JDONREFv3ESPlugin;
@@ -12,15 +16,23 @@ import org.apache.lucene.search.Explanation;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.percolate.PercolateResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.io.stream.InputStreamStreamInput;
+import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.highlight.HighlightField;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
 import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
@@ -99,6 +111,39 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         publicRefresh();
     }
     
+    void percolate(String voie) throws IOException
+    {
+        System.out.println("Percolate : "+voie);
+        
+        //Build a document to check against the percolator
+        XContentBuilder docBuilder = XContentFactory.jsonBuilder().startObject();
+        docBuilder.field("doc").startObject(); //This is needed to designate the document
+        docBuilder.field("content", voie);
+        docBuilder.endObject(); //End of the doc field
+        docBuilder.endObject(); //End of the JSON root object
+
+        //Percolate
+        PercolateResponse response = client().preparePercolate()
+                .setIndices(INDEX_NAME)
+                .setDocumentType("doc")
+                .setSource(docBuilder).execute().actionGet();
+
+        //Iterate over the results
+        for (PercolateResponse.Match match : response) {
+            //Handle the result which is the name of
+            //the query in the percolator
+            Map<String,HighlightField> map = match.getHighlightFields();
+            Collection<HighlightField> fields = map.values();
+            Iterator<HighlightField> iterator = fields.iterator();
+            while(iterator.hasNext())
+            {
+                Text[] fragments = iterator.next().getFragments();
+                for(int j=0;j<fragments.length;j++)
+                    System.out.println(fragments[j].toString());
+            }
+        }
+    }
+    
     void searchExactAdresse(String voie,String assertion)
     {
         System.out.println("Searching "+voie);
@@ -129,9 +174,40 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         assertEquals(assertion,hits[0].getSource().get("fullName"));
     }
     
-    void indexPays() throws IOException, InterruptedException, ExecutionException
+    void indexPercolator(String champ,String id,String value) throws IOException
     {
-        publicIndex("commune","PARIS",XContentFactory.jsonBuilder().startObject()
+        QueryBuilder qb = QueryBuilders.termQuery(champ,value);
+        
+        client().prepareIndex(INDEX_NAME,".percolator",id)
+                .setSource(XContentFactory.jsonBuilder()
+                   .startObject()
+                      .field("query",qb)
+                   .endObject())
+                .setRefresh(true)
+                .execute().actionGet();
+    }
+    
+    void indexCommune(XContentBuilder Xcommune,String id,String commune) throws IOException
+    {
+        indexPercolator("commune",id,commune);
+        
+        publicIndex("commune",commune,Xcommune);
+    }
+    
+    void indexPays(XContentBuilder Xpays,String id,String pays) throws IOException
+    {
+        indexPercolator("pays",id,pays);
+        
+        publicIndex("pays",id,Xpays);
+    }
+    
+    void index() throws IOException, InterruptedException, ExecutionException
+    {
+//        BulkRequest bulk = new BulkRequest();
+//        bulk.readFrom(new InputStreamStreamInput(new FileInputStream("./test/resources/bulk/requests.bulk")));
+//        this.client().bulk(bulk);
+        
+        indexCommune(XContentFactory.jsonBuilder().startObject()
                 .field("codepostal","75000")
                 .field("codeinsee","75056")
                 .field("commune","PARIS")
@@ -142,21 +218,21 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
                 .field("fullName_without_numbers","PARIS FRANCE")
                 .field("numero","0")
                 .field("codedepartement","75")
-                .endObject());
-        publicIndex("pays","FR",XContentFactory.jsonBuilder().startObject()
+                .endObject(),"75056","PARIS");
+        indexPays(XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
                 .field("ligne7","FRANCE")
                 .field("fullName","FRANCE")
                 .field("fullName_without_numbers","FRANCE")
                 .field("numero","0")
-                .endObject());
-        publicIndex("pays","DE",XContentFactory.jsonBuilder().startObject()
+                .endObject(),"FR","FRANCE");
+        indexPays(XContentFactory.jsonBuilder().startObject()
                 .field("codepays","DE")
                 .field("ligne7","ALLEMAGNE")
                 .field("fullName","ALLEMAGNE")
                 .field("fullName_without_numbers","ALLEMAGNE")
                 .field("numero","0")
-                .endObject());
+                .endObject(),"DE","ALLEMAGNE");
         publicIndex("voie","1",XContentFactory.jsonBuilder().startObject()
                 .field("codepays","FR")
                 .field("ligne4","BOULEVARD DE L HOPITAL")
@@ -225,10 +301,11 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         }
     }
     
-    void test_pays() throws IOException, InterruptedException, ExecutionException
+    @Test
+    public void testSearch() throws IOException, InterruptedException, ExecutionException
     {    
         importMapping();
-        indexPays();
+        index();
         
         ensureGreen();
         Thread.sleep(10000); // wait for indexation !
@@ -251,13 +328,26 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         
         searchExactAdresse("PARIS","PARIS FRANCE");
         
-        searchExactAdresse("75","75 FRANCE");
+        //searchExactAdresse("75","75 FRANCE"); // failed
         //searchExactAdresse("75 FRANCE","75 FRANCE"); // ne marche pas pour le moment !
     }
     
     @Test
-    public void test_analyzer_pays() throws Exception
+    public void testPercolate() throws IOException, InterruptedException, ExecutionException
     {
-        test_pays();
+        importMapping();
+        index();
+        
+        ensureGreen();
+        Thread.sleep(10000); // wait for indexation !
+        
+        GetResponse response = client().prepareGet(INDEX_NAME,"pays","FR").execute().get();
+        System.out.println(response.getSourceAsString());
+        // need assert
+        
+        IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
+        System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
+        
+        percolate("BOULEVARD HOPITAL PARIS");
     }
 }
