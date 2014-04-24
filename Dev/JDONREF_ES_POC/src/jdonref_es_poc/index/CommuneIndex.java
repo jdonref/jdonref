@@ -58,31 +58,32 @@ public class CommuneIndex
         
         CommuneDAO dao = new CommuneDAO();
         ResultSet rs = dao.getAllCommunes(connection);
-//      creation de l'objet metaDateDep
-        MetaData metaDateDep= new MetaData();
-        metaDateDep.setIndex(util.index);
-        metaDateDep.setType("commune");
+//      creation de l'objet metaDataCom
+        MetaData metaDataCom= new MetaData();
+        metaDataCom.setIndex(util.index);
+        metaDataCom.setType("commune");
         
         int i =0;
         String bulk ="";
         while(rs.next())
         {
-            if (isVerbose() && (i++)%1000==0)
+            if (isVerbose() && i%3000==1)
                 System.out.println(i+" communes traitées");
             
 //            Commune commune = new Commune(rs,new int[]{1,4,2,5});
-            Commune commune = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,10});
+            Commune commune = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,10});            
             
-//            addCommune(commune);
-            
-//            creation de l'objet metaDateDep plus haut
-            metaDateDep.setId(i);
-            bulk += metaDateDep.toJSONMetaData().toString()+"\n"+commune.toJSONDocument().toString()+"\n";
+//            creation de l'objet metaDataCom plus haut
+//            on commence à numeroter id à partir de 1
+            metaDataCom.setId(i+1);
+            bulk += metaDataCom.toJSONMetaData().toString()+"\n"+commune.toJSONDocument().toString()+"\n";
             if(i%3000==0){
 //                System.out.println("affichage du fichier bulk : i = "+i+"\n"+bulk);
                 util.indexResourceBulk(bulk);
                 bulk="";
             }
+//            addCommune(commune);
+            i++;
         }
         util.indexResourceBulk(bulk);
     }
@@ -92,42 +93,29 @@ public class CommuneIndex
         if (isVerbose())
             System.out.println("Communes");
 
-//      creation de l'objet metaDateDep
-        MetaData metaDateDep= new MetaData();
-        metaDateDep.setIndex(util.index);
-        metaDateDep.setType("commune");
+//      creation de l'objet metaDataCom
+        MetaData metaDataCom= new MetaData();
+        metaDataCom.setIndex(util.index);
+        metaDataCom.setType("commune");
         String bulk ="";
-        int i=0;
         
-        for(int j=0;j<communes.length;j++)
+        for(int i=0;i<communes.length;i++)
         {
-            if (isVerbose() && (i++)%1000==0)
+            if (isVerbose() && i%3000==1)
                 System.out.println(i+" communes traitées");
             
-            Commune commune = communes[j];
+            Commune commune = communes[i];
             
 //            addCommune(commune);
-            //            creation de l'objet metaDateDep plus haut
-            metaDateDep.setId(j+1);
-            bulk += metaDateDep.toJSONMetaData().toString()+"\n"+commune.toJSONDocument().toString()+"\n";
-            if(i%100==0){
+            //            creation de l'objet metaDataCom plus haut
+            metaDataCom.setId(i+1);
+            bulk += metaDataCom.toJSONMetaData().toString()+"\n"+commune.toJSONDocument().toString()+"\n";
+            if(i%3000==0){
                 util.indexResourceBulk(bulk);
                 bulk="";
             }
         }
         util.indexResourceBulk(bulk);
     }
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+      
 }

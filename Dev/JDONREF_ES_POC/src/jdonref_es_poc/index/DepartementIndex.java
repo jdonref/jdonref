@@ -63,16 +63,16 @@ public class DepartementIndex
 
         DepartementDAO dao = new DepartementDAO();
         ResultSet rs = dao.getAllDepartement(connection);
-//      creation de l'objet metaDateDep
-        MetaData metaDateDep= new MetaData();
-        metaDateDep.setIndex(util.index);
-        metaDateDep.setType("departement");
+//      creation de l'objet metaDataDep
+        MetaData metaDataDep= new MetaData();
+        metaDataDep.setIndex(util.index);
+        metaDataDep.setType("departement");
         
         int i =0;
         String bulk ="";
         while(rs.next())
         {
-            if (isVerbose() && (i++)%1000==0)
+            if (isVerbose() && i%30==1)
                 System.out.println(i+" départements traités");
             String dpt_code_departement = rs.getString(1);
             String dpt_projection = rs.getString(2);
@@ -87,16 +87,15 @@ public class DepartementIndex
             d.t0 = t0;
             d.t1 = t1;
             
-//            creation de l'objet metaDateDep plus haut
-            metaDateDep.setId(i);
-            bulk += metaDateDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
-            if(i%100==0){
+//            creation de l'objet metaDataDep plus haut
+            metaDataDep.setId(i+1);
+            bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
+            if(i%30==0){
                 util.indexResourceBulk(bulk);
                 bulk="";
             }
-                
-//            addDepartment(d);
-            
+            i++;
+//            addDepartment(d);     
         }
         util.indexResourceBulk(bulk);
     }
@@ -106,24 +105,24 @@ public class DepartementIndex
         if (isVerbose())
             System.out.println("Départements");
         
-//      creation de l'objet metaDateDep
-        MetaData metaDateDep= new MetaData();
-        metaDateDep.setIndex(util.index);
-        metaDateDep.setType("departement");
+//      creation de l'objet metaDataDep
+        MetaData metaDataDep= new MetaData();
+        metaDataDep.setIndex(util.index);
+        metaDataDep.setType("departement");
         String bulk ="";
-        int i=0;
-        for(int j=0;j<departements.length;j++)
+        
+        for(int i=0;i<departements.length;i++)
         {
-            if (isVerbose() && (i++)%1000==0)
+            if (isVerbose() && i%30==1)
                 System.out.println(i+" départements traités");
-            Departement d = departements[j];
+            Departement d = departements[i];
             
 //            addDepartment(d);
             
-//            creation de l'objet metaDateDep plus haut
-            metaDateDep.setId(j+1);
-            bulk += metaDateDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
-            if(i%100==0){
+//            creation de l'objet metaDataDep plus haut
+            metaDataDep.setId(i+1);
+            bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
+            if(i%30==0){
                 util.indexResourceBulk(bulk);
                 bulk="";
             }
@@ -139,12 +138,12 @@ public class DepartementIndex
         vIndex.setVerbose(isVerbose());
         vIndex.indexJDONREFVoiesDepartement(voies, dpt);
         
-        TronconIndex tIndex = new TronconIndex();
-        tIndex.setUtil(util);
-        tIndex.setConnection(connection);
-        tIndex.setVerbose(isVerbose());
-        tIndex.indexJDONREFTronconsDroitDepartement(voies, dpt);
-        tIndex.indexJDONREFTronconsGaucheDepartement(voies, dpt);
+//        TronconIndex tIndex = new TronconIndex();
+//        tIndex.setUtil(util);
+//        tIndex.setConnection(connection);
+//        tIndex.setVerbose(isVerbose());
+//        tIndex.indexJDONREFTronconsDroitDepartement(voies, dpt);
+//        tIndex.indexJDONREFTronconsGaucheDepartement(voies, dpt);
     }
     
     public void indexJDONREFDepartement(String dpt) throws IOException, SQLException
@@ -155,12 +154,12 @@ public class DepartementIndex
         vIndex.setVerbose(isVerbose());
         vIndex.indexJDONREFVoiesDepartement(dpt);
         
-        TronconIndex tIndex = new TronconIndex();
-        tIndex.setUtil(util);
-        tIndex.setConnection(connection);
-        tIndex.setVerbose(isVerbose());
-        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
-        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
+//        TronconIndex tIndex = new TronconIndex();
+//        tIndex.setUtil(util);
+//        tIndex.setConnection(connection);
+//        tIndex.setVerbose(isVerbose());
+//        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
+//        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
     }    
 
     

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import javax.json.JsonObject;
 import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.dao.VoieDAO;
+import jdonref_es_poc.entity.MetaData;
 import jdonref_es_poc.entity.Voie;
 
 /**
@@ -57,18 +58,35 @@ public class VoieIndex {
         
         VoieDAO dao = new VoieDAO();
         ResultSet rs = dao.getAllVoiesOfDepartement(connection, dpt);
-        
-        int c =0;
+//      creation de l'objet metaDataVoie
+        MetaData metaDataVoie= new MetaData();
+        metaDataVoie.setIndex(util.index);
+//      un type voie pour tous les departements  
+        metaDataVoie.setType("voie");
+//        metaDataVoie.setType("voie_"+dpt);
+              
+        String bulk ="";
+        int i =0;
         
         while(rs.next())
         {
-            if (isVerbose() && c++%1000==0)
-                System.out.println(c+" voies traitées");
+            if (isVerbose() && i%1000==1)
+                System.out.println(i+" voies traitées");
             
             Voie v = new Voie(rs);
-            
-            addVoie(v);
+                        
+//            creation de l'objet metaDataVoie plus haut
+            metaDataVoie.setId(i+1);
+            bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
+            if(i%1000==0){
+//                System.out.println("affichage du fichier bulk : i = "+i+"\n"+bulk);
+                util.indexResourceBulk(bulk);
+                bulk="";
+            }
+            i++;
+//            addVoie(v);
         }
+        util.indexResourceBulk(bulk);
     }
 
     void indexJDONREFVoiesDepartement(Voie[] voies, String dpt) throws IOException
@@ -76,16 +94,32 @@ public class VoieIndex {
         if (isVerbose())
             System.out.println("dpt "+dpt+" : voies");
         
-        int c =0;
+        //int c =0;
+//      creation de l'objet metaDataVoie
+        MetaData metaDataVoie= new MetaData();
+        metaDataVoie.setIndex(util.index);
+//      un type voie pour tous les departements  
+        metaDataVoie.setType("voie");
+//        metaDataVoie.setType("voie_"+dpt);
+        String bulk ="";
         
         for(int i=0;i<voies.length;i++)
         {
-            if (isVerbose() && c++%1000==0)
-                System.out.println(c+" voies traitées");
+            if (isVerbose() && i%1000==1)
+                System.out.println(i+" voies traitées");
             
             Voie v = voies[i];
             
-            addVoie(v);
+//            addVoie(v);
+            
+//            creation de l'objet metaDataVoie plus haut
+            metaDataVoie.setId(i+1);
+            bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
+            if(i%1000==0){
+                util.indexResourceBulk(bulk);
+                bulk="";
+            }
         }
+        util.indexResourceBulk(bulk);
     }
 }
