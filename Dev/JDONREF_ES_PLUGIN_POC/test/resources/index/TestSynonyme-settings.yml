@@ -1,0 +1,10 @@
+index:
+    analysis:
+        analyzer:
+              synonym:
+                     tokenizer: whitespace
+                     filter: synonym
+              filter:
+                     synonym:
+                         type: synonym
+                         synonyms_path: ../src/resources/analysis/jdonrefv3es_synonym.fr_FR.txt
