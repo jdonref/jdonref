@@ -641,9 +641,9 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         searchExactAdresse("REMY 59","RUE REMY DUHEM 59500 DOUAI FRANCE");
         
         searchExactAdresse("59500 DOUAI FRANCE","59500 DOUAI FRANCE");
-        //searchExactAdresse("59500 FRANCE","59500 DOUAI FRANCE"); // d'après explanation, tous les éléments de la requête ne sont pas pris en compte ? Le résultat est en 4ème position.
+        searchExactAdresse("59500 FRANCE","59500 DOUAI FRANCE");
         searchExactAdresse("59500 DOUAI","59500 DOUAI FRANCE");
-        //searchExactAdresse("59500","59500 DOUAI FRANCE"); // idem codepostal pas pris en compte
+        searchExactAdresse("59500","59500 DOUAI FRANCE");
         searchExactAdresse("DOUAI FRANCE","59500 DOUAI FRANCE");
         searchExactAdresse("DOUAI","59500 DOUAI FRANCE");
         
@@ -652,17 +652,21 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         searchExactAdresse("59505 DOUAI","59500 DOUAI FRANCE");
         //searchExactAdresse("59505","59500 DOUAI FRANCE"); // 59505 n'est pas encore pris en charge
 
-        //searchExactAdresse("59 DOUAI FRANCE","59500 DOUAI FRANCE"); // anomalie à corriger : une adresse est trouvée avec un meilleur score
+        //searchExactAdresse("59 DOUAI FRANCE","59500 DOUAI FRANCE"); // anomalie à corriger : le code département est pris pour un numéro de voie
         //searchExactAdresse("59 FRANCE","59500 DOUAI FRANCE"); // idem
-        // searchExactAdresse("59 DOUAI","59500 DOUAI FRANCE"); // idem
+        //searchExactAdresse("59 DOUAI","59500 DOUAI FRANCE"); // idem
 
-        //searchExactAdresse("59 FRANCE","59 FRANCE"); // idem. code departement non pris en compte ...
-        //searchExactAdresse("59","59 FRANCE"); // idem. code departement non pris en compte ...
+        //searchExactAdresse("59 FRANCE","59 FRANCE"); // idem
+        //searchExactAdresse("59","59 FRANCE"); // idem
         
         searchExactAdresse("FRANCE","FRANCE");
     }
     
-/*    @Test
+    /**
+     * 
+     */
+    /*
+    @Test
     public void testPercolate() throws IOException, InterruptedException, ExecutionException
     {
         importMapping();

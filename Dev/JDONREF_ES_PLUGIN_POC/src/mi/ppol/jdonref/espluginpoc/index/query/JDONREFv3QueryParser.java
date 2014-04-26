@@ -161,25 +161,25 @@ public class JDONREFv3QueryParser implements QueryParser
 
                     if (stri.length()==5)
                     {
-                        addMatchQueryClause(booleanQuery,mq,"code_insee",stri,2.5f,BooleanClause.Occur.SHOULD);
+                        addMatchQueryClause(booleanQuery,mq,"codeinsee",stri,2.5f,BooleanClause.Occur.SHOULD);
                     }
                     if (stri.length()==5)
                     {
-                        addMatchQueryClause(booleanQuery,mq,"code_postal",stri,2.5f,BooleanClause.Occur.SHOULD);
+                        addMatchQueryClause(booleanQuery,mq,"codepostal",stri,2.5f,BooleanClause.Occur.SHOULD);
                     }
                     float dptBoost = 1.0f;
                     if (i==0)
                         dptBoost = 0.5f;
                     if (i>0 || splitted.length==1)
                         dptBoost = 2.5f;
-                    addMatchQueryClause(booleanQuery,mq,"code_departement",stri.length()<=2?stri:stri.substring(0,2),dptBoost,BooleanClause.Occur.SHOULD);
+                    addMatchQueryClause(booleanQuery,mq,"codedepartement",stri.length()<=2?stri:stri.substring(0,2),dptBoost,BooleanClause.Occur.SHOULD);
                     
                     float ardtBoost = 1.0f;
                     if (i==0)
                         ardtBoost = 0.5f;
                     if (i>0 || splitted.length==1)
                         ardtBoost = 2.5f;
-                    addMatchQueryClause(booleanQuery,mq,"code_arrondissement",stri.length()<=2?stri:stri.substring(stri.length()-2),ardtBoost,BooleanClause.Occur.SHOULD);
+                    addMatchQueryClause(booleanQuery,mq,"codearrondissement",stri.length()<=2?stri:stri.substring(stri.length()-2),ardtBoost,BooleanClause.Occur.SHOULD);
                     
                     float numBoost = 1.0f;
                     if (i==0 && splitted.length!=1)
