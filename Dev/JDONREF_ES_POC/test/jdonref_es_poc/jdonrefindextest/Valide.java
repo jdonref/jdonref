@@ -115,14 +115,14 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "10.213.93.83:9200";
+        String url = "192.168.0.11:9200";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
 
  
         // connection à la base de JDONREF
-        String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN";
+        String connectionString = "jdbc:postgresql://192.168.135.129:5433/jdonref-ign";
         String user = "postgres";
         String passwd = "postgres";
         

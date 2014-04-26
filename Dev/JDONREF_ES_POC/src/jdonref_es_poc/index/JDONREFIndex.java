@@ -136,22 +136,26 @@ public class JDONREFIndex
             dptIndex.setVerbose(isVerbose());
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
-//            dptIndex.indexJDONREFDepartements();        
+            dptIndex.indexJDONREFDepartements();        
 //            dptIndex.indexJDONREFDepartements(getDepartements2());  
 //            dptIndex.indexJDONREFDepartement(getVoies2(), "75");
-            dptIndex.indexJDONREFDepartement("75");
-//            dptIndex.indexJDONREFDepartement("91");
-//            dptIndex.indexJDONREFDepartement("92");
-//            dptIndex.indexJDONREFDepartement("93");
-//            dptIndex.indexJDONREFDepartement("94");
-//            dptIndex.indexJDONREFDepartement("95");
+            dptIndex.indexJDONREFDepartement("01");
+            dptIndex.indexJDONREFDepartement("02");
+            dptIndex.indexJDONREFDepartement("03");
+            dptIndex.indexJDONREFDepartement("04");
+            dptIndex.indexJDONREFDepartement("05");
+            dptIndex.indexJDONREFDepartement("06");
+            dptIndex.indexJDONREFDepartement("07");
+            dptIndex.indexJDONREFDepartement("08");
+            dptIndex.indexJDONREFDepartement("09");
+            dptIndex.indexJDONREFDepartement("10");
         
-//            CommuneIndex cIndex = new CommuneIndex();
-//            cIndex.setVerbose(isVerbose());
-//            cIndex.setConnection(connection);
-//            cIndex.setUtil(util);
-//            cIndex.indexJDONREFCommune();
-//            cIndex.indexJDONREFCommune(getCommunes2());
+            CommuneIndex cIndex = new CommuneIndex();
+            cIndex.setVerbose(isVerbose());
+            cIndex.setConnection(connection);
+            cIndex.setUtil(util);
+            cIndex.indexJDONREFCommune();
+            cIndex.indexJDONREFCommune(getCommunes2());
         }
         
         long end = Calendar.getInstance().getTimeInMillis();

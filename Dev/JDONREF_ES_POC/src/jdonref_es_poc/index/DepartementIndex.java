@@ -148,11 +148,17 @@ public class DepartementIndex
     
     public void indexJDONREFDepartement(String dpt) throws IOException, SQLException
     {
-        VoieIndex vIndex = new VoieIndex();
-        vIndex.setUtil(util);
-        vIndex.setConnection(connection);
-        vIndex.setVerbose(isVerbose());
-        vIndex.indexJDONREFVoiesDepartement(dpt);
+//        VoieIndex vIndex = new VoieIndex();
+//        vIndex.setUtil(util);
+//        vIndex.setConnection(connection);
+//        vIndex.setVerbose(isVerbose());
+//        vIndex.indexJDONREFVoiesDepartement(dpt);
+        
+        AdresseIndex adrIndex = new AdresseIndex();
+        adrIndex.setUtil(util);
+        adrIndex.setConnection(connection);
+        adrIndex.setVerbose(isVerbose());
+        adrIndex.indexJDONREFAdressesDepartement(dpt);
         
 //        TronconIndex tIndex = new TronconIndex();
 //        tIndex.setUtil(util);

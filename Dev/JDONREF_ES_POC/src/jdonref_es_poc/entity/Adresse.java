@@ -19,12 +19,20 @@ public class Adresse
         this.repetition = repetition;
     }
     
-    public Adresse(ResultSet rs, String numero, String repetition) throws SQLException
+    public Adresse(ResultSet rs,String numero, String repetition) throws SQLException
     {
-        voie = new Voie(rs,new int[]{1,5,6,2,7,8},new int[]{3,4,9,10});
-        
+        voie = new Voie(rs,new int[]{11,12,13,14,15,16,17,18,19,20,21,22,23,24,25},new int[]{1,2,3,4,5,6,7,8,9,10});
         this.numero = numero;
         this.repetition = repetition;
+    }
+    
+    public Adresse(ResultSet rs) throws SQLException
+    {
+        voie = new Voie(rs,new int[]{11,12,13,14,15,16,17,18,19,20,21,22,23,24,25},new int[]{1,2,3,4,5,6,7,8,9,10});
+        
+        this.idadresse = rs.getString(26);
+        this.numero = rs.getString(27);
+        this.repetition = rs.getString(28);
     }
     
     public String[] getLignes()
@@ -38,6 +46,7 @@ public class Adresse
     public String batiment;
     
     public String idtroncon;
+    public String idadresse;
     public String numero;
     public String repetition;
     
