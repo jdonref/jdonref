@@ -139,16 +139,16 @@ public class JDONREFIndex
             dptIndex.indexJDONREFDepartements();        
 //            dptIndex.indexJDONREFDepartements(getDepartements2());  
 //            dptIndex.indexJDONREFDepartement(getVoies2(), "75");
-            dptIndex.indexJDONREFDepartement("01");
-            dptIndex.indexJDONREFDepartement("02");
-            dptIndex.indexJDONREFDepartement("03");
-            dptIndex.indexJDONREFDepartement("04");
+//            dptIndex.indexJDONREFDepartement("01");
+//            dptIndex.indexJDONREFDepartement("02");
+//            dptIndex.indexJDONREFDepartement("03");
+//            dptIndex.indexJDONREFDepartement("04");
             dptIndex.indexJDONREFDepartement("05");
-            dptIndex.indexJDONREFDepartement("06");
-            dptIndex.indexJDONREFDepartement("07");
-            dptIndex.indexJDONREFDepartement("08");
-            dptIndex.indexJDONREFDepartement("09");
-            dptIndex.indexJDONREFDepartement("10");
+//            dptIndex.indexJDONREFDepartement("06");
+//            dptIndex.indexJDONREFDepartement("07");
+//            dptIndex.indexJDONREFDepartement("08");
+//            dptIndex.indexJDONREFDepartement("09");
+//            dptIndex.indexJDONREFDepartement("10");
         
             CommuneIndex cIndex = new CommuneIndex();
             cIndex.setVerbose(isVerbose());

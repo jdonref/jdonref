@@ -22,8 +22,19 @@ public class Adresse
     public Adresse(ResultSet rs,String numero, String repetition) throws SQLException
     {
         voie = new Voie(rs,new int[]{11,12,13,14,15,16,17,18,19,20,21,22,23,24,25},new int[]{1,2,3,4,5,6,7,8,9,10});
+        
         this.numero = numero;
-        this.repetition = repetition;
+        if (numero.equals("0") || numero.trim().equals(""))
+            this.numero = null;
+        
+        if (repetition.equals("0") || repetition.trim().equals(""))
+        {
+            this.repetition = null;
+        }
+        else
+        {
+            this.repetition = repetition;
+        }
     }
     
     public Adresse(ResultSet rs) throws SQLException
@@ -31,8 +42,14 @@ public class Adresse
         voie = new Voie(rs,new int[]{11,12,13,14,15,16,17,18,19,20,21,22,23,24,25},new int[]{1,2,3,4,5,6,7,8,9,10});
         
         this.idadresse = rs.getString(26);
-        this.numero = rs.getString(27);
-        this.repetition = rs.getString(28);
+        this.repetition = rs.getString(27);
+        this.numero = rs.getString(28);
+        if (numero.equals("0") || numero.trim().equals(""))
+            this.numero = null;
+        if (repetition.equals("0") || repetition.trim().equals(""))
+        {
+            this.repetition = null;
+        }
     }
     
     public String[] getLignes()
@@ -52,37 +69,39 @@ public class Adresse
     
     public Voie voie;
     
+    public String toLigne4()
+    {
+        String arrondissement = voie.commune.getCodeArrondissement();
+        
+        return voie.commune.codepostal+ " "+ voie.commune.commune+(arrondissement==null?"":(" "+arrondissement));
+    }
+    
+    public String toLigne6()
+    {
+        return numero+" "+((repetition==null||repetition.endsWith("0"))?"":(repetition+" "))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle;
+    }
+    
+    public String toLigne7()
+    {
+        return "FRANCE";
+    }
+    
+    public String toStringWithoutNumbers()
+    {
+        return ((repetition==null||repetition.endsWith("0"))?"":(repetition+" "))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle+ " "+  voie.commune.commune;
+    }
+    
     public String toString()
     {
         String arrondissement = voie.commune.getCodeArrondissement();
         
-        return numero+" "+(repetition==null?"":(repetition+" "))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle+ " "+ voie.commune.codepostal+ " "+ voie.commune.commune+(arrondissement==null?"":(" "+arrondissement));
-    }
-    public String toFullString()
-    {
-        String arrondissement = voie.commune.getCodeArrondissement();
-        
-        return (voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle+ " "+ voie.commune.commune;
-    }
-    public String toFullString1()
-    {
-        return numero+" "+(repetition==null?"":(" "+repetition))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle+ " "+ voie.commune.codeinsee + " "+ voie.commune.commune;
-    }
-    public String toFullString2()
-    {
-        return numero+" "+(repetition==null?"":(" "+repetition))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle+ " "+ voie.commune.codepostal + " "+ voie.commune.commune;
-    }
-    public String toFullString3()
-    {
-        String arrondissement = voie.commune.getCodeArrondissement();
-        
-        return numero+" "+(repetition==null?"":(" "+repetition))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle+ " "+ voie.commune.getCodeDepartement() + " "+ voie.commune.commune +(arrondissement==null?"":(" "+arrondissement));
+        return numero+" "+((repetition==null||repetition.endsWith("0"))?"":(repetition+" "))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle+ " "+ voie.commune.codepostal+ " "+ voie.commune.commune+(arrondissement==null?"":(" "+arrondissement));
     }
     
     public JsonObject toJSONDocument()
     {
         JsonObjectBuilder builder = Json.createObjectBuilder()
-                .add("toString", toString())
+                .add("toString", toString().trim())
                 .add("code_insee",voie.commune.codeinsee)
                 .add("code_departement",voie.commune.getCodeDepartement())
                 .add("code_postal",voie.commune.codepostal);
@@ -96,9 +115,17 @@ public class Adresse
         builder.add("voi_min_numero",voie.min_numero);
         builder.add("voi_max_numero",voie.max_numero);
         builder.add("voi_id",voie.idvoie);
-        builder.add("fullName",toFullString());
-        builder.add("numero",numero); // need a boost ?
-        builder.add("repetition",repetition);
+        builder.add("fullName",toString().trim());
+        builder.add("fullNameWithoutNumbers",toStringWithoutNumbers().trim());
+        builder.add("ligne4",toLigne4().trim());
+        builder.add("ligne6",toLigne6().trim());
+        builder.add("ligne7",toLigne7().trim());
+        if (numero!=null)
+        {
+            builder.add("numero",numero); // need a boost ?
+        }
+        if (repetition!=null)
+            builder.add("repetition",repetition);
         return builder.build();
     }
     

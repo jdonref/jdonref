@@ -145,21 +145,39 @@ public class Voie
     return true;
     }
     
+    public String toLigne4()
+    {
+        return (typedevoie==null?"":(typedevoie+" "))+(article==null?"":(article+" "))+libelle;
+    }
+    
+    public String toLigne6()
+    {
+        String arrondissement = commune.getCodeArrondissement();
+        
+        return commune.codepostal+ " "+ commune.commune+(arrondissement==null?"":(" "+arrondissement));
+    }
+    
+    public String toLigne7()
+    {
+        return "FRANCE";
+    }
+    
     public String toString()
     {
         String arrondissement = commune.getCodeArrondissement();
         
         return (typedevoie==null?"":(typedevoie+" "))+(article==null?"":(article+" "))+libelle+ " "+ commune.codepostal+ " "+ commune.commune+(arrondissement==null?"":(" "+arrondissement));
     }
-    public String toFullString()
+    
+    public String toStringWithoutNumbers()
     {
-        return (typedevoie==null?"":(typedevoie+" "))+(article==null?"":(article+" "))+libelle+" "+commune;
+        return (typedevoie==null?"":(typedevoie+" "))+(article==null?"":(article+" "))+libelle+ " "+  commune.commune;
     }
     
     public JsonObject toJSONDocument()
     {
         
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("toString", toString().trim());
          builder.add("code_insee",commune.codeinsee);
 //         builder.add("code_departement",getCodeDepartement());
          builder.add("code_departement",commune.dpt_code_departement);
@@ -204,6 +222,12 @@ public class Voie
          builder.add("voi_mot_determinant_pq",voi_mot_determinant_pq);
          builder.add("voi_min_numero",min_numero);
          builder.add("voi_max_numero",max_numero);
+         
+         builder.add("fullName",toString().trim());
+         builder.add("fullNameWithoutNumbers",toStringWithoutNumbers().trim());
+         builder.add("ligne4",toLigne4().trim());
+         builder.add("ligne6",toLigne6().trim());
+         builder.add("ligne7",toLigne7().trim());
          
         return builder.build();
         

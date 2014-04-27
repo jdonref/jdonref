@@ -78,7 +78,8 @@ public class AdresseIndex {
             
 //            creation de l'objet metaDataVoie plus haut
             metaDataAdresse.setId(i+1);
-            bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n";
+            if (adr.numero!=null)
+                bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n";
             if(i%1000==0){
 //                System.out.println("affichage du fichier bulk : i = "+i+"\n"+bulk);
                 util.indexResourceBulk(bulk);
@@ -112,7 +113,8 @@ public class AdresseIndex {
             
 //            creation de l'objet metaDataVoie plus haut
             metaDataAdresse.setId(i+1);
-            bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n";
+            if (adr.numero!=null)
+                bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n";
             if(i%1000==0){
                 util.indexResourceBulk(bulk);
                 bulk="";

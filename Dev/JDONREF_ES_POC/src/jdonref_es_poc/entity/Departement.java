@@ -32,17 +32,30 @@ public class Departement {
         this.t1 = t1;
     }
 
+    public String toLigne6()
+    {
+        return toString();
+    }
+    
+    public String toLigne7()
+    {
+        return "FRANCE";
+    }
+    
     @Override
     public String toString()
     {
         return code_departement;
-
     }
-
+    
+    public String toStringWithoutNumbers()
+    {
+        return toString();
+    }
     
     public JsonObject toJSONDocument()
     {
-         JsonObjectBuilder builder = Json.createObjectBuilder();
+         JsonObjectBuilder builder = Json.createObjectBuilder().add("toString", toString());
 //                .add("toString", toString());
          
 //         builder.add("fullName",code_departement);
@@ -52,8 +65,13 @@ public class Departement {
          builder.add("dpt_referentiel", dpt_referentiel);
          builder.add("t0" , t0.toString());
          builder.add("t1" , t1.toString());
-        
-        return builder.build();
+         
+         builder.add("fullName",toString());
+         builder.add("fullNameWithoutNumbers",toStringWithoutNumbers());
+         builder.add("ligne6",toLigne6());
+         builder.add("ligne7",toLigne7());
+         
+         return builder.build();
     }
     
     

@@ -106,39 +106,33 @@ public class Commune
         return true;
     }
     
+    public String toLigne6()
+    {
+        String arrondissement = getCodeArrondissement();
+        
+        return codepostal+ " "+ commune+(arrondissement==null?"":(" "+arrondissement));
+    }
+    
+    public String toLigne7()
+    {
+        return "FRANCE";
+    }
+    
     public String toString()
     {
         String arrondissement = getCodeArrondissement();
         
         return codepostal+ " "+ commune+(arrondissement==null?"":(" "+arrondissement));
     }
-    public String toFullString()
-    {
-        String arrondissement = getCodeArrondissement();
-        
-        return commune;
-    }
-
-    public String toFullString1()
-    {
-        return codepostal+" "+commune;
-    }
-
-    public String toFullString2()
-    {
-        return codeinsee+" "+commune;
-    }
     
-    public String toFullString3()
+    public String toStringWithoutNumbers()
     {
-        String arrondissement = getCodeArrondissement();
-        
         return commune;
     }
     
     public JsonObject toJSONDocument()
     {
-         JsonObjectBuilder builder = Json.createObjectBuilder();
+         JsonObjectBuilder builder = Json.createObjectBuilder().add("toString", toString().trim());
 //                .add("toString", toString());
 //         builder.add("fullName",toFullString());
          builder.add("code_insee",codeinsee);
@@ -156,7 +150,12 @@ public class Commune
          builder.add("com_code_insee_commune",com_code_insee_commune);
          builder.add("t0",t0.toString());
          builder.add("t1",t1.toString());
-        
+         
+         builder.add("fullName",toString().trim());
+         builder.add("fullNameWithoutNumbers",toStringWithoutNumbers().trim());
+         builder.add("ligne6",toLigne6().trim());
+         builder.add("ligne7",toLigne7().trim());
+         
         return builder.build();
     }
 }
