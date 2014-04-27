@@ -1,0 +1,23 @@
+{
+    "index" : {
+        "analysis" : {
+            "analyzer" : {
+                "my_analyzer" : {
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "synonyme", "lowercase", "my_metaphone"]
+                }
+            },
+            "filter" : {
+                "my_metaphone" : {
+                    "type" : "phonetic",
+                    "encoder" : "metaphone",
+                    "replace" : true
+                },
+                "synonyme" : {
+                    "type" : "synonym",
+                    "synonyms_path": "jdonrefv3es_synonym.fr_FR.txt"
+                }
+            }
+        }
+    }
+}

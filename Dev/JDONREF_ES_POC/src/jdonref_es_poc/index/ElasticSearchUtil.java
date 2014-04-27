@@ -216,6 +216,26 @@ public class ElasticSearchUtil
         return output;
     }
     
+    void showCreateIndex(String analysis) throws FileNotFoundException, IOException {
+        System.out.println("Creating index : "+index);
+        
+        String res = createIndex(analysis);
+        
+        System.out.println(res);
+    }
+
+    String createIndex(String analysis) throws FileNotFoundException, IOException {
+        String content = readFile(analysis);
+        
+        WebResource webResource = client.resource("http://"+url+"/"+index);
+        
+        ClientResponse response = webResource.accept("application/json").put(ClientResponse.class,content);
+        
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
     
     public String readFile(String file) throws FileNotFoundException, IOException
     {

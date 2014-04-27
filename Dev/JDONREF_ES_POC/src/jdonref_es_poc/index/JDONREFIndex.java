@@ -112,8 +112,7 @@ public class JDONREFIndex
         
         util.showDeleteIndex();
         //util.deleteIndex();
-        
-        util.showCreateIndex();
+        util.showCreateIndex("./src/resources/index/jdonrefv3es-settings.json");
         
         util.showPutMapping("adresse", "./src/resources/mapping/mapping-adresse.json");
         
