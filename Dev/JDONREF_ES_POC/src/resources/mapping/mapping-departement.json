@@ -1,0 +1,13 @@
+{
+     "departement": {
+        "properties" : {
+            "codedepartement" : { "type" : "string", "store" : true},
+            "codepays" : { "type" : "string" , "store" : true},
+            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
+            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
+            "ligne6" : { "type" : "string", "store": true},
+            "ligne7" : { "type" : "string", "store": true},
+            "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"}
+       }
+    }
+}

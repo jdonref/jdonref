@@ -135,7 +135,7 @@ ElasticSearchUtil util;
                     {
                         for(int i=voi_min_numero;i<=voi_max_numero;i++,c++)
                         {
-                            Adresse adresse = new Adresse(rs,Integer.toString(i),"");
+                            Adresse adresse = new Adresse(rs,Integer.toString(i),"",0,0);
                     
                             addAdresse(adresse);
                             if (isVerbose() && c%1000==0)
@@ -150,7 +150,7 @@ ElasticSearchUtil util;
                     {
                         for(int i=voi_min_numero;i<=voi_max_numero;i+=2,c++)
                         {
-                            Adresse adresse = new Adresse(rs,Integer.toString(i),"");
+                            Adresse adresse = new Adresse(rs,Integer.toString(i),"",0,0);
                             
                             addAdresse(adresse);
                             if (isVerbose() && c%1000==0)

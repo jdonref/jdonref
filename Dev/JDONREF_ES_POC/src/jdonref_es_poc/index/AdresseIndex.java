@@ -6,11 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.json.JsonObject;
 import jdonref_es_poc.dao.AdresseDAO;
-import jdonref_es_poc.index.ElasticSearchUtil;
-import jdonref_es_poc.dao.VoieDAO;
 import jdonref_es_poc.entity.Adresse;
 import jdonref_es_poc.entity.MetaData;
-import jdonref_es_poc.entity.Voie;
 
 /**
  *

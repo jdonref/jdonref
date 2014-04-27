@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import javax.json.JsonObject;
-import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.dao.DepartementDAO;
 import jdonref_es_poc.entity.Departement;
 import jdonref_es_poc.entity.MetaData;

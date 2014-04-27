@@ -62,7 +62,8 @@ public class AdresseDAO
                 "voi_max_numero, " + // 25
                 "adr_id," + // 26
                 "adr_rep," + // 27
-                "adr_numero " + // 28
+                "adr_numero, " + // 28
+                "st_astext(st_transform(adr_adresses_"+dpt+".geometrie,4326)) "+ // 29
                 "FROM adr_adresses_"+dpt+", voi_voies_"+dpt+", com_communes "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee and " +
                 "adr_adresses_"+dpt+".voi_id = voi_voies_"+dpt+".voi_id";

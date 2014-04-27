@@ -1,0 +1,28 @@
+{
+     "troncon": {
+        "properties" : {
+            "tro_id" : { "type" : "string", "store" : true},
+            "voi_id" : { "type" : "string", "store" : true},
+            "codeinsee" : { "type" : "string", "store" : true},
+            "codedepartement" : { "type" : "string", "store" : true},
+            "codepays" : { "type" : "string" , "store" : true},
+            "numero_debut" : {"type" : "integer", "store" : true},
+            "numero_fin" : {"type" : "integer", "store" : true},
+            "repetition_debut" : {"type" : "string", "store" : true},
+            "repetition_fin" : {"type" : "string", "store" : true},
+            "typedevoie" : { "type" : "string", "store": true},
+            "article" : { "type" : "string", "store": true},
+            "voie" : { "type" : "string", "store": true},
+            "commune" : { "type" : "string" , "store": true},
+            "codepostal" : { "type" : "string", "store": true},
+            "codearrondissement" : { "type" : "string", "store": true},
+            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
+            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
+            "ligne4" : { "type" : "string", "store": true},
+            "ligne5" : { "type" : "string", "store": true},
+            "ligne6" : { "type" : "string", "store": true},
+            "ligne7" : { "type" : "string", "store": true},
+            "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"}
+       }
+    }
+  }

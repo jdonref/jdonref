@@ -3,6 +3,11 @@ package jdonref_es_poc.index;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 
 /**
@@ -191,5 +196,60 @@ public class ElasticSearchUtil
         String output = resource( object,i);
         
         System.out.println("index : "+output);
+    }
+
+    void showCreateIndex() {
+        System.out.println("creating index : "+index);
+        
+        String res = createIndex();
+        
+        System.out.println(res);
+    }
+
+    String createIndex() {
+        WebResource webResource = client.resource("http://"+url+"/"+index);
+        
+        ClientResponse response = webResource.accept("application/json").put(ClientResponse.class);
+        
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    
+    public String readFile(String file) throws FileNotFoundException, IOException
+    {
+        BufferedReader reader = (new BufferedReader(new FileReader(new File(file))));
+        String line = reader.readLine();
+        String res = "";
+        while(line!=null)
+        {
+            res += line+System.getProperty("line.separator");
+            line = reader.readLine();
+        }
+        reader.close();
+        return res;
+    }
+    
+    public void showPutMapping(String type,String file) throws FileNotFoundException, IOException
+    {
+        System.out.println("Défini le mapping pour "+type+" à partir du fichier "+file);
+        
+        String res = putMapping(type,file);
+        
+        System.out.println(res);
+    }
+    
+    public String putMapping(String type,String file) throws FileNotFoundException, IOException
+    {
+        String content = readFile(file);
+        
+        WebResource webResource = client.resource("http://"+url+"/"+index+"/"+type+"/_mapping");
+        
+        ClientResponse response = webResource.accept("application/json").put(ClientResponse.class,content);
+        
+        String output = response.getEntity(String.class);
+        
+        return output;
     }
 }
