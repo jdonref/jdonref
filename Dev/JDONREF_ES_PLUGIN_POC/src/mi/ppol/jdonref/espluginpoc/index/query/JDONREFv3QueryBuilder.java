@@ -18,6 +18,8 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
     
     private String queryName;
     
+    private int mode = JDONREFv3QueryParser.SMART;
+    
     /**
      *  Construct a new JDONREFv3 Query.
      * 
@@ -38,6 +40,20 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
     }
     
     /**
+     * Set the mode for this query.
+     * SMART => intelligent query
+     * SPAN => the terms are in order.
+     * 
+     * @param mode
+     * @return
+     */
+    public JDONREFv3QueryBuilder mode(int mode)
+    {
+        this.mode = mode;
+        return this;
+    }
+    
+    /**
     * Sets the query name for the filter that can be used when searching for matched_filters per hit.
     */
     public JDONREFv3QueryBuilder queryName(String queryName) {
@@ -50,6 +66,7 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
         builder.startObject(JDONREFv3QueryParser.NAME);
         
         builder.field("value", value);
+        builder.field("mode",mode);
         if (boost != -1)
         {
             builder.field("boost", boost);

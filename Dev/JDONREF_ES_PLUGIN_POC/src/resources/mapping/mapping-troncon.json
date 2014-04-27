@@ -22,7 +22,10 @@
             "ligne5" : { "type" : "string", "store": true},
             "ligne6" : { "type" : "string", "store": true},
             "ligne7" : { "type" : "string", "store": true},
-            "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"}
+            "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
+            "toString" : {"type": "string", "store": true, "analyzer":"my_analyzer"},
+            "fullName" : {"type": "string", "store": true, "analyzer":"my_analyzer"},
+            "fullNameWithoutNumbers" : {"type": "string", "store": true}
        }
     }
   }

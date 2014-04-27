@@ -45,7 +45,7 @@
           function getResults(keywords,minlon,maxlon,minlat,maxlat)
           {
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'http://192.168.0.11:9200/jdonref/_search');//?q='+ encodeURIComponent(keywords));
+                xhr.open('POST', 'http://192.168.0.11:9200/jdonref/adresse,voie/_search');//?q='+ encodeURIComponent(keywords));
                 xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     displayResults(xhr.responseText);
@@ -63,6 +63,8 @@
                 {
                     var params = '{"query":{'+match+'}}';
                 }
+                
+         var params = '{"query":{'+match+'}}';
                 
                 xhr.send(params);
                 return xhr;

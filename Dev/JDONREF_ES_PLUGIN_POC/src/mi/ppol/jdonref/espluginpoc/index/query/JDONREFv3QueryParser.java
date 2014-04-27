@@ -3,10 +3,13 @@ package mi.ppol.jdonref.espluginpoc.index.query;
 import java.io.IOException;
 import java.util.Hashtable;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.spans.SpanNearQuery;
+import org.apache.lucene.search.spans.SpanTermQuery;
 import org.elasticsearch.cluster.ClusterService;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.inject.Inject;
@@ -26,6 +29,10 @@ import org.elasticsearch.index.search.MatchQuery;
 public class JDONREFv3QueryParser implements QueryParser
 {
     public static final String NAME = "jdonrefv3es";
+    
+    public static final int SMART = 1;
+    public static final int SPAN = 2;
+    
     
     @Nullable
     private final ClusterService clusterService;
@@ -51,6 +58,7 @@ public class JDONREFv3QueryParser implements QueryParser
 
         Object value = null;
         float boost = 1.0f;
+        int mode = JDONREFv3QueryParser.SMART;
 
         String filterName = null;
         String currentFieldName = null;
@@ -64,6 +72,7 @@ public class JDONREFv3QueryParser implements QueryParser
             else if (token == XContentParser.Token.START_OBJECT)
             {
                 if ("value".equals(currentFieldName)) {
+                } else if ("mode".equals(currentFieldName)) {
                 } else if ("_name".equals(currentFieldName)) {
                 } else if ("boost".equals(currentFieldName)) {
                 } else {
@@ -74,6 +83,8 @@ public class JDONREFv3QueryParser implements QueryParser
             {
                 if ("_name".equals(currentFieldName)) {
                     filterName = parser.text();
+                } else if ("mode".equals(currentFieldName)) {
+                    mode = parser.intValue();
                 } else if ("boost".equals(currentFieldName)) {
                     boost = parser.floatValue();
                 } else if ("value".equals(currentFieldName)) {
@@ -91,7 +102,10 @@ public class JDONREFv3QueryParser implements QueryParser
         Query query = null;
         
         if (query == null) {
-            query = getQueryExact((String)value,parseContext);
+            if (mode==JDONREFv3QueryParser.SMART)
+                query = getQueryExact((String)value,parseContext);
+            else
+                query = getSpanQuery((String)value,parseContext);
             query.setBoost(boost);
             
             if (filterName != null) {
@@ -133,6 +147,26 @@ public class JDONREFv3QueryParser implements QueryParser
               query.setBoost(boost);
               booleanQuery.add(new BooleanClause(query,occur));
         }
+    }
+    
+    public Query getSpanQuery(String find, QueryParseContext parseContext) throws IOException
+    {
+        Hashtable<String,Boolean> hash = new Hashtable<String,Boolean>();
+        
+        String[] splitted = find.split(" ");
+        SpanTermQuery[] query = new SpanTermQuery[splitted.length];
+        for(int i=0;i<splitted.length;i++)
+        {
+            String stri = splitted[i];
+            SpanTermQuery q = new SpanTermQuery(new Term("fullName",stri));
+            query[i] = q;
+        }
+        
+        SpanNearQuery spanNear = new SpanNearQuery(query,5,true);
+        
+        System.out.println(spanNear.toString());
+        
+        return spanNear;
     }
     
     public Query getQueryExact(String find, QueryParseContext parseContext) throws IOException
