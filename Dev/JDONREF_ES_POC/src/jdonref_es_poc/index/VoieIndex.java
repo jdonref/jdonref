@@ -85,7 +85,7 @@ public class VoieIndex {
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
-                util.indexResourceBulk(bulk);
+                util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idVoie;
             }
@@ -93,7 +93,7 @@ public class VoieIndex {
 //            addVoie(v);
         }
         System.out.println("bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
-        util.indexResourceBulk(bulk);
+        util.showIndexResourceBulk(bulk);
         idVoieTmp = idVoie;
     }
 
@@ -126,12 +126,12 @@ public class VoieIndex {
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
-                util.indexResourceBulk(bulk);
+                util.showIndexResourceBulk(bulk);
                 bulk="";
             }
         }
         System.out.println("bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
-        util.indexResourceBulk(bulk);
+        util.showIndexResourceBulk(bulk);
         idVoieTmp = idVoie;
     }
 }

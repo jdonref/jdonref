@@ -78,6 +78,13 @@ public class ElasticSearchUtil
         return output;
     }
     
+    public void showIndexResourceBulk(String bulk)
+    {
+        String output = indexResourceBulk(bulk);
+        
+        System.out.println("bulk : "+output);
+    }
+    
     public String indexResourceBulk(String bulk)
     {
         WebResource webResource = client.resource("http://"+url+"/_bulk");

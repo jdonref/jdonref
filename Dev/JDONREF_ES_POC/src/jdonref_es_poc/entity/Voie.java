@@ -177,77 +177,33 @@ public class Voie
     public JsonObject toJSONDocument()
     {
         
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("toString", toString().trim());
+        JsonObjectBuilder builder = Json.createObjectBuilder();
          builder.add("code_insee",commune.codeinsee);
-//         builder.add("code_departement",getCodeDepartement());
          builder.add("code_departement",commune.dpt_code_departement);
          builder.add("code_postal",commune.codepostal);
          String code_arrondissement = commune.getCodeArrondissement();
-          if (code_arrondissement!=null)
+         if (code_arrondissement!=null)
             builder.add("code_arrondissement",code_arrondissement);
-         builder.add("com_nom",commune.commune);
-         builder.add("com_nom_desab",commune.com_nom_desab);
-         builder.add("com_nom_origine",commune.com_nom_origine);
-         builder.add("com_nom_pq",commune.com_nom_pq);
+         builder.add("commune",commune.commune);
          if (commune.com_code_insee_commune!=null)
-         builder.add("com_code_insee_commune",commune.com_code_insee_commune);
-         builder.add("t0",commune.t0.toString());
-         builder.add("t1",commune.t1.toString());
+            builder.add("code_insee_commune",commune.com_code_insee_commune);
+         builder.add("t0",commune.t0.getTime());
+         builder.add("t1",commune.t1.getTime());
 
-//        if (idvoie!=null)
          builder.add("voi_id", idvoie);
-//        if (voi_code_fantoir!=null)
          builder.add("voi_code_fantoir",voi_code_fantoir);
-        if (voi_nom!=null)
-         builder.add("voi_nom",voi_nom);
-        if (voi_nom_desab!=null)
-         builder.add("voi_nom_desab",voi_nom_desab);
-        if (voi_nom_origine!=null)
-         builder.add("voi_nom_origine",voi_nom_origine);
-        if (typedevoie!=null)
-         builder.add("voi_type_de_voie",typedevoie);
-        if (voi_type_de_voie_pq!=null)
-         builder.add("voi_type_de_voie_pq",voi_type_de_voie_pq);
-        if (libelle!=null)
-         builder.add("voi_lbl",libelle);
-        if (voi_lbl_pq!=null)
-         builder.add("voi_lbl_pq",voi_lbl_pq);
-        if (voi_lbl_sans_articles!=null)
-         builder.add("voi_lbl_sans_articles",voi_lbl_sans_articles);
-        if (voi_lbl_sans_articles_pq!=null)
-         builder.add("voi_lbl_sans_articles_pq",voi_lbl_sans_articles_pq);
-        if (voi_mot_determinant!=null)
-         builder.add("voi_mot_determinant",voi_mot_determinant);
-        if (voi_mot_determinant_pq!=null)
-         builder.add("voi_mot_determinant_pq",voi_mot_determinant_pq);
-         builder.add("voi_min_numero",min_numero);
-         builder.add("voi_max_numero",max_numero);
+         if (typedevoie!=null)
+            builder.add("type_de_voie",typedevoie);
+         if (libelle!=null)
+            builder.add("voi_lbl",libelle);
+         builder.add("numero_min",min_numero);
+         builder.add("numero_max",max_numero);
          
          builder.add("fullName",toString().trim());
-         builder.add("fullNameWithoutNumbers",toStringWithoutNumbers().trim());
          builder.add("ligne4",toLigne4().trim());
          builder.add("ligne6",toLigne6().trim());
          builder.add("ligne7",toLigne7().trim());
          
         return builder.build();
-        
-//        JsonObjectBuilder builder = Json.createObjectBuilder()
-//                .add("toString", toString())
-//                .add("code_insee",commune.codeinsee)
-//                .add("code_departement",commune.getCodeDepartement())
-//                .add("code_postal",commune.codepostal);
-//        
-//        String code_arrondissement = commune.getCodeArrondissement();
-//        if (code_arrondissement!=null)
-//            builder.add("code_arrondissement",code_arrondissement);
-//        builder.add("com_nom",commune.commune);
-//        builder.add("type_de_voie",typedevoie);
-//        builder.add("libelle",libelle);
-//        builder.add("voi_min_numero",min_numero);
-//        builder.add("voi_max_numero",max_numero);
-//        builder.add("voi_id",idvoie);
-//        builder.add("fullName",toFullString());
-//        return builder.build();
-
     }
 }

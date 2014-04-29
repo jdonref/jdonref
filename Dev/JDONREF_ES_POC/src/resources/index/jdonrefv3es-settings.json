@@ -1,21 +1,32 @@
 {
     "index" : {
         "analysis" : {
-            "analyzer" : {
-                "my_analyzer" : {
+            "analyzer": {
+                "jdonrefv3es_index" : {
+                    "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["standard", "synonyme", "lowercase", "my_metaphone"]
+                    "filter" : ["standard", "lowercase", "jdonrefv3es_synonyme", "jdonrefv3es_metaphone", "jdonrefv3es_nGram"]
+                },
+                "jdonrefv3es_search" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase", "jdonrefv3es_metaphone"]
                 }
             },
             "filter" : {
-                "my_metaphone" : {
+                "jdonrefv3es_metaphone" : {
                     "type" : "phonetic",
                     "encoder" : "metaphone",
                     "replace" : true
                 },
-                "synonyme" : {
+                "jdonrefv3es_synonyme" : {
                     "type" : "synonym",
                     "synonyms_path": "jdonrefv3es_synonym.fr_FR.txt"
+                },
+                "jdonrefv3es_nGram" : {
+                    "type" : "edgeNGram",
+                    "min_ngram": 1,
+                    "max_gram": 15
                 }
             }
         }

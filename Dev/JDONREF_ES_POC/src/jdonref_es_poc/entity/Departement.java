@@ -55,19 +55,17 @@ public class Departement {
     
     public JsonObject toJSONDocument()
     {
-         JsonObjectBuilder builder = Json.createObjectBuilder().add("toString", toString());
+         JsonObjectBuilder builder = Json.createObjectBuilder();
 //                .add("toString", toString());
          
 //         builder.add("fullName",code_departement);
          
-         builder.add("dpt_code_departement", code_departement);
-         builder.add("dpt_projection", dpt_projection);
+         builder.add("code_departement", code_departement);
          builder.add("dpt_referentiel", dpt_referentiel);
          builder.add("t0" , t0.toString());
          builder.add("t1" , t1.toString());
          
          builder.add("fullName",toString());
-         builder.add("fullNameWithoutNumbers",toStringWithoutNumbers());
          builder.add("ligne6",toLigne6());
          builder.add("ligne7",toLigne7());
          

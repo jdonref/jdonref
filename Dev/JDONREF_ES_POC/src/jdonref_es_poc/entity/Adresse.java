@@ -110,7 +110,6 @@ public class Adresse
     public JsonObject toJSONDocument()
     {
         JsonObjectBuilder builder = Json.createObjectBuilder()
-                .add("toString", toString().trim())
                 .add("code_insee",voie.commune.codeinsee)
                 .add("code_departement",voie.commune.getCodeDepartement())
                 .add("code_postal",voie.commune.codepostal);
@@ -118,14 +117,13 @@ public class Adresse
         String code_arrondissement = voie.commune.getCodeArrondissement();
         if (code_arrondissement!=null)
             builder.add("code_arrondissement",code_arrondissement);
-        builder.add("com_nom",voie.commune.commune);
+        builder.add("commune",voie.commune.commune);
+         if (voie.commune.com_code_insee_commune!=null)
+         builder.add("code_insee_commune",voie.commune.com_code_insee_commune);
         builder.add("type_de_voie",voie.typedevoie);
         builder.add("libelle",voie.libelle);
-        builder.add("voi_min_numero",voie.min_numero);
-        builder.add("voi_max_numero",voie.max_numero);
         builder.add("voi_id",voie.idvoie);
         builder.add("fullName",toString().trim());
-        builder.add("fullNameWithoutNumbers",toStringWithoutNumbers().trim());
         builder.add("ligne4",toLigne4().trim());
         builder.add("ligne6",toLigne6().trim());
         builder.add("ligne7",toLigne7().trim());

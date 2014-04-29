@@ -113,8 +113,13 @@ public class JDONREFIndex
         util.showDeleteIndex();
         //util.deleteIndex();
         util.showCreateIndex("./src/resources/index/jdonrefv3es-settings.json");
-        
+        util.showPutMapping("departement", "./src/resources/mapping/mapping-departement.json");
+        util.showPutMapping("voie", "./src/resources/mapping/mapping-voie.json");
         util.showPutMapping("adresse", "./src/resources/mapping/mapping-adresse.json");
+        util.showPutMapping("pays", "./src/resources/mapping/mapping-pays.json");
+        util.showPutMapping("commune", "./src/resources/mapping/mapping-commune.json");
+        util.showPutMapping("troncon", "./src/resources/mapping/mapping-troncon.json");
+        util.showPutMapping("voie", "./src/resources/mapping/mapping-voie.json");
         
         if (bouchon)
         {
@@ -140,34 +145,34 @@ public class JDONREFIndex
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
             dptIndex.indexJDONREFDepartements();
-//            dptIndex.indexJDONREFDepartement("01");
-//            dptIndex.indexJDONREFDepartement("02");
-//            dptIndex.indexJDONREFDepartement("03");
-//            dptIndex.indexJDONREFDepartement("04");
-//            dptIndex.indexJDONREFDepartement("05");
-//            dptIndex.indexJDONREFDepartement("06");
-//            dptIndex.indexJDONREFDepartement("07");
-//            dptIndex.indexJDONREFDepartement("08");
-//            dptIndex.indexJDONREFDepartement("09");
-//            dptIndex.indexJDONREFDepartement("10");
-//            dptIndex.indexJDONREFDepartement("11");
-//            dptIndex.indexJDONREFDepartement("12");
-//            dptIndex.indexJDONREFDepartement("13");
-//            dptIndex.indexJDONREFDepartement("14");
-//            dptIndex.indexJDONREFDepartement("15");
-//            dptIndex.indexJDONREFDepartement("16");
-//            dptIndex.indexJDONREFDepartement("17");
-//            dptIndex.indexJDONREFDepartement("18");
-//            dptIndex.indexJDONREFDepartement("19");
-//            dptIndex.indexJDONREFDepartement("20_a");
-//            dptIndex.indexJDONREFDepartement("20_b");
-//            dptIndex.indexJDONREFDepartement("21");
-//            dptIndex.indexJDONREFDepartement("22");
-//            dptIndex.indexJDONREFDepartement("23");
-//            dptIndex.indexJDONREFDepartement("24");
-//            dptIndex.indexJDONREFDepartement("25");      
+            dptIndex.indexJDONREFDepartement("01");
+            dptIndex.indexJDONREFDepartement("02");
+            dptIndex.indexJDONREFDepartement("03");
+            dptIndex.indexJDONREFDepartement("04");
+            dptIndex.indexJDONREFDepartement("05");
+            dptIndex.indexJDONREFDepartement("06");
+            dptIndex.indexJDONREFDepartement("07");
+            dptIndex.indexJDONREFDepartement("08");
+            dptIndex.indexJDONREFDepartement("09");
+            dptIndex.indexJDONREFDepartement("10");
+            dptIndex.indexJDONREFDepartement("11");
+            dptIndex.indexJDONREFDepartement("12");
+            dptIndex.indexJDONREFDepartement("13");
+            dptIndex.indexJDONREFDepartement("14");
+            dptIndex.indexJDONREFDepartement("15");
+            dptIndex.indexJDONREFDepartement("16");
+            dptIndex.indexJDONREFDepartement("17");
+            dptIndex.indexJDONREFDepartement("18");
+            dptIndex.indexJDONREFDepartement("19");
+            dptIndex.indexJDONREFDepartement("20_a");
+            dptIndex.indexJDONREFDepartement("20_b");
+            dptIndex.indexJDONREFDepartement("21");
+            dptIndex.indexJDONREFDepartement("22");
+            dptIndex.indexJDONREFDepartement("23");
+            dptIndex.indexJDONREFDepartement("24");
+            dptIndex.indexJDONREFDepartement("25");      
 //            dptIndex.indexJDONREFDepartement("75");      
-           AllDepVoieAdrTron(dptIndex);
+            //AllDepVoieAdrTron(dptIndex);
 
             CommuneIndex cIndex = new CommuneIndex();
             cIndex.setVerbose(isVerbose());
@@ -182,7 +187,9 @@ public class JDONREFIndex
             System.out.println("Indexation complète en "+(end-start)+" millis.");
     }
     
-        public void AllDepVoieAdrTron(DepartementIndex dptIndex) throws IOException, SQLException
+    // C'est tout de même dommage d'écrire en dur les départements alors qu'il existe
+    // une classe DepartementDAO ...
+    public void AllDepVoieAdrTron(DepartementIndex dptIndex) throws IOException, SQLException
     {
         for(int i=1;i<10;i++)
             dptIndex.indexJDONREFDepartement("0"+i);

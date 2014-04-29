@@ -8,8 +8,6 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.JsonArray;
-import jdonref_es_poc.business.AdresseBusiness;
 import jdonref_es_poc.entity.Commune;
 import jdonref_es_poc.entity.Departement;
 import jdonref_es_poc.index.JDONREFIndex;
@@ -116,14 +114,14 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "192.168.183.140:9200";
+        String url = "192.168.0.11:9200";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
 
  
         // connection à la base de JDONREF
-        String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN";
+        String connectionString = "jdbc:postgresql://192.168.135.129:5433/JDONREF_IGN";
         String user = "postgres";
         String passwd = "postgres";
         

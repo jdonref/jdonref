@@ -3,14 +3,12 @@
         "properties" : {
             "codedepartement" : { "type" : "string", "store" : true},
             "codepays" : { "type" : "string" , "store" : true},
-            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
-            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss"},
-            "ligne6" : { "type" : "string", "store": true},
-            "ligne7" : { "type" : "string", "store": true},
+            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
+            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
+            "ligne6" : { "type" : "string", "store": true, "index": "not_analyzed"},
+            "ligne7" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-            "toString" : {"type": "string", "store": true, "analyzer":"my_analyzer"},
-            "fullName" : {"type": "string", "store": true, "analyzer":"my_analyzer"},
-            "fullNameWithoutNumbers" : {"type": "string", "store": true}
+            "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
        }
     }
 }

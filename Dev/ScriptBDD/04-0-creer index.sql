@@ -1,4 +1,4 @@
---
+﻿--
 -- Julien Moquet. Licence Cecill v2. Février 2011.
 --
 -- Permet de créer les index utiles à JDONREFv2.
@@ -7,7 +7,7 @@
 -- L'extension postgis doit être présente (index GIST)
 
 -- tables communes à tous les départements.
-CREATE INDEX cdp_code_dpt ON cdp_codes_postaux USING btree (dpt_code_departement);
+CREATE INDEX cdp_code_departement ON cdp_codes_postaux USING btree (dpt_code_departement);
 CREATE INDEX cdp_code_insee ON cdp_codes_postaux USING btree (com_code_insee);
 CREATE INDEX cdp_code_postal ON cdp_codes_postaux USING btree (cdp_code_postal);
 

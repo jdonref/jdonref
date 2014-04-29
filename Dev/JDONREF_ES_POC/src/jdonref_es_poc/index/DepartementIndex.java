@@ -96,7 +96,7 @@ public class DepartementIndex
             i++;
 //            addDepartment(d);     
         }
-        util.indexResourceBulk(bulk);
+        util.showIndexResourceBulk(bulk);
     }
     
     public void indexJDONREFDepartements(Departement[] departements) throws IOException
@@ -126,7 +126,7 @@ public class DepartementIndex
                 bulk="";
             }
         }
-        util.indexResourceBulk(bulk);
+        util.showIndexResourceBulk(bulk);
     }
     
     public void indexJDONREFDepartement(Voie[] voies,String dpt) throws IOException

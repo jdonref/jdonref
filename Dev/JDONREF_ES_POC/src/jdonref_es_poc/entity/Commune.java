@@ -2,6 +2,8 @@ package jdonref_es_poc.entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -65,9 +67,8 @@ public class Commune
       com_nom_origine = rs.getString(index[5]);
       com_nom_pq = rs.getString(index[6]);
       com_code_insee_commune = rs.getString(index[7]);
-      t0 = rs.getDate(index[8]);
-      t1 = rs.getDate(index[9]);
-        
+      t0 = rs.getTimestamp(index[8]);
+      t1 = rs.getTimestamp(index[9]);
     }
 
     public String[] getLignes()
@@ -132,7 +133,7 @@ public class Commune
     
     public JsonObject toJSONDocument()
     {
-         JsonObjectBuilder builder = Json.createObjectBuilder().add("toString", toString().trim());
+         JsonObjectBuilder builder = Json.createObjectBuilder();
 //                .add("toString", toString());
 //         builder.add("fullName",toFullString());
          builder.add("code_insee",codeinsee);
@@ -142,17 +143,13 @@ public class Commune
          String code_arrondissement = getCodeArrondissement();
           if (code_arrondissement!=null)
             builder.add("code_arrondissement",code_arrondissement);
-         builder.add("com_nom",commune);
-         builder.add("com_nom_desab",com_nom_desab);
-         builder.add("com_nom_origine",com_nom_origine);
-         builder.add("com_nom_pq",com_nom_pq);
+         builder.add("commune",commune);
          if (com_code_insee_commune!=null)
-         builder.add("com_code_insee_commune",com_code_insee_commune);
-         builder.add("t0",t0.toString());
-         builder.add("t1",t1.toString());
+         builder.add("code_insee_commune",com_code_insee_commune);
+         builder.add("t0",t0.getTime());
+         builder.add("t1",t1.getTime());
          
          builder.add("fullName",toString().trim());
-         builder.add("fullNameWithoutNumbers",toStringWithoutNumbers().trim());
          builder.add("ligne6",toLigne6().trim());
          builder.add("ligne7",toLigne7().trim());
          
