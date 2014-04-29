@@ -18,6 +18,10 @@ public class VoieIndex {
     boolean verbose = false;
     ElasticSearchUtil util;
     Connection connection;
+    
+    static int idVoie=0;
+    static int idVoieTmp=0;
+    int paquetsBulk=1000;
 
     public ElasticSearchUtil getUtil() {
         return util;
@@ -67,6 +71,7 @@ public class VoieIndex {
               
         String bulk ="";
         int i =0;
+        int lastIdBulk=0;
         
         while(rs.next())
         {
@@ -76,17 +81,20 @@ public class VoieIndex {
             Voie v = new Voie(rs);
                         
 //            creation de l'objet metaDataVoie plus haut
-            metaDataVoie.setId(i+1);
+            metaDataVoie.setId(++idVoie);
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
-            if(i%1000==0){
-//                System.out.println("affichage du fichier bulk : i = "+i+"\n"+bulk);
+            if((idVoie-idVoieTmp)%paquetsBulk==0){
+                System.out.println("bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
                 util.indexResourceBulk(bulk);
                 bulk="";
+                lastIdBulk=idVoie;
             }
             i++;
 //            addVoie(v);
         }
+        System.out.println("bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
         util.indexResourceBulk(bulk);
+        idVoieTmp = idVoie;
     }
 
     void indexJDONREFVoiesDepartement(Voie[] voies, String dpt) throws IOException
@@ -102,7 +110,8 @@ public class VoieIndex {
         metaDataVoie.setType("voie");
 //        metaDataVoie.setType("voie_"+dpt);
         String bulk ="";
-        
+        int lastIdBulk=0;
+               
         for(int i=0;i<voies.length;i++)
         {
             if (isVerbose() && i%1000==1)
@@ -113,13 +122,16 @@ public class VoieIndex {
 //            addVoie(v);
             
 //            creation de l'objet metaDataVoie plus haut
-            metaDataVoie.setId(i+1);
+            metaDataVoie.setId(++idVoie);
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
-            if(i%1000==0){
+            if((idVoie-idVoieTmp)%paquetsBulk==0){
+                System.out.println("bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
                 util.indexResourceBulk(bulk);
                 bulk="";
             }
         }
+        System.out.println("bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
         util.indexResourceBulk(bulk);
+        idVoieTmp = idVoie;
     }
 }

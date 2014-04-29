@@ -18,6 +18,11 @@ public class AdresseIndex {
     ElasticSearchUtil util;
     Connection connection;
 
+    static int idAdresse=0;
+    static int idAdresseTmp=0;
+    int paquetsBulk=1000;
+
+    
     public ElasticSearchUtil getUtil() {
         return util;
     }
@@ -50,6 +55,7 @@ public class AdresseIndex {
         util.indexResource("adresse", data.toString());
     }
 
+
     public void indexJDONREFAdressesDepartement(String dpt) throws IOException, SQLException
     {
         if (isVerbose())
@@ -60,32 +66,41 @@ public class AdresseIndex {
 //      creation de l'objet metaDataVoie
         MetaData metaDataAdresse= new MetaData();
         metaDataAdresse.setIndex(util.index);
-//      un type voie pour tous les departements  
+//      un type Adresse pour tous les departements  
         metaDataAdresse.setType("adresse");
+//        metaDataAdresse.setType("adresse_"+dpt);
               
         String bulk ="";
         int i =0;
-        
+        int lastIdBulk=0;
+
         while(rs.next())
         {
             if (isVerbose() && i%1000==1)
                 System.out.println(i+" adresses traitées");
             
             Adresse adr = new Adresse(rs);
-            
+
+            if (adr.numero!=null){
 //            creation de l'objet metaDataVoie plus haut
-            metaDataAdresse.setId(i+1);
-            if (adr.numero!=null)
-                bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n";
-            if(i%1000==0){
-//                System.out.println("affichage du fichier bulk : i = "+i+"\n"+bulk);
-                util.indexResourceBulk(bulk);
-                bulk="";
-            }
-            i++;
+                metaDataAdresse.setId(++idAdresse);
+                bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n"; 
+                
+// envoyé le bulk par paquet de 1000 à partir de idAdresseTmp 
+// idAdresseTmp valeur de l'id de debut au moment de l'appel à cette methode
+                if((idAdresse-idAdresseTmp)%paquetsBulk==0){
+                    System.out.println("bulk pour les ids de "+(idAdresse-paquetsBulk+1)+" à "+idAdresse);
+                    util.indexResourceBulk(bulk);
+                    bulk="";
+                    lastIdBulk=idAdresse;
+                }
+            }    
+            i++;     
 //            addVoie(v);
         }
+        System.out.println("bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
         util.indexResourceBulk(bulk);
+        idAdresseTmp = idAdresse;
     }
 
     void indexJDONREFAdressesDepartement(Adresse[] adresses, String dpt) throws IOException
@@ -100,7 +115,8 @@ public class AdresseIndex {
 //      un type voie pour tous les departements  
         metaDataAdresse.setType("adresse");
         String bulk ="";
-        
+       int lastIdBulk=0;
+       
         for(int i=0;i<adresses.length;i++)
         {
             if (isVerbose() && i%1000==1)
@@ -108,15 +124,20 @@ public class AdresseIndex {
             
             Adresse adr = adresses[i];
             
+            if (adr.numero!=null){
 //            creation de l'objet metaDataVoie plus haut
-            metaDataAdresse.setId(i+1);
-            if (adr.numero!=null)
+                metaDataAdresse.setId(++idAdresse);                
                 bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n";
-            if(i%1000==0){
-                util.indexResourceBulk(bulk);
-                bulk="";
+                if((idAdresse-idAdresseTmp)%paquetsBulk==0){
+                    System.out.println("bulk pour les ids de "+(idAdresse-paquetsBulk+1)+" à "+idAdresse);
+                    util.indexResourceBulk(bulk);
+                    bulk="";
+                    lastIdBulk=idAdresse;
+                }
             }
-        }
+        }       
+        System.out.println("bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
         util.indexResourceBulk(bulk);
+        idAdresseTmp = idAdresse;
     }
 }

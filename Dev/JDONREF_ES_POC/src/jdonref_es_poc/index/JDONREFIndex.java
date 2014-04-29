@@ -139,7 +139,7 @@ public class JDONREFIndex
             dptIndex.setVerbose(isVerbose());
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
-//            dptIndex.indexJDONREFDepartements();
+            dptIndex.indexJDONREFDepartements();
 //            dptIndex.indexJDONREFDepartement("01");
 //            dptIndex.indexJDONREFDepartement("02");
 //            dptIndex.indexJDONREFDepartement("03");
@@ -165,8 +165,9 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("22");
 //            dptIndex.indexJDONREFDepartement("23");
 //            dptIndex.indexJDONREFDepartement("24");
-            dptIndex.indexJDONREFDepartement("25");      
-//           AllDepVoie(dptIndex);
+//            dptIndex.indexJDONREFDepartement("25");      
+//            dptIndex.indexJDONREFDepartement("75");      
+           AllDepVoieAdrTron(dptIndex);
 
             CommuneIndex cIndex = new CommuneIndex();
             cIndex.setVerbose(isVerbose());
@@ -181,12 +182,13 @@ public class JDONREFIndex
             System.out.println("Indexation complète en "+(end-start)+" millis.");
     }
     
-        public void AllDepVoie(DepartementIndex dptIndex) throws IOException, SQLException
+        public void AllDepVoieAdrTron(DepartementIndex dptIndex) throws IOException, SQLException
     {
         for(int i=1;i<10;i++)
             dptIndex.indexJDONREFDepartement("0"+i);
-        for(int i=10;i<21;i++)
+        for(int i=10;i<20;i++)
             dptIndex.indexJDONREFDepartement(""+i);
+//        dptIndex.indexJDONREFDepartement("20");
         dptIndex.indexJDONREFDepartement("20_a");
         dptIndex.indexJDONREFDepartement("20_b");
         for(int i=21;i<97;i++)
