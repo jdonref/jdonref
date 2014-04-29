@@ -71,7 +71,8 @@ public class VoieIndex {
               
         String bulk ="";
         int i =0;
-        int lastIdBulk=0;
+        int lastIdBulk=idVoieTmp-1;
+
         
         while(rs.next())
         {
@@ -84,16 +85,18 @@ public class VoieIndex {
             metaDataVoie.setId(++idVoie);
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
-                System.out.println("bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
-                util.showIndexResourceBulk(bulk);
+                System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
+                util.indexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idVoie;
             }
             i++;
 //            addVoie(v);
         }
-        System.out.println("bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
-        util.showIndexResourceBulk(bulk);
+        if(!bulk.equals("")){
+        System.out.println("voie : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
+        util.indexResourceBulk(bulk);
+        }
         idVoieTmp = idVoie;
     }
 
@@ -110,7 +113,7 @@ public class VoieIndex {
         metaDataVoie.setType("voie");
 //        metaDataVoie.setType("voie_"+dpt);
         String bulk ="";
-        int lastIdBulk=0;
+        int lastIdBulk=idVoieTmp-1;
                
         for(int i=0;i<voies.length;i++)
         {
@@ -125,13 +128,15 @@ public class VoieIndex {
             metaDataVoie.setId(++idVoie);
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
-                System.out.println("bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
-                util.showIndexResourceBulk(bulk);
+                System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
+                util.indexResourceBulk(bulk);
                 bulk="";
             }
         }
-        System.out.println("bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
-        util.showIndexResourceBulk(bulk);
+        if(!bulk.equals("")){
+        System.out.println("voie : bulk voie pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
+        util.indexResourceBulk(bulk);
+        }
         idVoieTmp = idVoie;
     }
 }
