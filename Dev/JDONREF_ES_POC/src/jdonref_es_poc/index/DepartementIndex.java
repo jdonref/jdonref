@@ -21,7 +21,10 @@ public class DepartementIndex
     ElasticSearchUtil util;
     Connection connection;
     
-
+    static int idDep=0;
+    static int idDepTmp=0;
+    int paquetsBulk=10;
+    
     public ElasticSearchUtil getUtil() {
         return util;
     }
@@ -59,7 +62,6 @@ public class DepartementIndex
         if (isVerbose())
             System.out.println("Départements");
         
-
         DepartementDAO dao = new DepartementDAO();
         ResultSet rs = dao.getAllDepartement(connection);
 //      creation de l'objet metaDataDep
@@ -69,34 +71,42 @@ public class DepartementIndex
         
         int i =0;
         String bulk ="";
+        int lastIdBulk=idDepTmp;
         while(rs.next())
         {
             if (isVerbose() && i%30==1)
                 System.out.println(i+" départements traités");
-            String dpt_code_departement = rs.getString(1);
-            String dpt_projection = rs.getString(2);
-            String dpt_referentiel = rs.getString(3);
-            Date t0 = rs.getDate(4);
-            Date t1 = rs.getDate(5);
             
-            Departement d = new Departement();
-            d.code_departement = dpt_code_departement;
-            d.dpt_projection = dpt_projection;
-            d.dpt_referentiel = dpt_referentiel;
-            d.t0 = t0;
-            d.t1 = t1;
+            Departement d = new Departement(rs,new int[]{1,2,3,4,5});
+//            String dpt_code_departement = rs.getString(1);
+//            String dpt_projection = rs.getString(2);
+//            String dpt_referentiel = rs.getString(3);
+//            Date t0 = rs.getDate(4);
+//            Date t1 = rs.getDate(5);
+//            
+//            Departement d = new Departement();
+//            d.code_departement = dpt_code_departement;
+//            d.dpt_projection = dpt_projection;
+//            d.dpt_referentiel = dpt_referentiel;
+//            d.t0 = t0;
+//            d.t1 = t1;
             
-//            creation de l'objet metaDataDep plus haut
-            metaDataDep.setId(i+1);
+//            creation de l'objet metaDataCommune plus haut
+            metaDataDep.setId(++idDep);
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
-            if(i%30==0){
+            if((idDep-idDepTmp)%paquetsBulk==0){
+                System.out.println("commune : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
                 util.indexResourceBulk(bulk);
                 bulk="";
+                lastIdBulk=idDep;
             }
             i++;
-//            addDepartment(d);     
         }
-        util.showIndexResourceBulk(bulk);
+        if(!bulk.equals("")){
+        System.out.println("commune : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
+        util.indexResourceBulk(bulk);
+        }
+        idDepTmp = idDep;
     }
     
     public void indexJDONREFDepartements(Departement[] departements) throws IOException
@@ -108,7 +118,9 @@ public class DepartementIndex
         MetaData metaDataDep= new MetaData();
         metaDataDep.setIndex(util.index);
         metaDataDep.setType("departement");
+
         String bulk ="";
+        int lastIdBulk=idDepTmp;        
         
         for(int i=0;i<departements.length;i++)
         {
@@ -118,15 +130,21 @@ public class DepartementIndex
             
 //            addDepartment(d);
             
-//            creation de l'objet metaDataDep plus haut
-            metaDataDep.setId(i+1);
+//            creation de l'objet metaDataCommune plus haut
+            metaDataDep.setId(++idDep);
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
-            if(i%30==0){
+            if((idDep-idDepTmp)%paquetsBulk==0){
+                System.out.println("commune : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
                 util.indexResourceBulk(bulk);
                 bulk="";
+                lastIdBulk=idDep;
             }
         }
-        util.showIndexResourceBulk(bulk);
+        if(!bulk.equals("")){
+        System.out.println("commune : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
+        util.indexResourceBulk(bulk);
+        }
+        idDepTmp = idDep;
     }
     
     public void indexJDONREFDepartement(Voie[] voies,String dpt) throws IOException

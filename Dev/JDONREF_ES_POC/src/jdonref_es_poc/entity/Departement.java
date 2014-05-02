@@ -1,5 +1,7 @@
 package jdonref_es_poc.entity;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -30,6 +32,15 @@ public class Departement {
         this.dpt_referentiel = dpt_referentiel;
         this.t0 = t0;
         this.t1 = t1;
+    }
+    
+    public Departement(ResultSet rs,int[] index) throws SQLException
+    {
+        code_departement = rs.getString(index[0]);
+        dpt_projection = rs.getString(index[1]);
+        dpt_referentiel = rs.getString(index[2]);
+        t0 = rs.getTimestamp(index[3]);
+        t1 = rs.getTimestamp(index[4]);
     }
 
     public String toLigne6()

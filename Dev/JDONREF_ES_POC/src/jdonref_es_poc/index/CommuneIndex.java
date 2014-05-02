@@ -19,6 +19,10 @@ public class CommuneIndex
     boolean verbose = false;
     ElasticSearchUtil util;
     Connection connection;
+    
+    static int idCommune=0;
+    static int idCommuneTmp=0;
+    int paquetsBulk=1000;
 
     public ElasticSearchUtil getUtil() {
         return util;
@@ -58,64 +62,77 @@ public class CommuneIndex
         
         CommuneDAO dao = new CommuneDAO();
         ResultSet rs = dao.getAllCommunes(connection);
-//      creation de l'objet metaDataCom
-        MetaData metaDataCom= new MetaData();
-        metaDataCom.setIndex(util.index);
-        metaDataCom.setType("commune");
-        
-        int i =0;
+//      creation de l'objet metaDataCommune
+        MetaData metaDataCommune= new MetaData();
+        metaDataCommune.setIndex(util.index);
+        metaDataCommune.setType("commune");
+   
         String bulk ="";
+        int i =0;
+        int lastIdBulk=idCommuneTmp;
+
         while(rs.next())
         {
-            if (isVerbose() && i%3000==1)
+            if (isVerbose() && i%1000==1)
                 System.out.println(i+" communes traitées");
-            
-//            Commune commune = new Commune(rs,new int[]{1,4,2,5});
-            Commune commune = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,10});            
-            
-//            creation de l'objet metaDataCom plus haut
-//            on commence à numeroter id à partir de 1
-            metaDataCom.setId(i+1);
-            bulk += metaDataCom.toJSONMetaData().toString()+"\n"+commune.toJSONDocument().toString()+"\n";
-            if(i%3000==0){
-//                System.out.println("affichage du fichier bulk : i = "+i+"\n"+bulk);
+
+            Commune c = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,10});        
+                        
+//            creation de l'objet metaDataCommune plus haut
+            metaDataCommune.setId(++idCommune);
+            bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument().toString()+"\n";
+            if((idCommune-idCommuneTmp)%paquetsBulk==0){
+                System.out.println("commune : bulk pour les ids de "+(idCommune-paquetsBulk+1)+" à "+idCommune);
                 util.indexResourceBulk(bulk);
                 bulk="";
+                lastIdBulk=idCommune;
             }
-//            addCommune(commune);
             i++;
         }
+        if(!bulk.equals("")){
+        System.out.println("commune : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idCommune));        
         util.indexResourceBulk(bulk);
+        }
+        idCommuneTmp = idCommune;
     }
+        
 
     void indexJDONREFCommune(Commune[] communes) throws IOException
     {
         if (isVerbose())
             System.out.println("Communes");
-
-//      creation de l'objet metaDataCom
-        MetaData metaDataCom= new MetaData();
-        metaDataCom.setIndex(util.index);
-        metaDataCom.setType("commune");
-        String bulk ="";
         
+        //int c =0;
+//      creation de l'objet metaDataCommune
+        MetaData metaDataCommune= new MetaData();
+        metaDataCommune.setIndex(util.index);
+        metaDataCommune.setType("commune");
+
+        String bulk ="";
+        int lastIdBulk=idCommuneTmp;
+               
         for(int i=0;i<communes.length;i++)
         {
-            if (isVerbose() && i%3000==1)
+            if (isVerbose() && i%1000==1)
                 System.out.println(i+" communes traitées");
             
-            Commune commune = communes[i];
+            Commune c = communes[i];
             
-//            addCommune(commune);
-            //            creation de l'objet metaDataCom plus haut
-            metaDataCom.setId(i+1);
-            bulk += metaDataCom.toJSONMetaData().toString()+"\n"+commune.toJSONDocument().toString()+"\n";
-            if(i%3000==0){
+//            creation de l'objet metaDataCommune plus haut
+            metaDataCommune.setId(++idCommune);
+            bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument().toString()+"\n";
+            if((idCommune-idCommuneTmp)%paquetsBulk==0){
+                System.out.println("commune : bulk pour les ids de "+(idCommune-paquetsBulk+1)+" à "+idCommune);
                 util.indexResourceBulk(bulk);
                 bulk="";
+                lastIdBulk=idCommune;
             }
         }
+        if(!bulk.equals("")){
+        System.out.println("commune : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idCommune));        
         util.indexResourceBulk(bulk);
+        }
+        idCommuneTmp = idCommune;
     }
-      
+    
 }

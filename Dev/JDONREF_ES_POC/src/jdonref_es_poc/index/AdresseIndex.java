@@ -66,14 +66,11 @@ public class AdresseIndex {
 //      creation de l'objet metaDataVoie
         MetaData metaDataAdresse= new MetaData();
         metaDataAdresse.setIndex(util.index);
-//      un type Adresse pour tous les departements  
         metaDataAdresse.setType("adresse");
-//        metaDataAdresse.setType("adresse_"+dpt);
               
         String bulk ="";
         int i =0;
-        int lastIdBulk=idAdresseTmp-1;
-
+        int lastIdBulk=idAdresseTmp;
 
         while(rs.next())
         {
@@ -81,7 +78,6 @@ public class AdresseIndex {
                 System.out.println(i+" adresses traitées");
             
             Adresse adr = new Adresse(rs);
-
             if (adr.numero!=null){
 //            creation de l'objet metaDataVoie plus haut
                 metaDataAdresse.setId(++idAdresse);
@@ -115,8 +111,8 @@ public class AdresseIndex {
 //      creation de l'objet metaDataVoie
         MetaData metaDataAdresse= new MetaData();
         metaDataAdresse.setIndex(util.index);
-//      un type voie pour tous les departements  
         metaDataAdresse.setType("adresse");
+        
         String bulk ="";
        int lastIdBulk=idAdresseTmp;
        
@@ -125,8 +121,7 @@ public class AdresseIndex {
             if (isVerbose() && i%1000==1)
                 System.out.println(i+" adresses traitées");
             
-            Adresse adr = adresses[i];
-            
+            Adresse adr = adresses[i]; 
             if (adr.numero!=null){
 //            creation de l'objet metaDataVoie plus haut
                 metaDataAdresse.setId(++idAdresse);                

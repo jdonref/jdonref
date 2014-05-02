@@ -146,8 +146,8 @@ public class Commune
          builder.add("commune",commune);
          if (com_code_insee_commune!=null)
          builder.add("code_insee_commune",com_code_insee_commune);
-         builder.add("t0",t0.getTime());
-         builder.add("t1",t1.getTime());
+         builder.add("t0",t0.toString());
+         builder.add("t1",t1.toString());
          
          builder.add("fullName",toString().trim());
          builder.add("ligne6",toLigne6().trim());

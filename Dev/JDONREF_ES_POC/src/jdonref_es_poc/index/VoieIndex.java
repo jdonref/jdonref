@@ -65,15 +65,12 @@ public class VoieIndex {
 //      creation de l'objet metaDataVoie
         MetaData metaDataVoie= new MetaData();
         metaDataVoie.setIndex(util.index);
-//      un type voie pour tous les departements  
         metaDataVoie.setType("voie");
-//        metaDataVoie.setType("voie_"+dpt);
               
         String bulk ="";
         int i =0;
-        int lastIdBulk=idVoieTmp-1;
+        int lastIdBulk=idVoieTmp;
 
-        
         while(rs.next())
         {
             if (isVerbose() && i%1000==1)
@@ -109,11 +106,10 @@ public class VoieIndex {
 //      creation de l'objet metaDataVoie
         MetaData metaDataVoie= new MetaData();
         metaDataVoie.setIndex(util.index);
-//      un type voie pour tous les departements  
         metaDataVoie.setType("voie");
-//        metaDataVoie.setType("voie_"+dpt);
+        
         String bulk ="";
-        int lastIdBulk=idVoieTmp-1;
+        int lastIdBulk=idVoieTmp;
                
         for(int i=0;i<voies.length;i++)
         {
@@ -131,10 +127,11 @@ public class VoieIndex {
                 System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
                 util.indexResourceBulk(bulk);
                 bulk="";
+                lastIdBulk=idVoie;
             }
         }
         if(!bulk.equals("")){
-        System.out.println("voie : bulk voie pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
+        System.out.println("voie : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
         util.indexResourceBulk(bulk);
         }
         idVoieTmp = idVoie;
