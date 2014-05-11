@@ -197,8 +197,6 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             }
             token = parser.nextToken();
         }
-        
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private void serializeNullValue(ParseContext context, String lastFieldName) throws IOException {
@@ -294,9 +292,8 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
 
     private void toXContent(XContentBuilder builder, Params params, Object object, Mapper[] EMPTY_ARRAY) throws IOException {
         builder.startObject(name);
-        if (mappers.isEmpty()) { // only write the object content type if there are no properties, otherwise, it is automatically detected
-            builder.field("type", CONTENT_TYPE);
-        }
+        
+        builder.field("type", CONTENT_TYPE);
         
         // sort the mappers so we get consistent serialization format
         TreeMap<String, Mapper> sortedMappers = new TreeMap<String, Mapper>();
