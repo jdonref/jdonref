@@ -5,12 +5,14 @@ package mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3;
  * @author Julien
  */
 
+import java.util.Collection;
 import org.elasticsearch.plugins.AbstractPlugin;
 
-import mi.ppol.jdonref.espluginpoc.index.analysis.JDONREFv3ComboSynonymFilterFactory;
 import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryParser;
-import org.elasticsearch.index.analysis.AnalysisModule;
+import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.indices.query.IndicesQueriesModule;
+
+import static org.elasticsearch.common.collect.Lists.newArrayList;
 
 /**
  * 
@@ -27,14 +29,15 @@ public class JDONREFv3ESPlugin extends AbstractPlugin
         return "JDONREFv3 query support";
     }
     
+    @Override
+    public Collection<Class<? extends Module>> indexModules() {
+        Collection<Class<? extends Module>> modules = newArrayList();
+        modules.add(JDONREFv3ESModule.class);
+        return modules;
+    }
+    
     public void onModule(IndicesQueriesModule module)
     {
         module.addQuery(new JDONREFv3QueryParser());
     }
-    /*
-     * Not fully operational
-    public void onModule(AnalysisModule module)
-    {
-        module.addTokenFilter("combosynonym", JDONREFv3ComboSynonymFilterFactory.class);
-    }*/
 }

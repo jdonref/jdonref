@@ -12,7 +12,7 @@
   
   <body>
  
-     Adresse à rechercher :<input id="search" type="text" autocomplete="off"/>
+     Adresse à rechercher :<input id="search" type="text" autocomplete="off" size="40"/>
 
      <!-- chemin de belvoir par défaut-->
      actif:<input id="active" type="checkbox" />
@@ -45,7 +45,7 @@
           function getResults(keywords,minlon,maxlon,minlat,maxlat)
           {
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'http://192.168.0.11:9200/jdonref/adresse,voie/_search');//?q='+ encodeURIComponent(keywords));
+                xhr.open('POST', '../../jdonref/adresse,voie/_search');//?q='+ encodeURIComponent(keywords));
                 xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     displayResults(xhr.responseText);
@@ -64,8 +64,6 @@
                     var params = '{"query":{'+match+'}}';
                 }
                 
-         var params = '{"query":{'+match+'}}';
-                
                 xhr.send(params);
                 return xhr;
           }
@@ -82,7 +80,7 @@
                     results.innerHTML = ''; // On vide les résultats
                     for (var i = 0, div ; i < total ; i++) {
                         div = results.appendChild(document.createElement('div'));
-                        div.innerHTML = res.hits.hits[i]._source.fullName;
+                        div.innerHTML = res.hits.hits[i]._score + " " + res.hits.hits[i]._source.fullName;
                 
                         div.onclick = function() {
                             chooseResult(this);

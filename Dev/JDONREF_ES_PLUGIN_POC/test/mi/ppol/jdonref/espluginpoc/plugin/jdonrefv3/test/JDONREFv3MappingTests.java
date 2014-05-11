@@ -17,38 +17,68 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
+import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
+import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 
+import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
+import org.junit.Before;
 import org.junit.Test;
 
+import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder;
 
 /**
  *
  * @author Julien
  */
-public class JDONREFv3MappingTests extends JDONREFv3IntegrationTests
+@ClusterScope(scope=Scope.SUITE, numNodes=1)
+public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
 {
+    final static String INDEX_NAME = "test";
+    final static String DOC_TYPE_NAME = "test";
+    
+    @Override
+    public Settings indexSettings() {
+        return settingsBuilder()
+                .put("index.number_of_replicas", 0)
+                .put("index.number_of_shards", 1)
+                .put("index.image.use_thread_pool", this.randomBoolean())
+            .build();
+    }
+    
+    @Before
+    public void createEmptyIndex() throws Exception {
+        logger.info("creating index [{}]", INDEX_NAME);
+        wipeIndices(INDEX_NAME);
+        
+        String settings = readFile("./test/resources/index/jdonrefv3es-settings.json");
+        client().admin().indices().prepareCreate(INDEX_NAME).setSettings(settings).execute().actionGet();
+        
+    }
+    
     public void test_index_type(String test) throws FileNotFoundException, IOException, InterruptedException, ExecutionException
     {
-        typeExists(test);
+        typeExists(test,false);
         
         String mapping = readFile("./src/resources/mapping/mapping-"+test+".json");
         System.out.println(mapping);
         PutMappingResponse pmr = client().admin().indices().putMapping(new PutMappingRequest(INDEX_NAME).type(test).source(mapping)).actionGet();
-        publicRefresh();
-        typeExists(test);
+        super.refresh();
+        typeExists(test,true);
         
         IndexResponse idxResponse = client().prepareIndex(INDEX_NAME,test,test).setSource("codepays",1).execute().actionGet();
-        typeExists(test);
+        typeExists(test,true);
         
         GetMappingsResponse mappingResponse = client().admin().indices().prepareGetMappings(INDEX_NAME).execute().get();
         showResponse(mappingResponse);
     }
     
-    public void typeExists(String type)
+    public void typeExists(String type,boolean not)
     {
         TypesExistsResponse response = client().admin().indices().prepareTypesExists().setTypes(type).execute().actionGet();
-        System.out.println(type+" existe ?"+response.isExists());
+        assert(response.isExists()==not);
     }
     
     public void showResponse(GetMappingsResponse mappingResponse) throws IOException
@@ -81,6 +111,22 @@ public class JDONREFv3MappingTests extends JDONREFv3IntegrationTests
             }
         }
     }
+    
+    
+    public String readFile(String file) throws FileNotFoundException, IOException
+    {
+        BufferedReader reader = (new BufferedReader(new FileReader(new File(file))));
+        String line = reader.readLine();
+        String res = "";
+        while(line!=null)
+        {
+            res += line+System.getProperty("line.separator");
+            line = reader.readLine();
+        }
+        reader.close();
+        return res;
+    }
+    
     
     @Test
     public void test_index_type_adresse() throws Exception

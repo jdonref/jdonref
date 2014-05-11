@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3.JDONREFv3ESPlugin;
+import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
@@ -27,6 +29,13 @@ public class JDONREFv3IntegrationTests extends ElasticsearchIntegrationTest
     {
         super.refresh();
     }
+    
+/*    @Override
+    protected Settings nodeSettings(int nodeOrdinal) {
+        return ImmutableSettings.settingsBuilder()
+           .put("plugin.types", JDONREFv3ESPlugin.class.getName())
+           .put(super.nodeSettings(nodeOrdinal)).build();
+    }*/
     
     public void publicIndex(String type,String id, XContentBuilder data)
     {
