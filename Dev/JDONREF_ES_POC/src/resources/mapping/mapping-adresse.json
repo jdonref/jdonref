@@ -3,6 +3,7 @@
         "properties" : {
             "adresse": {
                         "type" : "adresse",
+                        "path" : "just_name",
                         "properties": {
                             "adr_id" : { "type" : "string", "store" : true},
                             "tro_id" : { "type" : "string", "store" : true},
@@ -14,20 +15,21 @@
                             "numero" : { "type" : "string", "store": true},
                             "repetition" : { "type" : "string", "store": true},
                             "type_de_voie" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
-                            "article" : { "type" : "string", "store": true, "index": "not_analyzed"},
+                            "article" : { "type" : "string", "store": true, "index": "no"},
                             "libelle" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "commune" : { "type" : "string" , "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "code_arrondissement" : { "type" : "string", "store": true},
                             "code_postal" : { "type" : "string", "store": true},
+                            "code_pays" : { "type" : "string" , "store" : true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
-                            "ligne1" : { "type" : "string", "store": true, "index": "not_analyzed"},
-                            "ligne2" : { "type" : "string", "store": true, "index": "not_analyzed"},
-                            "ligne3" : { "type" : "string", "store": true, "index": "not_analyzed"},
-                            "ligne4" : { "type" : "string", "store": true, "index": "not_analyzed"},
-                            "ligne5" : { "type" : "string", "store": true, "index": "not_analyzed"},
-                            "ligne6" : { "type" : "string", "store": true, "index": "not_analyzed"},
-                            "ligne7" : { "type" : "string", "store": true},
+                            "ligne1" : { "type" : "string", "store": true, "index": "no"},
+                            "ligne2" : { "type" : "string", "store": true, "index": "no"},
+                            "ligne3" : { "type" : "string", "store": true, "index": "no"},
+                            "ligne4" : { "type" : "string", "store": true, "index": "no"},
+                            "ligne5" : { "type" : "string", "store": true, "index": "no"},
+                            "ligne6" : { "type" : "string", "store": true, "index": "no"},
+                            "ligne7" : { "type" : "string", "store": true, "index": "no"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
                             "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
                         }
