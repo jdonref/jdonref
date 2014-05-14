@@ -200,6 +200,7 @@ public class Voie
          builder.add("numero_max",max_numero);
          
          builder.add("fullName",toString().trim());
+         builder.add("fullName_sansngram",toString().trim());
          builder.add("ligne4",toLigne4().trim());
          builder.add("ligne6",toLigne6().trim());
          builder.add("ligne7",toLigne7().trim());

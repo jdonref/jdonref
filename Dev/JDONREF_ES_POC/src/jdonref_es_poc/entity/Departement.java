@@ -77,6 +77,7 @@ public class Departement {
          builder.add("t1" , t1.toString());
          
          builder.add("fullName",toString());
+         builder.add("fullName_sansngram",toString().trim());
          builder.add("ligne6",toLigne6());
          builder.add("ligne7",toLigne7());
          

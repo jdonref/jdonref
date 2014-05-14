@@ -1,29 +1,34 @@
 {
      "troncon": {
         "properties" : {
-            "tro_id" : { "type" : "string", "store" : true},
-            "voi_id" : { "type" : "string", "store" : true},
-            "code_insee" : { "type" : "string", "store" : true},
-            "code_departement" : { "type" : "string", "store" : true},
-            "code_pays" : { "type" : "string" , "store" : true},
-            "numero_debut" : {"type" : "integer", "store" : true},
-            "numero_fin" : {"type" : "integer", "store" : true},
-            "repetition_debut" : {"type" : "string", "store" : true},
-            "repetition_fin" : {"type" : "string", "store" : true},
-            "typedevoie" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
-            "article" : { "type" : "string", "store": true, "index": "not_analyzed"},
-            "libelle" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
-            "commune" : { "type" : "string" , "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
-            "code_postal" : { "type" : "string", "store": true},
-            "code_arrondissement" : { "type" : "string", "store": true},
-            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
-            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
-            "ligne4" : { "type" : "string", "store": true, "index": "not_analyzed"},
-            "ligne5" : { "type" : "string", "store": true, "index": "not_analyzed"},
-            "ligne6" : { "type" : "string", "store": true, "index": "not_analyzed"},
-            "ligne7" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
-            "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-            "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
+            "adresse": {
+                        "type" : "adresse",
+                        "properties": {
+                            "tro_id" : { "type" : "string", "store" : true},
+                            "voi_id" : { "type" : "string", "store" : true},
+                            "code_insee" : { "type" : "string", "store" : true},
+                            "code_departement" : { "type" : "string", "store" : true},
+                            "code_pays" : { "type" : "string" , "store" : true},
+                            "numero_debut" : {"type" : "integer", "store" : true},
+                            "numero_fin" : {"type" : "integer", "store" : true},
+                            "repetition_debut" : {"type" : "string", "store" : true},
+                            "repetition_fin" : {"type" : "string", "store" : true},
+                            "typedevoie" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "article" : { "type" : "string", "store": true, "index": "not_analyzed"},
+                            "libelle" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "commune" : { "type" : "string" , "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "code_postal" : { "type" : "string", "store": true},
+                            "code_arrondissement" : { "type" : "string", "store": true},
+                            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
+                            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
+                            "ligne4" : { "type" : "string", "store": true, "index": "not_analyzed"},
+                            "ligne5" : { "type" : "string", "store": true, "index": "not_analyzed"},
+                            "ligne6" : { "type" : "string", "store": true, "index": "not_analyzed"},
+                            "ligne7" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
+                            "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
+                        }
+            }
        }
     }
   }

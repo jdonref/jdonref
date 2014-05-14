@@ -150,6 +150,7 @@ public class Commune
          builder.add("t1",t1.toString());
          
          builder.add("fullName",toString().trim());
+         builder.add("fullName_sansngram",toString().trim());
          builder.add("ligne6",toLigne6().trim());
          builder.add("ligne7",toLigne7().trim());
          
