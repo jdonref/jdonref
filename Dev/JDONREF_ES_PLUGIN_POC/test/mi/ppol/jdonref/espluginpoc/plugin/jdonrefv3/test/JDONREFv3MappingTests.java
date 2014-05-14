@@ -131,10 +131,8 @@ public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
     @Test
     public void test_index_type_adresse() throws Exception
     {
-        String test = "adresse";
-        
         // Crée le mapping
-        test_index_type(test);
+        test_index_type("adresse");
         
         // Tente une indexation
         index(INDEX_NAME, "adresse", "1", XContentFactory.jsonBuilder()
@@ -169,40 +167,146 @@ public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
         assert(hits.length>0);
     }
     
-    /*
     @Test
     public void test_index_type_voie() throws Exception
     {
-        String test = "voie";
-        test_index_type(test);
-    }
-    
-    @Test
-    public void test_index_type_troncon() throws Exception
-    {
-        String test = "troncon";
-        test_index_type(test);
+        // Crée le mapping
+        test_index_type("voie");
+        
+        // Tente une indexation
+        index(INDEX_NAME, "voie", "1", XContentFactory.jsonBuilder()
+                .startObject()
+                    .startObject("adresse")
+                        .field("codepays","FR")
+                        .field("ligne4","BOULEVARD DE L HOPITAL")
+                        .field("ligne6","75005 PARIS")
+                        .field("ligne7","FRANCE")
+                        .field("fullName","BOULEVARD DE L HOPITAL 75013 PARIS FRANCE")
+                        .field("codedepartement","75")
+                        .field("codepostal","75013")
+                        .field("codeinsee","75113")
+                    .endObject()
+                .endObject());
+        
+        GetResponse get = client().prepareGet().setIndex(INDEX_NAME).setType("voie").setFetchSource(true).setId("1").execute().actionGet();
+        assertTrue(get.isExists());
+        System.out.println(get.getSourceAsString());
+        
+        Thread.sleep(10000);
+        
+        QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne4","BOULEVARD");
+        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        SearchHit[] hits = search.getHits().getHits();
+        assert(hits.length==0);
+        
+        qb = (QueryBuilder)QueryBuilders.matchQuery("fullName","BOULEVARD");
+        search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        hits = search.getHits().getHits();
+        assert(hits.length>0);
     }
     
     @Test
     public void test_index_type_commune() throws Exception
     {
-        String test = "commune";
-        test_index_type(test);
+        // Crée le mapping
+        test_index_type("commune");
+        
+        // Tente une indexation
+        index(INDEX_NAME, "commune", "1", XContentFactory.jsonBuilder()
+                .startObject()
+                    .startObject("adresse")
+                        .field("codepays","FR")
+                        .field("ligne6","75005 PARIS")
+                        .field("ligne7","FRANCE")
+                        .field("fullName","75013 PARIS FRANCE")
+                        .field("codedepartement","75")
+                        .field("codepostal","75013")
+                        .field("codeinsee","75113")
+                    .endObject()
+                .endObject());
+        
+        GetResponse get = client().prepareGet().setIndex(INDEX_NAME).setType("commune").setFetchSource(true).setId("1").execute().actionGet();
+        assertTrue(get.isExists());
+        System.out.println(get.getSourceAsString());
+        
+        Thread.sleep(10000);
+        
+        QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne6","PARIS");
+        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        SearchHit[] hits = search.getHits().getHits();
+        assert(hits.length==0);
+        
+        qb = (QueryBuilder)QueryBuilders.matchQuery("fullName","PARIS");
+        search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        hits = search.getHits().getHits();
+        assert(hits.length>0);
     }
     
     @Test
     public void test_index_type_departement() throws Exception
     {
-        String test = "departement";
-        test_index_type(test);
+        // Crée le mapping
+        test_index_type("departement");
+        
+        // Tente une indexation
+        index(INDEX_NAME, "departement", "1", XContentFactory.jsonBuilder()
+                .startObject()
+                    .startObject("adresse")
+                        .field("codepays","FR")
+                        .field("ligne6","75")
+                        .field("ligne7","FRANCE")
+                        .field("fullName","75 FRANCE")
+                        .field("codedepartement","75")
+                    .endObject()
+                .endObject());
+        
+        GetResponse get = client().prepareGet().setIndex(INDEX_NAME).setType("departement").setFetchSource(true).setId("1").execute().actionGet();
+        assertTrue(get.isExists());
+        System.out.println(get.getSourceAsString());
+        
+        Thread.sleep(10000);
+        
+        QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne6","75");
+        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        SearchHit[] hits = search.getHits().getHits();
+        assert(hits.length==0);
+        
+        qb = (QueryBuilder)QueryBuilders.matchQuery("fullName","75");
+        search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        hits = search.getHits().getHits();
+        assert(hits.length>0);
     }
     
     @Test
     public void test_index_type_pays() throws Exception
     {
-        String test = "pays";
-        test_index_type(test);
+        // Crée le mapping
+        test_index_type("pays");
+        
+        // Tente une indexation
+        index(INDEX_NAME, "pays", "1", XContentFactory.jsonBuilder()
+                .startObject()
+                    .startObject("adresse")
+                        .field("codepays","FR")
+                        .field("ligne7","FRANCE")
+                        .field("fullName","FRANCE")
+                    .endObject()
+                .endObject());
+        
+        GetResponse get = client().prepareGet().setIndex(INDEX_NAME).setType("pays").setFetchSource(true).setId("1").execute().actionGet();
+        assertTrue(get.isExists());
+        System.out.println(get.getSourceAsString());
+        
+        Thread.sleep(10000);
+        
+        QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne7","FRANCE");
+        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        SearchHit[] hits = search.getHits().getHits();
+        assert(hits.length==0);
+        
+        qb = (QueryBuilder)QueryBuilders.matchQuery("fullName","FRANCE");
+        search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        hits = search.getHits().getHits();
+        assert(hits.length>0);
     }
-     * */
 }

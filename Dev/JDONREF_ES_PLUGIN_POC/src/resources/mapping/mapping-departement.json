@@ -7,10 +7,11 @@
                         "properties": {
                             "codedepartement" : { "type" : "string", "store" : true},
                             "codepays" : { "type" : "string" , "store" : true},
+                            "pays" : { "type" : "string" , "store" : true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "ligne6" : { "type" : "string", "store": true, "index": "no"},
-                            "ligne7" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "ligne7" : { "type" : "string", "store": true, "index": "no"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
                             "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
                         }

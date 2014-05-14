@@ -20,12 +20,13 @@
                             "commune" : { "type" : "string" , "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "code_postal" : { "type" : "string", "store": true},
                             "code_arrondissement" : { "type" : "string", "store": true},
+                            "pays" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "ligne4" : { "type" : "string", "store": true, "index": "no"},
                             "ligne5" : { "type" : "string", "store": true, "index": "no"},
                             "ligne6" : { "type" : "string", "store": true, "index": "no"},
-                            "ligne7" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "ligne7" : { "type" : "string", "store": true, "index": "no"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
                             "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
                         }

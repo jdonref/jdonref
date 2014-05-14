@@ -24,10 +24,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.TreeMap;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.FieldInfo.IndexOptions;
+import org.apache.lucene.index.IndexableField;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
 import org.elasticsearch.index.mapper.ContentPath;
 import org.elasticsearch.index.mapper.InternalMapper;
 
+import org.elasticsearch.index.mapper.core.AbstractFieldMapper;
+import org.elasticsearch.index.mapper.core.StringFieldMapper.ValueAndBoost;
 import static org.elasticsearch.index.mapper.core.TypeParsers.parsePathType;
 
 /**
@@ -42,10 +50,12 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
     private Settings settings;
     private volatile ImmutableOpenMap<String, Mapper> mappers = ImmutableOpenMap.of();
     private final ContentPath.Type pathType;
+    private final String FULLNAME = "fullName";
     
     public static class Defaults {
         public static final boolean ENABLED = true;
         public static final ContentPath.Type PATH_TYPE = ContentPath.Type.FULL;
+        public static final FieldType FULLNAME_FIELD_TYPE = new FieldType(AbstractFieldMapper.Defaults.FIELD_TYPE);
     }
     
     public static class Builder<T extends Builder, Y extends JDONREFv3AdresseTypeMapper> extends Mapper.Builder<T, Y> {
@@ -196,24 +206,74 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             token = parser.nextToken();
         }
         
+        boolean isThereFullName = false;
+        
+        HashMap<String,String> values = new HashMap<String,String>();
+        
         while (token != XContentParser.Token.END_OBJECT) {
             if (token == XContentParser.Token.START_OBJECT) {
                 serializeObject(context, currentFieldName);
             } else if (token == XContentParser.Token.START_ARRAY) {
-                serializeArray(context, currentFieldName);
+                serializeArray(context, currentFieldName,values);
             } else if (token == XContentParser.Token.FIELD_NAME) {
                 currentFieldName = parser.currentName();
+                if (currentFieldName.equals(FULLNAME))
+                    isThereFullName = true;
             } else if (token == XContentParser.Token.VALUE_NULL) {
                 serializeNullValue(context, currentFieldName);
             } else if (token == null) {
                 throw new MapperParsingException("object mapping for [" + name + "] tried to parse as object, but got EOF, has a concrete value been provided to it?");
             } else if (token.isValue()) {
-                serializeValue(context, currentFieldName, token);
+                serializeValue(context, currentFieldName, token,values);
             }
             token = parser.nextToken();
         }
         
+        if (!isThereFullName)
+        {
+            addFullName(context,values);
+        }
+        
         context.path().pathType(origPathType);
+    }
+    
+    private void addFullName(ParseContext context,HashMap<String,String> values) throws IOException
+    {
+        ValueAndBoost value = new ValueAndBoost(getFullName(values),1.0f);
+      /*  FieldType fieldType = new FieldType(Defaults.FULLNAME_FIELD_TYPE);
+        fieldType.setIndexed(true);
+        fieldType.setStored(true);
+        fieldType.setTokenized(true);
+        fieldType.setIndexOptions(IndexOptions.DOCS_ONLY);*/
+        
+        Mapper mapper = mappers.get("fullName");
+        context.externalValue(value.value());
+        mapper.parse(context);
+    }
+    
+    private String addString(String chaine,String toAdd)
+    {
+        if (toAdd!=null)
+        {
+            if (chaine.length()>0) chaine += " ";
+            chaine += toAdd;
+        }
+        return chaine;
+    }
+    
+    private String getFullName(HashMap<String,String> values)
+    {
+        String fullName = addString("",values.get("numero"));
+        fullName = addString(fullName,values.get("repetition"));
+        fullName = addString(fullName,values.get("type_de_voie"));
+        fullName = addString(fullName,values.get("article"));
+        fullName = addString(fullName,values.get("libelle"));
+        fullName = addString(fullName,values.get("code_postal"));
+        fullName = addString(fullName,values.get("commune"));
+        fullName = addString(fullName,values.get("code_arrondissement"));
+        fullName = addString(fullName,values.get("pays"));
+        
+        return fullName;
     }
 
     private void serializeNullValue(ParseContext context, String lastFieldName) throws IOException {
@@ -238,7 +298,7 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
         context.path().remove();
     }
 
-    private void serializeArray(ParseContext context, String lastFieldName) throws IOException {
+    private void serializeArray(ParseContext context, String lastFieldName,HashMap<String,String> values) throws IOException {
         String arrayFieldName = lastFieldName;
         Mapper mapper = mappers.get(lastFieldName);
         if (mapper != null && mapper instanceof ArrayValueMapperParser) {
@@ -250,7 +310,7 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
                 if (token == XContentParser.Token.START_OBJECT) {
                     serializeObject(context, lastFieldName);
                 } else if (token == XContentParser.Token.START_ARRAY) {
-                    serializeArray(context, lastFieldName);
+                    serializeArray(context, lastFieldName, values);
                 } else if (token == XContentParser.Token.FIELD_NAME) {
                     lastFieldName = parser.currentName();
                 } else if (token == XContentParser.Token.VALUE_NULL) {
@@ -258,19 +318,21 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
                 } else if (token == null) {
                     throw new MapperParsingException("object mapping for [" + name + "] with array for [" + arrayFieldName + "] tried to parse as array, but got EOF, is there a mismatch in types for the same field?");
                 } else {
-                    serializeValue(context, lastFieldName, token);
+                    serializeValue(context, lastFieldName, token,values);
                 }
             }
         }
     }
-
-    private void serializeValue(final ParseContext context, String currentFieldName, XContentParser.Token token) throws IOException {
+    
+    private void serializeValue(final ParseContext context, String currentFieldName, XContentParser.Token token,HashMap<String,String> values) throws IOException {
         if (currentFieldName == null) {
             throw new MapperParsingException("object mapping [" + name + "] trying to serialize a value with no field associated with it, current value [" + context.parser().textOrNull() + "]");
         }
         Mapper mapper = mappers.get(currentFieldName);
         if (mapper != null) {
             mapper.parse(context);
+            IndexableField field = context.doc().getFields().get(context.doc().getFields().size()-1);
+            values.put(field.name(),field.stringValue());
         } // no dynamic mapping for now
     }
 
