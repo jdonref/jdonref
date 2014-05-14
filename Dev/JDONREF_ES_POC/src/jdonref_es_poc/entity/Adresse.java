@@ -109,30 +109,33 @@ public class Adresse
     
     public JsonObject toJSONDocument()
     {
-        JsonObjectBuilder builder = Json.createObjectBuilder()
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        
+        JsonObjectBuilder adresse = Json.createObjectBuilder()
                 .add("code_insee",voie.commune.codeinsee)
                 .add("code_departement",voie.commune.getCodeDepartement())
                 .add("code_postal",voie.commune.codepostal);
         
         String code_arrondissement = voie.commune.getCodeArrondissement();
         if (code_arrondissement!=null)
-            builder.add("code_arrondissement",code_arrondissement);
-        builder.add("commune",voie.commune.commune);
-         if (voie.commune.com_code_insee_commune!=null)
-         builder.add("code_insee_commune",voie.commune.com_code_insee_commune);
-        builder.add("type_de_voie",voie.typedevoie);
-        builder.add("libelle",voie.libelle);
-        builder.add("voi_id",voie.idvoie);
-        builder.add("fullName",toString().trim());
-        builder.add("ligne4",toLigne4().trim());
-        builder.add("ligne6",toLigne6().trim());
-        builder.add("ligne7",toLigne7().trim());
+            adresse.add("code_arrondissement",code_arrondissement);
+        adresse.add("commune",voie.commune.commune);
+        if (voie.commune.com_code_insee_commune!=null)
+            adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
+        adresse.add("type_de_voie",voie.typedevoie);
+        adresse.add("libelle",voie.libelle);
+        adresse.add("voi_id",voie.idvoie);
+        adresse.add("fullName",toString().trim());
+        adresse.add("fullName_sansngram",toString().trim());
+        adresse.add("ligne4",toLigne4().trim());
+        adresse.add("ligne6",toLigne6().trim());
+        adresse.add("ligne7",toLigne7().trim());
         if (numero!=null)
         {
-            builder.add("numero",numero); // need a boost ?
+            adresse.add("numero",numero); // need a boost ?
         }
         if (repetition!=null)
-            builder.add("repetition",repetition);
+            adresse.add("repetition",repetition);
         
         JsonArray coordinates = Json.createArrayBuilder()
                 .add(lat)
@@ -143,8 +146,9 @@ public class Adresse
                 .add("type","point")
                 .add("coordinates", coordinates)
                 .build();
+        adresse.add("geometrie",point);
         
-        builder.add("geometrie",point);
+        builder.add("adresse", adresse);
         
         return builder.build();
     }
