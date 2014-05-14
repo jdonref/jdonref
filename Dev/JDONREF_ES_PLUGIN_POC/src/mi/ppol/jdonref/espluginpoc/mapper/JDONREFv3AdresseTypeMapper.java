@@ -19,14 +19,16 @@ import org.elasticsearch.index.mapper.MergeMappingException;
 import org.elasticsearch.index.mapper.ObjectMapperListener;
 import org.elasticsearch.index.mapper.ParseContext;
 import org.elasticsearch.index.mapper.object.ArrayValueMapperParser;
-import org.elasticsearch.index.mapper.object.ObjectMapper;
 import org.elasticsearch.threadpool.ThreadPool;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.TreeMap;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
 import org.elasticsearch.index.mapper.ContentPath;
 import org.elasticsearch.index.mapper.InternalMapper;
+
+import static org.elasticsearch.index.mapper.core.TypeParsers.parsePathType;
 
 /**
  *
@@ -39,6 +41,7 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
     private ThreadPool threadPool;
     private Settings settings;
     private volatile ImmutableOpenMap<String, Mapper> mappers = ImmutableOpenMap.of();
+    private final ContentPath.Type pathType;
     
     public static class Defaults {
         public static final boolean ENABLED = true;
@@ -61,6 +64,11 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             return this.builder;
         }
         
+        public T pathType(ContentPath.Type pathType) {
+            this.pathType = pathType;
+            return builder;
+        }
+        
         @Override
         public Y build(BuilderContext context) {
             ContentPath.Type origPathType = context.path().pathType();
@@ -75,13 +83,13 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             context.path().pathType(origPathType);
             context.path().remove();
             
-            JDONREFv3AdresseTypeMapper objectMapper = createMapper(name, mappers);
+            JDONREFv3AdresseTypeMapper objectMapper = createMapper(name, mappers, pathType);
 
             return (Y) objectMapper;
         }
 
-        protected JDONREFv3AdresseTypeMapper createMapper(String name, Map<String, Mapper> mappers) {
-            return new JDONREFv3AdresseTypeMapper(name, mappers);
+        protected JDONREFv3AdresseTypeMapper createMapper(String name, Map<String, Mapper> mappers, ContentPath.Type pathType) {
+            return new JDONREFv3AdresseTypeMapper(name, mappers, pathType);
         }
     }
     
@@ -100,6 +108,9 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
                     if (!type.equals(CONTENT_TYPE)) {
                         throw new MapperParsingException("Trying to parse an object but has a different type [" + type + "] for [" + name + "]");
                     }
+                }
+                else if (fieldName.equals("path")) {
+                    builder.pathType(parsePathType(name, fieldNode.toString()));
                 }
                 else if (fieldName.equals("properties"))
                 {
@@ -149,8 +160,9 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
         }
     }
     
-    public JDONREFv3AdresseTypeMapper(String name, Map<String, Mapper> mappers) {
+    public JDONREFv3AdresseTypeMapper(String name, Map<String, Mapper> mappers,ContentPath.Type pathType) {
         this.name = name;
+        this.pathType = pathType;
         if (mappers != null) {
             this.mappers = ImmutableOpenMap.builder(this.mappers).putAll(mappers).build();
         }
@@ -172,6 +184,9 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             // the object is null ("obj1" : null), simply bail
             return;
         }
+        
+        ContentPath.Type origPathType = context.path().pathType();
+        context.path().pathType(pathType);
         
         if (token == XContentParser.Token.END_OBJECT) {
             token = parser.nextToken();
@@ -197,6 +212,8 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             }
             token = parser.nextToken();
         }
+        
+        context.path().pathType(origPathType);
     }
 
     private void serializeNullValue(ParseContext context, String lastFieldName) throws IOException {
@@ -306,6 +323,11 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             if (mapper instanceof InternalMapper) {
                 mapper.toXContent(builder, params);
             }
+        }
+        
+        if (pathType != Defaults.PATH_TYPE)
+        {
+            builder.field("path",pathType.name().toLowerCase(Locale.ROOT));
         }
 
         if (!mappers.isEmpty()) {

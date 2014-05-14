@@ -3,6 +3,7 @@
        "properties" : {
             "adresse": {
                         "type" : "adresse",
+                        "path" : "just_name",
                         "properties": {
                             "code_pays" : { "type" : "string" , "store" : true},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},

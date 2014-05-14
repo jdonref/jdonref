@@ -15,12 +15,17 @@ import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
 import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 
 import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
@@ -52,10 +57,10 @@ public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
     public void createEmptyIndex() throws Exception {
         logger.info("creating index [{}]", INDEX_NAME);
         wipeIndices(INDEX_NAME);
-        
-        String settings = readFile("./test/resources/index/jdonrefv3es-settings.json");
+                
+        String settings = readFile("./test/resources/index/jdonrefv3es-settings_Mapping.json");
         client().admin().indices().prepareCreate(INDEX_NAME).setSettings(settings).execute().actionGet();
-        
+        //createIndex(INDEX_NAME);
     }
     
     public void test_index_type(String test) throws FileNotFoundException, IOException, InterruptedException, ExecutionException
@@ -63,13 +68,12 @@ public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
         typeExists(test,false);
         
         String mapping = readFile("./src/resources/mapping/mapping-"+test+".json");
-        System.out.println(mapping);
+        //System.out.println(mapping);
         PutMappingResponse pmr = client().admin().indices().putMapping(new PutMappingRequest(INDEX_NAME).type(test).source(mapping)).actionGet();
         super.refresh();
         typeExists(test,true);
-        
         GetMappingsResponse mappingResponse = client().admin().indices().prepareGetMappings(INDEX_NAME).execute().get();
-        showResponse(mappingResponse);
+        //showResponse(mappingResponse);
     }
     
     public void typeExists(String type,boolean not)
@@ -144,9 +148,25 @@ public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
                         .field("numero","24")
                         .field("codedepartement","75")
                         .field("codepostal","75013")
-                        .field("codeinsee","75013")
+                        .field("codeinsee","75113")
                     .endObject()
                 .endObject());
+        
+        GetResponse get = client().prepareGet().setIndex(INDEX_NAME).setType("adresse").setFetchSource(true).setId("1").execute().actionGet();
+        assertTrue(get.isExists());
+        System.out.println(get.getSourceAsString());
+        
+        Thread.sleep(10000);
+        
+        QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne4","BOULEVARD");
+        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        SearchHit[] hits = search.getHits().getHits();
+        assert(hits.length==0);
+        
+        qb = (QueryBuilder)QueryBuilders.matchQuery("fullName","BOULEVARD");
+        search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        hits = search.getHits().getHits();
+        assert(hits.length>0);
     }
     
     /*
