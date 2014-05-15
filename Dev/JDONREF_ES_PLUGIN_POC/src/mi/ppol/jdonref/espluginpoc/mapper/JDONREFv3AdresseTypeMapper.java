@@ -27,6 +27,7 @@ import java.util.TreeMap;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.FieldInfo.IndexOptions;
 import org.apache.lucene.index.IndexableField;
@@ -50,6 +51,10 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
     private Settings settings;
     private volatile ImmutableOpenMap<String, Mapper> mappers = ImmutableOpenMap.of();
     private final ContentPath.Type pathType;
+    private final String LIGNE4 = "ligne4";
+    private final String LIGNE6 = "ligne6";
+    private final String LIGNE7 = "ligne7";
+    private final String CODEDEPARTEMENT = "code_departement";
     private final String FULLNAME = "fullName";
     
     public static class Defaults {
@@ -206,6 +211,10 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             token = parser.nextToken();
         }
         
+        boolean isThereLigne4   = false;
+        boolean isThereLigne6   = false;
+        boolean isThereLigne7   = false;
+        boolean isThereCodeDepartement   = false;
         boolean isThereFullName = false;
         
         HashMap<String,String> values = new HashMap<String,String>();
@@ -219,6 +228,14 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
                 currentFieldName = parser.currentName();
                 if (currentFieldName.equals(FULLNAME))
                     isThereFullName = true;
+                else if (currentFieldName.equals(LIGNE4))
+                    isThereLigne4 = true;
+                else if (currentFieldName.equals(LIGNE6))
+                    isThereLigne6 = true;
+                else if (currentFieldName.equals(LIGNE7))
+                    isThereLigne7 = true;
+                else if (currentFieldName.equals(CODEDEPARTEMENT))
+                    isThereCodeDepartement = true;
             } else if (token == XContentParser.Token.VALUE_NULL) {
                 serializeNullValue(context, currentFieldName);
             } else if (token == null) {
@@ -229,26 +246,66 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
             token = parser.nextToken();
         }
         
+        if (!isThereLigne4)
+            addLigne4(context,values);
+        if (!isThereLigne6)
+            addLigne6(context,values);
+        if (!isThereLigne7)
+            addLigne7(context,values);
         if (!isThereFullName)
-        {
             addFullName(context,values);
-        }
         
         context.path().pathType(origPathType);
+    }
+    
+    
+    private void addLigne4(ParseContext context,HashMap<String,String> values) throws IOException
+    {
+        ValueAndBoost value = new ValueAndBoost(getLigne4(values),1.0f);
+        
+        Mapper mapper = mappers.get(LIGNE4);
+        if (mapper!=null)
+        {
+            context.externalValue(value.value());
+            mapper.parse(context);
+        }
+    }
+    
+    private void addLigne6(ParseContext context,HashMap<String,String> values) throws IOException
+    {
+        ValueAndBoost value = new ValueAndBoost(getLigne6(values),1.0f);
+        
+        Mapper mapper = mappers.get(LIGNE6);
+        if (mapper!=null)
+        {
+            context.externalValue(value.value());
+            mapper.parse(context);
+        }
+    }
+    
+    private void addLigne7(ParseContext context,HashMap<String,String> values) throws IOException
+    {
+        ValueAndBoost value = new ValueAndBoost(getLigne7(values),1.0f);
+        
+        Mapper mapper = mappers.get(LIGNE7);
+        if (mapper!=null)
+        {
+            context.externalValue(value.value());
+            mapper.parse(context);
+        }
     }
     
     private void addFullName(ParseContext context,HashMap<String,String> values) throws IOException
     {
         ValueAndBoost value = new ValueAndBoost(getFullName(values),1.0f);
-      /*  FieldType fieldType = new FieldType(Defaults.FULLNAME_FIELD_TYPE);
-        fieldType.setIndexed(true);
-        fieldType.setStored(true);
-        fieldType.setTokenized(true);
-        fieldType.setIndexOptions(IndexOptions.DOCS_ONLY);*/
         
-        Mapper mapper = mappers.get("fullName");
-        context.externalValue(value.value());
-        mapper.parse(context);
+        Mapper mapper = mappers.get(FULLNAME);
+        if (mapper!=null)
+        {
+            context.externalValue(value.value());
+            mapper.parse(context);
+            System.out.println(context.doc().getField(FULLNAME).stringValue());
+        }
     }
     
     private String addString(String chaine,String toAdd)
@@ -261,16 +318,40 @@ public class JDONREFv3AdresseTypeMapper implements Mapper {
         return chaine;
     }
     
-    private String getFullName(HashMap<String,String> values)
+    private String getLigne4(HashMap<String,String> values)
     {
         String fullName = addString("",values.get("numero"));
         fullName = addString(fullName,values.get("repetition"));
         fullName = addString(fullName,values.get("type_de_voie"));
         fullName = addString(fullName,values.get("article"));
         fullName = addString(fullName,values.get("libelle"));
-        fullName = addString(fullName,values.get("code_postal"));
+        
+        return fullName;
+    }
+    
+    private String getLigne6(HashMap<String,String> values)
+    {
+        String fullName = addString("",values.get("code_postal"));
         fullName = addString(fullName,values.get("commune"));
         fullName = addString(fullName,values.get("code_arrondissement"));
+        
+        if (fullName.trim().length()==0)
+            fullName = addString(fullName,values.get("code_departement"));
+        
+        return fullName;
+    }
+    
+    private String getLigne7(HashMap<String,String> values)
+    {
+        String fullName = addString("",values.get("pays"));
+        
+        return fullName;
+    }
+    
+    private String getFullName(HashMap<String,String> values)
+    {
+        String fullName = addString("",getLigne4(values));
+        fullName = addString(fullName,getLigne6(values));
         fullName = addString(fullName,values.get("pays"));
         
         return fullName;
