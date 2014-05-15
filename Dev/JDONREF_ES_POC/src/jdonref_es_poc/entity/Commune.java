@@ -70,7 +70,21 @@ public class Commune
       com_code_insee_commune = rs.getString(index[7]);
       t0 = rs.getTimestamp(index[8]);
       t1 = rs.getTimestamp(index[9]);
-      geometrie = rs.getString(index[10]);
+//      geometrie = rs.getString(index[10]);
+    }
+    public Commune(ResultSet rs) throws SQLException
+    {
+      codeinsee = rs.getString(1);
+      dpt_code_departement = rs.getString(2);
+      codepostal = rs.getString(3);
+      commune = rs.getString(4);
+      com_nom_desab = rs.getString(5);
+      com_nom_origine = rs.getString(6);
+      com_nom_pq = rs.getString(7);
+      com_code_insee_commune = rs.getString(8);
+      t0 = rs.getTimestamp(9);
+      t1 = rs.getTimestamp(10);
+      geometrie = rs.getString(11);
     }
 
     public String[] getLignes()
