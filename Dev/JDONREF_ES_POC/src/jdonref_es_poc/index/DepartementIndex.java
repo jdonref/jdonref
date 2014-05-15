@@ -77,7 +77,8 @@ public class DepartementIndex
             if (isVerbose() && i%30==1)
                 System.out.println(i+" départements traités");
             
-            Departement d = new Departement(rs,new int[]{1,2,3,4,5,6});
+            Departement d = new Departement(rs);
+//            Departement d = new Departement(rs,new int[]{1,2,3,4,5,6});
 //            String dpt_code_departement = rs.getString(1);
 //            String dpt_projection = rs.getString(2);
 //            String dpt_referentiel = rs.getString(3);
@@ -172,24 +173,27 @@ public class DepartementIndex
     
     public void indexJDONREFDepartement(String dpt) throws IOException, SQLException
     {
-        VoieIndex vIndex = new VoieIndex();
-        vIndex.setUtil(util);
-        vIndex.setConnection(connection);
-        vIndex.setVerbose(isVerbose());
-        vIndex.indexJDONREFVoiesDepartement(dpt);
+//        VoieIndex vIndex = new VoieIndex();
+//        vIndex.setUtil(util);
+//        vIndex.setConnection(connection);
+//        vIndex.setVerbose(isVerbose());
+//        vIndex.indexJDONREFVoiesDepartement(dpt);
         
-        AdresseIndex adrIndex = new AdresseIndex();
-        adrIndex.setUtil(util);
-        adrIndex.setConnection(connection);
-        adrIndex.setVerbose(isVerbose());
-        adrIndex.indexJDONREFAdressesDepartement(dpt);
+//        AdresseIndex adrIndex = new AdresseIndex();
+//        adrIndex.setUtil(util);
+//        adrIndex.setConnection(connection);
+//        adrIndex.setVerbose(isVerbose());
+//        adrIndex.indexJDONREFAdressesDepartement(dpt);
         
-//        TronconIndex tIndex = new TronconIndex();
-//        tIndex.setUtil(util);
-//        tIndex.setConnection(connection);
-//        tIndex.setVerbose(isVerbose());
+        TronconIndex tIndex = new TronconIndex();
+        tIndex.setUtil(util);
+        tIndex.setConnection(connection);
+        tIndex.setVerbose(isVerbose());
 //        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
 //        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
+        
+        tIndex.indexJDONREFTronconsDep(dpt, "gauche");
+        tIndex.indexJDONREFTronconsDep(dpt, "droit");
     }    
 
     

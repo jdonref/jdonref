@@ -2,6 +2,7 @@ package jdonref_es_poc.entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -28,10 +29,12 @@ public class Voie
     public String voi_mot_determinant_pq;
     public int min_numero; //voi_min_numero
     public int max_numero; //voi_max_numero
+    public Date t0;
+    public Date t1;
     
     public String article;
 
-    public Voie(Commune commune, String idvoie, String voi_code_fantoir, String voi_nom, String voi_nom_desab, String voi_nom_origine, String typedevoie, String voi_type_de_voie_pq, String libelle, String voi_lbl_pq, String voi_lbl_sans_articles, String voi_lbl_sans_articles_pq, String voi_mot_determinant, String voi_mot_determinant_pq, int min_numero, int max_numero, String article) {
+    public Voie(Commune commune, String idvoie, String voi_code_fantoir, String voi_nom, String voi_nom_desab, String voi_nom_origine, String typedevoie, String voi_type_de_voie_pq, String libelle, String voi_lbl_pq, String voi_lbl_sans_articles, String voi_lbl_sans_articles_pq, String voi_mot_determinant, String voi_mot_determinant_pq, int min_numero, int max_numero, String article, Date t0, Date t1) {
         this.commune = commune;
         this.idvoie = idvoie;
         this.voi_code_fantoir = voi_code_fantoir;
@@ -49,6 +52,9 @@ public class Voie
         this.min_numero = min_numero;
         this.max_numero = max_numero;
         this.article = article;
+        this.t0=t0;
+        this.t1=t1;
+
     }
 
     public Voie()
@@ -75,6 +81,8 @@ public class Voie
         min_numero = rs.getInt(index[13]); 
         max_numero = rs.getInt(index[14]); 
         article = getArticle(rs.getString(index[3]), typedevoie,libelle);
+        t0 = rs.getTimestamp(index[15]);
+        t1 = rs.getTimestamp(index[16]);
 
     }
     
@@ -98,6 +106,8 @@ public class Voie
         min_numero = rs.getInt(24); 
         max_numero = rs.getInt(25); 
         article = getArticle(rs.getString(14), typedevoie,libelle);
+        t0 = rs.getTimestamp(26);
+        t1 = rs.getTimestamp(27);
     }
     
     public String[] getLignes()
@@ -187,8 +197,8 @@ public class Voie
          builder.add("commune",commune.commune);
          if (commune.com_code_insee_commune!=null)
             builder.add("code_insee_commune",commune.com_code_insee_commune);
-         builder.add("t0",commune.t0.getTime());
-         builder.add("t1",commune.t1.getTime());
+         builder.add("commune.t0",commune.t0.getTime());
+         builder.add("commune.t1",commune.t1.getTime());
 
          builder.add("voi_id", idvoie);
          builder.add("voi_code_fantoir",voi_code_fantoir);
@@ -198,6 +208,8 @@ public class Voie
             builder.add("voi_lbl",libelle);
          builder.add("numero_min",min_numero);
          builder.add("numero_max",max_numero);
+         builder.add("t0" , t1.toString());
+         builder.add("t1" , t1.toString());
          
          builder.add("fullName",toString().trim());
          builder.add("fullName_sansngram",toString().trim());

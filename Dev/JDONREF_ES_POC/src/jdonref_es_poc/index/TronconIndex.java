@@ -8,6 +8,8 @@ import javax.json.JsonObject;
 import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.dao.TronconDAO;
 import jdonref_es_poc.entity.Adresse;
+import jdonref_es_poc.entity.MetaData;
+import jdonref_es_poc.entity.Troncon;
 import jdonref_es_poc.entity.Voie;
 
 /**
@@ -181,6 +183,7 @@ ElasticSearchUtil util;
         indexJDONREFTronconsDepartement(rs, "gauches", dpt);
     }
     
+    
     public void indexJDONREFTronconsDroitDepartement(Voie[] voies, String dpt) throws IOException
     {
         if (isVerbose())
@@ -199,4 +202,71 @@ ElasticSearchUtil util;
         ResultSet rs = dao.getAllTronconsDroitOfDepartment(connection,dpt);
         indexJDONREFTronconsDepartement(rs, "droits", dpt);
     }
+    
+    
+    
+
+
+
+    static int idTroncon=0;
+    static int idTronconTmp=0;
+    int paquetsBulk=1000;
+
+
+
+    public void indexJDONREFTronconsDep(String dpt, String side) throws IOException, SQLException
+    {
+        if (isVerbose())
+            System.out.println("dpt "+dpt+" : troncons "+side);
+        
+        TronconDAO dao = new TronconDAO();
+        ResultSet rs=null;
+        if (side.equals("gauche")) {
+        rs = dao.getAllTronconsDepGAUCHE(connection, dpt);    
+        }
+        if (side.equals("droit")) {
+        rs = dao.getAllTronconsDepDROIT(connection, dpt);    
+        }
+
+//      creation de l'objet metaDataTroncon
+        MetaData metaDataTroncon= new MetaData();
+        metaDataTroncon.setIndex(util.index);
+        metaDataTroncon.setType("troncon");
+              
+        String bulk ="";
+        int i =0;
+        int lastIdBulk=idTronconTmp;
+
+            while(rs.next())
+        {
+            if (isVerbose() && i%1000==1)
+                System.out.println(i+" troncons "+side+" traités");
+            
+            Troncon tr = new Troncon(rs);
+                        
+//            creation de l'objet metaDataTroncon plus haut
+            metaDataTroncon.setId(++idTroncon);
+            bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument().toString()+"\n";
+            if((idTroncon-idTronconTmp)%paquetsBulk==0){
+                System.out.println("troncons "+side+" : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
+                util.indexResourceBulk(bulk);
+                bulk="";
+                lastIdBulk=idTroncon;
+            }
+            i++;
+        }
+        if(!bulk.equals("")){
+        System.out.println("troncons "+side+" : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
+        util.indexResourceBulk(bulk);
+        }
+        idTronconTmp = idTroncon;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
 }

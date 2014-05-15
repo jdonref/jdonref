@@ -51,31 +51,33 @@ public class VoieDAO
         
         
         String sql = "SELECT " +
-                "com_communes.com_code_insee," +
-                "com_communes.dpt_code_departement," +
-                "cdp_code_postal," +
-                "com_nom," +
-                "com_nom_desab," +
-                "com_nom_origine," +
-                "com_nom_pq," +
-                "com_code_insee_commune," +
-                "com_communes.t0," +
-                "com_communes.t1, " +
-                "voi_id, " +
-                "voi_code_fantoir," +
-                "voi_nom," +
-                "voi_nom_desab," +
-                "voi_nom_origine," +
-                "voi_type_de_voie," +
-                "voi_type_de_voie_pq," +
-                "voi_lbl," +
-                "voi_lbl_pq," +
-                "voi_lbl_sans_articles," +
-                "voi_lbl_sans_articles_pq," +
-                "voi_mot_determinant," +
-                "voi_mot_determinant_pq," +
-                "voi_min_numero," +
-                "voi_max_numero " +
+                "com_communes.com_code_insee," +            //1
+                "com_communes.dpt_code_departement," +      //2
+                "cdp_code_postal," +                        //3
+                "com_nom," +                                //4
+                "com_nom_desab," +                          //5
+                "com_nom_origine," +                        //6
+                "com_nom_pq," +                             //7
+                "com_code_insee_commune," +                 //8
+                "com_communes.t0," +                        //9
+                "com_communes.t1, " +                       //10
+                "voi_id, " +                                //11
+                "voi_code_fantoir," +                       //12
+                "voi_nom," +                                //13
+                "voi_nom_desab," +                          //14
+                "voi_nom_origine," +                        //15
+                "voi_type_de_voie," +                       //16
+                "voi_type_de_voie_pq," +                    //17
+                "voi_lbl," +                                //18
+                "voi_lbl_pq," +                             //19
+                "voi_lbl_sans_articles," +                  //20
+                "voi_lbl_sans_articles_pq," +               //21
+                "voi_mot_determinant," +                    //22
+                "voi_mot_determinant_pq," +                 //23
+                "voi_min_numero," +                         //24
+                "voi_max_numero," +                         //25
+                "voi_voies_"+dpt+".t0," +                   //26
+                "voi_voies_"+dpt+".t1 " +                   //27
                 "FROM voi_voies_"+dpt+", com_communes "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee";
 

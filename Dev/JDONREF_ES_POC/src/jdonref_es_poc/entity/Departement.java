@@ -45,6 +45,15 @@ public class Departement {
         t1 = rs.getTimestamp(index[4]);
         geometrie = rs.getString(index[5]);
     }
+    public Departement(ResultSet rs) throws SQLException
+    {
+        code_departement = rs.getString(1);
+        dpt_projection = rs.getString(2);
+        dpt_referentiel = rs.getString(3);
+        t0 = rs.getTimestamp(4);
+        t1 = rs.getTimestamp(5);
+        geometrie = rs.getString(6);
+    }
 
     public String toLigne6()
     {
@@ -93,6 +102,8 @@ public class Departement {
          builder.add("dpt_referentiel", dpt_referentiel);
          builder.add("t0" , t0.toString());
          builder.add("t1" , t1.toString());
+//         builder.add("t0" , t0.getTime());
+//         builder.add("t1" , t1.getTime());
          builder.add("geometrie" , geometrieJSON(geometrie));
          
          builder.add("fullName",toString());

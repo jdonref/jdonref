@@ -63,7 +63,7 @@ public class AdresseIndex {
         
         AdresseDAO dao = new AdresseDAO();
         ResultSet rs = dao.getAllAdressesOfDepartement(connection, dpt);
-//      creation de l'objet metaDataVoie
+//      creation de l'objet metaDataAdresse
         MetaData metaDataAdresse= new MetaData();
         metaDataAdresse.setIndex(util.index);
         metaDataAdresse.setType("adresse");
@@ -79,7 +79,7 @@ public class AdresseIndex {
             
             Adresse adr = new Adresse(rs);
             if (adr.numero!=null){
-//            creation de l'objet metaDataVoie plus haut
+//            creation de l'objet metaDataAdresse plus haut
                 metaDataAdresse.setId(++idAdresse);
                 bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n"; 
                 
@@ -93,7 +93,6 @@ public class AdresseIndex {
                 }
             }    
             i++;     
-//            addVoie(v);
         }
         if(!bulk.equals("")){
         System.out.println("adresse : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
@@ -108,7 +107,7 @@ public class AdresseIndex {
             System.out.println("dpt "+dpt+" : adresses");
         
         //int c =0;
-//      creation de l'objet metaDataVoie
+//      creation de l'objet metaDataAdresse
         MetaData metaDataAdresse= new MetaData();
         metaDataAdresse.setIndex(util.index);
         metaDataAdresse.setType("adresse");
@@ -123,7 +122,7 @@ public class AdresseIndex {
             
             Adresse adr = adresses[i]; 
             if (adr.numero!=null){
-//            creation de l'objet metaDataVoie plus haut
+//            creation de l'objet metaDataAdresse plus haut
                 metaDataAdresse.setId(++idAdresse);                
                 bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument().toString()+"\n";
                 if((idAdresse-idAdresseTmp)%paquetsBulk==0){

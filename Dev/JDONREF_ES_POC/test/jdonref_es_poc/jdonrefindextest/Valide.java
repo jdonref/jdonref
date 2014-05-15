@@ -66,18 +66,19 @@ public class Valide
         Commune[] c = getCommunes();
         
         jdonref_es_poc.entity.Voie[] v = new jdonref_es_poc.entity.Voie[5];
-        
+         Date t0 = new Date(2014, 02, 01, 00, 00, 00);
+         Date t1 = new Date(2014, 02, 01, 00, 00, 00);
         int i=0;
 //        v[i++] = new jdonref_es_poc.entity.Voie(1,25,"111","BOULEVARD","DE","L HOPITAL",c[1]);
 //        v[i++] = new jdonref_es_poc.entity.Voie(26,114,"112","BOULEVARD","DE","L HOPITAL",c[3]);
 //        v[i++] = new jdonref_es_poc.entity.Voie(1,100,"113","AVENUE","","PAUL ELUARD",c[2]);
 //        v[i++] = new jdonref_es_poc.entity.Voie(1,100,"113","RUE","DE","L HOPITAL SAINT LOUIS",c[3]);
 //        v[i++] = new jdonref_es_poc.entity.Voie(1,100,"113","BD","DE","PARIS",c[2]);
-        v[i++] = new jdonref_es_poc.entity.Voie(c[1],"751054649","7581134649","BOULEVARD DE L HOPITAL","BOULEVARD DE L HOPITAL","BD DE L'HOPITAL","BOULEVARD","B3LEVARD","DE L HOPITAL","DE L OPITAL","HOPITAL","OPITAL","HOPITAL","OPITAL",0,42,"");
-        v[i++] = new jdonref_es_poc.entity.Voie(c[3],"751134649","7581134649","BOULEVARD DE L HOPITAL","BOULEVARD DE L HOPITAL","BD DE L'HOPITAL","BOULEVARD","B3LEVARD","DE L HOPITAL","DE L OPITAL","HOPITAL","OPITAL","HOPITAL","OPITAL",0,171,"");
-        v[i++] = new jdonref_es_poc.entity.Voie(c[2],"930087142","9300087142","AVENUE PAUL ELUARD","AVENUE PAUL ELUARD","AV PAUL ELUARD","AVENUE","AVENUE","PAUL ELUARD","POL ELUARD","PAUL ELUARD","POL ELUARD","PAUL ELUARD","POL ELUARD",1,23,"");
-        v[i++] = new jdonref_es_poc.entity.Voie(c[3],"75113#04L","7542021547","RUE MAURICE ET LOUIS DE BROGLIE","RUE MAURICE ET LOUIS DE BROGLIE","R MAURICE ET LOUIS DE BROGLIE","RUE","RUE","MAURICE ET LOUIS DE BROGLIE","NORISE Y L3IS DE BROGLIE","MAURICE LOUIS BROGLIE","NORISE L3IS BROGLIE","MAURICE LOUIS BROGLIE","NORISE L3IS BROGLIE",1,12,"");
-        v[i++] = new jdonref_es_poc.entity.Voie(c[2],"930087133","9300781015","RUE DE PARIS","RUE DE PARIS","R DE PARIS","RUE","RUE","DE PARIS","DE PARIS","PARIS","PARIS","PARIS","PARIS",0,191,"");
+        v[i++] = new jdonref_es_poc.entity.Voie(c[1],"751054649","7581134649","BOULEVARD DE L HOPITAL","BOULEVARD DE L HOPITAL","BD DE L'HOPITAL","BOULEVARD","B3LEVARD","DE L HOPITAL","DE L OPITAL","HOPITAL","OPITAL","HOPITAL","OPITAL",0,42,"", t0, t1);
+        v[i++] = new jdonref_es_poc.entity.Voie(c[3],"751134649","7581134649","BOULEVARD DE L HOPITAL","BOULEVARD DE L HOPITAL","BD DE L'HOPITAL","BOULEVARD","B3LEVARD","DE L HOPITAL","DE L OPITAL","HOPITAL","OPITAL","HOPITAL","OPITAL",0,171,"", t0, t1);
+        v[i++] = new jdonref_es_poc.entity.Voie(c[2],"930087142","9300087142","AVENUE PAUL ELUARD","AVENUE PAUL ELUARD","AV PAUL ELUARD","AVENUE","AVENUE","PAUL ELUARD","POL ELUARD","PAUL ELUARD","POL ELUARD","PAUL ELUARD","POL ELUARD",1,23,"", t0, t1);
+        v[i++] = new jdonref_es_poc.entity.Voie(c[3],"75113#04L","7542021547","RUE MAURICE ET LOUIS DE BROGLIE","RUE MAURICE ET LOUIS DE BROGLIE","R MAURICE ET LOUIS DE BROGLIE","RUE","RUE","MAURICE ET LOUIS DE BROGLIE","NORISE Y L3IS DE BROGLIE","MAURICE LOUIS BROGLIE","NORISE L3IS BROGLIE","MAURICE LOUIS BROGLIE","NORISE L3IS BROGLIE",1,12,"", t0, t1);
+        v[i++] = new jdonref_es_poc.entity.Voie(c[2],"930087133","9300781015","RUE DE PARIS","RUE DE PARIS","R DE PARIS","RUE","RUE","DE PARIS","DE PARIS","PARIS","PARIS","PARIS","PARIS",0,191,"", t0, t1);
         
         return v;
     }
@@ -114,14 +115,14 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "192.168.0.11:9200";
+        String url = "10.213.92.168:9200";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
 
  
         // connection à la base de JDONREF
-        String connectionString = "jdbc:postgresql://192.168.135.129:5433/JDONREF_IGN";
+        String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN";
         String user = "postgres";
         String passwd = "postgres";
         
