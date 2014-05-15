@@ -20,7 +20,7 @@
                             "commune" : { "type" : "string" , "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "code_arrondissement" : { "type" : "string", "store": true},
                             "code_postal" : { "type" : "string", "store": true},
-                            "code_pays" : { "type" : "string" , "store" : true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "pays" : { "type" : "string" , "store" : true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "ligne1" : { "type" : "string", "store": true, "index": "no"},
