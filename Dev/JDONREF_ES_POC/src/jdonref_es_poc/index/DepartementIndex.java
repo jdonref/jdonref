@@ -77,7 +77,7 @@ public class DepartementIndex
             if (isVerbose() && i%30==1)
                 System.out.println(i+" départements traités");
             
-            Departement d = new Departement(rs,new int[]{1,2,3,4,5});
+            Departement d = new Departement(rs,new int[]{1,2,3,4,5,6});
 //            String dpt_code_departement = rs.getString(1);
 //            String dpt_projection = rs.getString(2);
 //            String dpt_referentiel = rs.getString(3);
@@ -91,11 +91,11 @@ public class DepartementIndex
 //            d.t0 = t0;
 //            d.t1 = t1;
             
-//            creation de l'objet metaDataCommune plus haut
+//            creation de l'objet metaDataDep plus haut
             metaDataDep.setId(++idDep);
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
             if((idDep-idDepTmp)%paquetsBulk==0){
-                System.out.println("commune : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
+                System.out.println("departement : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
                 util.indexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idDep;
@@ -103,7 +103,7 @@ public class DepartementIndex
             i++;
         }
         if(!bulk.equals("")){
-        System.out.println("commune : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
+        System.out.println("departement : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
         util.indexResourceBulk(bulk);
         }
         idDepTmp = idDep;
@@ -130,18 +130,18 @@ public class DepartementIndex
             
 //            addDepartment(d);
             
-//            creation de l'objet metaDataCommune plus haut
+//            creation de l'objet metaDataDep plus haut
             metaDataDep.setId(++idDep);
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
             if((idDep-idDepTmp)%paquetsBulk==0){
-                System.out.println("commune : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
+                System.out.println("departement : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
                 util.indexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idDep;
             }
         }
         if(!bulk.equals("")){
-        System.out.println("commune : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
+        System.out.println("departement : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
         util.indexResourceBulk(bulk);
         }
         idDepTmp = idDep;

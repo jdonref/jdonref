@@ -18,6 +18,7 @@ public class Departement {
     public String dpt_referentiel; 
     public Date t0;
     public Date t1;
+    public String geometrie;
 
     public Departement() {
     }
@@ -32,6 +33,7 @@ public class Departement {
         this.dpt_referentiel = dpt_referentiel;
         this.t0 = t0;
         this.t1 = t1;
+        
     }
     
     public Departement(ResultSet rs,int[] index) throws SQLException
@@ -41,6 +43,7 @@ public class Departement {
         dpt_referentiel = rs.getString(index[2]);
         t0 = rs.getTimestamp(index[3]);
         t1 = rs.getTimestamp(index[4]);
+        geometrie = rs.getString(index[5]);
     }
 
     public String toLigne6()
@@ -64,6 +67,21 @@ public class Departement {
         return toString();
     }
     
+    GeometrieUtil geomUtil = GeometrieUtil.getInstance();
+    public JsonObject geometrieJSON(String geometrie){
+//        GeometrieUtil geomUtil = GeometrieUtil.getInstance();
+//        GeometrieUtil geomUtil = new GeometrieUtil();
+        String type = geomUtil.getGeoTYPE(geometrie);
+        JsonObjectBuilder geo = Json.createObjectBuilder()
+         .add("type", type.toLowerCase())
+         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
+
+        JsonObjectBuilder location = Json.createObjectBuilder()
+         .add("location", geo);
+        
+        return location.build();
+    }
+    
     public JsonObject toJSONDocument()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
@@ -75,6 +93,7 @@ public class Departement {
          builder.add("dpt_referentiel", dpt_referentiel);
          builder.add("t0" , t0.toString());
          builder.add("t1" , t1.toString());
+         builder.add("geometrie" , geometrieJSON(geometrie));
          
          builder.add("fullName",toString());
          builder.add("fullName_sansngram",toString().trim());

@@ -26,6 +26,7 @@ public class Commune
     public String com_code_insee_commune;
     public Date t0;
     public Date t1;
+    public String geometrie;
     
     
 //    public Commune(String commune, String codeinsee, String codepostal, String com_code_insee_commune) {
@@ -69,6 +70,7 @@ public class Commune
       com_code_insee_commune = rs.getString(index[7]);
       t0 = rs.getTimestamp(index[8]);
       t1 = rs.getTimestamp(index[9]);
+      geometrie = rs.getString(index[10]);
     }
 
     public String[] getLignes()
@@ -103,6 +105,7 @@ public class Commune
         if (!this.com_nom_pq.equals(commune.com_nom_pq)) return false;
         if (!this.t0.equals(commune.t0)) return false;
         if (!this.t1.equals(commune.t1)) return false;
+        if (!this.geometrie.equals(commune.geometrie)) return false;
 
         return true;
     }
@@ -131,6 +134,22 @@ public class Commune
         return commune;
     }
     
+    
+    GeometrieUtil geomUtil = GeometrieUtil.getInstance();
+    public JsonObject geometrieJSON(String geometrie){
+//        GeometrieUtil geomUtil = GeometrieUtil.getInstance();
+//        GeometrieUtil geomUtil = new GeometrieUtil();
+        String type = geomUtil.getGeoTYPE(geometrie);
+        JsonObjectBuilder geo = Json.createObjectBuilder()
+         .add("type", type.toLowerCase())
+         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
+
+        JsonObjectBuilder location = Json.createObjectBuilder()
+         .add("location", geo);
+        
+        return location.build();
+    }
+    
     public JsonObject toJSONDocument()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
@@ -148,6 +167,7 @@ public class Commune
          builder.add("code_insee_commune",com_code_insee_commune);
          builder.add("t0",t0.toString());
          builder.add("t1",t1.toString());
+         builder.add("geometrie" , geometrieJSON(geometrie));
          
          builder.add("fullName",toString().trim());
          builder.add("fullName_sansngram",toString().trim());

@@ -18,7 +18,7 @@ public class DepartementDAO
 {
     public ResultSet getAllDepartement(Connection connection) throws SQLException
     {
-        String sql = "SELECT dpt_code_departement, dpt_projection, dpt_referentiel, t0, t1 " +
+        String sql = "SELECT dpt_code_departement, dpt_projection, dpt_referentiel, t0, t1, st_astext(geometrie)" +
                     "FROM dpt_departements";
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();

@@ -22,7 +22,7 @@ public class CommuneIndex
     
     static int idCommune=0;
     static int idCommuneTmp=0;
-    int paquetsBulk=1000;
+    int paquetsBulk=500;
 
     public ElasticSearchUtil getUtil() {
         return util;
@@ -76,7 +76,7 @@ public class CommuneIndex
             if (isVerbose() && i%1000==1)
                 System.out.println(i+" communes traitées");
 
-            Commune c = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,10});        
+            Commune c = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,10,11});        
                         
 //            creation de l'objet metaDataCommune plus haut
             metaDataCommune.setId(++idCommune);
