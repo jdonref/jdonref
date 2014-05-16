@@ -57,8 +57,8 @@ public class Adresse
       t0 = rs.getTimestamp(31);
       t1 = rs.getTimestamp(32);
                 
-//        setXY(rs.getString(29));
-        this.geometrie=rs.getString(33);
+        setXY(rs.getString(33));
+//        this.geometrie=rs.getString(33);
         
         
     }
@@ -79,7 +79,7 @@ public class Adresse
     public String repetition;
     public Date t0;
     public Date t1;
-    public String geometrie;
+//    public String geometrie;
 
     public float lat;
     public float lon;
@@ -146,19 +146,19 @@ public class Adresse
         if (repetition!=null)
             adresse.add("repetition",repetition);
         
-//        JsonArray coordinates = Json.createArrayBuilder()
-//                .add(lat)
-//                .add(lon)
-//                .build();
-//        
-//        JsonObject point = Json.createObjectBuilder()
-//                .add("type","point")
-//                .add("coordinates", coordinates)
-//                .build();
-//        adresse.add("geometrie",point);
+        JsonArray coordinates = Json.createArrayBuilder()
+                .add(lat)
+                .add(lon)
+                .build();
+        
+        JsonObject point = Json.createObjectBuilder()
+                .add("type","point")
+                .add("coordinates", coordinates)
+                .build();
+        adresse.add("geometrie",point);
          adresse.add("t0",t0.toString());
          adresse.add("t1",t1.toString());        
-        adresse.add("geometrie" , geometrieJSON(geometrie));
+//        adresse.add("geometrie" , geometrieJSON(geometrie));
         
         builder.add("adresse", adresse);
         
@@ -177,29 +177,27 @@ public class Adresse
     
 
 
-//    private void setXY(String string)
-//    {
-//        string = string.substring(6,string.length()-1);
-//        
-//        String[] xy = string.split(" ");
-//        
-//        lat = Float.parseFloat(xy[0]);
-//        lon = Float.parseFloat(xy[1]);
-//    }
-    
-       GeometrieUtil geomUtil = GeometrieUtil.getInstance();
-    public JsonObject geometrieJSON(String geometrie){
-//        GeometrieUtil geomUtil = GeometrieUtil.getInstance();
-//        GeometrieUtil geomUtil = new GeometrieUtil();
-        String type = geomUtil.getGeoTYPE(geometrie);
-        JsonObjectBuilder geo = Json.createObjectBuilder()
-         .add("type", type.toLowerCase())
-         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
-
-        JsonObjectBuilder location = Json.createObjectBuilder()
-         .add("location", geo);
+    private void setXY(String string)
+    {
+        string = string.substring(6,string.length()-1);
         
-        return location.build();
-    } 
+        String[] xy = string.split(" ");
+        
+        lat = Float.parseFloat(xy[0]);
+        lon = Float.parseFloat(xy[1]);
+    }
+    
+//     GeometrieUtil geomUtil = GeometrieUtil.getInstance();
+//    public JsonObject geometrieJSON(String geometrie){
+//        String type = geomUtil.getGeoTYPE(geometrie);
+//        JsonObjectBuilder geo = Json.createObjectBuilder()
+//         .add("type", type.toLowerCase())
+//         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
+//
+//        JsonObjectBuilder location = Json.createObjectBuilder()
+//         .add("location", geo);
+//        
+//        return location.build();
+//    } 
 
 }

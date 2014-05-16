@@ -53,8 +53,32 @@ public class GeometrieUtil {
         }
         return typeGeo;
     }
+    
+    //laisse uniquement un espace entre les X Y
+    public String DeleteSpace(String geometrie){
+        geometrie = geometrie.trim(); 
+        String geoWithout=" ";
+        int j=0;
+        int i=1;
+        while(i<geometrie.length()-1){
+            if(geometrie.charAt(i)==' '                  
+                    && (!Character.isDigit(geometrie.charAt(i-1))
+                    || !Character.isDigit(geometrie.charAt(i+1))))
+                if(!(Character.isDigit(geometrie.charAt(i+1))
+                && Character.isDigit(geoWithout.charAt(geoWithout.length()-1)))){
+                    
+                geoWithout+=geometrie.substring(j,i);
+                j=i+1;
+            }
+            i++;
+        }
+        geoWithout+=geometrie.substring(j,geometrie.length());
+        return geoWithout.trim();
+    }
 
     public JsonArray getGeoJSON(String geometrie, String type) {
+        geometrie=DeleteSpace(geometrie);
+        
         JsonArrayBuilder coordinates = Json.createArrayBuilder();
         if (type.equals("POINT")) {
             setXY(geometrie, type.length() + 1, geometrie.length() - 1);
