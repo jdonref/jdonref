@@ -138,15 +138,21 @@ public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
         index(INDEX_NAME, "adresse", "1", XContentFactory.jsonBuilder()
                 .startObject()
                     .startObject("adresse")
-                        .field("codepays","FR")
+                        .field("code_pays","FR")
                         .field("ligne4","24 BOULEVARD DE L HOPITAL")
                         .field("ligne6","75005 PARIS")
                         .field("ligne7","FRANCE")
                         .field("fullName","24 BOULEVARD DE L HOPITAL 75013 PARIS FRANCE")
                         .field("numero","24")
-                        .field("codedepartement","75")
-                        .field("codepostal","75013")
-                        .field("codeinsee","75113")
+                        .field("type_de_voie","BOULEVARD")
+                        .field("article","DE L")
+                        .field("libelle","HOPITAL")
+                        .field("commune","PARIS")
+                        .field("pays","FRANCE")
+                        .field("code_arrondissement","13")
+                        .field("code_departement","75")
+                        .field("code_postal","75013")
+                        .field("code_insee","75113")
                     .endObject()
                 .endObject());
         
@@ -161,12 +167,13 @@ public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
         SearchHit[] hits = search.getHits().getHits();
         assert(hits.length==0);
         
-        qb = (QueryBuilder)QueryBuilders.matchQuery("fullName","BOULEVARD");
+        //qb = (QueryBuilder)QueryBuilders.matchQuery("fullName","BOULEVARD");
+        qb = (QueryBuilder)QueryBuilders.queryString("BOULEVARD");
         search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
         hits = search.getHits().getHits();
         assert(hits.length>0);
     }
-    
+    /*
     @Test
     public void test_index_type_voie() throws Exception
     {
@@ -309,4 +316,5 @@ public class JDONREFv3MappingTests extends ElasticsearchIntegrationTest
         hits = search.getHits().getHits();
         assert(hits.length>0);
     }
+     * */
 }
