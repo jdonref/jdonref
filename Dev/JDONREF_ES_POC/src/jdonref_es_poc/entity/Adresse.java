@@ -58,7 +58,6 @@ public class Adresse
       t1 = rs.getTimestamp(32);
                 
         setXY(rs.getString(33));
-//        this.geometrie=rs.getString(33);
         
         
     }
@@ -145,6 +144,8 @@ public class Adresse
         }
         if (repetition!=null)
             adresse.add("repetition",repetition);
+         adresse.add("t0",t0.toString());
+         adresse.add("t1",t1.toString());   
         
         JsonArray coordinates = Json.createArrayBuilder()
                 .add(lat)
@@ -156,9 +157,6 @@ public class Adresse
                 .add("coordinates", coordinates)
                 .build();
         adresse.add("geometrie",point);
-         adresse.add("t0",t0.toString());
-         adresse.add("t1",t1.toString());        
-//        adresse.add("geometrie" , geometrieJSON(geometrie));
         
         builder.add("adresse", adresse);
         
@@ -187,17 +185,5 @@ public class Adresse
         lon = Float.parseFloat(xy[1]);
     }
     
-//     GeometrieUtil geomUtil = GeometrieUtil.getInstance();
-//    public JsonObject geometrieJSON(String geometrie){
-//        String type = geomUtil.getGeoTYPE(geometrie);
-//        JsonObjectBuilder geo = Json.createObjectBuilder()
-//         .add("type", type.toLowerCase())
-//         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
-//
-//        JsonObjectBuilder location = Json.createObjectBuilder()
-//         .add("location", geo);
-//        
-//        return location.build();
-//    } 
 
 }

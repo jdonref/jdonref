@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.json.JsonObject;
 import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.dao.VoieDAO;
 import jdonref_es_poc.entity.MetaData;
+import jdonref_es_poc.entity.Troncon;
 import jdonref_es_poc.entity.Voie;
 
 /**
@@ -21,7 +24,7 @@ public class VoieIndex {
     
     static int idVoie=0;
     static int idVoieTmp=0;
-    int paquetsBulk=1000;
+    int paquetsBulk=500;
 
     public ElasticSearchUtil getUtil() {
         return util;
@@ -62,6 +65,14 @@ public class VoieIndex {
         
         VoieDAO dao = new VoieDAO();
         ResultSet rs = dao.getAllVoiesOfDepartement(connection, dpt);
+        
+        // la liste des troncons
+        TronconIndex tIndex = new TronconIndex();
+        tIndex.setUtil(util);
+        tIndex.setConnection(connection);
+        tIndex.setVerbose(isVerbose());
+        HashMap<String, ArrayList<Troncon>> mapVoieTron = tIndex.getAllTronconsByVoieByDpt(dpt);
+
 //      creation de l'objet metaDataVoie
         MetaData metaDataVoie= new MetaData();
         metaDataVoie.setIndex(util.index);
@@ -77,6 +88,14 @@ public class VoieIndex {
                 System.out.println(i+" voies traitées");
             
             Voie v = new Voie(rs);
+            
+            // recuperer la geometrie de la voie a partir des troncons de la voie
+            ArrayList<Troncon> listTronc = mapVoieTron.get(v.idvoie);
+//            System.out.println("voieid ======"+v.idvoie);
+
+            String geometrie = tIndex.getGeometrieVoie(listTronc);
+            v.setGeometrie(geometrie);
+            
                         
 //            creation de l'objet metaDataVoie plus haut
             metaDataVoie.setId(++idVoie);
@@ -87,6 +106,7 @@ public class VoieIndex {
                 bulk="";
                 lastIdBulk=idVoie;
             }
+            
             i++;
 //            addVoie(v);
         }
@@ -136,4 +156,7 @@ public class VoieIndex {
         }
         idVoieTmp = idVoie;
     }
+
+
+    
 }

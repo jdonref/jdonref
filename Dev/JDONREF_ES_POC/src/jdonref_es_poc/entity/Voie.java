@@ -2,10 +2,17 @@ package jdonref_es_poc.entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import jdonref_es_poc.entity.GeometrieUtil;
+import jdonref_es_poc.entity.GeometrieUtil;
+import org.elasticsearch.common.mvel2.optimizers.impl.refl.nodes.ThisValueAccessor;
+import jdonref_es_poc.index.TronconIndex;
+
 
 /**
  *
@@ -31,8 +38,17 @@ public class Voie
     public int max_numero; //voi_max_numero
     public Date t0;
     public Date t1;
+    public String geometrie;
+    public String typeGeo="MULTILINESTRING";
+    
+    public void setGeometrie(String geometrie) {
+        this.geometrie = typeGeo+geometrie;
+    }
     
     public String article;
+    
+    
+    
 
     public Voie(Commune commune, String idvoie, String voi_code_fantoir, String voi_nom, String voi_nom_desab, String voi_nom_origine, String typedevoie, String voi_type_de_voie_pq, String libelle, String voi_lbl_pq, String voi_lbl_sans_articles, String voi_lbl_sans_articles_pq, String voi_mot_determinant, String voi_mot_determinant_pq, int min_numero, int max_numero, String article, Date t0, Date t1) {
         this.commune = commune;
@@ -110,6 +126,7 @@ public class Voie
         t1 = rs.getTimestamp(27);
     }
     
+
     public String[] getLignes()
     {
         String[] lignes = commune.getLignes();
@@ -183,6 +200,17 @@ public class Voie
     {
         return (typedevoie==null?"":(typedevoie+" "))+(article==null?"":(article+" "))+libelle+ " "+  commune.commune;
     }
+
+    
+    public JsonObject geometrieJSON(String geometrie){
+        GeometrieUtil geomUtil = new GeometrieUtil();
+        String type = geomUtil.getGeoTYPE(geometrie);
+        JsonObjectBuilder geo = Json.createObjectBuilder()
+         .add("type", type.toLowerCase())
+         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
+        return geo.build();
+    }
+    
     
     public JsonObject toJSONDocument()
     {
@@ -208,8 +236,9 @@ public class Voie
             builder.add("voi_lbl",libelle);
          builder.add("numero_min",min_numero);
          builder.add("numero_max",max_numero);
-         builder.add("t0" , t1.toString());
+         builder.add("t0" , t0.toString());
          builder.add("t1" , t1.toString());
+         builder.add("geometrie" , geometrieJSON(geometrie));
          
          builder.add("fullName",toString().trim());
          builder.add("fullName_sansngram",toString().trim());

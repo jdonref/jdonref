@@ -2,8 +2,6 @@ package jdonref_es_poc.entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.Date;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -28,13 +26,6 @@ public class Commune
     public Date t1;
     public String geometrie;
     
-    
-//    public Commune(String commune, String codeinsee, String codepostal, String com_code_insee_commune) {
-//        this.commune = commune;
-//        this.codeinsee = codeinsee;
-//        this.codepostal = codepostal;
-//        this.com_code_insee_commune = com_code_insee_commune;
-//    }
 
     public Commune(String codeinsee, String dpt_code_departement, String codepostal, String commune, String com_nom_desab, String com_nom_origine, String com_nom_pq, String com_code_insee_commune, Date t0, Date t1) {
         this.codeinsee = codeinsee;
@@ -49,14 +40,6 @@ public class Commune
         this.t1 = t1;
     }
 
-//    public Commune(ResultSet rs,int[] index) throws SQLException
-//    {
-//        codeinsee = rs.getString(index[0]);
-//        codepostal = rs.getString(index[1]);
-//        commune = rs.getString(index[2]);
-//        com_code_insee_commune = rs.getString(index[3]);
-//    }
-    
     
     public Commune(ResultSet rs,int[] index) throws SQLException
     {
@@ -149,19 +132,13 @@ public class Commune
     }
     
     
-    GeometrieUtil geomUtil = GeometrieUtil.getInstance();
     public JsonObject geometrieJSON(String geometrie){
-//        GeometrieUtil geomUtil = GeometrieUtil.getInstance();
-//        GeometrieUtil geomUtil = new GeometrieUtil();
+        GeometrieUtil geomUtil = new GeometrieUtil();
         String type = geomUtil.getGeoTYPE(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()
          .add("type", type.toLowerCase())
          .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
-
-        JsonObjectBuilder location = Json.createObjectBuilder()
-         .add("location", geo);
-        
-        return location.build();
+        return geo.build();
     }
     
     public JsonObject toJSONDocument()

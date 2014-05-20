@@ -76,20 +76,14 @@ public class Departement {
         return toString();
     }
     
-    GeometrieUtil geomUtil = GeometrieUtil.getInstance();
     public JsonObject geometrieJSON(String geometrie){
-//        GeometrieUtil geomUtil = GeometrieUtil.getInstance();
-//        GeometrieUtil geomUtil = new GeometrieUtil();
+        GeometrieUtil geomUtil = new GeometrieUtil();
         String type = geomUtil.getGeoTYPE(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()
          .add("type", type.toLowerCase())
          .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
-
-        JsonObjectBuilder location = Json.createObjectBuilder()
-         .add("location", geo);
-        
-        return location.build();
-    }
+        return geo.build();
+    }   
     
     public JsonObject toJSONDocument()
     {

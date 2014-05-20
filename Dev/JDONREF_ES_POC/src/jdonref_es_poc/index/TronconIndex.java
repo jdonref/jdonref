@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.json.JsonObject;
 import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.dao.TronconDAO;
@@ -52,6 +54,8 @@ ElasticSearchUtil util;
         
         util.indexResource("troncon", data.toString());
     }
+    
+    
     
     public void indexJDONREFTronconsDepartement(Voie[] voies,String dpt,String side) throws IOException
     {
@@ -202,32 +206,18 @@ ElasticSearchUtil util;
         ResultSet rs = dao.getAllTronconsDroitOfDepartment(connection,dpt);
         indexJDONREFTronconsDepartement(rs, "droits", dpt);
     }
-    
-    
-    
-
-
 
     static int idTroncon=0;
     static int idTronconTmp=0;
     int paquetsBulk=1000;
 
-
-
-    public void indexJDONREFTronconsDep(String dpt, String side) throws IOException, SQLException
+    public void indexJDONREFTronconsDep(String dpt) throws IOException, SQLException
     {
         if (isVerbose())
-            System.out.println("dpt "+dpt+" : troncons "+side);
+            System.out.println("dpt "+dpt+" : troncons ");
         
         TronconDAO dao = new TronconDAO();
-        ResultSet rs=null;
-        if (side.equals("gauche")) {
-        rs = dao.getAllTronconsDepGAUCHE(connection, dpt);    
-        }
-        if (side.equals("droit")) {
-        rs = dao.getAllTronconsDepDROIT(connection, dpt);    
-        }
-
+        ResultSet rs = dao.getAllTronconsByDep(connection, dpt);    
 //      creation de l'objet metaDataTroncon
         MetaData metaDataTroncon= new MetaData();
         metaDataTroncon.setIndex(util.index);
@@ -240,7 +230,7 @@ ElasticSearchUtil util;
             while(rs.next())
         {
             if (isVerbose() && i%1000==1)
-                System.out.println(i+" troncons "+side+" traités");
+                System.out.println(i+" troncons traités");
             
             Troncon tr = new Troncon(rs);
                         
@@ -248,7 +238,7 @@ ElasticSearchUtil util;
             metaDataTroncon.setId(++idTroncon);
             bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument().toString()+"\n";
             if((idTroncon-idTronconTmp)%paquetsBulk==0){
-                System.out.println("troncons "+side+" : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
+                System.out.println("troncons : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
                 util.indexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idTroncon;
@@ -256,17 +246,96 @@ ElasticSearchUtil util;
             i++;
         }
         if(!bulk.equals("")){
-        System.out.println("troncons "+side+" : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
+        System.out.println("troncons : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
         util.indexResourceBulk(bulk);
         }
         idTronconTmp = idTroncon;
     }
+
+    void add(HashMap<String, ArrayList<Troncon>> hashMap,String voi_id, Troncon tr )
+    {
+        ArrayList<Troncon> liste = hashMap.get(voi_id);
+        if (liste==null)
+            liste = new ArrayList<Troncon>();
+        liste.add(tr);
+        hashMap.put(voi_id, liste);
+        
+    }
     
+    public HashMap<String, ArrayList<Troncon>> getAllTronconsByVoieByDpt(String dep) throws SQLException{
+        
+        HashMap<String, ArrayList<Troncon>> hashMap = new HashMap<String, ArrayList<Troncon>>();
+
+        TronconDAO dao = new TronconDAO();
+        ResultSet rs = dao.getAllTronconsByDep(connection, dep);
+        
+        while(rs.next())
+        {
+            Troncon tr = new Troncon(rs);
+            if(!(tr.voi_id_droit==null && tr.voi_id_gauche==null)){
+                if(tr.voi_id_gauche==null)             
+                    add(hashMap,tr.voi_id_droit,tr);
+                else if(tr.voi_id_droit==null)     
+                    add(hashMap,tr.voi_id_gauche,tr);
+                else{
+                    add(hashMap,tr.voi_id_gauche,tr); 
+                    if(!tr.voi_id_droit.equals(tr.voi_id_gauche))
+                    {   
+                        add(hashMap,tr.voi_id_droit,tr);  
+                    }
+                }
+            }
+            
+        }
+
+        return hashMap;
+    }
     
+    public String getGeometrieVoie(ArrayList<Troncon> list)
+    {
+        String geovoie = "(";
+        for(Troncon tr : list){
+             geovoie += getCoorGeo(tr.geometrie)+",";
+        }
+        geovoie = geovoie.substring(0, geovoie.length()-1);
+        geovoie+=")";
+        return geovoie; 
+    }
     
-    
-    
-    
-    
+
+    public String getCoorGeo(String geometrie){
+        geometrie=geometrie.trim();
+        String type = getGeoTYPE(geometrie);
+//        if (type.equals("POINT") || type.equals("LINESTRING") || type.equals("MULTIPOINT")) {
+//            geometrie = geometrie.substring(type.length(), geometrie.length());
+//        }
+//        if (type.equals("MULTILINESTRING") || type.equals("POLYGON") || type.equals("MULTIPOLYGON")) {
+//            geometrie = geometrie.substring(type.length()+1, geometrie.length()-1);
+//        }
+        if (type.equals("LINESTRING")) {
+            geometrie = geometrie.substring(type.length(), geometrie.length());
+        }else if (type.equals("MULTILINESTRING")) {
+            geometrie = geometrie.substring(type.length()+1, geometrie.length()-1);
+        }else{
+            throw new Error("le type geometrie non valide");
+        }
+        return geometrie;
+    }
+
+        public String getGeoTYPE(String geometrie) {
+        String typeGeo = "";
+        if (geometrie.equals("") || geometrie == null) {
+            typeGeo = "";
+        } else {
+            for (int i = 0; i < geometrie.length(); i++) {
+                if (geometrie.charAt(i) == '(' && geometrie.charAt(i - 1) != '(') {
+                    return typeGeo = geometrie.substring(0, i);
+                } else {
+                    typeGeo = "";
+                }
+            }
+        }
+        return typeGeo;
+    }
     
 }

@@ -14,13 +14,13 @@ import javax.json.JsonArrayBuilder;
  */
 public class GeometrieUtil {
 
-   static GeometrieUtil instance = null; 
-   public static GeometrieUtil getInstance() {
-        if (instance == null) {
-            instance = new GeometrieUtil();
-        }
-        return instance;
-    }
+//   static GeometrieUtil instance = null; 
+//   public static GeometrieUtil getInstance() {
+//        if (instance == null) {
+//            instance = new GeometrieUtil();
+//        }
+//        return instance;
+//    }
     public GeometrieUtil() {
     }
     
@@ -53,31 +53,36 @@ public class GeometrieUtil {
         }
         return typeGeo;
     }
+
     
     //laisse uniquement un espace entre les X Y
-    public String DeleteSpace(String geometrie){
-        geometrie = geometrie.trim(); 
-        String geoWithout=" ";
-        int j=0;
-        int i=1;
-        while(i<geometrie.length()-1){
-            if(geometrie.charAt(i)==' '                  
-                    && (!Character.isDigit(geometrie.charAt(i-1))
-                    || !Character.isDigit(geometrie.charAt(i+1))))
-                if(!(Character.isDigit(geometrie.charAt(i+1))
-                && Character.isDigit(geoWithout.charAt(geoWithout.length()-1)))){
-                    
-                geoWithout+=geometrie.substring(j,i);
-                j=i+1;
-            }
-            i++;
-        }
-        geoWithout+=geometrie.substring(j,geometrie.length());
-        return geoWithout.trim();
-    }
+    //gestion des chiffres negatif à faire !!!
+//    public String DeleteSpace(String geometrie){
+//        geometrie = geometrie.trim(); 
+//        String geoWithout=" ";
+//        int j=0;
+//        int i=1;
+//        while(i<geometrie.length()-1){
+//            if(geometrie.charAt(i)==' '                  
+//                    && (!Character.isDigit(geometrie.charAt(i-1))
+//                    || !Character.isDigit(geometrie.charAt(i+1))))
+//                if(!(Character.isDigit(geometrie.charAt(i+1))
+//                && Character.isDigit(geoWithout.charAt(geoWithout.length()-1)))){
+//                    
+//                geoWithout+=geometrie.substring(j,i);
+//                j=i+1;
+//            }
+//            i++;
+//        }
+//        geoWithout+=geometrie.substring(j,geometrie.length());
+//        return geoWithout.trim();
+//    }
+    
+    
+    
 
     public JsonArray getGeoJSON(String geometrie, String type) {
-        geometrie=DeleteSpace(geometrie);
+//        geometrie=DeleteSpace(geometrie);
         
         JsonArrayBuilder coordinates = Json.createArrayBuilder();
         if (type.equals("POINT")) {
@@ -135,4 +140,6 @@ public class GeometrieUtil {
         }
         return coordinates.build();
     }
+   
+    
 }

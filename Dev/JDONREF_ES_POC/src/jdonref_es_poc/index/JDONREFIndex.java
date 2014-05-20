@@ -144,7 +144,7 @@ public class JDONREFIndex
             dptIndex.setVerbose(isVerbose());
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
-//            dptIndex.indexJDONREFDepartements();
+            dptIndex.indexJDONREFDepartements();
 //            dptIndex.indexJDONREFDepartement("01");
 //            dptIndex.indexJDONREFDepartement("02");
 //            dptIndex.indexJDONREFDepartement("03");
@@ -172,8 +172,9 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("24");
 //            dptIndex.indexJDONREFDepartement("25");      
 //            dptIndex.indexJDONREFDepartement("75");      
-            dptIndex.indexJDONREFDepartement("20_a");      
-            //AllDepVoieAdrTron(dptIndex);
+//            dptIndex.indexJDONREFDepartement("20_a");      
+
+//            AllDepVoieAdrTron(dptIndex);
 
 //            CommuneIndex cIndex = new CommuneIndex();
 //            cIndex.setVerbose(isVerbose());
@@ -192,20 +193,20 @@ public class JDONREFIndex
     // une classe DepartementDAO ...
     public void AllDepVoieAdrTron(DepartementIndex dptIndex) throws IOException, SQLException
     {
-        for(int i=1;i<10;i++)
-            dptIndex.indexJDONREFDepartement("0"+i);
-        for(int i=10;i<20;i++)
-            dptIndex.indexJDONREFDepartement(""+i);
-//        dptIndex.indexJDONREFDepartement("20");
-        dptIndex.indexJDONREFDepartement("20_a");
-        dptIndex.indexJDONREFDepartement("20_b");
-        for(int i=21;i<97;i++)
-            dptIndex.indexJDONREFDepartement(""+i);
-        for(int j=1;j<7;j++)
-            dptIndex.indexJDONREFDepartement(97+""+j);
-        dptIndex.indexJDONREFDepartement(98+""+4);
-        for(int j=6;j<9;j++)
-            dptIndex.indexJDONREFDepartement(98+""+j);
+//        for(int i=1;i<10;i++)
+//            dptIndex.indexJDONREFDepartement("0"+i);
+//        for(int i=10;i<20;i++)
+//            dptIndex.indexJDONREFDepartement(""+i);
+////        dptIndex.indexJDONREFDepartement("20");
+//        dptIndex.indexJDONREFDepartement("20_a");
+//        dptIndex.indexJDONREFDepartement("20_b");
+//        for(int i=21;i<96;i++)
+//            dptIndex.indexJDONREFDepartement(""+i);
+//        for(int j=1;j<7;j++)
+//            dptIndex.indexJDONREFDepartement(97+""+j);
+//        dptIndex.indexJDONREFDepartement(98+""+4);
+//        for(int j=6;j<9;j++)
+//            dptIndex.indexJDONREFDepartement(98+""+j);
 
     }
     
