@@ -2,7 +2,9 @@ package jdonref_es_poc.entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -16,7 +18,6 @@ public class Commune
     
     public String codeinsee;
     public String dpt_code_departement;
-    public String codepostal;
     public String commune;
     public String com_nom_desab;
     public String com_nom_origine;
@@ -25,12 +26,11 @@ public class Commune
     public Date t0;
     public Date t1;
     public String geometrie;
-    
+    public String codepostal;
 
-    public Commune(String codeinsee, String dpt_code_departement, String codepostal, String commune, String com_nom_desab, String com_nom_origine, String com_nom_pq, String com_code_insee_commune, Date t0, Date t1) {
+    public Commune(String codeinsee, String dpt_code_departement, String commune, String com_nom_desab, String com_nom_origine, String com_nom_pq, String com_code_insee_commune, Date t0, Date t1, String codepostal) {
         this.codeinsee = codeinsee;
         this.dpt_code_departement = dpt_code_departement;
-        this.codepostal = codepostal;
         this.commune = commune;
         this.com_nom_desab = com_nom_desab;
         this.com_nom_origine = com_nom_origine;
@@ -38,36 +38,38 @@ public class Commune
         this.com_code_insee_commune = com_code_insee_commune;
         this.t0 = t0;
         this.t1 = t1;
+//        this.geometrie = geometrie;
+        this.codepostal = codepostal;
     }
 
-    
     public Commune(ResultSet rs,int[] index) throws SQLException
     {
       codeinsee = rs.getString(index[0]);
       dpt_code_departement = rs.getString(index[1]);
-      codepostal = rs.getString(index[2]);
-      commune = rs.getString(index[3]);
-      com_nom_desab = rs.getString(index[4]);
-      com_nom_origine = rs.getString(index[5]);
-      com_nom_pq = rs.getString(index[6]);
-      com_code_insee_commune = rs.getString(index[7]);
-      t0 = rs.getTimestamp(index[8]);
-      t1 = rs.getTimestamp(index[9]);
-//      geometrie = rs.getString(index[10]);
+      commune = rs.getString(index[2]);
+      com_nom_desab = rs.getString(index[3]);
+      com_nom_origine = rs.getString(index[4]);
+      com_nom_pq = rs.getString(index[5]);
+      com_code_insee_commune = rs.getString(index[6]);
+      t0 = rs.getTimestamp(index[7]);
+      t1 = rs.getTimestamp(index[8]);
+//      geometrie = rs.getString(index[9]);
+      codepostal = rs.getString(index[9]);
     }
+    
     public Commune(ResultSet rs) throws SQLException
     {
       codeinsee = rs.getString(1);
       dpt_code_departement = rs.getString(2);
-      codepostal = rs.getString(3);
-      commune = rs.getString(4);
-      com_nom_desab = rs.getString(5);
-      com_nom_origine = rs.getString(6);
-      com_nom_pq = rs.getString(7);
-      com_code_insee_commune = rs.getString(8);
-      t0 = rs.getTimestamp(9);
-      t1 = rs.getTimestamp(10);
-      geometrie = rs.getString(11);
+      commune = rs.getString(3);
+      com_nom_desab = rs.getString(4);
+      com_nom_origine = rs.getString(5);
+      com_nom_pq = rs.getString(6);
+      com_code_insee_commune = rs.getString(7);
+      t0 = rs.getTimestamp(8);
+      t1 = rs.getTimestamp(9);
+      geometrie = rs.getString(10);
+      codepostal = rs.getString(11);
     }
 
     public String[] getLignes()
@@ -87,8 +89,6 @@ public class Commune
         return dpt_code_departement;
 //        return codepostal.substring(0,2);
     }
-    
-
     
     public boolean equals(Commune commune)
     {
@@ -130,40 +130,47 @@ public class Commune
     {
         return commune;
     }
-    
-    
+
     public JsonObject geometrieJSON(String geometrie){
-        GeometrieUtil geomUtil = new GeometrieUtil();
-        String type = geomUtil.getGeoTYPE(geometrie);
-        JsonObjectBuilder geo = Json.createObjectBuilder()
-         .add("type", type.toLowerCase())
-         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
+        GeomUtil geomUtil = new GeomUtil();
+        HashMap<String,String> hash = geomUtil.getHash(geometrie);
+        JsonObjectBuilder geo = Json.createObjectBuilder()  
+                .add("type", hash.get("type"))
+                .add("coordinates", geomUtil.getGeoJSON(hash.get("coordinates"), hash.get("type")));
         return geo.build();
-    }
+    }    
+    
+    public String getDatForm(Date d){
+        SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return formater.format(d);
+    }    
     
     public JsonObject toJSONDocument()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
-//                .add("toString", toString());
-//         builder.add("fullName",toFullString());
-         builder.add("code_insee",codeinsee);
-//         builder.add("code_departement",getCodeDepartement());
-         builder.add("code_departement",dpt_code_departement);
-         builder.add("code_postal",codepostal);
-         String code_arrondissement = getCodeArrondissement();
-          if (code_arrondissement!=null)
-            builder.add("code_arrondissement",code_arrondissement);
-         builder.add("commune",commune);
-         if (com_code_insee_commune!=null)
-         builder.add("code_insee_commune",com_code_insee_commune);
-         builder.add("t0",t0.toString());
-         builder.add("t1",t1.toString());
-         builder.add("geometrie" , geometrieJSON(geometrie));
          
-         builder.add("fullName",toString().trim());
-         builder.add("fullName_sansngram",toString().trim());
-         builder.add("ligne6",toLigne6().trim());
-         builder.add("ligne7",toLigne7().trim());
+         JsonObjectBuilder commmune = Json.createObjectBuilder();
+
+         commmune.add("code_insee",codeinsee);
+//         commmune.add("code_departement",getCodeDepartement());
+         commmune.add("code_departement",dpt_code_departement);
+         commmune.add("code_pays","FR1");
+         commmune.add("commune",commune);
+         String code_arrondissement = getCodeArrondissement();
+         if (code_arrondissement!=null)
+            commmune.add("code_arrondissement",code_arrondissement);         
+         commmune.add("code_postal",codepostal);
+         commmune.add("pays","FRANCE");
+         commmune.add("t0" ,getDatForm(t0));
+         commmune.add("t1",getDatForm(t1));
+         commmune.add("ligne4","ligne 4");
+         commmune.add("ligne5","ligne 5");
+         commmune.add("ligne6",toLigne6().trim());
+         commmune.add("ligne7",toLigne7().trim());
+         commmune.add("geometrie" , geometrieJSON(geometrie));         
+         commmune.add("fullName",toString().trim());
+
+         builder.add("adresse", commmune);
          
         return builder.build();
     }

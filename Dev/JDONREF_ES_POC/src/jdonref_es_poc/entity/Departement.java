@@ -2,11 +2,12 @@ package jdonref_es_poc.entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
 
 /**
  *
@@ -19,6 +20,7 @@ public class Departement {
     public Date t0;
     public Date t1;
     public String geometrie;
+    
 
     public Departement() {
     }
@@ -33,9 +35,9 @@ public class Departement {
         this.dpt_referentiel = dpt_referentiel;
         this.t0 = t0;
         this.t1 = t1;
-        
+//        this.geometrie = geometrie;
     }
-    
+
     public Departement(ResultSet rs,int[] index) throws SQLException
     {
         code_departement = rs.getString(index[0]);
@@ -43,7 +45,7 @@ public class Departement {
         dpt_referentiel = rs.getString(index[2]);
         t0 = rs.getTimestamp(index[3]);
         t1 = rs.getTimestamp(index[4]);
-        geometrie = rs.getString(index[5]);
+//        geometrie = rs.getString(index[5]);
     }
     public Departement(ResultSet rs) throws SQLException
     {
@@ -53,6 +55,7 @@ public class Departement {
         t0 = rs.getTimestamp(4);
         t1 = rs.getTimestamp(5);
         geometrie = rs.getString(6);
+
     }
 
     public String toLigne6()
@@ -77,37 +80,40 @@ public class Departement {
     }
     
     public JsonObject geometrieJSON(String geometrie){
-        GeometrieUtil geomUtil = new GeometrieUtil();
-        String type = geomUtil.getGeoTYPE(geometrie);
-        JsonObjectBuilder geo = Json.createObjectBuilder()
-         .add("type", type.toLowerCase())
-         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
+        GeomUtil geomUtil = new GeomUtil();
+        HashMap<String,String> hash = geomUtil.getHash(geometrie);
+        JsonObjectBuilder geo = Json.createObjectBuilder()  
+                .add("type", hash.get("type"))
+                .add("coordinates", geomUtil.getGeoJSON(hash.get("coordinates"), hash.get("type")));
         return geo.build();
-    }   
-    
+    }
+  
+    public String getDatForm(Date d){
+        SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        SimpleDateFormat formater = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        return formater.format(d);
+    }
+
+
     public JsonObject toJSONDocument()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
-//                .add("toString", toString());
+        
+         JsonObjectBuilder departement = Json.createObjectBuilder();
          
-//         builder.add("fullName",code_departement);
-         
-         builder.add("code_departement", code_departement);
-         builder.add("dpt_referentiel", dpt_referentiel);
-         builder.add("t0" , t0.toString());
-         builder.add("t1" , t1.toString());
-//         builder.add("t0" , t0.getTime());
-//         builder.add("t1" , t1.getTime());
-         builder.add("geometrie" , geometrieJSON(geometrie));
-         
-         builder.add("fullName",toString());
-         builder.add("fullName_sansngram",toString().trim());
-         builder.add("ligne6",toLigne6());
-         builder.add("ligne7",toLigne7());
-         
-         return builder.build();
+         departement.add("code_departement", code_departement);
+         departement.add("code_pays","FR1");
+         departement.add("pays","FRANCE");
+//         departement.add("dpt_referentiel", dpt_referentiel);
+         departement.add("t0" , getDatForm(t0));
+         departement.add("t1" , getDatForm(t1));
+         departement.add("ligne6",toLigne6());
+         departement.add("ligne7",toLigne7());       
+         departement.add("geometrie" , geometrieJSON(geometrie));
+         departement.add("fullName",toString());
+//         departement.add("fullName_sansngram",toString().trim());
+         builder.add("adresse", departement);         
+         return builder.build();   
     }
-    
-    
-    
+
 }

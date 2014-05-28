@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.Date;
 import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.entity.Commune;
 import jdonref_es_poc.entity.Departement;
@@ -164,7 +163,7 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("17");
 //            dptIndex.indexJDONREFDepartement("18");
 //            dptIndex.indexJDONREFDepartement("19");
-//            dptIndex.indexJDONREFDepartement("20_a");
+            dptIndex.indexJDONREFDepartement("20_a");
 //            dptIndex.indexJDONREFDepartement("20_b");
 //            dptIndex.indexJDONREFDepartement("21");
 //            dptIndex.indexJDONREFDepartement("22");
@@ -172,7 +171,7 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("24");
 //            dptIndex.indexJDONREFDepartement("25");      
 //            dptIndex.indexJDONREFDepartement("75");      
-//            dptIndex.indexJDONREFDepartement("20_a");      
+    
 
 //            AllDepVoieAdrTron(dptIndex);
 

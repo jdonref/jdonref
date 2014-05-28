@@ -24,6 +24,11 @@ public class TronconIndex
 ElasticSearchUtil util;
     Connection connection;
 
+    static int idTroncon=0;
+    static int idTronconTmp=0;
+    int paquetsBulk=500;
+    
+    
     public ElasticSearchUtil getUtil() {
         return util;
     }
@@ -207,17 +212,14 @@ ElasticSearchUtil util;
         indexJDONREFTronconsDepartement(rs, "droits", dpt);
     }
 
-    static int idTroncon=0;
-    static int idTronconTmp=0;
-    int paquetsBulk=1000;
-
-    public void indexJDONREFTronconsDep(String dpt) throws IOException, SQLException
+    public void indexJDONREFTronconsDepD(String dpt) throws IOException, SQLException
     {
         if (isVerbose())
-            System.out.println("dpt "+dpt+" : troncons ");
+            System.out.println("dpt "+dpt+" : troncons droit");
         
         TronconDAO dao = new TronconDAO();
-        ResultSet rs = dao.getAllTronconsByDep(connection, dpt);    
+//        ResultSet rs = dao.getAllTronconsByDep(connection, dpt);    
+        ResultSet rs = dao.getAllTronconsByDepD(connection, dpt);    
 //      creation de l'objet metaDataTroncon
         MetaData metaDataTroncon= new MetaData();
         metaDataTroncon.setIndex(util.index);
@@ -230,15 +232,15 @@ ElasticSearchUtil util;
             while(rs.next())
         {
             if (isVerbose() && i%1000==1)
-                System.out.println(i+" troncons traités");
+                System.out.println(i+" troncons droit traités");
             
-            Troncon tr = new Troncon(rs);
+            Troncon tr = new Troncon(rs,0);
                         
 //            creation de l'objet metaDataTroncon plus haut
             metaDataTroncon.setId(++idTroncon);
             bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument().toString()+"\n";
             if((idTroncon-idTronconTmp)%paquetsBulk==0){
-                System.out.println("troncons : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
+                System.out.println("troncons droit : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
                 util.indexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idTroncon;
@@ -246,7 +248,48 @@ ElasticSearchUtil util;
             i++;
         }
         if(!bulk.equals("")){
-        System.out.println("troncons : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
+        System.out.println("troncons droit : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
+        util.indexResourceBulk(bulk);
+        }
+        idTronconTmp = idTroncon;
+    }
+    public void indexJDONREFTronconsDepG(String dpt) throws IOException, SQLException
+    {
+        if (isVerbose())
+            System.out.println("dpt "+dpt+" : troncons gauche");
+        
+        TronconDAO dao = new TronconDAO();
+//        ResultSet rs = dao.getAllTronconsByDep(connection, dpt);    
+        ResultSet rs = dao.getAllTronconsByDepG(connection, dpt);    
+//      creation de l'objet metaDataTroncon
+        MetaData metaDataTroncon= new MetaData();
+        metaDataTroncon.setIndex(util.index);
+        metaDataTroncon.setType("troncon");
+              
+        String bulk ="";
+        int i =0;
+        int lastIdBulk=idTronconTmp;
+
+            while(rs.next())
+        {
+            if (isVerbose() && i%1000==1)
+                System.out.println(i+" troncons gauche traités");
+            
+            Troncon tr = new Troncon(rs,0);
+                        
+//            creation de l'objet metaDataTroncon plus haut
+            metaDataTroncon.setId(++idTroncon);
+            bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument().toString()+"\n";
+            if((idTroncon-idTronconTmp)%paquetsBulk==0){
+                System.out.println("troncons gauche : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
+                util.indexResourceBulk(bulk);
+                bulk="";
+                lastIdBulk=idTroncon;
+            }
+            i++;
+        }
+        if(!bulk.equals("")){
+        System.out.println("troncons gauche : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
         util.indexResourceBulk(bulk);
         }
         idTronconTmp = idTroncon;
@@ -285,7 +328,6 @@ ElasticSearchUtil util;
                     }
                 }
             }
-            
         }
 
         return hashMap;
@@ -293,49 +335,38 @@ ElasticSearchUtil util;
     
     public String getGeometrieVoie(ArrayList<Troncon> list)
     {
-        String geovoie = "(";
+        String geovoie = "[";
         for(Troncon tr : list){
-             geovoie += getCoorGeo(tr.geometrie)+",";
+             geovoie += getGeoCoor(tr.geometrie)+",";
         }
         geovoie = geovoie.substring(0, geovoie.length()-1);
-        geovoie+=")";
+        geovoie+="]";
         return geovoie; 
     }
     
-
-    public String getCoorGeo(String geometrie){
-        geometrie=geometrie.trim();
-        String type = getGeoTYPE(geometrie);
-//        if (type.equals("POINT") || type.equals("LINESTRING") || type.equals("MULTIPOINT")) {
-//            geometrie = geometrie.substring(type.length(), geometrie.length());
-//        }
-//        if (type.equals("MULTILINESTRING") || type.equals("POLYGON") || type.equals("MULTIPOLYGON")) {
-//            geometrie = geometrie.substring(type.length()+1, geometrie.length()-1);
-//        }
-        if (type.equals("LINESTRING")) {
-            geometrie = geometrie.substring(type.length(), geometrie.length());
-        }else if (type.equals("MULTILINESTRING")) {
-            geometrie = geometrie.substring(type.length()+1, geometrie.length()-1);
-        }else{
-            throw new Error("le type geometrie non valide");
-        }
-        return geometrie;
-    }
-
-        public String getGeoTYPE(String geometrie) {
-        String typeGeo = "";
-        if (geometrie.equals("") || geometrie == null) {
-            typeGeo = "";
-        } else {
-            for (int i = 0; i < geometrie.length(); i++) {
-                if (geometrie.charAt(i) == '(' && geometrie.charAt(i - 1) != '(') {
-                    return typeGeo = geometrie.substring(0, i);
-                } else {
-                    typeGeo = "";
-                }
-            }
-        }
-        return typeGeo;
+    public HashMap<String, String> getHash(String geometrie) {
+        geometrie = geometrie.replaceAll("\"", "");
+        geometrie = geometrie.substring(1, geometrie.length() - 1);
+        String[] geo1 = geometrie.split(":");
+        String[] geo2 = geo1[1].split(",");
+        HashMap<String, String> hash = new HashMap<String, String>();
+        hash.put(geo1[0], geo2[0].toLowerCase());
+        hash.put(geo2[1], geo1[2]);
+        return hash;
     }
     
+    public String getGeoCoor(String geometrie) {
+        String type = getHash(geometrie).get("type");
+        String coor;
+        if (type.equals("linestring")) {
+            coor = getHash(geometrie).get("coordinates");
+        }else if (type.equals("multilinestring")) {
+            coor = getHash(geometrie).get("coordinates");
+            coor = coor.substring(1, coor.length()-1);
+        }else{
+            throw new Error("le type geometrie doit etre soit linestring soit multilinestring");
+        }
+        return coor;
+    }
+
 }

@@ -37,7 +37,6 @@ public class AdresseDAO
         String sql = "SELECT " +
                 "com_communes.com_code_insee," +            // 1
                 "com_communes.dpt_code_departement," +      // 2
-                "cdp_code_postal," +                        // 3
                 "com_nom," +                                // 4
                 "com_nom_desab," +                          // 5
                 "com_nom_origine," +                        // 6
@@ -50,6 +49,7 @@ public class AdresseDAO
                 "voi_nom," +                                // 13
                 "voi_nom_desab," +                          // 14
                 "voi_nom_origine," +                        // 15
+                "cdp_code_postal," +                        // 3
                 "voi_type_de_voie," +                       // 16
                 "voi_type_de_voie_pq," +                    // 17
                 "voi_lbl," +                                // 18
@@ -67,7 +67,7 @@ public class AdresseDAO
                 "adr_numero, " +                            // 30
                 "adr_adresses_"+dpt+".t0, " +               // 31
                 "adr_adresses_"+dpt+".t1, " +               // 32 
-                "st_astext(st_transform(adr_adresses_"+dpt+".geometrie,4326)) "+ // 33
+                "st_AsGeoJSON(st_transform(adr_adresses_"+dpt+".geometrie,4326)) "+ // 33
                 "FROM adr_adresses_"+dpt+", voi_voies_"+dpt+", com_communes "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee and " +
                 "adr_adresses_"+dpt+".voi_id = voi_voies_"+dpt+".voi_id";

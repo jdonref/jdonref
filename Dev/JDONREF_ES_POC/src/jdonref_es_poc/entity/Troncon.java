@@ -8,22 +8,21 @@ package jdonref_es_poc.entity;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import jdonref_es_poc.dao.TronconDAO;
 
 /**
  *
  * @author akchana
  */
 
-
 public class Troncon {
-  
+    
+  public Voie voie;
   public String tro_id;
   public String voi_id_droit;
   public String voi_id_gauche;
@@ -36,11 +35,16 @@ public class Troncon {
   public String tro_rep_fin_droit;
   public String tro_rep_fin_gauche;
   public String tro_typ_adr;
-  
   public Date t0;
   public Date t1;
   public String geometrie;
 
+  public String voi_id;
+  public int tro_numero_debut;
+  public int tro_numero_fin;
+  public String tro_rep_debut;
+  public String tro_rep_fin;
+  
     public Troncon() {
     }
   
@@ -65,36 +69,86 @@ public class Troncon {
         this.geometrie = rs.getString(15);
         
     }
-
+    
+    public Troncon(ResultSet rs, int test) throws SQLException
+    {
+        voie = new Voie(rs);    
+        this.tro_id = rs.getString(28);
+        this.voi_id_droit = rs.getString(29);
+        this.tro_numero_debut_droit = rs.getInt(30);
+        this.tro_numero_fin_droit = rs.getInt(31);
+        this.tro_rep_debut_droit = rs.getString(32);
+        this.tro_rep_fin_droit = rs.getString(33);
+        this.tro_typ_adr = rs.getString(34);
+        this.t0 = rs.getTimestamp(35);
+        this.t1 = rs.getTimestamp(36);
+        this.geometrie = rs.getString(37);
+        
+    }
+    
+    public String toLigne7()
+    {
+        return "FRANCE";
+    }
+    
+    public String toString()
+    {
+        String arrondissement = voie.commune.getCodeArrondissement();
+         return (voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle+ " "+ voie.commune.codepostal+ " "+ voie.commune.commune+(arrondissement==null?"":(" "+arrondissement));
+    }
     
     public JsonObject geometrieJSON(String geometrie){
-        GeometrieUtil geomUtil = new GeometrieUtil();
-        String type = geomUtil.getGeoTYPE(geometrie);
-        JsonObjectBuilder geo = Json.createObjectBuilder()
-         .add("type", type.toLowerCase())
-         .add("coordinates", geomUtil.getGeoJSON(geometrie, type));
+        GeomUtil geomUtil = new GeomUtil();
+        HashMap<String,String> hash = geomUtil.getHash(geometrie);
+        JsonObjectBuilder geo = Json.createObjectBuilder()  
+                .add("type", hash.get("type"))
+                .add("coordinates", geomUtil.getGeoJSON(hash.get("coordinates"), hash.get("type")));
         return geo.build();
-    }
+    }       
+    
+    public String getDatForm(Date d){
+        SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return formater.format(d);
+    }    
     
     public JsonObject toJSONDocument()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
+         
+         JsonObjectBuilder troncon = Json.createObjectBuilder();
 //                .add("toString", toString());
          
-         builder.add("tro_id", tro_id);
-         if(voi_id_droit!=null)
-         builder.add("voi_id_droit", voi_id_droit);
-         if(voi_id_gauche!=null)
-         builder.add("voi_id_gauche", voi_id_gauche);    
-         builder.add("t0" , t0.toString());
-         builder.add("t1" , t1.toString());
-//         builder.add("t0" , t0.getTime());
-//         builder.add("t1" , t1.getTime());
-         builder.add("geometrie" , geometrieJSON(geometrie));
+         troncon.add("tro_id", tro_id);
+         if(voi_id!=null)
+         troncon.add("voi_id", voi_id);
+         troncon.add("code_insee", voie.commune.codeinsee);
+         troncon.add("code_departement", voie.commune.dpt_code_departement);
+         troncon.add("code_pays", "FR1");
+//         troncon.add("numero_debut", tro_numero_debut);
+//         troncon.add("numero_fin", tro_numero_fin);
+//         troncon.add("repetition_debut", tro_rep_debut);
+//         troncon.add("repetition_fin", tro_rep_fin);
+         troncon.add("typedevoie", voie.typedevoie);
+         troncon.add("article", voie.article);
+         troncon.add("libelle", voie.libelle);
+         troncon.add("commune", voie.commune.commune);
+         troncon.add("code_postal", voie.cdp_code_postal);
+         String code_arrondissement = voie.commune.getCodeArrondissement();
+         if (code_arrondissement!=null)
+            troncon.add("code_arrondissement",code_arrondissement);
+         troncon.add("pays", "FRANCE");
+         troncon.add("t0" , getDatForm(t0));
+         troncon.add("t1" , getDatForm(t1));
+         troncon.add("ligne4" , "ligne4");
+         troncon.add("ligne5" , "ligne5");
+         troncon.add("ligne6" , "ligne6");
+         troncon.add("ligne7" , toLigne7().trim());
+         troncon.add("geometrie" , geometrieJSON(geometrie));
          
-//         builder.add("fullName",toString());
-//         builder.add("fullName_sansngram",toString().trim());
+         troncon.add("fullName",toString().trim());
+//         troncon.add("fullName_sansngram",toString().trim());
 
+         builder.add("adresse", troncon);
          
          return builder.build();
     }

@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
 import javax.json.JsonObject;
 import jdonref_es_poc.dao.DepartementDAO;
 import jdonref_es_poc.entity.Departement;
 import jdonref_es_poc.entity.MetaData;
 import jdonref_es_poc.entity.Voie;
+
 
 /**
  *
@@ -23,7 +23,7 @@ public class DepartementIndex
     
     static int idDep=0;
     static int idDepTmp=0;
-    int paquetsBulk=10;
+    int paquetsBulk=30;
     
     public ElasticSearchUtil getUtil() {
         return util;
@@ -53,7 +53,6 @@ public class DepartementIndex
     public void addDepartment(Departement departement) throws IOException
     {
         JsonObject data = departement.toJSONDocument();
-        
         util.indexResource("departement", data.toString());
     }
     
@@ -178,21 +177,22 @@ public class DepartementIndex
         vIndex.setConnection(connection);
         vIndex.setVerbose(isVerbose());
         vIndex.indexJDONREFVoiesDepartement(dpt);
-//        
-//        AdresseIndex adrIndex = new AdresseIndex();
-//        adrIndex.setUtil(util);
-//        adrIndex.setConnection(connection);
-//        adrIndex.setVerbose(isVerbose());
-//        adrIndex.indexJDONREFAdressesDepartement(dpt);
         
-//        TronconIndex tIndex = new TronconIndex();
-//        tIndex.setUtil(util);
-//        tIndex.setConnection(connection);
-//        tIndex.setVerbose(isVerbose());
+        AdresseIndex adrIndex = new AdresseIndex();
+        adrIndex.setUtil(util);
+        adrIndex.setConnection(connection);
+        adrIndex.setVerbose(isVerbose());
+        adrIndex.indexJDONREFAdressesDepartement(dpt);
+        
+        TronconIndex tIndex = new TronconIndex();
+        tIndex.setUtil(util);
+        tIndex.setConnection(connection);
+        tIndex.setVerbose(isVerbose());
+        tIndex.indexJDONREFTronconsDepD(dpt);
+        tIndex.indexJDONREFTronconsDepG(dpt);
+
 //        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
 //        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
-//        
-//         tIndex.indexJDONREFTronconsDep(dpt);
          
     } 
     

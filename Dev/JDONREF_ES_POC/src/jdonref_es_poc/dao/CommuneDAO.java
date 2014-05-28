@@ -24,7 +24,18 @@ public class CommuneDAO
      */
     public ResultSet getAllCommunes(Connection connection) throws SQLException
     {
-        String sql="SELECT com_communes.com_code_insee,com_communes.dpt_code_departement,cdp_code_postal,com_nom,com_nom_desab,com_nom_origine,com_nom_pq,com_code_insee_commune,com_communes.t0,com_communes.t1,st_astext(geometrie) " +
+        String sql="SELECT " +
+                "com_communes.com_code_insee," +            //1
+                "com_communes.dpt_code_departement," +      //2
+                "com_nom," +                                //3
+                "com_nom_desab," +                          //4
+                "com_nom_origine," +                        //5
+                "com_nom_pq," +                             //6
+                "com_code_insee_commune," +                 //7
+                "com_communes.t0," +                        //8
+                "com_communes.t1," +                        //9
+                "st_AsGeoJSON(st_transform(geometrie,4326))," +    //10
+                "cdp_code_postal " +                        //11
                 "FROM com_communes, cdp_codes_postaux " +
                 "WHERE com_communes.com_code_insee = cdp_codes_postaux.com_code_insee";
           

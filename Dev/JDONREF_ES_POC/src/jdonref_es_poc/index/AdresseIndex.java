@@ -20,7 +20,7 @@ public class AdresseIndex {
 
     static int idAdresse=0;
     static int idAdresseTmp=0;
-    int paquetsBulk=1000;
+    int paquetsBulk=500;
 
     
     public ElasticSearchUtil getUtil() {
