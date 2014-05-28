@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Calendar;
-import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.entity.Commune;
 import jdonref_es_poc.entity.Departement;
 import jdonref_es_poc.entity.Voie;
@@ -163,7 +162,7 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("17");
 //            dptIndex.indexJDONREFDepartement("18");
 //            dptIndex.indexJDONREFDepartement("19");
-            dptIndex.indexJDONREFDepartement("20_a");
+//            dptIndex.indexJDONREFDepartement("20_a");
 //            dptIndex.indexJDONREFDepartement("20_b");
 //            dptIndex.indexJDONREFDepartement("21");
 //            dptIndex.indexJDONREFDepartement("22");
@@ -175,11 +174,11 @@ public class JDONREFIndex
 
 //            AllDepVoieAdrTron(dptIndex);
 
-//            CommuneIndex cIndex = new CommuneIndex();
-//            cIndex.setVerbose(isVerbose());
-//            cIndex.setConnection(connection);
-//            cIndex.setUtil(util);
-//            cIndex.indexJDONREFCommune();
+            CommuneIndex cIndex = new CommuneIndex();
+            cIndex.setVerbose(isVerbose());
+            cIndex.setConnection(connection);
+            cIndex.setUtil(util);
+            cIndex.indexJDONREFCommune();
         }
         
         long end = Calendar.getInstance().getTimeInMillis();

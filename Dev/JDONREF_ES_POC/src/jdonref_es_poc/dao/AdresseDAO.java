@@ -69,10 +69,10 @@ public class AdresseDAO
                 "adr_adresses_"+dpt+".t1, " +               // 32 
                 "st_AsGeoJSON(st_transform(adr_adresses_"+dpt+".geometrie,4326)) "+ // 33
                 "FROM adr_adresses_"+dpt+", voi_voies_"+dpt+", com_communes "+
-                "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee and " +
-                "adr_adresses_"+dpt+".voi_id = voi_voies_"+dpt+".voi_id";
+                "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee " +
+                "and adr_adresses_"+dpt+".voi_id = voi_voies_"+dpt+".voi_id";
+                
 
-        
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         

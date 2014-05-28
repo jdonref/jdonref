@@ -35,7 +35,8 @@ public class CommuneDAO
                 "com_communes.t0," +                        //8
                 "com_communes.t1," +                        //9
                 "st_AsGeoJSON(st_transform(geometrie,4326))," +    //10
-                "cdp_code_postal " +                        //11
+                "cdp_code_postal, " +                        //11
+                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) "+ //12
                 "FROM com_communes, cdp_codes_postaux " +
                 "WHERE com_communes.com_code_insee = cdp_codes_postaux.com_code_insee";
           

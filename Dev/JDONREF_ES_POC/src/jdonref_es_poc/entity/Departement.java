@@ -20,6 +20,7 @@ public class Departement {
     public Date t0;
     public Date t1;
     public String geometrie;
+    public String centroide;
     
 
     public Departement() {
@@ -55,6 +56,7 @@ public class Departement {
         t0 = rs.getTimestamp(4);
         t1 = rs.getTimestamp(5);
         geometrie = rs.getString(6);
+        centroide = rs.getString(7);
 
     }
 
@@ -81,13 +83,21 @@ public class Departement {
     
     public JsonObject geometrieJSON(String geometrie){
         GeomUtil geomUtil = new GeomUtil();
-        HashMap<String,String> hash = geomUtil.getHash(geometrie);
+        HashMap<String,String> hash = geomUtil.toHashGeo(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()  
                 .add("type", hash.get("type"))
-                .add("coordinates", geomUtil.getGeoJSON(hash.get("coordinates"), hash.get("type")));
+                .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }
-  
+    
+    public JsonObject centroideJSON(String centroide){
+        GeomUtil geomUtil = new GeomUtil();
+        HashMap<String,String> hash = geomUtil.toHashGeo(centroide);
+        JsonObjectBuilder geo = Json.createObjectBuilder()  
+                .add("centroide", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+        return geo.build();
+    }
+
     public String getDatForm(Date d){
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //        SimpleDateFormat formater = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
@@ -108,7 +118,8 @@ public class Departement {
          departement.add("t0" , getDatForm(t0));
          departement.add("t1" , getDatForm(t1));
          departement.add("ligne6",toLigne6());
-         departement.add("ligne7",toLigne7());       
+         departement.add("ligne7",toLigne7());  
+         departement.add("pin" , centroideJSON(centroide));
          departement.add("geometrie" , geometrieJSON(geometrie));
          departement.add("fullName",toString());
 //         departement.add("fullName_sansngram",toString().trim());

@@ -27,6 +27,7 @@ public class Commune
     public Date t1;
     public String geometrie;
     public String codepostal;
+    public String centroide;
 
     public Commune(String codeinsee, String dpt_code_departement, String commune, String com_nom_desab, String com_nom_origine, String com_nom_pq, String com_code_insee_commune, Date t0, Date t1, String codepostal) {
         this.codeinsee = codeinsee;
@@ -70,6 +71,7 @@ public class Commune
       t1 = rs.getTimestamp(9);
       geometrie = rs.getString(10);
       codepostal = rs.getString(11);
+      centroide = rs.getString(12);
     }
 
     public String[] getLignes()
@@ -133,12 +135,20 @@ public class Commune
 
     public JsonObject geometrieJSON(String geometrie){
         GeomUtil geomUtil = new GeomUtil();
-        HashMap<String,String> hash = geomUtil.getHash(geometrie);
+        HashMap<String,String> hash = geomUtil.toHashGeo(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()  
                 .add("type", hash.get("type"))
-                .add("coordinates", geomUtil.getGeoJSON(hash.get("coordinates"), hash.get("type")));
+                .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }    
+
+    public JsonObject centroideJSON(String centroide){
+        GeomUtil geomUtil = new GeomUtil();
+        HashMap<String,String> hash = geomUtil.toHashGeo(centroide);
+        JsonObjectBuilder geo = Json.createObjectBuilder()  
+                .add("centroide", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+        return geo.build();
+    }
     
     public String getDatForm(Date d){
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -167,6 +177,7 @@ public class Commune
          commmune.add("ligne5","ligne 5");
          commmune.add("ligne6",toLigne6().trim());
          commmune.add("ligne7",toLigne7().trim());
+         commmune.add("pin" , centroideJSON(centroide)); 
          commmune.add("geometrie" , geometrieJSON(geometrie));         
          commmune.add("fullName",toString().trim());
 

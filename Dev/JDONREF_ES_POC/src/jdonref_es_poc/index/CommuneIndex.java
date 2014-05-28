@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.json.JsonObject;
-import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.dao.CommuneDAO;
 import jdonref_es_poc.entity.Commune;
 import jdonref_es_poc.entity.MetaData;

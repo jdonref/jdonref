@@ -2,7 +2,8 @@
     "pays": {
        "properties" : {
             "adresse": {
-                        "type" : "adresse",
+                        "type" : "object",
+//                        "type" : "adresse",
                         "path" : "just_name",
                         "properties": {
                             "code_pays" : { "type" : "string" , "store" : true},
@@ -10,6 +11,7 @@
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "ligne7" : { "type" : "string", "store": true, "index":"no"},
+//                            "pin" : { "properties": { "centroide" : {"type" : "geo_point"}}},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
                             "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
                         }

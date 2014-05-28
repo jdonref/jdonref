@@ -24,7 +24,8 @@ public class DepartementDAO
                 "dpt_referentiel, " +       //3
                 "t0, " +                    //4
                 "t1, " +                    //5
-                "st_AsGeoJSON(st_transform(geometrie,4326))" +    //6
+                "st_AsGeoJSON(st_transform(geometrie,4326))," + //6
+                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) " +    //7
                     "FROM dpt_departements ";
 
         PreparedStatement ps = connection.prepareStatement(sql);

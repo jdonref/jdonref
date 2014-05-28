@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.JsonObject;
-import jdonref_es_poc.index.ElasticSearchUtil;
 import jdonref_es_poc.dao.VoieDAO;
 import jdonref_es_poc.entity.MetaData;
 import jdonref_es_poc.entity.Troncon;

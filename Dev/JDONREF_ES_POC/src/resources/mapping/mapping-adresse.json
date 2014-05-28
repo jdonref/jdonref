@@ -2,7 +2,8 @@
      "adresse": {
         "properties" : {
             "adresse": {
-                        "type" : "adresse",
+                        "type" : "object",
+//                        "type" : "adresse",
                         "path" : "just_name",
                         "properties": {
                             "adr_id" : { "type" : "string", "store" : true},
@@ -30,6 +31,7 @@
                             "ligne5" : { "type" : "string", "store": true, "index": "no"},
                             "ligne6" : { "type" : "string", "store": true, "index": "no"},
                             "ligne7" : { "type" : "string", "store": true, "index": "no"},
+                            "pin" : { "properties": { "centroide" : {"type" : "geo_point"}}},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
                             "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
                         }

@@ -195,10 +195,10 @@ public class Voie
 
     public JsonObject geometrieJSON(String geometrie){
         GeomUtil geomUtil = new GeomUtil();
-        HashMap<String,String> hash = geomUtil.getHash(geometrie);
+        HashMap<String,String> hash = geomUtil.toHashGeo(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()  
                 .add("type", hash.get("type"))
-                .add("coordinates", geomUtil.getGeoJSON(hash.get("coordinates"), hash.get("type")));
+                .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }       
     

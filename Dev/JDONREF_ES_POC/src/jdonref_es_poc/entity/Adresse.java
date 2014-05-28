@@ -120,12 +120,20 @@ public class Adresse
     
     public JsonObject geometrieJSON(String geometrie){
         GeomUtil geomUtil = new GeomUtil();
-        HashMap<String,String> hash = geomUtil.getHash(geometrie);
+        HashMap<String,String> hash = geomUtil.toHashGeo(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()  
                 .add("type", hash.get("type"))
-                .add("coordinates", geomUtil.getGeoJSON(hash.get("coordinates"), hash.get("type")));
+                .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }        
+    
+    public JsonObject centroideJSON(String centroide){
+        GeomUtil geomUtil = new GeomUtil();
+        HashMap<String,String> hash = geomUtil.toHashGeo(centroide);
+        JsonObjectBuilder geo = Json.createObjectBuilder()  
+                .add("centroide", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+        return geo.build();
+    }
     
     public String getDatForm(Date d){
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -136,34 +144,43 @@ public class Adresse
     {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         
-        JsonObjectBuilder adresse = Json.createObjectBuilder()
-                .add("code_insee",voie.commune.codeinsee)
-                .add("code_departement",voie.commune.getCodeDepartement())
-                .add("code_postal",voie.commune.codepostal);
+        JsonObjectBuilder adresse = Json.createObjectBuilder();
         
+        adresse.add("adr_id",idadresse);
+//        adresse.add("tro_id",troncon.tro_id);
+        adresse.add("voi_id",voie.idvoie);
+        adresse.add("code_insee",voie.commune.codeinsee);
+        if (voie.commune.com_code_insee_commune!=null)
+            adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
+        adresse.add("code_departement",voie.commune.getCodeDepartement());
+        adresse.add("code_pays","FR1");
+        if (numero!=null)
+            adresse.add("numero",numero); // need a boost ?
+        if (repetition!=null)
+            adresse.add("repetition",repetition); 
+        adresse.add("type_de_voie",voie.typedevoie);
+        adresse.add("article",voie.article);
+        adresse.add("libelle",voie.libelle);
+        adresse.add("commune",voie.commune.commune);
         String code_arrondissement = voie.commune.getCodeArrondissement();
         if (code_arrondissement!=null)
             adresse.add("code_arrondissement",code_arrondissement);
-        adresse.add("commune",voie.commune.commune);
-        if (voie.commune.com_code_insee_commune!=null)
-            adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
-        adresse.add("type_de_voie",voie.typedevoie);
-        adresse.add("libelle",voie.libelle);
-        adresse.add("voi_id",voie.idvoie);
-        adresse.add("fullName",toString().trim());
-//        adresse.add("fullName_sansngram",toString().trim());
+        adresse.add("code_postal",voie.commune.codepostal);
+        adresse.add("pays","FRANCE");
+        adresse.add("t0" , getDatForm(t0));
+        adresse.add("t1" , getDatForm(t1));
+        adresse.add("ligne1","ligne1");
+        adresse.add("ligne2","ligne2");
+        adresse.add("ligne3","ligne3");
         adresse.add("ligne4",toLigne4().trim());
+        adresse.add("ligne5","ligne5");
         adresse.add("ligne6",toLigne6().trim());
         adresse.add("ligne7",toLigne7().trim());
-        if (numero!=null)
-        {
-            adresse.add("numero",numero); // need a boost ?
-        }
-        if (repetition!=null)
-            adresse.add("repetition",repetition);
-         adresse.add("t0" , getDatForm(t0));
-         adresse.add("t1" , getDatForm(t1));
-        adresse.add("geometrie" , geometrieJSON(geometrie));  
+        adresse.add("pin" , centroideJSON(geometrie)); 
+        adresse.add("geometrie" , geometrieJSON(geometrie));   
+        adresse.add("fullName",toString().trim());
+//        adresse.add("fullName_sansngram",toString().trim());
+
 //        JsonArray coordinates = Json.createArrayBuilder()
 //                .add(lat)
 //                .add(lon)

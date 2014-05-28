@@ -21,7 +21,7 @@ public class GeomUtil {
     public double lat;
     public double lon;
 
-    public HashMap<String, String> getHash(String geometrie) {
+    public HashMap<String, String> toHashGeo(String geometrie) {
         geometrie = geometrie.replaceAll("\"", "");
         geometrie = geometrie.substring(1, geometrie.length() - 1);
         String[] geo1 = geometrie.split(":");
@@ -32,12 +32,12 @@ public class GeomUtil {
         return hash;
     }
 
-    public String getGeoTYPE(String geometrie) {
-        return getHash(geometrie).get("type");
+    public String toGeoTYPE(String geometrie) {
+        return toHashGeo(geometrie).get("type");
     }
 
-    public String getGeoCoor(String geometrie) {
-        return getHash(geometrie).get("coordinates");
+    public String toGeoCoor(String geometrie) {
+        return toHashGeo(geometrie).get("coordinates");
     }
 
     public void setXY(String string) {
@@ -47,7 +47,7 @@ public class GeomUtil {
         lon = Double.parseDouble(xy[1]);
     }
 
-    public JsonArrayBuilder pointJSON(String geometrie) {
+    public JsonArrayBuilder toGeojsonPoint(String geometrie) {
         JsonArrayBuilder coordinates = Json.createArrayBuilder();
         setXY(geometrie);
         coordinates.add(lat);
@@ -55,54 +55,56 @@ public class GeomUtil {
         return coordinates;
     }
 
-    public JsonArrayBuilder lineStringMultiPoint(String geometrie) {
+    public JsonArrayBuilder toGeojsonLineStringMultiPoint(String geometrie) {
         JsonArrayBuilder coordinates = Json.createArrayBuilder();
         String[] point = geometrie.split("\\],\\[");
         for (int i = 0; i < point.length; i++) {
-            coordinates.add(pointJSON(point[i]));
+            coordinates.add(toGeojsonPoint(point[i]));
         }
         return coordinates;
     }
 
-    public JsonArrayBuilder polygonMultiLineString(String geometrie) {
+    public JsonArrayBuilder toGeojsonPolygonMultiLineString(String geometrie) {
         JsonArrayBuilder coordinates = Json.createArrayBuilder();
         String[] polyM = geometrie.split("\\]\\],\\[\\[");
         for (int i = 0; i < polyM.length; i++) {
-            coordinates.add(lineStringMultiPoint(polyM[i]));
+            coordinates.add(toGeojsonLineStringMultiPoint(polyM[i]));
         }
         return coordinates;
     }
 
-    public JsonArrayBuilder multiPolygon(String geometrie) {
+    public JsonArrayBuilder toGeojsonMultiPolygon(String geometrie) {
         JsonArrayBuilder coordinates = Json.createArrayBuilder();
         String[] multiPoly = geometrie.split("\\]\\]\\],\\[\\[\\[");
         for (int i = 0; i < multiPoly.length; i++) {
-            coordinates.add(polygonMultiLineString(multiPoly[i]));
+            coordinates.add(toGeojsonPolygonMultiLineString(multiPoly[i]));
         }
         return coordinates;
     }
 
-    public JsonArray getGeoJSON(String geometrie, String type) {
+    public JsonArray toGeojson(String geometrie, String type) {
 //        geometrie=DeleteSpace(geometrie);
         geometrie = geometrie.replaceAll(" ", "");
 
         JsonArrayBuilder coordinates = Json.createArrayBuilder();
         if (type.equals("point")) {
             geometrie = geometrie.substring(1, geometrie.length() - 1);
-            coordinates = pointJSON(geometrie);
+            coordinates = toGeojsonPoint(geometrie);
         }
-        if (type.equals("linestring") || type.equals("multipoint")) {
+        else if (type.equals("linestring") || type.equals("multipoint")) {
             geometrie = geometrie.substring(2, geometrie.length() - 2);
-            coordinates = lineStringMultiPoint(geometrie);
+            coordinates = toGeojsonLineStringMultiPoint(geometrie);
         }
-        if (type.equals("polygon") || type.equals("multilinestring")) {
+        else if (type.equals("polygon") || type.equals("multilinestring")) {
             geometrie = geometrie.substring(3, geometrie.length() - 3);
-            coordinates = polygonMultiLineString(geometrie);
+            coordinates = toGeojsonPolygonMultiLineString(geometrie);
         }
-        if (type.equals("multipolygon")) {
+        else if (type.equals("multipolygon")) {
             geometrie = geometrie.substring(4, geometrie.length() - 4);
-            coordinates = multiPolygon(geometrie);
+            coordinates = toGeojsonMultiPolygon(geometrie);
         }
+        else 
+            throw new Error("type geometrie inconnu");
         return coordinates.build();
     }
 }

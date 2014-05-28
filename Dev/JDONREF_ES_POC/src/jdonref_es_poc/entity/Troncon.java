@@ -99,10 +99,10 @@ public class Troncon {
     
     public JsonObject geometrieJSON(String geometrie){
         GeomUtil geomUtil = new GeomUtil();
-        HashMap<String,String> hash = geomUtil.getHash(geometrie);
+        HashMap<String,String> hash = geomUtil.toHashGeo(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()  
                 .add("type", hash.get("type"))
-                .add("coordinates", geomUtil.getGeoJSON(hash.get("coordinates"), hash.get("type")));
+                .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }       
     
@@ -124,10 +124,12 @@ public class Troncon {
          troncon.add("code_insee", voie.commune.codeinsee);
          troncon.add("code_departement", voie.commune.dpt_code_departement);
          troncon.add("code_pays", "FR1");
-//         troncon.add("numero_debut", tro_numero_debut);
-//         troncon.add("numero_fin", tro_numero_fin);
-//         troncon.add("repetition_debut", tro_rep_debut);
-//         troncon.add("repetition_fin", tro_rep_fin);
+         troncon.add("numero_debut", tro_numero_debut);
+         troncon.add("numero_fin", tro_numero_fin);
+         if(tro_rep_debut != null)
+         troncon.add("repetition_debut", tro_rep_debut);
+         if(tro_rep_fin != null)
+         troncon.add("repetition_fin", tro_rep_fin);
          troncon.add("typedevoie", voie.typedevoie);
          troncon.add("article", voie.article);
          troncon.add("libelle", voie.libelle);
