@@ -1,10 +1,7 @@
 {
      "troncon": {
+        "path" : "just_name",
         "properties" : {
-            "adresse": {
-                        "type" : "object",
-                        "path" : "just_name",
-                        "properties": {
                             "tro_id" : { "type" : "string", "store" : true, "index":"not_analyzed"},
                             "voi_id" : { "type" : "string", "store" : true, "index":"not_analyzed"},
                             "code_insee" : { "type" : "string", "store" : true, "index":"not_analyzed"},
@@ -28,9 +25,7 @@
                             "ligne6" : { "type" : "string", "store": true, "index": "no"},
                             "ligne7" : { "type" : "string", "store": true, "index": "no"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-                            "fullName" : {"type": "string", "store": true, "index": "no"}
+                            "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
                         }
-            }
-       }
     }
   }

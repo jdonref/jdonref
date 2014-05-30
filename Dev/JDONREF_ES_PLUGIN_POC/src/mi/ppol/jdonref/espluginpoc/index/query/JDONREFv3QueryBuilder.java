@@ -43,6 +43,7 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
      * Set the mode for this query.
      * SMART => intelligent query
      * SPAN => the terms are in order.
+     * STRING => query string query
      * 
      * @param mode
      * @return
@@ -60,6 +61,9 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
         this.queryName = queryName;
         return this;
     }
+    
+    static boolean iamhere = false;
+    
     
     @Override
     public void doXContent(XContentBuilder builder, Params params) throws IOException {

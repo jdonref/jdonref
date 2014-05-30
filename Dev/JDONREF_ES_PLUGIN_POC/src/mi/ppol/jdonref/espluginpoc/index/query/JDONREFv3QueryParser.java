@@ -2,17 +2,29 @@ package mi.ppol.jdonref.espluginpoc.index.query;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import org.apache.lucene.search.JDONREFv3Query;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CachingTokenFilter;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.MapperQueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.JDONREFv3TermQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.IOUtils;
+import org.apache.lucene.util.QueryBuilder;
 import org.elasticsearch.cluster.ClusterService;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.index.mapper.FieldMapper;
 import org.elasticsearch.index.mapper.MapperService;
@@ -20,6 +32,7 @@ import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.index.query.QueryParser;
 import org.elasticsearch.index.query.QueryParsingException;
 
+import org.elasticsearch.index.query.QueryStringQueryParser;
 import org.elasticsearch.index.search.MatchQuery;
 
 /**
@@ -32,7 +45,9 @@ public class JDONREFv3QueryParser implements QueryParser
     
     public static final int SMART = 1;
     public static final int SPAN = 2;
-    
+    public static final int STRING = 3;
+
+    private Settings settings;
     
     @Nullable
     private final ClusterService clusterService;
@@ -43,8 +58,9 @@ public class JDONREFv3QueryParser implements QueryParser
      }
     
     @Inject
-    public JDONREFv3QueryParser(@Nullable ClusterService clusterService) {
+    public JDONREFv3QueryParser(@Nullable ClusterService clusterService,Settings settings) {
         this.clusterService = clusterService;
+        this.settings = settings;
     }
     
     @Override
@@ -89,6 +105,8 @@ public class JDONREFv3QueryParser implements QueryParser
                     boost = parser.floatValue();
                 } else if ("value".equals(currentFieldName)) {
                     value = parser.text();
+                } else if ("query".equals(currentFieldName)) {
+                } else if ("default_field".equals(currentFieldName)) {
                 } else {
                     throw new QueryParsingException(parseContext.index(), "[boosting] query does not support [" + currentFieldName + "]");
                 }
@@ -104,6 +122,8 @@ public class JDONREFv3QueryParser implements QueryParser
         if (query == null) {
             if (mode==JDONREFv3QueryParser.SMART)
                 query = getQueryExact((String)value,parseContext);
+            else if (mode==JDONREFv3QueryParser.STRING)
+                query = getQueryStringQuery((String)value,parseContext);
             else
                 query = getSpanQuery((String)value,parseContext);
             query.setBoost(boost);
@@ -131,7 +151,24 @@ public class JDONREFv3QueryParser implements QueryParser
     
     public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,String attr,String value,float boost,Occur occur) throws IOException
     {
-        Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
+        Term t = new Term(attr,BytesRef.deepCopyOf(new BytesRef(value)));
+        JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
+        //TermQuery query = new TermQuery(t);
+        
+        //Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
+        if (query!=null)
+        {
+              query.setBoost(boost);
+              booleanQuery.add(new BooleanClause(query,occur));
+        }
+    }
+    
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur) throws IOException
+    {
+        JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
+        //TermQuery query = new TermQuery(t);
+        
+        //Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
         if (query!=null)
         {
               query.setBoost(boost);
@@ -195,25 +232,25 @@ public class JDONREFv3QueryParser implements QueryParser
 
                     if (stri.length()==5)
                     {
-                        addMatchQueryClause(booleanQuery,mq,"codeinsee",stri,2.5f,BooleanClause.Occur.SHOULD);
+                        addMatchQueryClause(booleanQuery,mq,"code_insee",stri,2.5f,BooleanClause.Occur.SHOULD);
                     }
                     if (stri.length()==5)
                     {
-                        addMatchQueryClause(booleanQuery,mq,"codepostal",stri,2.5f,BooleanClause.Occur.SHOULD);
+                        addMatchQueryClause(booleanQuery,mq,"code_postal",stri,2.5f,BooleanClause.Occur.SHOULD);
                     }
                     float dptBoost = 1.0f;
                     if (i==0)
                         dptBoost = 0.5f;
                     if (i>0 || splitted.length==1)
                         dptBoost = 2.5f;
-                    addMatchQueryClause(booleanQuery,mq,"codedepartement",stri.length()<=2?stri:stri.substring(0,2),dptBoost,BooleanClause.Occur.SHOULD);
+                    addMatchQueryClause(booleanQuery,mq,"code_departement",stri.length()<=2?stri:stri.substring(0,2),dptBoost,BooleanClause.Occur.SHOULD);
                     
                     float ardtBoost = 1.0f;
                     if (i==0)
                         ardtBoost = 0.5f;
                     if (i>0 || splitted.length==1)
                         ardtBoost = 2.5f;
-                    addMatchQueryClause(booleanQuery,mq,"codearrondissement",stri.length()<=2?stri:stri.substring(stri.length()-2),ardtBoost,BooleanClause.Occur.SHOULD);
+                    addMatchQueryClause(booleanQuery,mq,"code_arrondissement",stri.length()<=2?stri:stri.substring(stri.length()-2),ardtBoost,BooleanClause.Occur.SHOULD);
                     
                     float numBoost = 1.0f;
                     if (i==0 && splitted.length!=1)
@@ -222,10 +259,14 @@ public class JDONREFv3QueryParser implements QueryParser
                         numBoost = 0.5f;
                     addMatchQueryClause(booleanQuery,mq,"numero",stri,numBoost,BooleanClause.Occur.SHOULD);
                     
-                    addMatchQueryClause(booleanQuery,mq,"fullName_without_numbers",stri,0.5f,BooleanClause.Occur.SHOULD);
+                    addMatchQueryClause(booleanQuery,mq,"ligne4",stri,0.5f,BooleanClause.Occur.SHOULD);
+                    addMatchQueryClause(booleanQuery,mq,"ligne6",stri,0.5f,BooleanClause.Occur.SHOULD);
                 }
                 else
-                    addMatchQueryClause(booleanQuery,mq,"fullName_without_numbers",stri,10f,BooleanClause.Occur.SHOULD);
+                {
+                    addMatchQueryClause(booleanQuery,mq,"ligne4",stri,10f,BooleanClause.Occur.SHOULD);
+                    addMatchQueryClause(booleanQuery,mq,"ligne6",stri,0.5f,BooleanClause.Occur.SHOULD);
+                }
             }
         }
         
@@ -235,6 +276,105 @@ public class JDONREFv3QueryParser implements QueryParser
         else if (firstNumber==0)
             num0Boost = 0.5f;
         addMatchQueryClause(booleanQuery,mq,"numero","0",num0Boost,BooleanClause.Occur.SHOULD);
+        
+        //System.out.println(booleanQuery.toString());
+        
+        return booleanQuery;
+    }
+
+    String[] fields = new String[]{"fullName"};
+    
+    private Query getQueryStringQuery(String find, QueryParseContext parseContext) throws IOException
+    {
+        //MapperQueryParser parser = new MapperQueryParser(parseContext);
+        
+        //BooleanQuery booleanQuery = new BooleanQuery();
+        JDONREFv3Query booleanQuery = new JDONREFv3Query();
+        MatchQuery mq = new MatchQuery(parseContext);
+        
+        Analyzer analyser = parseContext.mapperService().fieldSearchAnalyzer("fullName");
+        
+        CachingTokenFilter buffer = null;
+        TermToBytesRefAttribute termAtt = null;
+        PositionIncrementAttribute posIncrAtt = null;
+        TokenStream source = null;
+        int numTokens = 0;
+        int positionCount = 0;
+        boolean severalTokensAtSamePosition = false;
+        boolean hasMoreTokens = false;
+    
+        try
+        {
+            source = analyser.tokenStream("fullName", find.toString());
+            source.reset();
+            buffer = new CachingTokenFilter(source);
+            buffer.reset();
+            
+            if (buffer.hasAttribute(TermToBytesRefAttribute.class)) {
+             termAtt = buffer.getAttribute(TermToBytesRefAttribute.class);
+            }
+            if (buffer.hasAttribute(PositionIncrementAttribute.class)) {
+             posIncrAtt = buffer.getAttribute(PositionIncrementAttribute.class);
+            }
+            
+            if (termAtt != null) {
+        try {
+          hasMoreTokens = buffer.incrementToken();
+          while (hasMoreTokens) {
+            numTokens++;
+            int positionIncrement = (posIncrAtt != null) ? posIncrAtt.getPositionIncrement() : 1;
+            if (positionIncrement != 0) {
+              positionCount += positionIncrement;
+            } else {
+              severalTokensAtSamePosition = true;
+            }
+            hasMoreTokens = buffer.incrementToken();
+          }
+        } catch (IOException e) {
+          // ignore
+        }
+      }
+            
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Error analyzing query text", e);
+        } finally {
+            IOUtils.closeWhileHandlingException(source);
+        }
+        
+        buffer.reset();
+        
+        BytesRef bytes = termAtt == null ? null : termAtt.getBytesRef();
+
+        // phrase query:
+          int position = -1;
+          for (int i = 0; i < numTokens; i++) {
+            int positionIncrement = 1;
+            try {
+              boolean hasNext = buffer.incrementToken();
+              assert hasNext == true;
+              termAtt.fillBytesRef();
+              if (posIncrAtt != null) {
+                positionIncrement = posIncrAtt.getPositionIncrement();
+              }
+            } catch (IOException e) {
+              // safe to ignore, because we know the number of tokens
+            }
+
+            position += positionIncrement;
+            addMatchQueryClause(booleanQuery,mq,new Term("fullName", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD);
+          }
+        /*
+        String[] splitted = find.split(" ");
+        for(int i=0;i<splitted.length;i++)
+        {
+            String stri = splitted[i];
+            
+            for(int j=0;j<fields.length;j++)
+            {
+                addMatchQueryClause(booleanQuery,mq,fields[j],stri,1.0f,BooleanClause.Occur.SHOULD);
+            }
+        }*/
         
         System.out.println(booleanQuery.toString());
         

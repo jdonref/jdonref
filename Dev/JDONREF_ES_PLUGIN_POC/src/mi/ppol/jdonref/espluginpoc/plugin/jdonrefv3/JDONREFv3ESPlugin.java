@@ -26,7 +26,7 @@ public class JDONREFv3ESPlugin extends AbstractPlugin
 
     @Override
     public String description() {
-        return "JDONREFv3 query support";
+        return "JDONREFv3 query and type support";
     }
     
     @Override

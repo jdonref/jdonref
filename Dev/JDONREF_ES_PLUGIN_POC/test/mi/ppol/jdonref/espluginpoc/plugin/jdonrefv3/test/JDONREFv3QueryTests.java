@@ -26,6 +26,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.highlight.HighlightField;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
@@ -40,7 +41,7 @@ import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilde
  * @author Julien
  */
 @ClusterScope(scope=Scope.SUITE, numNodes=1)
-public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
+public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
 {
     final static String INDEX_NAME = "jdonref";
     final static String DOC_TYPE_NAME = "test";
@@ -60,20 +61,19 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
     
     @Before
     public void createEmptyIndex() throws Exception {
-        
             logger.info("creating index [{}]", INDEX_NAME);
             wipeIndices(INDEX_NAME);
-            createIndex(INDEX_NAME);
-        
-            ensureGreen();
+            
+            String settings = readFile("./test/resources/index/jdonrefv3es-settings_Types.json");
+            client().admin().indices().prepareCreate(INDEX_NAME).setSettings(settings).execute().actionGet();
     }
-    
+    /*
     @Override
     protected Settings nodeSettings(int nodeOrdinal) {
         return ImmutableSettings.settingsBuilder()
            .put("plugin.types", JDONREFv3ESPlugin.class.getName())
            .put(super.nodeSettings(nodeOrdinal)).build();
-    }
+    }*/
     
     public String readFile(String file) throws FileNotFoundException, IOException
     {
@@ -102,39 +102,6 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         this.refresh();
     }
     
-    void percolate(String voie) throws IOException
-    {
-        System.out.println("Percolate : "+voie);
-        
-        //Build a document to check against the percolator
-        XContentBuilder docBuilder = XContentFactory.jsonBuilder().startObject();
-        docBuilder.field("doc").startObject(); //This is needed to designate the document
-        docBuilder.field("content", voie);
-        docBuilder.endObject(); //End of the doc field
-        docBuilder.endObject(); //End of the JSON root object
-
-        //Percolate
-        PercolateResponse response = client().preparePercolate()
-                .setIndices(INDEX_NAME)
-                .setDocumentType("doc")
-                .setSource(docBuilder).execute().actionGet();
-
-        //Iterate over the results
-        for (PercolateResponse.Match match : response) {
-            //Handle the result which is the name of
-            //the query in the percolator
-            Map<String,HighlightField> map = match.getHighlightFields();
-            Collection<HighlightField> fields = map.values();
-            Iterator<HighlightField> iterator = fields.iterator();
-            while(iterator.hasNext())
-            {
-                Text[] fragments = iterator.next().getFragments();
-                for(int j=0;j<fragments.length;j++)
-                    System.out.println(fragments[j].toString());
-            }
-        }
-    }
-    
     void printExplanation(Explanation ex)
     {
         System.out.println("Explanation:");
@@ -160,9 +127,8 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         System.out.println("Test Number "+testNumber++);
         System.out.println("Searching "+voie);
         QueryBuilder qb = (QueryBuilder) new JDONREFv3QueryBuilder(voie);
-        ((JDONREFv3QueryBuilder)qb).mode(JDONREFv3QueryParser.SPAN);
-        //QueryBuilder qb = (QueryBuilder)QueryBuilders.termQuery("ligne7",pays);
-        //QueryBuilder qb = (QueryBuilder)QueryBuilders.matchQuery("ligne7",pays);
+        ((JDONREFv3QueryBuilder)qb).mode(JDONREFv3QueryParser.STRING);
+        //QueryBuilder qb = new QueryStringQueryBuilder(voie);
         SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
         SearchHit[] hits = search.getHits().getHits();
         
@@ -190,225 +156,187 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
         assertEquals(assertion,hits[0].getSource().get("fullName"));
     }
     
-    void indexPercolator(String champ,String id,String value) throws IOException
-    {
-        QueryBuilder qb = QueryBuilders.termQuery(champ,value);
-        
-        client().prepareIndex(INDEX_NAME,".percolator",id)
-                .setSource(XContentFactory.jsonBuilder()
-                   .startObject()
-                      .field("query",qb)
-                   .endObject())
-                .setRefresh(true)
-                .execute().actionGet();
-    }
-    
-    void indexCommune(XContentBuilder Xcommune,String id,String commune) throws IOException
-    {
-        indexPercolator("commune",id,commune);
-        
-        publicIndex("commune",commune,Xcommune);
-    }
-    
-    void indexPays(XContentBuilder Xpays,String id,String pays) throws IOException
-    {
-        indexPercolator("pays",id,pays);
-        
-        publicIndex("pays",id,Xpays);
-    }
-    
     void index() throws IOException, InterruptedException, ExecutionException
     {
-//        BulkRequest bulk = new BulkRequest();
-//        bulk.readFrom(new InputStreamStreamInput(new FileInputStream("./test/resources/bulk/requests.bulk")));
-//        this.client().bulk(bulk);
-        
-        
-        indexPays(XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+        publicIndex("pays","FR",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
                 .field("ligne7","FRANCE")
                 .field("fullName","FRANCE")
-                .field("fullName_without_numbers","FRANCE")
                 .field("numero","0")
-                .endObject(),"FR","FRANCE");
-        indexPays(XContentFactory.jsonBuilder().startObject()
-                .field("codepays","DE")
+                .endObject());
+        publicIndex("pays","DE",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","DE")
                 .field("ligne7","ALLEMAGNE")
                 .field("fullName","ALLEMAGNE")
-                .field("fullName_without_numbers","ALLEMAGNE")
                 .field("numero","0")
-                .endObject(),"DE","ALLEMAGNE");
-        indexCommune(XContentFactory.jsonBuilder().startObject()
-                .field("codepostal","75000")
-                .field("codeinsee","75056")
+                .endObject());
+        publicIndex("commune","75056",XContentFactory.jsonBuilder().startObject()
+                .field("code_postal","75000")
+                .field("code_insee","75056")
                 .field("commune","PARIS")
                 .field("ligne6","PARIS")
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne7","FRANCE")
                 .field("fullName","PARIS FRANCE")
-                .field("fullName_without_numbers","PARIS FRANCE")
                 .field("numero","0")
-                .field("codedepartement","75")
-                .endObject(),"75056","PARIS");
-        indexCommune(XContentFactory.jsonBuilder().startObject()
-                .field("codepostal","59500")
-                .field("codeinsee","59500")
+                .field("code_departement","75")
+                .endObject());
+        publicIndex("commune","59500",XContentFactory.jsonBuilder().startObject()
+                .field("code_postal","59500")
+                .field("code_insee","59500")
                 .field("commune","DOUAI")
                 .field("ligne6","DOUAI")
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne7","FRANCE")
                 .field("fullName","59500 DOUAI FRANCE")
-                .field("fullName_without_numbers","DOUAI FRANCE")
                 .field("numero","0")
-                .field("codedepartement","59")
-                .endObject(),"59500","DOUAI");
+                .field("code_departement","59")
+                .endObject());
         publicIndex("voie","1",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
                 .field("numero","0")
-                .field("codedepartement","75")
-                .field("codepostal","75005")
-                .field("codeinsee","75105")
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75105")
                 .endObject());
         publicIndex("voie","2",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("fullName","RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("fullName_without_numbers","RUE REMY DUHEM DOUAI FRANCE")
                 .field("numero","0")
-                .field("codedepartement","59")
-                .field("codepostal","59500")
-                .field("codeinsee","59500")
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
                 .endObject());
         publicIndex("adresse","1",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","24 BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","24 BOULEVARD DE L HOPITAL 75013 PARIS FRANCE")
-                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
                 .field("numero","24")
-                .field("codedepartement","75")
-                .field("codepostal","75013")
-                .field("codeinsee","75013")
+                .field("code_departement","75")
+                .field("code_postal","75013")
+                .field("code_insee","75013")
                 .endObject());
         publicIndex("adresse","2",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","24 RUE DE LA FRANCE")
                 .field("ligne6","75013 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","24 RUE DE LA FRANCE 75013 PARIS FRANCE")
-                .field("fullName_without_numbers","RUE DE LA FRANCE PARIS FRANCE")
                 .field("numero","24")
-                .field("codedepartement","75")
-                .field("codepostal","75005")
-                .field("codeinsee","75113")
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75113")
                 .endObject());
         publicIndex("adresse","3",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","75 BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","75 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
                 .field("numero","75")
-                .field("codedepartement","75")
-                .field("codepostal","75005")
-                .field("codeinsee","75105")
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75105")
                 .endObject());
         publicIndex("adresse","4",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","130 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("fullName","130 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("fullName_without_numbers","RUE REMY DUHEM DOUAI FRANCE")
                 .field("numero","130")
-                .field("codedepartement","59")
-                .field("codepostal","59500")
-                .field("codeinsee","59500")
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
                 .endObject());
         publicIndex("adresse","5",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","131 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("fullName","131 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("fullName_without_numbers","RUE REMY DUHEM DOUAI FRANCE")
                 .field("numero","131")
-                .field("codedepartement","59")
-                .field("codepostal","59500")
-                .field("codeinsee","59500")
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
                 .endObject());
         publicIndex("adresse","6",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","59 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("fullName","59 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("fullName_without_numbers","RUE REMY DUHEM DOUAI FRANCE")
                 .field("numero","59")
-                .field("codedepartement","59")
-                .field("codepostal","59500")
-                .field("codeinsee","59500")
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
                 .endObject());
         publicIndex("adresse","7",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","75 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("fullName","75 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("fullName_without_numbers","RUE REMY DUHEM DOUAI FRANCE")
                 .field("numero","75")
-                .field("codedepartement","59")
-                .field("codepostal","59500")
-                .field("codeinsee","59500")
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
                 .endObject());
         publicIndex("adresse","8",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","130 BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","130 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
                 .field("numero","130")
-                .field("codedepartement","75")
-                .field("codepostal","75005")
-                .field("codeinsee","75105")
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75105")
                 .endObject());
         publicIndex("adresse","9",XContentFactory.jsonBuilder().startObject()
-                .field("codepays","FR")
+                .field("code_pays","FR")
                 .field("ligne4","59 BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("fullName","59 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("fullName_without_numbers","BOULEVARD DE L HOPITAL PARIS FRANCE")
                 .field("numero","59")
-                .field("codedepartement","75")
-                .field("codepostal","75005")
-                .field("codeinsee","75105")
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75105")
+                .endObject());
+        publicIndex("adresse","10",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","59 BOULEVARD DE LA FRANCE")
+                .field("ligne6","02000 HOPITAL")
+                .field("ligne7","FRANCE")
+                .field("fullName","59 BOULEVARD DE LA FRANCE 02000 HOPITAL FRANCE")
+                .field("numero","59")
+                .field("code_departement","02")
+                .field("code_postal","02000")
+                .field("code_insee","02000")
                 .endObject());
         publicIndex("departement","75",XContentFactory.jsonBuilder().startObject()
                 .field("ligne6","75")
                 .field("ligne7","FRANCE")
                 .field("fullName","75 FRANCE")
-                .field("fullName_without_numbers","FRANCE")
                 .field("numero","0")
-                .field("codedepartement","75")
+                .field("code_departement","75")
                 .endObject());
         publicIndex("departement","59",XContentFactory.jsonBuilder().startObject()
                 .field("ligne6","59")
                 .field("ligne7","FRANCE")
                 .field("fullName","59 FRANCE")
-                .field("fullName_without_numbers","FRANCE")
                 .field("numero","0")
-                .field("codedepartement","59")
+                .field("code_departement","59")
                 .endObject());
         
         for(int i=0;i<10;i++)
@@ -416,7 +344,7 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
             String randomCode = randomRealisticUnicodeOfLength(2);
             String randomLigne7 = randomRealisticUnicodeOfLength(10);
             publicIndex("pays",randomCode,XContentFactory.jsonBuilder().startObject()
-                  .field("codepays",randomCode)
+                  .field("code_pays",randomCode)
                   .field("ligne7",randomLigne7)
                   .endObject());
         }
@@ -424,19 +352,24 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
     
     @Test
     public void testSearch() throws IOException, InterruptedException, ExecutionException
-    {    
+    {
         importMapping();
         index();
             
-        ensureGreen();
+        //Thread.sleep(5000);
+        ensureYellow();
         Thread.sleep(10000); // wait for indexation !
         
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
+//        searchExactAdresse("REMY 59500 DUHEM","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
+        
+        searchExactAdresse("59 BOULEVARD HOPITAL 75 PARIS","59 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE");
+        
 //        searchExactAdresse("130 RUE REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
-        searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
-        searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
+//        searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
+//        searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("130 REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("130 RUE REMY DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("130 RUE REMY 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
@@ -444,7 +377,7 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
 //        searchExactAdresse("130 REMY DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("130 RUE REMY DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("130 RUE REMY DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
-        searchExactAdresse("130 RUE DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
+//        searchExactAdresse("130 RUE DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("130 REMY DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("130 DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("130 DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
@@ -535,7 +468,7 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
 //        searchExactAdresse("130 REMY 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        
 //        searchExactAdresse("RUE REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
-        searchExactAdresse("RUE REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
+//       searchExactAdresse("RUE REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("RUE DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("RUE REMY DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
@@ -634,8 +567,8 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
 //        searchExactAdresse("REMY 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        searchExactAdresse("REMY 59","RUE REMY DUHEM 59500 DOUAI FRANCE");
 //        
-        searchExactAdresse("59500 DOUAI FRANCE","59500 DOUAI FRANCE");
-        searchExactAdresse("59500 FRANCE","59500 DOUAI FRANCE");
+//        searchExactAdresse("59500 DOUAI FRANCE","59500 DOUAI FRANCE");
+//        searchExactAdresse("59500 FRANCE","59500 DOUAI FRANCE");
 //        searchExactAdresse("59500 DOUAI","59500 DOUAI FRANCE");
 //        searchExactAdresse("59500","59500 DOUAI FRANCE");
 //        searchExactAdresse("DOUAI FRANCE","59500 DOUAI FRANCE");
@@ -646,36 +579,13 @@ public class JDONREFv3AnalyzerTests extends ElasticsearchIntegrationTest
 //        searchExactAdresse("59505 DOUAI","59500 DOUAI FRANCE");
 //        //searchExactAdresse("59505","59500 DOUAI FRANCE"); // 59505 n'est pas encore pris en charge
 
-        searchExactAdresse("59 DOUAI FRANCE","59500 DOUAI FRANCE"); // anomalie à corriger : le code département est pris pour un numéro de voie
+//        searchExactAdresse("59 DOUAI FRANCE","59500 DOUAI FRANCE"); // anomalie à corriger : le code département est pris pour un numéro de voie
         //searchExactAdresse("59 FRANCE","59500 DOUAI FRANCE"); // idem
         //searchExactAdresse("59 DOUAI","59500 DOUAI FRANCE"); // idem
 
         //searchExactAdresse("59 FRANCE","59 FRANCE"); // idem
         //searchExactAdresse("59","59 FRANCE"); // idem
         
-        searchExactAdresse("FRANCE","FRANCE");
+//        searchExactAdresse("FRANCE","FRANCE");
     }
-    
-    /**
-     * 
-     */
-    /*
-    @Test
-    public void testPercolate() throws IOException, InterruptedException, ExecutionException
-    {
-        importMapping();
-        index();
-        
-        ensureGreen();
-        Thread.sleep(10000); // wait for indexation !
-        
-        GetResponse response = client.prepareGet(INDEX_NAME,"pays","FR").execute().get();
-        System.out.println(response.getSourceAsString());
-        // need assert
-        
-        IndicesStatusResponse indResponse = client.admin().indices().prepareStatus().execute().actionGet();
-        System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
-        
-        percolate("BOULEVARD HOPITAL PARIS");
-    }*/
 }

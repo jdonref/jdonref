@@ -1,0 +1,18 @@
+{
+    "index" : {
+        "analysis" : {
+            "analyzer": {
+                "jdonrefv3es_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase"]
+                },
+                "jdonrefv3es_search" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase"]
+                }
+            }
+        }
+    }
+}
