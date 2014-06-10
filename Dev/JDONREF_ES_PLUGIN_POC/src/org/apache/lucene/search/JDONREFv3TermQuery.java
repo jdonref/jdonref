@@ -27,7 +27,6 @@ import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.JDONREFv3TermContext;
 import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermContext;
 import org.apache.lucene.index.TermState;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.similarities.Similarity.SimScorer;
@@ -42,17 +41,26 @@ public class JDONREFv3TermQuery extends Query {
   private final Term term;
   private final int docFreq;
   private final JDONREFv3TermContext perReaderTermState;
+
+  protected boolean last = false;
+  
+  public void setIsLast() {
+    this.last = true;
+  }
   
   final class TermWeight extends Weight {
     private final Similarity similarity;
     private final Similarity.SimWeight stats;
     private final JDONREFv3TermContext termStates;
+    
+    protected boolean last;
 
-    public TermWeight(IndexSearcher searcher, JDONREFv3TermContext termStates)
+    public TermWeight(IndexSearcher searcher, JDONREFv3TermContext termStates, boolean last)
       throws IOException {
       assert termStates != null : "TermContext must not be null";
       this.termStates = termStates;
       this.similarity = searcher.getSimilarity();
+      this.last = last;
       this.stats = similarity.computeWeight(
           getBoost(), 
           searcher.collectionStatistics(term.field()), 
@@ -86,7 +94,7 @@ public class JDONREFv3TermQuery extends Query {
       DocsEnum docs = termsEnum.docs(acceptDocs, null);
       assert docs != null;
       //return new TermScorer(this, docs, similarity.simScorer(stats, context));
-      return new JDONREFv3TermScorer(this, docs, similarity.simScorer(stats, context));
+      return new JDONREFv3TermScorer(this, docs, similarity.simScorer(stats, context),this.last);
     }
     
     /**
@@ -175,7 +183,7 @@ public class JDONREFv3TermQuery extends Query {
     if (docFreq != -1)
       termState.setDocFreq(docFreq);
     
-    return new TermWeight(searcher, termState);
+    return new TermWeight(searcher, termState,this.last);
   }
 
   @Override

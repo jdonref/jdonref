@@ -22,6 +22,7 @@
                             "ligne5" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "ligne6" : { "type" : "string", "store": true, "index": "no"},
                             "ligne7" : { "type" : "string", "store": true, "index": "no"},
+                            "type" : { "type" : "string", "store" : true, "index":"not_analyzed"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
                             "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
                         }

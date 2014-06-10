@@ -31,6 +31,17 @@ public class JDONREFv3TermScorer extends Scorer {
   protected final Similarity.SimScorer docScorer;
   
   protected AdresseChecker checker;
+  protected boolean last;
+  
+  public boolean isLast()
+  {
+      return last;
+  }
+  
+  public void setIsLast()
+  {
+      last = true;
+  }
 
   public AdresseChecker getChecker()
   {
@@ -53,10 +64,11 @@ public class JDONREFv3TermScorer extends Scorer {
    *          The </code>Similarity.SimScorer</code> implementation 
    *          to be used for score computations.
    */
-  public JDONREFv3TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer) {
+  public JDONREFv3TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer, boolean last) {
     super(weight);
     this.docScorer = docScorer;
     this.docsEnum = td;
+    this.last = last;
   }
 
   @Override
@@ -81,6 +93,19 @@ public class JDONREFv3TermScorer extends Scorer {
   
   boolean debugbar = false;
   
+  double malus;
+  
+  public double getMalus() {
+      return malus;
+  }
+  
+  boolean adressNumberPresent = false;
+
+  public boolean getAdressNumberPresent()
+  {
+      return adressNumberPresent;
+  }
+  
   @Override
   public float score() throws IOException
   {
@@ -88,23 +113,57 @@ public class JDONREFv3TermScorer extends Scorer {
     
     float score = docScorer.score(docsEnum.docID(), docsEnum.freq());
     
+    malus = 1;
+    
     if (weight.getQuery() instanceof JDONREFv3TermQuery)
     {
         JDONREFv3TermQuery query = (JDONREFv3TermQuery)weight.getQuery();
         
-        if (query.getTerm().text().equals("DUHEM"))
-            debugbar = true;
-        
         HashMap<Integer,Boolean> categories = checker.getCategories(docID(), query.getTerm().text());
         checker.add(categories);
-        boolean malus = checker.check();
-        if (malus)
-            score *= 0.9;
+        
+        malus = malus();
+        
+        adressNumberPresent = checkAdressNumberPresent();
+        
+        adressType = checkAdressType(docID());
+    
+        checker.next();
     }
     
     return score;
   }
 
+  public float malus() throws IOException
+  {
+        float lmalus = 1.0f;
+        boolean malusOrder = !checker.checkOrder();
+        if (malusOrder)
+            lmalus *= JDONREFv3Scorer.ORDERMALUS;
+        boolean malusNumber = checker.checkOtherNumberBeforeAdresse();
+        if (malusNumber)
+            lmalus *= JDONREFv3Scorer.ORDERMALUS;
+        return lmalus;
+  }
+  
+  boolean adressType = false;
+  
+  protected boolean getAdressType()
+  {
+      return adressType;
+  }
+  
+  protected boolean checkAdressNumberPresent()
+  {
+        return checker.checkAdressNumberPresent();
+  }
+  
+  
+  protected boolean checkAdressType(int docID) throws IOException
+  {
+        return checker.isAdressType(docID);
+  }
+  
   /**
    * Advances to the first match beyond the current whose document number is
    * greater than or equal to a given target. <br>
@@ -127,4 +186,5 @@ public class JDONREFv3TermScorer extends Scorer {
   /** Returns a string representation of this <code>TermScorer</code>. */
   @Override
   public String toString() { return "scorer(" + weight + ")"; }
+
 }

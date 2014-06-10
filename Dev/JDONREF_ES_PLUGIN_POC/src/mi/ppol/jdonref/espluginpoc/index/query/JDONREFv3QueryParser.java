@@ -163,7 +163,7 @@ public class JDONREFv3QueryParser implements QueryParser
         }
     }
     
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur) throws IOException
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, boolean last) throws IOException
     {
         JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
         //TermQuery query = new TermQuery(t);
@@ -171,8 +171,10 @@ public class JDONREFv3QueryParser implements QueryParser
         //Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
         if (query!=null)
         {
-              query.setBoost(boost);
-              booleanQuery.add(new BooleanClause(query,occur));
+            if (last)
+              query.setIsLast();
+            query.setBoost(boost);
+            booleanQuery.add(new BooleanClause(query,occur));
         }
     }
     
@@ -286,9 +288,6 @@ public class JDONREFv3QueryParser implements QueryParser
     
     private Query getQueryStringQuery(String find, QueryParseContext parseContext) throws IOException
     {
-        //MapperQueryParser parser = new MapperQueryParser(parseContext);
-        
-        //BooleanQuery booleanQuery = new BooleanQuery();
         JDONREFv3Query booleanQuery = new JDONREFv3Query();
         MatchQuery mq = new MatchQuery(parseContext);
         
@@ -362,21 +361,10 @@ public class JDONREFv3QueryParser implements QueryParser
             }
 
             position += positionIncrement;
-            addMatchQueryClause(booleanQuery,mq,new Term("fullName", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD);
+            addMatchQueryClause(booleanQuery,mq,new Term("fullName", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i==numTokens-1);
           }
-        /*
-        String[] splitted = find.split(" ");
-        for(int i=0;i<splitted.length;i++)
-        {
-            String stri = splitted[i];
-            
-            for(int j=0;j<fields.length;j++)
-            {
-                addMatchQueryClause(booleanQuery,mq,fields[j],stri,1.0f,BooleanClause.Occur.SHOULD);
-            }
-        }*/
         
-        System.out.println(booleanQuery.toString());
+        //System.out.println(booleanQuery.toString());
         
         return booleanQuery;
     }

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryBuilder;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.util.Bits;
 
@@ -42,6 +41,42 @@ public class JDONREFv3Query extends BooleanQuery
     }
 
     @Override
+    public Explanation explain(AtomicReaderContext context, int doc)
+      throws IOException {
+        
+      ComplexExplanation dotExpl = new ComplexExplanation();
+      dotExpl.setDescription("product of:");
+      
+      Explanation boolExpl = super.explain(context,doc);
+      dotExpl.addDetail(boolExpl);
+      
+      JDONREFv3Scorer scorer = (JDONREFv3Scorer) scorer(context, false, true, context.reader().getLiveDocs());
+      
+      float malus = scorer.malus(doc);
+      if (malus!=1.0f)
+      {
+        Explanation malusExpl = new Explanation(malus,"adress malus (order)");
+        dotExpl.addDetail(malusExpl);
+      }
+      
+      boolean adressType = scorer.checkAdressType(doc);
+      if (!adressType)
+      {
+        Explanation adressExpl = new Explanation(0f,"adress malus (adress number)");
+        dotExpl.addDetail(adressExpl);
+      }
+      
+      float value = malus*boolExpl.getValue();
+      if (!adressType) value *= JDONREFv3Scorer.NUMBERMALUS;
+      
+      dotExpl.setValue(value);
+      if (value>0)
+        dotExpl.setMatch(true);
+      
+      return dotExpl;
+    }
+    
+    @Override
     public Scorer scorer(AtomicReaderContext context, boolean scoreDocsInOrder,
         boolean topScorer, Bits acceptDocs)
         throws IOException {
@@ -71,36 +106,6 @@ public class JDONREFv3Query extends BooleanQuery
       }
       else
           throw new IOException("MultiNrShouldMatch nor required clause are not supported by JDONREFv3Scorer.");
-      
-      /* Original BooleanQuery Code
-      if (required.size() == 0 && optional.size() == 0) {
-        // no required and optional clauses.
-        return null;
-      } else if (optional.size() < minNrShouldMatch) {
-        // either >1 req scorer, or there are 0 req scorers and at least 1
-        // optional scorer. Therefore if there are not enough optional scorers
-        // no documents will be matched by the query
-        return null;
-      }
-      
-      // simple conjunction
-      if (optional.size() == 0 && prohibited.size() == 0) {
-        float coord = protectedDisableCoord ? 1.0f : coord(required.size(), maxCoord);
-        return new ConjunctionScorer(this, required.toArray(new Scorer[required.size()]), coord);
-      }
-      
-      // simple disjunction
-      if (required.size() == 0 && prohibited.size() == 0 && minNrShouldMatch <= 1 && optional.size() > 1) {
-        float coord[] = new float[optional.size()+1];
-        for (int i = 0; i < coord.length; i++) {
-          coord[i] = protectedDisableCoord ? 1.0f : coord(i, maxCoord);
-        }
-        return new DisjunctionSumScorer(this, optional.toArray(new Scorer[optional.size()]), coord);
-      }
-      
-      // Return a BooleanScorer2
-      return new BooleanScorer2(this, protectedDisableCoord, minNrShouldMatch, required, prohibited, optional, maxCoord);
-       **/
     }
   }
     
