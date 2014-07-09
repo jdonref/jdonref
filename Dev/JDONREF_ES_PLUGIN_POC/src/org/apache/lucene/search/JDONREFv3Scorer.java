@@ -1,6 +1,7 @@
 package org.apache.lucene.search;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,9 +9,23 @@ import java.util.Iterator;
 import java.util.List;
 
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.Fields;
+import org.apache.lucene.index.JDONREFv3TermContext;
+import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.JDONREFv3Query.JDONREFv3ESWeight;
+import org.apache.lucene.search.JDONREFv3TermQuery.TermWeight;
+import org.apache.lucene.search.similarities.DefaultSimilarity;
+import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.util.BytesRef;
+import org.elasticsearch.index.similarity.SimilarityService;
 
 /**
  *
@@ -20,18 +35,229 @@ public class JDONREFv3Scorer extends Scorer {
   
   public final static float ORDERMALUS = 0.5f;
   public final static float NUMBERMALUS = 0;
+  
+  public final static float NOTE_LIGNE4 = 50;
+  public final static float NOTE_CODEPOSTAL = 50;
+  public final static float NOTE_COMMUNE = 50;
+  public final static float NOTE_LIGNE7 = 50;
+  
+  protected AtomicReaderContext context;
     
   private static final class JDONREFv3ScorerCollector extends Collector {
     private BucketTable bucketTable;
     private int mask;
     private JDONREFv3TermScorer scorer;
+    private AtomicReaderContext context;
     
-    public JDONREFv3ScorerCollector(int mask, BucketTable bucketTable) {
+    public JDONREFv3ScorerCollector(int mask, BucketTable bucketTable, AtomicReaderContext context) {
       this.mask = mask;
       this.bucketTable = bucketTable;
+      this.context = context;
     }
     
+    // DefaultSimilarity only
+    public float score(final int doc, Term term) throws IOException
+    {
+        // DefaultSimilarity only
+        TermWeight weight = (TermWeight) scorer.getWeight();
+        JDONREFv3TermQuery query = (JDONREFv3TermQuery) weight.getQuery();
+        String field = term.field();
+        IndexSearcher searcher = ((TermWeight)scorer.weight).getSearcher();
+        CollectionStatistics collectionStats = searcher.collectionStatistics(term.field());
+        JDONREFv3TermContext termStates = JDONREFv3TermContext.build(searcher.getTopReaderContext(), term);
+        TermStatistics termStats = searcher.termStatistics(term, termStates.getContext());
+        float value = (float)(Math.log(collectionStats.maxDoc()/(double)(termStats.docFreq()+1)) + 1.0);
+        
+        float freq = scorer.freq();
+        
+        AtomicReader atomicreader = context.reader();
+        NumericDocValues numdocvalues = atomicreader.getNormValues(field);
+        long normvalues = numdocvalues.get(doc);
+        float normvalue = ((DefaultSimilarity)searcher.getDefaultSimilarity()).decodeNormValue(normvalues);
+        float newscore = (float)Math.sqrt(freq) * normvalue        // propre au document
+                         * query.getBoost() * weight.getQueryNorm() * weight.getTopLevelBoost()  // propre à la requête
+	                 * value * value ;
+        
+        return newscore;
+    }
+    
+    /** Calcule le score total théorique que peut rapporter un document
+     *  Les termes de même offset ne sont comptés qu'une seule fois : le plus long ou celui de score le plus élevé.
+     * 
+     *  Le nombre de terme est aussi ajouté au bucket.
+     */
+    public float totalScore(String term, Bucket bucket) throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
+    {
+        AtomicReader atomicreader = context.reader();
+        Terms terms = atomicreader.getTermVector(bucket.doc,term);
+        TermsEnum termsEnum = terms.iterator(null);
+        BytesRef current;
+        
+        Field field = termsEnum.getClass().getDeclaredField("startOffsets");
+        field.setAccessible(true);
+        int[] startOffsets = (int[]) field.get(termsEnum); // no security manager for now !
+        
+        bucket.maxcoord = startOffsets.length;
+        
+        HashMap<Integer,Float> scoresPosition = new HashMap<Integer,Float>();
+        HashMap<Integer,Integer> lengthPosition = new HashMap<Integer,Integer>();
+        
+        float totalScore = 0.0f;
+        int i = 0;
+        while(!((current = termsEnum.next())==null))
+        {
+            Term t = new Term(term,current);
+            int length = t.text().length();
+            int offset = startOffsets[i];
+            
+            float score = score(bucket.doc,t);
+            
+            Float lastscore = scoresPosition.get(offset);
+            Integer lastlength = lengthPosition.get(offset);
+            
+            if (lastscore!=null)
+            {
+                if (lastlength < length)// || lastscore < score) ... le plus long n'est pas toujours le plus pertinent ! 
+                {
+                    totalScore -= lastscore;
+                    totalScore += score;
+                    scoresPosition.put(offset, score);
+                    lengthPosition.put(offset, length);
+                }
+                // else do nothing
+            }
+            else
+            {
+                totalScore += score;
+                scoresPosition.put(offset, score);
+                lengthPosition.put(offset, length);
+            }
+            
+            i++;
+        }
+        
+        return totalScore;
+    }
+    
+    /**
+     * Gère les exceptions concernant le score :
+     * 1. le pays et le code pays
+     */
+    public void exceptions(Bucket bucket)
+    {
+        if (bucket.score_by_term.get("ligne7")!=null && bucket.score_by_term.size()>1)
+            bucket.score_by_term.remove("ligne7");
+        if (bucket.score_by_term.get("code_pays")!=null && bucket.score_by_term.size()>1)
+            bucket.score_by_term.remove("code_pays");
+    }
+    
+    /**
+     * Gère les exceptions concernant le score :
+     * 1. le pays et le code pays
+     * 2. le code postal, code insee, code arrondissement et code département
+     */
+    public float poids(Bucket bucket,String term)
+    {
+        if (term.equals("ligne7"))
+        {
+            if (bucket.score_by_term.get("code_pays")!=null) return 50/2;
+        }
+        else if (term.equals("code_pays"))
+        {
+            if (bucket.score_by_term.get("ligne7")!=null) return 50/2;
+        }
+        else if (term.equals("code_postal"))
+        {
+            int count = 1;
+            if (bucket.score_by_term.get("code_departement")!=null) count++;
+            if (bucket.score_by_term.get("code_arrondissement")!=null) count++;
+            if (bucket.score_by_term.get("code_insee")!=null) count++;
+            return 50/count;
+        }
+        else if (term.equals("code_departement"))
+        {
+            int count = 1;
+            if (bucket.score_by_term.get("code_postal")!=null) count++;
+            if (bucket.score_by_term.get("code_arrondissement")!=null) count++;
+            if (bucket.score_by_term.get("code_insee")!=null) count++;
+            return 50/count;
+        }
+        else if (term.equals("code_arrondissement"))
+        {
+            int count = 1;
+            if (bucket.score_by_term.get("code_postal")!=null) count++;
+            if (bucket.score_by_term.get("code_departement")!=null) count++;
+            if (bucket.score_by_term.get("code_insee")!=null) count++;
+            return 50/count;
+        }
+        else if (term.equals("code_insee"))
+        {
+            int count = 1;
+            if (bucket.score_by_term.get("code_postal")!=null) count++;
+            if (bucket.score_by_term.get("code_departement")!=null) count++;
+            if (bucket.score_by_term.get("code_arrondissement")!=null) count++;
+            return 50/count;
+        }
+        
+        return 50;
+    }
+    
+    boolean foobar = false;
+    
+    public void makeFinalScore(Bucket bucket) throws IOException
+    {
+        exceptions(bucket);
+        
+        String[] numero = bucket.d.getValues("numero");
+        if (numero!=null && numero.length>0 && (numero[0].equals("130")))
+            foobar = true;
+        
+          bucket.score = 0.0f;
+          Iterator<String> terms = bucket.score_by_term.keySet().iterator();
+          while (terms.hasNext()) {
+              try {
+                  String term = terms.next();
+                  
+                  float poids = poids(bucket,term);
+                  float totalScore = this.totalScore(term, bucket); 
+
+                  float value = bucket.score_by_term.get(term);
+                  float subscore = poids * (value / totalScore);
+                  if (subscore>poids) subscore = poids; // le terme le plus long prime.
+                  
+                  bucket.score += subscore;
+
+              } catch (NoSuchFieldException ex) {
+                  Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
+                  bucket.score = 0;
+              } catch (IllegalArgumentException ex) {
+                  Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
+                  bucket.score = 0;
+              } catch (IllegalAccessException ex) {
+                  Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
+                  bucket.score = 0;
+              }
+          }
+
+          scorer.checker.next();
+
+          int maxFields = scorer.checker.getMaxFields(bucket.d);
+          
+          // ramené à 200.
+          bucket.score = (200  / (50 * maxFields)) * bucket.score;
+
+          // avec un malus éventuel (ordre, présence d'un numéro devant une voie)
+          bucket.score *= scorer.checker.malus();
+
+          if (scorer.checker.isAdressType(bucket.d) && !scorer.checker.checkAdressNumberPresent()) {
+              bucket.score *= JDONREFv3Scorer.NUMBERMALUS;
+          }
+      }
+    
     @Override
+    /**
+     * Score ramené à 200 
+     */
     public void collect(final int doc) throws IOException {
       final BucketTable table = bucketTable;
       final int i = doc & BucketTable.MASK;
@@ -39,33 +265,40 @@ public class JDONREFv3Scorer extends Scorer {
       
       if (bucket.doc != doc) {                    // invalid bucket
         bucket.doc = doc;                         // set doc
-        bucket.score = scorer.score();            // initialize score
-        bucket.malus = scorer.getMalus();
-        bucket.adressType = scorer.getAdressType();
-        bucket.adressNumberPresent = scorer.getAdressNumberPresent();
-        if (scorer.isLast())
-        {
-            bucket.score *=bucket.malus;          // applique le malus au total
-            if (bucket.adressType && !bucket.adressNumberPresent)
-                bucket.score *= JDONREFv3Scorer.NUMBERMALUS;
-        }
+        
+        //bucket.d = this.scorer.getSearcher().doc(doc); // which one ?
+        bucket.d = this.context.reader().document(doc);
+        
+        float score = scorer.score();
+        scorer.check(bucket.d); // trace les catégories
+        
+        Term term = ((JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery()).getTerm();
+        // premier score (pas de cumul)
+        bucket.score_by_term.put(term.field(),score);
+        
         bucket.bits = mask;                       // initialize mask
         bucket.coord = 1;                         // initialize coord
 
         bucket.next = table.first;                // push onto valid list
         table.first = bucket;
       } else {                                    // valid bucket
-        bucket.score += scorer.score();           // increment score
-        bucket.malus *= scorer.getMalus();
-        bucket.adressNumberPresent |= scorer.getAdressNumberPresent();
-        if (scorer.isLast())
-        {
-            bucket.score *= bucket.malus;          // applique le malus au total
-            if (bucket.adressType && !bucket.adressNumberPresent)
-                bucket.score *=  JDONREFv3Scorer.NUMBERMALUS;
-        }
+        float score = scorer.score();
+        scorer.check(bucket.d); // trace les catégories
+        
+        // second score (cumul éventuel)
+        Term term = ((JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery()).getTerm();
+        
+        Float lastscore;
+        score += ((lastscore=bucket.score_by_term.get(term.field()))==null)?0.0f:lastscore;
+        bucket.score_by_term.put(term.field(),score);
+        
         bucket.bits |= mask;                      // add bits in mask
         bucket.coord++;                           // increment coord
+      }
+      
+      if (scorer.isLast())
+      {
+            makeFinalScore(bucket);
       }
     }
     
@@ -122,10 +355,16 @@ public class JDONREFv3Scorer extends Scorer {
 
   static final class Bucket {
     int doc = -1;             // tells if bucket is valid
+    Document d = null;        // the original
     double score;             // incremental score
     double malus;             // malus final à appliquer
     boolean adressType;       // le document est une adresse
     boolean adressNumberPresent; // présence du numéro d'adresse ...
+    
+    HashMap<String,Float> score_by_term; // le score cumulé de chaque terme
+    
+    int maxcoord;             // le nombre total de termes possibles (sans abbréviations et ngram)
+    
     // TODO: break out bool anyProhibited, int
     // numRequiredMatched; then we can remove 32 limit on
     // required clauses
@@ -141,17 +380,20 @@ public class JDONREFv3Scorer extends Scorer {
 
     final Bucket[] buckets = new Bucket[SIZE];
     Bucket first = null;                          // head of valid list
+    AtomicReaderContext context;
   
-    public BucketTable() {
+    public BucketTable(AtomicReaderContext context) {
       // Pre-fill to save the lazy init when collecting
       // each sub:
       for(int idx=0;idx<SIZE;idx++) {
         buckets[idx] = new Bucket();
+        buckets[idx].score_by_term = new HashMap<String,Float>();
       }
+      this.context = context;
     }
 
     public Collector newCollector(int mask) {
-      return new JDONREFv3ScorerCollector(mask, this);
+      return new JDONREFv3ScorerCollector(mask, this,context);
     }
 
     public int size() { return SIZE; }
@@ -173,6 +415,68 @@ public class JDONREFv3Scorer extends Scorer {
       final static int CODE_ARRONDISSEMENT = 6;
       final static int CODE_POSTAL = 7;
       final static int CODE_INSEE = 8;
+      final static int LIGNE7 = 9;
+      
+      int currentIndex = -1;
+      
+      public void setCurrentIndex(int currentIndex)
+      {
+          this.currentIndex = currentIndex;
+      }
+      
+      public int getCurrentIndex()
+      {
+          return currentIndex;
+      }
+      
+      public int getCategoryFromString(String category)
+      {
+          if (category.equals("ligne4") || category.equals("voie"))
+          {
+              return VOIE;
+          }
+          else if (category.equals("adresse"))
+          {
+              return ADRESSE;
+          }
+          else if (category.equals("commune"))
+          {
+              return COMMUNE;
+          }
+          else if (category.equals("code_postal"))
+          {
+              return CODE_POSTAL;
+          }
+          else if (category.equals("code_arrondissement"))
+          {
+              return CODE_ARRONDISSEMENT;
+          }
+          else if (category.equals("code_insee"))
+          {
+              return CODE_INSEE;
+          }
+          else if (category.equals("code_departement") || category.equals("departement"))
+          {
+              return CODE_DEPARTEMENT;
+          }
+          else if (category.equals("ligne7") || category.equals("pays"))
+          {
+              return LIGNE7;
+          }
+          return NONE;
+      }
+      
+      public HashMap<Integer,Double> idfMax;
+      
+      public void addIdf(int category, double idf)
+      {
+          Double current = idfMax.get(category);
+          if (current == null)
+              current = idf;
+          else
+              current += idf;
+          idfMax.put(category,current);
+      }
       
       public ArrayList<HashMap<Integer,Boolean>> list;
       public HashMap<Integer,Boolean> current;
@@ -193,6 +497,7 @@ public class JDONREFv3Scorer extends Scorer {
       {
           list = new ArrayList<HashMap<Integer,Boolean>>();
           current = new HashMap<Integer,Boolean>();
+          idfMax = new HashMap<Integer,Double>();
       }
       
       public boolean contains(Document d,String field,String value)
@@ -202,17 +507,43 @@ public class JDONREFv3Scorer extends Scorer {
           for(int i=0;i<docValues.length;i++)
           {
               String docValue = docValues[i].toLowerCase();
-              if (docValue.contains(value))
+              if (docValue.startsWith(value)) // autocompletion case
                   return true;
           }
           
           return false;
       }
       
-      public boolean isAdressType(int docId) throws IOException
+      public int getType(Document d) throws IOException
       {
-          Document d = weight.getSearcher().getIndexReader().document(docId);
+          String[] types = d.getValues("type");
+          String type = types[0];
           
+          return getCategoryFromString(type);
+      }
+      
+      public int getMaxFields(Document d) throws IOException
+      {
+          int type = getType(d);
+          
+          switch(type) // pour les documents autres que le pays, le pays n'est pas pris en compte.
+          {
+              case ADRESSE: 
+                  return 3;
+              case COMMUNE:
+                  return 2;
+              case VOIE:
+                  return 3;
+              case CODE_DEPARTEMENT:
+                  return 1;
+              case LIGNE7:
+                  return 1;
+          }
+          return 0;
+      }
+      
+      public boolean isAdressType(Document d) throws IOException
+      {
           String[] types = d.getValues("type");
           
           if (types[0].equals("adresse"))
@@ -223,55 +554,20 @@ public class JDONREFv3Scorer extends Scorer {
           return false;
       }
       
-      boolean foodebug = false;
-      
-      /**
-       * Retrouve la catégorie à laquelle appartient la valeur donnée dans le document en question.
-       * @return
-       */
-      public HashMap<Integer,Boolean> getCategories(int docId,String value) throws IOException
-      {
-          HashMap<Integer,Boolean> categories = new HashMap<Integer,Boolean>();
-          
-          Document d = weight.getSearcher().getIndexReader().document(docId);
-          
-          if (d.getField("numero")!=null && d.getField("numero").stringValue().equals("59"))
-              this.foodebug = true;
-          
-          if (contains(d,"ligne4",value))
-          {
-              if (d.getValues("type")[0].equals("voie"))
-                categories.put(VOIE,true);
-              else
-              {
-                  if (contains(d,"numero",value))
-                    categories.put(NUMEROADRESSE,true);
-                  else
-                    categories.put(ADRESSE,true);
-              }
-          }
-          if (contains(d,"commune",value)) categories.put(COMMUNE,true);
-          if (contains(d,"code_departement",value)) categories.put(CODE_DEPARTEMENT,true);
-          if (contains(d,"code_arrondissement",value)) categories.put(CODE_ARRONDISSEMENT,true);
-          if (contains(d,"code_postal",value)) categories.put(CODE_POSTAL,true);
-          if (contains(d,"code_insee",value)) categories.put(CODE_POSTAL,true);
-          
-          return categories;
-      }
-      
-
       protected boolean checkAdressNumberPresent()
       {
-          Set<Integer> keys = current.keySet();
-          Iterator<Integer> ite = keys.iterator();
-          
-          while(ite.hasNext())
+          for(int i=0;i<list.size();i++)
           {
-              int category = ite.next();
-              
-              if (category == NUMEROADRESSE)
-              {
-                  return true;
+              HashMap<Integer,Boolean> hashi = list.get(i);
+              Set<Integer> keys = hashi.keySet();
+              Iterator<Integer> ite = keys.iterator();
+
+              while (ite.hasNext()) {
+                  int category = ite.next();
+
+                  if (category == NUMEROADRESSE) {
+                      return true;
+                  }
               }
           }
           return false;
@@ -284,32 +580,35 @@ public class JDONREFv3Scorer extends Scorer {
        */
       protected boolean checkOtherNumberBeforeAdresse()
       {
-          Set<Integer> keys = current.keySet();
-          Iterator<Integer> ite = keys.iterator();
-          
-          while(ite.hasNext())
+          for(int i=1;i<list.size();i++)
           {
-              int category = ite.next();
-              
-              if (category == ADRESSE)
-              {
-                  if (list.size()==0) return false;
-                  
-                  HashMap<Integer,Boolean> hash = list.get(list.size()-1);
-                  
-                  if (hash.get(NUMEROADRESSE)!=null || hash.get(ADRESSE)!=null)
-                      return false;
-                  else
-                  {
-                      if (hash.get(CODE_ARRONDISSEMENT)==null)
-                            return true;
-                      if (hash.get(CODE_DEPARTEMENT)==null)
-                            return true;
-                      if (hash.get(CODE_INSEE)==null)
-                            return true;
-                      if (hash.get(CODE_POSTAL)==null)
-                            return true;
-                      return false;
+              HashMap<Integer,Boolean> hashi = list.get(i);
+              Set<Integer> keys = hashi.keySet();
+              Iterator<Integer> ite = keys.iterator();
+          
+              while (ite.hasNext()) {
+                  int category = ite.next();
+
+                  if (category == ADRESSE) {
+                      HashMap<Integer, Boolean> hash = list.get(i - 1);
+
+                      if (hash.get(NUMEROADRESSE) != null || hash.get(ADRESSE) != null) {
+                          return false;
+                      } else {
+                          if (hash.get(CODE_ARRONDISSEMENT) == null) {
+                              return true;
+                          }
+                          if (hash.get(CODE_DEPARTEMENT) == null) {
+                              return true;
+                          }
+                          if (hash.get(CODE_INSEE) == null) {
+                              return true;
+                          }
+                          if (hash.get(CODE_POSTAL) == null) {
+                              return true;
+                          }
+                          return false;
+                      }
                   }
               }
           }
@@ -322,58 +621,68 @@ public class JDONREFv3Scorer extends Scorer {
        */
       public boolean checkOrder()
       {
-          Set<Integer> keys = current.keySet();
-          Iterator<Integer> ite = keys.iterator();
-          
-          while(ite.hasNext())
+          for(int i=0;i<list.size();i++)
           {
-              int category = ite.next();
+              HashMap<Integer,Boolean> hash = list.get(i);
+              Set<Integer> keys = hash.keySet();
+              Iterator<Integer> ite = keys.iterator();
               
-              if (list.size()==0) return true;
-              
-              boolean same = true;
-              boolean check = false;
-              
-              if (category==NUMEROADRESSE) same = false; // numero is the first token from ligne4
-              
-              for(int j=list.size()-1;!check && j>=0;j--)
-              {
-                  if (same)
-                  {
-                      if (category==ADRESSE || category==NUMEROADRESSE)
-                      {
-                          if (list.get(j).get(ADRESSE)==null
-                                  && list.get(j).get(NUMEROADRESSE)==null)
+              while (ite.hasNext()) {
+                  int category = ite.next();
+
+                  if (list.size() == 0) {
+                      return true;
+                  }
+                  boolean same = true;
+                  boolean check = false;
+
+                  if (category == NUMEROADRESSE) {
+                      same = false; // numero is the first token from ligne4
+
+                  }
+                  for (int j = i-1; !check && j >= 0; j--) {
+                      if (same) {
+                          if (category == ADRESSE || category == NUMEROADRESSE) {
+                              if (list.get(j).get(ADRESSE) == null && list.get(j).get(NUMEROADRESSE) == null) {
                                   same = false;
-                      }
-                      else
-                      {
-                          if (list.get(j).get(category)==null)
-                            same = false;
+                              }
+                          } else {
+                              if (list.get(j).get(category) == null) {
+                                  same = false;
+                              }
+                          }
+                      } else {
+                          if (category == ADRESSE || category == NUMEROADRESSE) {
+                              if ((list.get(j).get(ADRESSE) != null || list.get(j).get(NUMEROADRESSE) != null) && list.get(j).size() == 1) {
+                                  check = true;
+                              }
+                          } else {
+                              if (list.get(j).get(category) != null && list.get(j).size() == 1) {
+                                  check = true;
+                              }
+                          }
                       }
                   }
-                  else
-                  {
-                      if (category==ADRESSE || category==NUMEROADRESSE)
-                      {
-                        if ((list.get(j).get(ADRESSE)!=null || list.get(j).get(NUMEROADRESSE)!=null) && list.get(j).size()==1)
-                        {
-                          check = true;
-                        }
-                      }
-                      else
-                      {
-                        if (list.get(j).get(category)!=null && list.get(j).size()==1)
-                        {
-                          check = true;
-                        }
-                      }
+                  if (!same && check) {
+                      return false;
                   }
               }
-              if (!same && check) return false;
           }
-          
           return true;
+      }
+      
+      public float malus() throws IOException
+      {
+          float lmalus = 1.0f;
+          boolean malusOrder = !checkOrder();
+          if (malusOrder) {
+              lmalus *= JDONREFv3Scorer.ORDERMALUS;
+          }
+          boolean malusNumber = checkOtherNumberBeforeAdresse();
+          if (malusNumber) {
+              lmalus *= JDONREFv3Scorer.ORDERMALUS;
+          }
+          return lmalus;
       }
       
       public void add(int category)
@@ -388,8 +697,12 @@ public class JDONREFv3Scorer extends Scorer {
       
       public void next()
       {
-          list.add(current);
-          current.clear();
+          if (current.size()>0)
+          {
+            list.add((HashMap<Integer, Boolean>) current.clone());
+            current.clear();
+          }
+          currentIndex = -1;
       }
   }
 
@@ -420,7 +733,7 @@ public class JDONREFv3Scorer extends Scorer {
   }
   
   private SubScorer scorers = null;
-  private BucketTable bucketTable = new BucketTable();
+  private BucketTable bucketTable;
   private final float[] coordFactors;
   // TODO: re-enable this if BQ ever sends us required clauses
   //private int requiredMask = 0;
@@ -433,11 +746,14 @@ public class JDONREFv3Scorer extends Scorer {
   protected JDONREFv3ESWeight protectedWeight;
   
   public JDONREFv3Scorer(JDONREFv3ESWeight weight, boolean disableCoord, int minNrShouldMatch,
-      List<Scorer> optionalScorers, List<Scorer> prohibitedScorers, int maxCoord) throws IOException {
+      List<Scorer> optionalScorers, List<Scorer> prohibitedScorers, int maxCoord, AtomicReaderContext context) throws IOException {
     super(weight);
     
     this.protectedWeight = weight;
     this.minNrShouldMatch = minNrShouldMatch;
+    this.context = context;
+    
+    bucketTable = new BucketTable(context);
     
     AdresseChecker checker = new AdresseChecker();
     checker.setWeight(weight);
@@ -508,7 +824,8 @@ public class JDONREFv3Scorer extends Scorer {
           }
           
           if (current.coord >= minNrShouldMatch) {
-            bs.score = current.score * coordFactors[current.coord];
+            // malus pour les éléments non trouvés.
+            bs.score = current.score * current.coord / ((JDONREFv3Query)this.protectedWeight.getQuery()).getNumTokens();
             bs.doc = current.doc;
             bs.freq = current.coord;
             collector.collect(current.doc);
@@ -541,36 +858,46 @@ public class JDONREFv3Scorer extends Scorer {
     return false;
   }
   
-  // Calcule le malus appliqué à un document seul.
-  public float malus(int doc) throws IOException
+  public float malus(Document d) throws IOException
   {
-      float malus = 1.0f;
       for (SubScorer sub = scorers; sub != null; sub = sub.next)
       {
-            int subScorerDocID = sub.scorer.docID();
-            if (subScorerDocID != NO_MORE_DOCS)
-            {
-                JDONREFv3TermQuery query = (JDONREFv3TermQuery)sub.scorer.weight.getQuery();
-                HashMap<Integer,Boolean> categories = sub.scorer.checker.getCategories(subScorerDocID, query.getTerm().text());
-                sub.scorer.checker.add(categories);
-      
-                malus *= sub.scorer.malus();
-            }
+          sub.scorer.check(d);
+          
+          if (sub.scorer.isLast())
+          {
+              sub.scorer.checker.next();
+              return sub.scorer.checker.malus();
+          }
       }
-      return malus;
+      
+      throw(new UnsupportedOperationException());
+  }
+  
+  public float malus(int doc) throws IOException
+  {
+      Document d = this.context.reader().document(doc);
+      return malus(d);
+  }
+  
+  // Retrouve si un problème se pose avec l'absence du numéro d'adresse
+  public boolean checkAdressType(Document d) throws IOException
+  {
+      for (SubScorer sub = scorers; sub != null; sub = sub.next)
+      {
+          if (sub.scorer.checker.isAdressType(d))
+              return sub.scorer.checker.checkAdressNumberPresent();
+          else
+              return true;
+      }
+      return true;
   }
   
   // Retrouve si un problème se pose avec l'absence du numéro d'adresse
   public boolean checkAdressType(int doc) throws IOException
   {
-      for (SubScorer sub = scorers; sub != null; sub = sub.next)
-      {
-          if (sub.scorer.checkAdressType(doc))
-              return sub.scorer.checkAdressNumberPresent();
-          else
-              return true;
-      }
-      return true;
+      Document d = this.context.reader().document(doc);
+      return checkAdressType(d);
   }
           
   @Override

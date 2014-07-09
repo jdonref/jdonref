@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
 import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryBuilder;
 import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryParser;
@@ -13,6 +14,7 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
@@ -54,14 +56,14 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
             logger.info("creating index [{}]", INDEX_NAME);
             wipeIndices(INDEX_NAME);
             
-            String settings = readFile("./test/resources/index/jdonrefv3es-settings_Types.json");
+            String settings = readFile("./test/resources/index/jdonrefv3es-settings_Query.json");
             client().admin().indices().prepareCreate(INDEX_NAME).setSettings(settings).execute().actionGet();
     }
     /*
     @Override
     protected Settings nodeSettings(int nodeOrdinal) {
         return ImmutableSettings.settingsBuilder()
-           .put("plugin.types", JDONREFv3ESPlugin.class.getName())
+           .put("plugin.types", AnalysisPhoneticPlugin.class.getName())
            .put(super.nodeSettings(nodeOrdinal)).build();
     }*/
     
@@ -113,13 +115,21 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
     
     void searchExactAdresse(String voie,String assertion)
     {
+        searchExactAdresse( voie, assertion,0,-1.0f);
+    }
+    
+    void searchExactAdresse(String voie,String assertion,int indice,float note)
+    {
         System.out.println("---------------------");
         System.out.println("Test Number "+testNumber++);
         System.out.println("Searching "+voie);
         QueryBuilder qb = (QueryBuilder) new JDONREFv3QueryBuilder(voie);
         ((JDONREFv3QueryBuilder)qb).mode(JDONREFv3QueryParser.STRING);
         //QueryBuilder qb = new QueryStringQueryBuilder(voie);
+        long start = Calendar.getInstance().getTimeInMillis();
         SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        long end = Calendar.getInstance().getTimeInMillis();
+        System.out.println("Took "+(end-start)+" ms");
         SearchHit[] hits = search.getHits().getHits();
         
         if (hits.length==0)
@@ -132,7 +142,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
         {
             SearchHit hit = hits[i];
             match = assertion.equals(hit.getSource().get("fullName"));
-            if (!match || match && i>0)
+            //if (!match || match && i>0)
             {
                 System.out.println("hit "+i+" "+hit.getSourceAsString());
                 System.out.println("score : "+hit.getScore());
@@ -143,7 +153,9 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 }
             }
         }
-        assertEquals(assertion,hits[0].getSource().get("fullName"));
+        assertEquals(assertion,hits[indice].getSource().get("fullName"));
+        if (note>-1)
+            assertEquals(hits[0].getScore(),note);
     }
     
     void index() throws IOException, InterruptedException, ExecutionException
@@ -264,19 +276,22 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("code_insee","75105")
                 .field("type","adresse")
                 .endObject());
-        publicIndex("adresse","4",XContentFactory.jsonBuilder().startObject()
+        for(int i=130;i<500;i++) // inclus donc le numéro 130
+        {
+            publicIndex("adresse","4"+i,XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
-                .field("ligne4","130 RUE REMY DUHEM")
+                .field("ligne4",i+" RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","130 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("numero","130")
+                .field("commune","DOUAI")
+                .field("fullName",i+" RUE REMY DUHEM 59500 DOUAI FRANCE")
+                .field("numero",Integer.toString(i))
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .field("type","adresse")
                 .endObject());
+        }
         publicIndex("adresse","5",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne4","131 RUE REMY DUHEM")
@@ -396,9 +411,8 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
-        
         searchExactAdresse("130 RUE REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
-        searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
+   /*     searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("130 REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("130 RUE REMY DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
@@ -794,6 +808,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
         searchExactAdresse("REMY 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("REMY 59","RUE REMY DUHEM 59500 DOUAI FRANCE");
         
-        searchExactAdresse("59 BOULEVARD HOPITAL 75 PARIS","59 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE");
+        //searchExactAdresse("59 BOULEVARD HOPITAL 75 PARIS","59 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE");
+        */
     }
 }

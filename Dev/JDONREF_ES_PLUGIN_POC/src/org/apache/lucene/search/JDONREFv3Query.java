@@ -15,6 +15,15 @@ import org.apache.lucene.util.Bits;
 public class JDONREFv3Query extends BooleanQuery
 {
     
+    protected int numTokens;
+
+        public int getNumTokens() {
+            return numTokens;
+        }
+
+        public void setNumTokens(int numTokens) {
+            this.numTokens = numTokens;
+        }
 /**
    * Expert: the Weight for BooleanQuery, used to
    * normalize, score and explain these queries.
@@ -25,6 +34,7 @@ public class JDONREFv3Query extends BooleanQuery
   {
     protected IndexSearcher searcher; // nécessaire pour affiner la notation
     protected boolean protectedDisableCoord;
+    
     
     public IndexSearcher getSearcher()
     {
@@ -102,7 +112,7 @@ public class JDONREFv3Query extends BooleanQuery
       }
 
       if (!scoreDocsInOrder && topScorer && required.size() == 0 && minNrShouldMatch <= 1) {
-        return new JDONREFv3Scorer(this, protectedDisableCoord, minNrShouldMatch, optional, prohibited, maxCoord);
+        return new JDONREFv3Scorer(this, protectedDisableCoord, minNrShouldMatch, optional, prohibited, maxCoord, context);
       }
       else
           throw new IOException("MultiNrShouldMatch nor required clause are not supported by JDONREFv3Scorer.");

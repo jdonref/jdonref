@@ -20,6 +20,7 @@ package org.apache.lucene.search;
 import java.io.IOException;
 
 import java.util.HashMap;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.search.JDONREFv3Scorer.AdresseChecker;
 import org.apache.lucene.search.similarities.Similarity;
@@ -32,6 +33,13 @@ public class JDONREFv3TermScorer extends Scorer {
   
   protected AdresseChecker checker;
   protected boolean last;
+  
+  protected IndexSearcher searcher;
+  
+  public IndexSearcher getSearcher()
+  {
+      return searcher;
+  }
   
   public boolean isLast()
   {
@@ -64,11 +72,12 @@ public class JDONREFv3TermScorer extends Scorer {
    *          The </code>Similarity.SimScorer</code> implementation 
    *          to be used for score computations.
    */
-  public JDONREFv3TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer, boolean last) {
+  public JDONREFv3TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer, boolean last, IndexSearcher searcher) {
     super(weight);
     this.docScorer = docScorer;
     this.docsEnum = td;
     this.last = last;
+    this.searcher = searcher;
   }
 
   @Override
@@ -113,55 +122,31 @@ public class JDONREFv3TermScorer extends Scorer {
     
     float score = docScorer.score(docsEnum.docID(), docsEnum.freq());
     
-    malus = 1;
-    
-    if (weight.getQuery() instanceof JDONREFv3TermQuery)
-    {
-        JDONREFv3TermQuery query = (JDONREFv3TermQuery)weight.getQuery();
-        
-        HashMap<Integer,Boolean> categories = checker.getCategories(docID(), query.getTerm().text());
-        checker.add(categories);
-        
-        malus = malus();
-        
-        adressNumberPresent = checkAdressNumberPresent();
-        
-        adressType = checkAdressType(docID());
-    
-        checker.next();
-    }
-    
     return score;
   }
+  
+  public void check(Document d) throws IOException
+  {
+      JDONREFv3TermQuery query = (JDONREFv3TermQuery) weight.getQuery();
+      int index = query.getIndex();
 
-  public float malus() throws IOException
-  {
-        float lmalus = 1.0f;
-        boolean malusOrder = !checker.checkOrder();
-        if (malusOrder)
-            lmalus *= JDONREFv3Scorer.ORDERMALUS;
-        boolean malusNumber = checker.checkOtherNumberBeforeAdresse();
-        if (malusNumber)
-            lmalus *= JDONREFv3Scorer.ORDERMALUS;
-        return lmalus;
-  }
-  
-  boolean adressType = false;
-  
-  protected boolean getAdressType()
-  {
-      return adressType;
-  }
-  
-  protected boolean checkAdressNumberPresent()
-  {
-        return checker.checkAdressNumberPresent();
-  }
-  
-  
-  protected boolean checkAdressType(int docID) throws IOException
-  {
-        return checker.isAdressType(docID);
+      if (index != checker.getCurrentIndex()) {
+          checker.next();
+          checker.setCurrentIndex(index);
+      }
+
+      int category = checker.getCategoryFromString(query.getTerm().field());
+      // Traitement du cas particulier du numéro d'adresse. 
+      // Effet de bord possible avec les voies contenant des numéros
+      if (category==AdresseChecker.VOIE && checker.isAdressType(d)) 
+      {
+          if (checker.contains(d,"numero",query.getTerm().text()))
+              checker.add(AdresseChecker.NUMEROADRESSE);
+          else
+              checker.add(AdresseChecker.ADRESSE);
+      }
+      else
+            checker.add(category);
   }
   
   /**

@@ -43,24 +43,55 @@ public class JDONREFv3TermQuery extends Query {
   private final JDONREFv3TermContext perReaderTermState;
 
   protected boolean last = false;
+
+  protected int index;
+  
+  public int getIndex()
+  {
+      return index;
+  }
+  
+    public void setIndex(int index)
+    {
+        this.index = index;
+    }
   
   public void setIsLast() {
     this.last = true;
   }
   
-  final class TermWeight extends Weight {
+  public final class TermWeight extends Weight {
     private final Similarity similarity;
     private final Similarity.SimWeight stats;
     private final JDONREFv3TermContext termStates;
     
+    protected IndexSearcher searcher;
+    
     protected boolean last;
 
+        public Similarity getSimilarity() {
+            return similarity;
+        }
+    
+    
+
+    public JDONREFv3TermContext getContext()
+    {
+        return termStates;
+    }
+    
+    public IndexSearcher getSearcher()
+    {
+      return searcher;
+    }
+    
     public TermWeight(IndexSearcher searcher, JDONREFv3TermContext termStates, boolean last)
       throws IOException {
       assert termStates != null : "TermContext must not be null";
       this.termStates = termStates;
       this.similarity = searcher.getSimilarity();
       this.last = last;
+      this.searcher = searcher;
       this.stats = similarity.computeWeight(
           getBoost(), 
           searcher.collectionStatistics(term.field()), 
@@ -78,8 +109,21 @@ public class JDONREFv3TermQuery extends Query {
       return stats.getValueForNormalization();
     }
 
+    float queryNorm;
+    float topLevelBoost;
+
+        public float getQueryNorm() {
+            return queryNorm;
+        }
+
+        public float getTopLevelBoost() {
+            return topLevelBoost;
+        }
+    
     @Override
     public void normalize(float queryNorm, float topLevelBoost) {
+        this.queryNorm = queryNorm;
+        this.topLevelBoost = topLevelBoost;
       stats.normalize(queryNorm, topLevelBoost);
     }
 
@@ -94,7 +138,7 @@ public class JDONREFv3TermQuery extends Query {
       DocsEnum docs = termsEnum.docs(acceptDocs, null);
       assert docs != null;
       //return new TermScorer(this, docs, similarity.simScorer(stats, context));
-      return new JDONREFv3TermScorer(this, docs, similarity.simScorer(stats, context),this.last);
+      return new JDONREFv3TermScorer(this, docs, similarity.simScorer(stats, context),this.last, this.searcher);
     }
     
     /**

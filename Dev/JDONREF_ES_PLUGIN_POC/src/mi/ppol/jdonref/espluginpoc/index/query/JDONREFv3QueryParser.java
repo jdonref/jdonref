@@ -163,7 +163,7 @@ public class JDONREFv3QueryParser implements QueryParser
         }
     }
     
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, boolean last) throws IOException
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, int index, boolean last) throws IOException
     {
         JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
         //TermQuery query = new TermQuery(t);
@@ -173,6 +173,7 @@ public class JDONREFv3QueryParser implements QueryParser
         {
             if (last)
               query.setIsLast();
+            query.setIndex(index);
             query.setBoost(boost);
             booleanQuery.add(new BooleanClause(query,occur));
         }
@@ -345,6 +346,8 @@ public class JDONREFv3QueryParser implements QueryParser
         
         BytesRef bytes = termAtt == null ? null : termAtt.getBytesRef();
 
+        booleanQuery.setNumTokens(numTokens);
+        
         // phrase query:
           int position = -1;
           for (int i = 0; i < numTokens; i++) {
@@ -361,7 +364,14 @@ public class JDONREFv3QueryParser implements QueryParser
             }
 
             position += positionIncrement;
-            addMatchQueryClause(booleanQuery,mq,new Term("fullName", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i==numTokens-1);
+            //addMatchQueryClause(booleanQuery,mq,new Term("fullName", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i==numTokens-1);
+            addMatchQueryClause(booleanQuery,mq,new Term("ligne4", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
+            addMatchQueryClause(booleanQuery,mq,new Term("commune", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
+            addMatchQueryClause(booleanQuery,mq,new Term("code_postal", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
+            addMatchQueryClause(booleanQuery,mq,new Term("code_arrondissement", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
+            addMatchQueryClause(booleanQuery,mq,new Term("code_insee", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
+            addMatchQueryClause(booleanQuery,mq,new Term("code_departement", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
+            addMatchQueryClause(booleanQuery,mq,new Term("ligne7", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,i==numTokens-1);
           }
         
         //System.out.println(booleanQuery.toString());

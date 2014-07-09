@@ -2,22 +2,21 @@
      "commune": {
         "path" : "just_name",
         "properties" : {
-                          "code_insee" : { "type" : "string", "store" : true, "index":"not_analyzed"},
-                          "code_departement" : { "type" : "string", "store" : true, "index":"not_analyzed"},
-                          "code_pays" : { "type" : "string" , "store" : true, "index":"not_analyzed"},
-                          "commune" : { "type" : "string" , "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
-                          "code_arrondissement" : { "type" : "string", "store": true, "index":"not_analyzed"},
-                          "code_postal" : { "type" : "string", "store": true, "index":"not_analyzed"},
-                            "pays" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "code_insee" : { "type" : "string", "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "code_departement" : { "type" : "string", "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "code_pays" : { "type" : "string" , "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "commune" : { "type" : "string" , "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "code_arrondissement" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "code_postal" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "pays" : { "type" : "string" , "store" : true, "index": "no"},
                           "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                           "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
-                          "ligne4" : { "type" : "string", "store": true, "index": "no"},
-                          "ligne5" : { "type" : "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "ligne5" : { "type" : "string", "store": true,  "index":"no"},
                           "ligne6" : { "type" : "string", "store": true, "index": "no"},
-                          "ligne7" : { "type" : "string", "store": true, "index": "no"},
-                            "type" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                          "ligne7" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                          "type" : { "type" : "string", "store" : true,  "index":"not_analyzed"},
                           "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-                          "fullName" : {"type": "string", "store": true, "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
+                          "fullName" : {"type": "string", "store": true, "index": "no"}
                         }
     }
   }
