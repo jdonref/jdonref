@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.search.JDONREFv3Scorer.AdresseChecker;
 import org.apache.lucene.search.similarities.Similarity;
 
 /** Expert: A <code>Scorer</code> for documents matching a <code>Term</code>.
@@ -31,7 +30,6 @@ public class JDONREFv3TermScorer extends Scorer {
   protected final DocsEnum docsEnum;
   protected final Similarity.SimScorer docScorer;
   
-  protected AdresseChecker checker;
   protected boolean last;
   
   protected IndexSearcher searcher;
@@ -46,19 +44,12 @@ public class JDONREFv3TermScorer extends Scorer {
       return last;
   }
   
+  /**
+   * Why TermScorer is useFull.
+   */
   public void setIsLast()
   {
       last = true;
-  }
-
-  public AdresseChecker getChecker()
-  {
-      return checker;
-  }
-
-  public void setChecker(AdresseChecker checker)
-  {
-      this.checker = checker;
   }
   
   /**
@@ -123,30 +114,6 @@ public class JDONREFv3TermScorer extends Scorer {
     float score = docScorer.score(docsEnum.docID(), docsEnum.freq());
     
     return score;
-  }
-  
-  public void check(Document d) throws IOException
-  {
-      JDONREFv3TermQuery query = (JDONREFv3TermQuery) weight.getQuery();
-      int index = query.getIndex();
-
-      if (index != checker.getCurrentIndex()) {
-          checker.next();
-          checker.setCurrentIndex(index);
-      }
-
-      int category = checker.getCategoryFromString(query.getTerm().field());
-      // Traitement du cas particulier du numéro d'adresse. 
-      // Effet de bord possible avec les voies contenant des numéros
-      if (category==AdresseChecker.VOIE && checker.isAdressType(d)) 
-      {
-          if (checker.contains(d,"numero",query.getTerm().text()))
-              checker.add(AdresseChecker.NUMEROADRESSE);
-          else
-              checker.add(AdresseChecker.ADRESSE);
-      }
-      else
-            checker.add(category);
   }
   
   /**

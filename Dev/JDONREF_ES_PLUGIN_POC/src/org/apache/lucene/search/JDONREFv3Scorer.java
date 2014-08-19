@@ -3,6 +3,8 @@ package org.apache.lucene.search;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,6 +16,7 @@ import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.JDONREFv3TermContext;
 import org.apache.lucene.index.NumericDocValues;
@@ -24,6 +27,7 @@ import org.apache.lucene.search.JDONREFv3Query.JDONREFv3ESWeight;
 import org.apache.lucene.search.JDONREFv3TermQuery.TermWeight;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.index.similarity.SimilarityService;
 
@@ -55,9 +59,23 @@ public class JDONREFv3Scorer extends Scorer {
       this.context = context;
     }
     
-    // DefaultSimilarity only
-    public float score(final int doc, Term term) throws IOException
+    public boolean debug(Bucket bucket)
     {
+        if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE")) return true;
+        if (bucket.d.get("fullName").equals("RUE REMY DUHEM 59500 DOUAI FRANCE")) return true;
+        if (bucket.d.get("fullName").equals("59500 DOUAI FRANCE")) return true;
+        if (bucket.d.get("fullName").equals("59 FRANCE")) return true;
+        if (bucket.d.get("fullName").equals("FRANCE")) return true;
+        
+        return false;
+    }
+    
+    // DefaultSimilarity only
+    public float score(Bucket bucket, Term term) throws IOException
+    {
+        int doc = bucket.doc;
+        long start = Calendar.getInstance().getTimeInMillis();
+        
         // DefaultSimilarity only
         TermWeight weight = (TermWeight) scorer.getWeight();
         JDONREFv3TermQuery query = (JDONREFv3TermQuery) weight.getQuery();
@@ -68,9 +86,17 @@ public class JDONREFv3Scorer extends Scorer {
         TermStatistics termStats = searcher.termStatistics(term, termStates.getContext());
         float value = (float)(Math.log(collectionStats.maxDoc()/(double)(termStats.docFreq()+1)) + 1.0);
         
-        float freq = scorer.freq();
-        
         AtomicReader atomicreader = context.reader();
+        DocsEnum docsEnum = atomicreader.termDocsEnum(term);
+        docsEnum.advance(doc);
+        float freq;
+        
+        if (cumuler(term.field()))
+            freq = docsEnum.freq();
+        else
+            freq = 1;
+        //float freq = collectionStats.sumTotalTermFreq();
+        
         NumericDocValues numdocvalues = atomicreader.getNormValues(field);
         long normvalues = numdocvalues.get(doc);
         float normvalue = ((DefaultSimilarity)searcher.getDefaultSimilarity()).decodeNormValue(normvalues);
@@ -78,7 +104,39 @@ public class JDONREFv3Scorer extends Scorer {
                          * query.getBoost() * weight.getQueryNorm() * weight.getTopLevelBoost()  // propre à la requête
 	                 * value * value ;
         
+        
+        if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+        {
+            System.out.println("Thread "+Thread.currentThread().getName()+" "+bucket.d.get("fullName")+" doc "+bucket.doc);
+        
+            System.out.println("docFreq:"+termStats.docFreq());
+            System.out.println("maxDoc:"+collectionStats.maxDoc());
+            System.out.println("queryNorm:"+weight.getQueryNorm());
+            System.out.println("fieldNorm:"+normvalue);
+            System.out.println("topLevelBoost:"+weight.getTopLevelBoost());
+            System.out.println("queryBoost:"+query.getBoost());
+            System.out.println("idf:"+value);
+            System.out.println("tf:"+Math.sqrt(freq));
+            
+            System.out.println("Thread "+Thread.currentThread().getName()+" Calcul du Score for Term :"+term.field()+"="+term.text()+" for doc :"+doc+" = "+newscore);
+            long end = Calendar.getInstance().getTimeInMillis();
+            System.out.println("took "+(end-start)+" ms");
+        }
+        
         return newscore;
+    }
+    
+    /**
+     * Retourne vrai si le poids de tous les champs du terme doivent être cumulés.
+     * Retourne faux si seul le poids le plus élevé de tous les champs du terme doit être pris en compte.
+     * @param term
+     * @return
+     */
+    public boolean cumuler(String term)
+    {
+        if (term.equals("codes")) return false;
+        
+        return true;
     }
     
     /** Calcule le score total théorique que peut rapporter un document
@@ -90,6 +148,10 @@ public class JDONREFv3Scorer extends Scorer {
     {
         AtomicReader atomicreader = context.reader();
         Terms terms = atomicreader.getTermVector(bucket.doc,term);
+        if (terms==null) return 0.0f; // le terme n'existe pas dans ce document.
+        
+        //System.out.println("Thread "+Thread.currentThread().getName()+" totalScore for Term :"+term+", doc :"+bucket.doc);
+        
         TermsEnum termsEnum = terms.iterator(null);
         BytesRef current;
         
@@ -110,17 +172,27 @@ public class JDONREFv3Scorer extends Scorer {
             int length = t.text().length();
             int offset = startOffsets[i];
             
-            float score = score(bucket.doc,t);
+            //System.out.println("Check "+t.text()+" at "+offset);
+            
+            float score = score(bucket,t);
             
             Float lastscore = scoresPosition.get(offset);
             Integer lastlength = lengthPosition.get(offset);
             
             if (lastscore!=null)
             {
-                if (lastlength < length)// || lastscore < score) ... le plus long n'est pas toujours le plus pertinent ! 
+                if (lastlength < length)// || lastscore < score) ... le plus long n'est pas toujours le plus pertinent !?
                 {
-                    totalScore -= lastscore;
-                    totalScore += score;
+                    if (cumuler(term))
+                    {
+                        totalScore -= lastscore;
+                        totalScore += score;
+                    }
+                    else
+                    {
+                        totalScore = Math.max(score,totalScore);
+                    }
+                    //System.out.println("totalScore now :"+totalScore);
                     scoresPosition.put(offset, score);
                     lengthPosition.put(offset, length);
                 }
@@ -128,9 +200,13 @@ public class JDONREFv3Scorer extends Scorer {
             }
             else
             {
-                totalScore += score;
+                if (cumuler(term))
+                    totalScore += score;
+                else
+                    totalScore = Math.max(totalScore,score);
                 scoresPosition.put(offset, score);
                 lengthPosition.put(offset, length);
+                //System.out.println("totalScore now :"+totalScore);
             }
             
             i++;
@@ -139,120 +215,241 @@ public class JDONREFv3Scorer extends Scorer {
         return totalScore;
     }
     
-    /**
-     * Gère les exceptions concernant le score :
-     * 1. le pays et le code pays
-     */
-    public void exceptions(Bucket bucket)
-    {
-        if (bucket.score_by_term.get("ligne7")!=null && bucket.score_by_term.size()>1)
-            bucket.score_by_term.remove("ligne7");
-        if (bucket.score_by_term.get("code_pays")!=null && bucket.score_by_term.size()>1)
-            bucket.score_by_term.remove("code_pays");
-    }
-    
-    /**
-     * Gère les exceptions concernant le score :
-     * 1. le pays et le code pays
-     * 2. le code postal, code insee, code arrondissement et code département
-     */
-    public float poids(Bucket bucket,String term)
-    {
-        if (term.equals("ligne7"))
-        {
-            if (bucket.score_by_term.get("code_pays")!=null) return 50/2;
-        }
-        else if (term.equals("code_pays"))
-        {
-            if (bucket.score_by_term.get("ligne7")!=null) return 50/2;
-        }
-        else if (term.equals("code_postal"))
-        {
-            int count = 1;
-            if (bucket.score_by_term.get("code_departement")!=null) count++;
-            if (bucket.score_by_term.get("code_arrondissement")!=null) count++;
-            if (bucket.score_by_term.get("code_insee")!=null) count++;
-            return 50/count;
-        }
-        else if (term.equals("code_departement"))
-        {
-            int count = 1;
-            if (bucket.score_by_term.get("code_postal")!=null) count++;
-            if (bucket.score_by_term.get("code_arrondissement")!=null) count++;
-            if (bucket.score_by_term.get("code_insee")!=null) count++;
-            return 50/count;
-        }
-        else if (term.equals("code_arrondissement"))
-        {
-            int count = 1;
-            if (bucket.score_by_term.get("code_postal")!=null) count++;
-            if (bucket.score_by_term.get("code_departement")!=null) count++;
-            if (bucket.score_by_term.get("code_insee")!=null) count++;
-            return 50/count;
-        }
-        else if (term.equals("code_insee"))
-        {
-            int count = 1;
-            if (bucket.score_by_term.get("code_postal")!=null) count++;
-            if (bucket.score_by_term.get("code_departement")!=null) count++;
-            if (bucket.score_by_term.get("code_arrondissement")!=null) count++;
-            return 50/count;
-        }
-        
-        return 50;
-    }
-    
     boolean foobar = false;
     
-    public void makeFinalScore(Bucket bucket) throws IOException
+    public void setTotalScore(Bucket bucket) throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
     {
-        exceptions(bucket);
+        // le poids de la commune n'est pas prise en compte si seul un code est présent
+        if (bucket.score_by_term.get("codes")!=null && bucket.score_by_term.get("commune")==null)
+            bucket.total_score_by_term.put("commune",null);
+        else
+            bucket.total_score_by_term.put("commune", this.totalScore("commune", bucket));
         
-        String[] numero = bucket.d.getValues("numero");
-        if (numero!=null && numero.length>0 && (numero[0].equals("130")))
-            foobar = true;
+        // le poids des codes n'est pas pris en compte si seul une commune est présente
+        if (bucket.score_by_term.get("commune")!=null && bucket.score_by_term.get("codes")==null)
+            bucket.total_score_by_term.put("codes",null);
+        else
+            bucket.total_score_by_term.put("codes", this.totalScore("codes", bucket));
         
-          bucket.score = 0.0f;
-          Iterator<String> terms = bucket.score_by_term.keySet().iterator();
+        bucket.total_score_by_term.put("ligne4", this.totalScore("ligne4", bucket));
+        
+        // le pays n'est pris en compte que si un pays est recherché.
+        if (bucket.score_by_term.get("ligne7")!=null)
+            bucket.total_score_by_term.put("ligne7", this.totalScore("ligne7", bucket));
+        if (bucket.score_by_term.get("code_pays")!=null)
+            bucket.total_score_by_term.put("code_pays", this.totalScore("code_pays", bucket));
+    }
+    
+    public float getSumTotalScore(Bucket bucket)
+    {
+        float total = 0.0f;
+        
+        if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+                  {
+                    System.out.println("SumTotalScore");
+                  }
+        
+          Iterator<String> terms = bucket.total_score_by_term.keySet().iterator();
           while (terms.hasNext()) {
               try {
                   String term = terms.next();
-                  
-                  float poids = poids(bucket,term);
-                  float totalScore = this.totalScore(term, bucket); 
 
-                  float value = bucket.score_by_term.get(term);
-                  float subscore = poids * (value / totalScore);
-                  if (subscore>poids) subscore = poids; // le terme le plus long prime.
+                  Float subscore = bucket.total_score_by_term.get(term);
+                  if (subscore!=null)
+                  {
+                    total += subscore;
                   
-                  bucket.score += subscore;
+                    if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+                    {
+                        System.out.println(term+": "+subscore);
+                    }
+                  }
 
-              } catch (NoSuchFieldException ex) {
-                  Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
-                  bucket.score = 0;
               } catch (IllegalArgumentException ex) {
                   Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
-                  bucket.score = 0;
-              } catch (IllegalAccessException ex) {
-                  Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
-                  bucket.score = 0;
+                  total = 0;
               }
           }
+          
+                  if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+                  {
+                    System.out.println("total: "+total);
+                  }
+          
+          return total;
+    }
+    
+    public float getSumScore(Bucket bucket)
+    {
+        float sum = 0.0f;
+        
+        if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+        {
+            System.out.println("SumScore");
+        }
+        
+        Iterator<String> terms = bucket.score_by_term.keySet().iterator();
+        while (terms.hasNext()) {
+            try {
+                String term = terms.next();
 
-          scorer.checker.next();
+                float subscore = bucket.score_by_term.get(term);
+                sum += subscore;
 
-          int maxFields = scorer.checker.getMaxFields(bucket.d);
+                if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE")) {
+                    System.out.println(term + ": " + subscore);
+                }
+
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
+                sum = 0;
+            }
+        }
+        if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE")) {
+            System.out.println("total: " + sum);
+        }
+          return sum;
+    }
+    
+    public boolean isOfTypeAdresse(Bucket bucket)
+    {
+        String[] values = bucket.d.getValues("type");
+        if (values==null || values.length==0) return false;
+        return Arrays.binarySearch(values, "adresse")>=0;
+    }
+    
+    public void makeFinalScore(Bucket bucket) throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
+    {
+        //System.out.println("Thread "+Thread.currentThread().getName()+" makeFinalScore doc "+bucket.doc);
+        
+          if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+          {
+            System.out.println("Thread "+Thread.currentThread().getName()+" "+bucket.d.get("fullName")+" doc "+bucket.doc);
+          }
+          
+          
+          bucket.score = getSumScore(bucket);
+          setTotalScore(bucket);
+          float totalScore = getSumTotalScore(bucket);
+          bucket.score /= totalScore;
+          
+          if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+          {
+            System.out.println("Thread "+Thread.currentThread().getName()+" "+bucket.d.get("fullName")+" doc "+bucket.doc);
+            System.out.println("Score brut :"+bucket.score);
+          }
           
           // ramené à 200.
-          bucket.score = (200  / (50 * maxFields)) * bucket.score;
-
-          // avec un malus éventuel (ordre, présence d'un numéro devant une voie)
-          bucket.score *= scorer.checker.malus();
-
-          if (scorer.checker.isAdressType(bucket.d) && !scorer.checker.checkAdressNumberPresent()) {
-              bucket.score *= JDONREFv3Scorer.NUMBERMALUS;
+          bucket.score *= 200;
+          if (bucket.score>200) bucket.score = 200; // maximum
+          
+          if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+          {
+            System.out.println("Score sur 200 :"+bucket.score);
+          }
+          
+          bucket.isOfTypeAdress = isOfTypeAdresse(bucket);
+          float malus = 1.0f;
+          if (bucket.wrongOrder)
+              malus *= ORDERMALUS;
+          if (bucket.isOfTypeAdress)
+          {
+              if (!bucket.adressNumberPresent)
+              {
+                malus *= NUMBERMALUS;
+              }
+          }
+          if (!bucket.adressNumberPresent)
+          {
+              if (bucket.isThereCodeBeforeAdress)
+                  malus *= ORDERMALUS;
+          }
+          
+          if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+          {
+            System.out.println("Score avant malus :"+bucket.score);
+            System.out.println("malus :"+malus);
+          }
+          bucket.score *= malus;
+          if (bucket.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+          {
+            System.out.println("Score après malus :"+bucket.score);
           }
       }
+    
+    protected boolean isNumber(String val)
+    {
+        try
+        {
+            Integer.parseInt(val);
+            return true;
+        }
+        catch(NumberFormatException nfe)
+        {
+            return false;
+        }
+    }
+    
+    /**
+     * Check whether there is an adress number (or potentially) in the request
+     * @param bucket
+     * @param term
+     */
+    public void analyzeAdressNumber(Bucket bucket, Term term)
+    {
+        if (term.field().equals("ligne4"))
+        {
+            if (isNumber(term.text()))
+                bucket.adressNumberPresent = true;
+        }
+    }
+    
+   /**
+     * Check whether a code is present before an adress or not.
+     * Need analyzeOrder execution before.
+     * @param bucket
+     * @param term
+     */
+    public void analyzeCodeBeforeAdress(Bucket bucket, Term term)
+    {
+        if (bucket.currentAnalyzedType.equals("codes"))
+        {
+            if (term.field().equals("ligne4"))
+                bucket.isThereCodeBeforeAdress = true;
+        }
+    }
+    
+    /**
+     * Check whether the term is analyzed in good order or not
+     * @param bucket
+     * @param term
+     */
+    public void analyzeOrder(Bucket bucket, Term term)
+    {
+        if (bucket.currentAnalyzedType==null)
+        {
+            bucket.currentAnalyzedType = term.field();
+            bucket.analyzedTypes.put(term.field(),true);
+        }
+        else
+        {
+            if (bucket.currentAnalyzedType.equals(term.field()))
+            {
+                // do nothing, right order
+            }
+            else if (bucket.analyzedTypes.get(term.field())==null)
+            {
+                // new field discovered !
+                bucket.currentAnalyzedType = term.field();
+                bucket.analyzedTypes.put(term.field(),true);
+            }
+            else
+            {
+                // wrong order
+                bucket.wrongOrder = true;
+            }
+        }
+    }
     
     @Override
     /**
@@ -269,12 +466,19 @@ public class JDONREFv3Scorer extends Scorer {
         //bucket.d = this.scorer.getSearcher().doc(doc); // which one ?
         bucket.d = this.context.reader().document(doc);
         
-        float score = scorer.score();
-        scorer.check(bucket.d); // trace les catégories
-        
         Term term = ((JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery()).getTerm();
+        
+        //float score = scorer.score();
+        float score = score(bucket,term);
+        analyzeOrder(bucket, term);
+        analyzeCodeBeforeAdress(bucket,term);
+        analyzeAdressNumber(bucket, term);
+        
         // premier score (pas de cumul)
         bucket.score_by_term.put(term.field(),score);
+        //System.out.println("Thread "+Thread.currentThread().getName()+" Collect doc "+doc+" "+term.field());
+        //System.out.println(bucket.d.toString());
+        //System.out.println("Ajoute "+term.field()+"="+term.text()+" : "+score);
         
         bucket.bits = mask;                       // initialize mask
         bucket.coord = 1;                         // initialize coord
@@ -282,14 +486,29 @@ public class JDONREFv3Scorer extends Scorer {
         bucket.next = table.first;                // push onto valid list
         table.first = bucket;
       } else {                                    // valid bucket
-        float score = scorer.score();
-        scorer.check(bucket.d); // trace les catégories
         
         // second score (cumul éventuel)
         Term term = ((JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery()).getTerm();
+        //System.out.println("Thread "+Thread.currentThread().getName()+" Collect doc "+doc+" "+term.field());
+        
+        //float score = scorer.score();
+        float score = this.score(bucket,term);
+        analyzeOrder(bucket, term);
+        analyzeCodeBeforeAdress(bucket,term);
+        analyzeAdressNumber(bucket, term);
         
         Float lastscore;
-        score += ((lastscore=bucket.score_by_term.get(term.field()))==null)?0.0f:lastscore;
+        if (cumuler(term.field()))
+        {
+            lastscore = ((lastscore=bucket.score_by_term.get(term.field()))==null)?0.0f:lastscore;
+            //System.out.println("Ajoute "+term.field()+"="+term.text()+" : "+score+" à "+lastscore);
+            score += lastscore;
+        }
+        else
+        {
+            score = Math.max(score,((lastscore=bucket.score_by_term.get(term.field()))==null)?0.0f:lastscore);
+            //System.out.println("Remplace "+term.field()+"="+term.text()+" : "+lastscore+" par "+score);
+        }
         bucket.score_by_term.put(term.field(),score);
         
         bucket.bits |= mask;                      // add bits in mask
@@ -298,7 +517,15 @@ public class JDONREFv3Scorer extends Scorer {
       
       if (scorer.isLast())
       {
+          try
+          {
             makeFinalScore(bucket);
+          }
+          catch(Exception ex)
+          {
+              Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
+              bucket.score = 0;
+          }
       }
     }
     
@@ -358,10 +585,17 @@ public class JDONREFv3Scorer extends Scorer {
     Document d = null;        // the original
     double score;             // incremental score
     double malus;             // malus final à appliquer
-    boolean adressType;       // le document est une adresse
+    
+    boolean isOfTypeAdress;       // le document est une adresse
     boolean adressNumberPresent; // présence du numéro d'adresse ...
+    boolean isThereCodeBeforeAdress; // présence d'un code devant la ligne 4 de l'adresse
+    
+    String currentAnalyzedType;            // current Type beeing analyzed
+    HashMap<String,Boolean> analyzedTypes; // all types already been analyzed in order
+    boolean wrongOrder;
     
     HashMap<String,Float> score_by_term; // le score cumulé de chaque terme
+    HashMap<String,Float> total_score_by_term; // le score cumulé maximum de chaque terme
     
     int maxcoord;             // le nombre total de termes possibles (sans abbréviations et ngram)
     
@@ -388,6 +622,8 @@ public class JDONREFv3Scorer extends Scorer {
       for(int idx=0;idx<SIZE;idx++) {
         buckets[idx] = new Bucket();
         buckets[idx].score_by_term = new HashMap<String,Float>();
+        buckets[idx].total_score_by_term = new HashMap<String,Float>();
+        buckets[idx].analyzedTypes = new HashMap<String,Boolean>();
       }
       this.context = context;
     }
@@ -397,313 +633,6 @@ public class JDONREFv3Scorer extends Scorer {
     }
 
     public int size() { return SIZE; }
-  }
-  
-  /**
-   * Ajouter toutes les catégories correspondant à un TermScorer avec add
-   * puis utiliser check pour s'avoir s'il faut leur ajouter un malus
-   * ne pas oublier next avant de passer au TermScorer suivant.
-   */
-  static public final class AdresseChecker
-  {
-      final static int NONE = 0;
-      final static int NUMEROADRESSE = 1;
-      final static int ADRESSE = 2;
-      final static int VOIE = 3;
-      final static int COMMUNE = 4;
-      final static int CODE_DEPARTEMENT = 5;
-      final static int CODE_ARRONDISSEMENT = 6;
-      final static int CODE_POSTAL = 7;
-      final static int CODE_INSEE = 8;
-      final static int LIGNE7 = 9;
-      
-      int currentIndex = -1;
-      
-      public void setCurrentIndex(int currentIndex)
-      {
-          this.currentIndex = currentIndex;
-      }
-      
-      public int getCurrentIndex()
-      {
-          return currentIndex;
-      }
-      
-      public int getCategoryFromString(String category)
-      {
-          if (category.equals("ligne4") || category.equals("voie"))
-          {
-              return VOIE;
-          }
-          else if (category.equals("adresse"))
-          {
-              return ADRESSE;
-          }
-          else if (category.equals("commune"))
-          {
-              return COMMUNE;
-          }
-          else if (category.equals("code_postal"))
-          {
-              return CODE_POSTAL;
-          }
-          else if (category.equals("code_arrondissement"))
-          {
-              return CODE_ARRONDISSEMENT;
-          }
-          else if (category.equals("code_insee"))
-          {
-              return CODE_INSEE;
-          }
-          else if (category.equals("code_departement") || category.equals("departement"))
-          {
-              return CODE_DEPARTEMENT;
-          }
-          else if (category.equals("ligne7") || category.equals("pays"))
-          {
-              return LIGNE7;
-          }
-          return NONE;
-      }
-      
-      public HashMap<Integer,Double> idfMax;
-      
-      public void addIdf(int category, double idf)
-      {
-          Double current = idfMax.get(category);
-          if (current == null)
-              current = idf;
-          else
-              current += idf;
-          idfMax.put(category,current);
-      }
-      
-      public ArrayList<HashMap<Integer,Boolean>> list;
-      public HashMap<Integer,Boolean> current;
-      
-      public JDONREFv3ESWeight weight;
-      
-      public JDONREFv3ESWeight getWeight()
-      {
-          return weight;
-      }
-      
-      public void setWeight(JDONREFv3ESWeight weight)
-      {
-          this.weight = weight;
-      }
-      
-      public AdresseChecker()
-      {
-          list = new ArrayList<HashMap<Integer,Boolean>>();
-          current = new HashMap<Integer,Boolean>();
-          idfMax = new HashMap<Integer,Double>();
-      }
-      
-      public boolean contains(Document d,String field,String value)
-      {
-          String[] docValues = d.getValues(field);
-          
-          for(int i=0;i<docValues.length;i++)
-          {
-              String docValue = docValues[i].toLowerCase();
-              if (docValue.startsWith(value)) // autocompletion case
-                  return true;
-          }
-          
-          return false;
-      }
-      
-      public int getType(Document d) throws IOException
-      {
-          String[] types = d.getValues("type");
-          String type = types[0];
-          
-          return getCategoryFromString(type);
-      }
-      
-      public int getMaxFields(Document d) throws IOException
-      {
-          int type = getType(d);
-          
-          switch(type) // pour les documents autres que le pays, le pays n'est pas pris en compte.
-          {
-              case ADRESSE: 
-                  return 3;
-              case COMMUNE:
-                  return 2;
-              case VOIE:
-                  return 3;
-              case CODE_DEPARTEMENT:
-                  return 1;
-              case LIGNE7:
-                  return 1;
-          }
-          return 0;
-      }
-      
-      public boolean isAdressType(Document d) throws IOException
-      {
-          String[] types = d.getValues("type");
-          
-          if (types[0].equals("adresse"))
-          {
-              return true;
-          }
-          
-          return false;
-      }
-      
-      protected boolean checkAdressNumberPresent()
-      {
-          for(int i=0;i<list.size();i++)
-          {
-              HashMap<Integer,Boolean> hashi = list.get(i);
-              Set<Integer> keys = hashi.keySet();
-              Iterator<Integer> ite = keys.iterator();
-
-              while (ite.hasNext()) {
-                  int category = ite.next();
-
-                  if (category == NUMEROADRESSE) {
-                      return true;
-                  }
-              }
-          }
-          return false;
-      }
-        
-      /**
-       * @return Faux si les conditions suivantes sont réunies :
-       * 1. Une adresse est présente dans la proposition, sans avoir précisé son numéro d'adresse
-       * 2. Un numéro du type code_arrondissement, code_postal, code_insee ou code_departement est présent devant l'adresse
-       */
-      protected boolean checkOtherNumberBeforeAdresse()
-      {
-          for(int i=1;i<list.size();i++)
-          {
-              HashMap<Integer,Boolean> hashi = list.get(i);
-              Set<Integer> keys = hashi.keySet();
-              Iterator<Integer> ite = keys.iterator();
-          
-              while (ite.hasNext()) {
-                  int category = ite.next();
-
-                  if (category == ADRESSE) {
-                      HashMap<Integer, Boolean> hash = list.get(i - 1);
-
-                      if (hash.get(NUMEROADRESSE) != null || hash.get(ADRESSE) != null) {
-                          return false;
-                      } else {
-                          if (hash.get(CODE_ARRONDISSEMENT) == null) {
-                              return true;
-                          }
-                          if (hash.get(CODE_DEPARTEMENT) == null) {
-                              return true;
-                          }
-                          if (hash.get(CODE_INSEE) == null) {
-                              return true;
-                          }
-                          if (hash.get(CODE_POSTAL) == null) {
-                              return true;
-                          }
-                          return false;
-                      }
-                  }
-              }
-          }
-          return false;
-      }
-      
-      /**
-       * 
-       * @return Vrai si l'ordre des termes de chaque catégorie est respectée.
-       */
-      public boolean checkOrder()
-      {
-          for(int i=0;i<list.size();i++)
-          {
-              HashMap<Integer,Boolean> hash = list.get(i);
-              Set<Integer> keys = hash.keySet();
-              Iterator<Integer> ite = keys.iterator();
-              
-              while (ite.hasNext()) {
-                  int category = ite.next();
-
-                  if (list.size() == 0) {
-                      return true;
-                  }
-                  boolean same = true;
-                  boolean check = false;
-
-                  if (category == NUMEROADRESSE) {
-                      same = false; // numero is the first token from ligne4
-
-                  }
-                  for (int j = i-1; !check && j >= 0; j--) {
-                      if (same) {
-                          if (category == ADRESSE || category == NUMEROADRESSE) {
-                              if (list.get(j).get(ADRESSE) == null && list.get(j).get(NUMEROADRESSE) == null) {
-                                  same = false;
-                              }
-                          } else {
-                              if (list.get(j).get(category) == null) {
-                                  same = false;
-                              }
-                          }
-                      } else {
-                          if (category == ADRESSE || category == NUMEROADRESSE) {
-                              if ((list.get(j).get(ADRESSE) != null || list.get(j).get(NUMEROADRESSE) != null) && list.get(j).size() == 1) {
-                                  check = true;
-                              }
-                          } else {
-                              if (list.get(j).get(category) != null && list.get(j).size() == 1) {
-                                  check = true;
-                              }
-                          }
-                      }
-                  }
-                  if (!same && check) {
-                      return false;
-                  }
-              }
-          }
-          return true;
-      }
-      
-      public float malus() throws IOException
-      {
-          float lmalus = 1.0f;
-          boolean malusOrder = !checkOrder();
-          if (malusOrder) {
-              lmalus *= JDONREFv3Scorer.ORDERMALUS;
-          }
-          boolean malusNumber = checkOtherNumberBeforeAdresse();
-          if (malusNumber) {
-              lmalus *= JDONREFv3Scorer.ORDERMALUS;
-          }
-          return lmalus;
-      }
-      
-      public void add(int category)
-      {
-          current.put(category,true);
-      }
-      
-      public void add(HashMap<Integer,Boolean> categories)
-      {
-          current.putAll(categories);
-      }
-      
-      public void next()
-      {
-          if (current.size()>0)
-          {
-            list.add((HashMap<Integer, Boolean>) current.clone());
-            current.clear();
-          }
-          currentIndex = -1;
-      }
   }
 
   static final class SubScorer {
@@ -715,7 +644,7 @@ public class JDONREFv3Scorer extends Scorer {
     public SubScorer next;
 
     public SubScorer(Scorer scorer, boolean required, boolean prohibited,
-        Collector collector, SubScorer next, AdresseChecker checker) {
+        Collector collector, SubScorer next) {
         assert(scorer instanceof JDONREFv3TermScorer);
       if (required) {
         throw new IllegalArgumentException("this scorer cannot handle required=true");
@@ -726,9 +655,6 @@ public class JDONREFv3Scorer extends Scorer {
       this.prohibited = prohibited;
       this.collector = collector;
       this.next = next;
-      
-      if (scorer instanceof JDONREFv3TermScorer)
-        ((JDONREFv3TermScorer)this.scorer).setChecker(checker);
     }
   }
   
@@ -754,9 +680,6 @@ public class JDONREFv3Scorer extends Scorer {
     this.context = context;
     
     bucketTable = new BucketTable(context);
-    
-    AdresseChecker checker = new AdresseChecker();
-    checker.setWeight(weight);
 
     if (optionalScorers != null && optionalScorers.size() > 0)
     {
@@ -767,7 +690,7 @@ public class JDONREFv3Scorer extends Scorer {
               scorer.setIsLast(); // some scorer might have no match !
           if (scorer.nextDoc() != NO_MORE_DOCS)
           {
-            scorers = new SubScorer(scorer, false, false, bucketTable.newCollector(0), scorers, checker);
+            scorers = new SubScorer(scorer, false, false, bucketTable.newCollector(0), scorers);
           }
        }
     }
@@ -775,7 +698,7 @@ public class JDONREFv3Scorer extends Scorer {
     if (prohibitedScorers != null && prohibitedScorers.size() > 0) {
       for (Scorer scorer : prohibitedScorers) {
         if (scorer.nextDoc() != NO_MORE_DOCS) {
-          scorers = new SubScorer(scorer, false, true, bucketTable.newCollector(PROHIBITED_MASK), scorers, checker);
+          scorers = new SubScorer(scorer, false, true, bucketTable.newCollector(PROHIBITED_MASK), scorers);
         }
       }
     }
@@ -826,6 +749,10 @@ public class JDONREFv3Scorer extends Scorer {
           if (current.coord >= minNrShouldMatch) {
             // malus pour les éléments non trouvés.
             bs.score = current.score * current.coord / ((JDONREFv3Query)this.protectedWeight.getQuery()).getNumTokens();
+            if (current.d.get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+            {
+                System.out.println("Thread "+Thread.currentThread().getName()+" Collect doc "+current.doc+" "+current.d.get("fullName")+" final Score: "+bs.score);
+            }
             bs.doc = current.doc;
             bs.freq = current.coord;
             collector.collect(current.doc);
@@ -862,13 +789,7 @@ public class JDONREFv3Scorer extends Scorer {
   {
       for (SubScorer sub = scorers; sub != null; sub = sub.next)
       {
-          sub.scorer.check(d);
-          
-          if (sub.scorer.isLast())
-          {
-              sub.scorer.checker.next();
-              return sub.scorer.checker.malus();
-          }
+          return 1.0f;
       }
       
       throw(new UnsupportedOperationException());
@@ -885,10 +806,7 @@ public class JDONREFv3Scorer extends Scorer {
   {
       for (SubScorer sub = scorers; sub != null; sub = sub.next)
       {
-          if (sub.scorer.checker.isAdressType(d))
-              return sub.scorer.checker.checkAdressNumberPresent();
-          else
-              return true;
+          return false;
       }
       return true;
   }

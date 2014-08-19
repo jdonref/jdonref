@@ -137,12 +137,15 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
         assertTrue(hits.length>0);
         
         boolean match = false;
+        
+        System.out.println("Test Number "+(testNumber-1));
+        System.out.println("Searching "+voie);
         System.out.println(hits.length+" hit(s)");
         for(int i=0;(i<hits.length)&&!match;i++) // on n'affiche l'explication qu'en cas d'erreur et pour le premier et le résultat attendu.
         {
             SearchHit hit = hits[i];
             match = assertion.equals(hit.getSource().get("fullName"));
-            //if (!match || match && i>0)
+            if (!match || match && i>0)
             {
                 System.out.println("hit "+i+" "+hit.getSourceAsString());
                 System.out.println("score : "+hit.getScore());
@@ -160,6 +163,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
     
     void index() throws IOException, InterruptedException, ExecutionException
     {
+        
         publicIndex("pays","FR",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne7","FRANCE")
@@ -216,7 +220,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("ligne4","RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
-                .field("commune","PARIS")
+                .field("commune","DOUAI")
                 .field("fullName","RUE REMY DUHEM 59500 DOUAI FRANCE")
                 .field("numero","0")
                 .field("code_departement","59")
@@ -276,7 +280,8 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("code_insee","75105")
                 .field("type","adresse")
                 .endObject());
-        for(int i=130;i<500;i++) // inclus donc le numéro 130
+        
+        for(int i=130;i<135;i++) // inclus donc le numéro 130
         {
             publicIndex("adresse","4"+i,XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
@@ -292,12 +297,13 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("type","adresse")
                 .endObject());
         }
+        
         publicIndex("adresse","5",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne4","131 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
-                .field("commune","PARIS")
+                .field("commune","DOUAI")
                 .field("fullName","131 RUE REMY DUHEM 59500 DOUAI FRANCE")
                 .field("numero","131")
                 .field("code_departement","59")
@@ -305,12 +311,13 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("code_insee","59500")
                 .field("type","adresse")
                 .endObject());
+        
         publicIndex("adresse","6",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne4","59 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
-                .field("commune","PARIS")
+                .field("commune","DOUAI")
                 .field("fullName","59 RUE REMY DUHEM 59500 DOUAI FRANCE")
                 .field("numero","59")
                 .field("code_departement","59")
@@ -323,7 +330,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("ligne4","75 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
-                .field("commune","PARIS")
+                .field("commune","DOUAI")
                 .field("fullName","75 RUE REMY DUHEM 59500 DOUAI FRANCE")
                 .field("numero","75")
                 .field("code_departement","59")
@@ -362,7 +369,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("ligne4","59 BOULEVARD DE LA FRANCE")
                 .field("ligne6","02000 HOPITAL")
                 .field("ligne7","FRANCE")
-                .field("commune","PARIS")
+                .field("commune","HOPITAL")
                 .field("fullName","59 BOULEVARD DE LA FRANCE 02000 HOPITAL FRANCE")
                 .field("numero","59")
                 .field("code_departement","02")
@@ -371,6 +378,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("type","adresse")
                 .endObject());
         publicIndex("departement","75",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
                 .field("ligne6","75")
                 .field("ligne7","FRANCE")
                 .field("fullName","75 FRANCE")
@@ -379,6 +387,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
                 .field("type","departement")
                 .endObject());
         publicIndex("departement","59",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
                 .field("ligne6","59")
                 .field("ligne7","FRANCE")
                 .field("fullName","59 FRANCE")
@@ -406,13 +415,13 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
             
         //Thread.sleep(5000);
         ensureYellow();
-        Thread.sleep(30000); // wait for indexation !
+        Thread.sleep(600000); // wait for indexation !
         
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
-        searchExactAdresse("130 RUE REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
-   /*     searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
+        searchExactAdresse("130 RUE REMY DUHEM 5950 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
+        searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("130 REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("130 RUE REMY DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
@@ -512,7 +521,7 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
         searchExactAdresse("130 REMY 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE");
         
         searchExactAdresse("RUE REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
-       searchExactAdresse("RUE REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
+        searchExactAdresse("RUE REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("RUE DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("RUE REMY DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE");
@@ -807,8 +816,5 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
         searchExactAdresse("DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("REMY 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE");
         searchExactAdresse("REMY 59","RUE REMY DUHEM 59500 DOUAI FRANCE");
-        
-        //searchExactAdresse("59 BOULEVARD HOPITAL 75 PARIS","59 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE");
-        */
     }
 }
