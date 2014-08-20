@@ -49,39 +49,185 @@ public class JDONREFv3Query extends BooleanQuery
       this.protectedDisableCoord = disableCoord;
       this.searcher = searcher;
     }
+    
+    ArrayList<JDONREFv3TermScorer> getSubScorers(AtomicReaderContext context, int doc) throws IOException
+    {
+        // Search matching subscorers
+      ArrayList<JDONREFv3TermScorer> subscorers = new ArrayList<JDONREFv3TermScorer>();
+      for (Iterator<Weight> wIter = weights.iterator(); wIter.hasNext();)
+      {
+        Weight w = wIter.next();
+        
+        JDONREFv3TermScorer subscorer = (JDONREFv3TermScorer) w.scorer(context, true, true, context.reader().getLiveDocs());
+        if (subscorer == null) continue;
+        
+        if (w.explain(context,doc).isMatch())
+            subscorers.add(subscorer);
+      }
+      
+      return subscorers;
+    }
 
+    /**
+     * Copy from BooleanQuery without coord explanation.
+     * @param context
+     * @param doc
+     * @return
+     */
+    public Explanation booleanScorerExplainWithoutCoord(AtomicReaderContext context, int doc) throws IOException
+    {
+        final int minShouldMatch =
+        JDONREFv3Query.this.getMinimumNumberShouldMatch();
+        
+        ComplexExplanation sumExpl = new ComplexExplanation();
+      sumExpl.setDescription("sum of:");
+      int coord = 0;
+      float sum = 0.0f;
+      boolean fail = false;
+      int shouldMatchCount = 0;
+      Iterator<BooleanClause> cIter = clauses().iterator();
+      for (Iterator<Weight> wIter = weights.iterator(); wIter.hasNext();) {
+        Weight w = wIter.next();
+        BooleanClause c = cIter.next();
+        if (w.scorer(context, true, true, context.reader().getLiveDocs()) == null) {
+          if (c.isRequired()) {
+            fail = true;
+            Explanation r = new Explanation(0.0f, "no match on required clause (" + c.getQuery().toString() + ")");
+            sumExpl.addDetail(r);
+          }
+          continue;
+        }
+        Explanation e = w.explain(context, doc);
+        if (e.isMatch()) {
+          if (!c.isProhibited()) {
+            sumExpl.addDetail(e);
+            sum += e.getValue();
+            coord++;
+          } else {
+            Explanation r =
+              new Explanation(0.0f, "match on prohibited clause (" + c.getQuery().toString() + ")");
+            r.addDetail(e);
+            sumExpl.addDetail(r);
+            fail = true;
+          }
+          if (c.getOccur() == BooleanClause.Occur.SHOULD) {
+            shouldMatchCount++;
+          }
+        } else if (c.isRequired()) {
+          Explanation r = new Explanation(0.0f, "no match on required clause (" + c.getQuery().toString() + ")");
+          r.addDetail(e);
+          sumExpl.addDetail(r);
+          fail = true;
+        }
+      }
+      if (fail) {
+        sumExpl.setMatch(Boolean.FALSE);
+        sumExpl.setValue(0.0f);
+        sumExpl.setDescription
+          ("Failure to meet condition(s) of required/prohibited clause(s)");
+        return sumExpl;
+      } else if (shouldMatchCount < minShouldMatch) {
+        sumExpl.setMatch(Boolean.FALSE);
+        sumExpl.setValue(0.0f);
+        sumExpl.setDescription("Failure to match minimum number "+
+                               "of optional clauses: " + minShouldMatch);
+        return sumExpl;
+      }
+      
+      sumExpl.setMatch(0 < coord ? Boolean.TRUE : Boolean.FALSE);
+      sumExpl.setValue(sum);
+      
+      return sumExpl;
+    }
+    
+    boolean DEBUG = false;
+    
     @Override
     public Explanation explain(AtomicReaderContext context, int doc)
       throws IOException {
-        
-      ComplexExplanation dotExpl = new ComplexExplanation();
-      dotExpl.setDescription("product of:");
       
-      Explanation boolExpl = super.explain(context,doc);
+      float value = 0.0f;
+      
+      boolean debug = false;
+      
+      if (context.reader().document(doc).get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+          debug = DEBUG;
+      
+      if (debug)
+      System.out.println("Thread "+Thread.currentThread().getName()+" "+"Explain doc "+doc+" notation");
+      
+      ComplexExplanation dotExpl = new ComplexExplanation();
+      dotExpl.setDescription("Thread "+Thread.currentThread().getName()+" doc "+doc+" product of:");
+      
+      Explanation boolExpl = booleanScorerExplainWithoutCoord(context,doc);
+      value = boolExpl.getValue();
       dotExpl.addDetail(boolExpl);
       
-      JDONREFv3Scorer scorer = (JDONREFv3Scorer) scorer(context, false, true, context.reader().getLiveDocs());
+      if (debug)
+      System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" value "+value);
       
-      float malus = scorer.malus(doc);
+      JDONREFv3Scorer scorer = (JDONREFv3Scorer) scorer(context, false, true, context.reader().getLiveDocs());
+      ArrayList<JDONREFv3TermScorer> subscorers = getSubScorers(context,doc);
+      
+      // Malus
+      float malus = scorer.malus(subscorers,doc);
       if (malus!=1.0f)
       {
-        Explanation malusExpl = new Explanation(malus,"adress malus (order)");
+        Explanation malusExpl = new Explanation(malus,"adress malus (order,adresse number, codes)");
         dotExpl.addDetail(malusExpl);
       }
+      value *= malus;
       
-      boolean adressType = scorer.checkAdressType(doc);
-      if (!adressType)
+      if (debug)
+      System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" and malus "+malus);
+      
+      // total
+      try
       {
-        Explanation adressExpl = new Explanation(0f,"adress malus (adress number)");
-        dotExpl.addDetail(adressExpl);
+        float total = scorer.totalScore(subscorers,doc);
+        Explanation totalExpl = new Explanation(1/total,"maximum Score ("+total+" inverted)");
+        dotExpl.addDetail(totalExpl);
+        value /= total;
+        
+        if (debug)
+        System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" And max score 1/"+total+"="+(1/total));
+      }
+      catch(Exception e)
+      {
+          throw new IOException(e);
       }
       
-      float value = malus*boolExpl.getValue();
-      if (!adressType) value *= JDONREFv3Scorer.NUMBERMALUS;
+      // coord
+      try
+      {
+        int maxcoord = scorer.maxCoord();
+        int coord = scorer.coord(subscorers);
+        if (coord!=maxcoord)
+        {
+            Explanation coordExpl = new Explanation((float)coord/(float)maxcoord,"coord("+coord+"/"+maxcoord+")");
+            dotExpl.addDetail(coordExpl);
+            value *= (float)coord/(float)maxcoord;
+        }
+        
+        if (debug)
+        System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" And coord "+coord+"/"+maxcoord);
+      }
+      catch(Exception e)
+      {
+          throw new IOException(e);
+      }
       
+      // 200
+      Explanation twohundredexpl = new Explanation(200,"rapporté à 200");
+      dotExpl.addDetail(twohundredexpl);
+      value *= 200;
+      
+      // Set value
       dotExpl.setValue(value);
-      if (value>0)
-        dotExpl.setMatch(true);
+      dotExpl.setMatch(value>0);
+      
+      if (debug)
+        System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" ce qui donne "+value);
       
       return dotExpl;
     }

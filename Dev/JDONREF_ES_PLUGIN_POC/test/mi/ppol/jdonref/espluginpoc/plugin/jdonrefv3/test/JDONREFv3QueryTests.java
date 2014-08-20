@@ -138,8 +138,6 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
         
         boolean match = false;
         
-        System.out.println("Test Number "+(testNumber-1));
-        System.out.println("Searching "+voie);
         System.out.println(hits.length+" hit(s)");
         for(int i=0;(i<hits.length)&&!match;i++) // on n'affiche l'explication qu'en cas d'erreur et pour le premier et le résultat attendu.
         {
@@ -415,7 +413,8 @@ public class JDONREFv3QueryTests extends ElasticsearchIntegrationTest
             
         //Thread.sleep(5000);
         ensureYellow();
-        Thread.sleep(600000); // wait for indexation !
+        Thread.sleep(10000); // wait for indexation !
+        //Thread.sleep(600000); // wait for indexation !
         
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
