@@ -83,7 +83,8 @@ public class VoieIndex {
 
         while(rs.next())
         {
-            if (isVerbose() && i%1000==1)
+            if(paquetsBulk == 1) System.out.println(i+" voies traités");
+            if (isVerbose() && i%paquetsBulk==1)
                 System.out.println(i+" voies traitées");
             
             Voie v = new Voie(rs);

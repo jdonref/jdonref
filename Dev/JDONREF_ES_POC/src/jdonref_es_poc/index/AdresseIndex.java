@@ -74,7 +74,8 @@ public class AdresseIndex {
 
         while(rs.next())
         {
-            if (isVerbose() && i%1000==1)
+            if(paquetsBulk == 1) System.out.println(i+" adresses traités");
+            if (isVerbose() && i%paquetsBulk==1)
                 System.out.println(i+" adresses traitées");
             
             Adresse adr = new Adresse(rs);

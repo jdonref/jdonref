@@ -73,7 +73,8 @@ public class DepartementIndex
         int lastIdBulk=idDepTmp;
         while(rs.next())
         {
-            if (isVerbose() && i%30==1)
+            if(paquetsBulk == 1) System.out.println(i+" départements traités");
+            if (isVerbose() && i%paquetsBulk==1)
                 System.out.println(i+" départements traités");
             
             Departement d = new Departement(rs);
@@ -184,12 +185,12 @@ public class DepartementIndex
         adrIndex.setVerbose(isVerbose());
         adrIndex.indexJDONREFAdressesDepartement(dpt);
         
-        TronconIndex tIndex = new TronconIndex();
-        tIndex.setUtil(util);
-        tIndex.setConnection(connection);
-        tIndex.setVerbose(isVerbose());
-        tIndex.indexJDONREFTronconsDepD(dpt);
-        tIndex.indexJDONREFTronconsDepG(dpt);
+//        TronconIndex tIndex = new TronconIndex();
+//        tIndex.setUtil(util);
+//        tIndex.setConnection(connection);
+//        tIndex.setVerbose(isVerbose());
+//        tIndex.indexJDONREFTronconsDepD(dpt);
+//        tIndex.indexJDONREFTronconsDepG(dpt);
 
 //        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
 //        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);

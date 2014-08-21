@@ -1,0 +1,47 @@
+{
+     "poizon": {
+        "properties" : {
+            "adresse": {
+                        "type" : "object",
+//                        "type" : "adresse",
+                        "path" : "just_name",
+                        "properties": {
+                            "poizon_service" : { "type" : "integer", "store" : true, "index":"not_analyzed"},
+                            "poizon_cle" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_cle_pq" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_lbl" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_lbl_pq" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_lbl_sans_articles" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_lbl_sans_articles_pq" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_id1" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_id2" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_id3" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_id4" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_id5" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_id6" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_id7" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee1" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee2" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee3" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee4" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee5" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee6" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee7" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee_origine1" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee_origine2" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee_origine3" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee_origine4" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee_origine5" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee_origine6" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "poizon_donnee_origine7" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
+                            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
+                            "poizon_referentiel" : { "type" : "string", "store" : true, "index":"not_analyzed"},
+                            "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
+                            "pin" : { "properties": { "centroide" : {"type" : "geo_point"}}}
+                            //                            "fullName" : {"type": "string", "store": true, "index": "no"}
+                        }
+            }
+       }
+    }
+  }

@@ -108,7 +108,15 @@ public class JDONREFIndex
             System.out.println("Démarrage de l'indexation");
         long start = Calendar.getInstance().getTimeInMillis();
         
-        util.showDeleteIndex();
+        util.showDeleteType("departement");
+        util.showDeleteType("voie");
+        util.showDeleteType("adresse");
+        util.showDeleteType("pays");
+        util.showDeleteType("commune");
+        //commenter si MAJ POIZON
+        util.showDeleteType("poizon");   
+
+//        util.showDeleteIndex();
         //util.deleteIndex();
         util.showCreateIndex("./src/resources/index/jdonrefv3es-settings.json");
         util.showPutMapping("departement", "./src/resources/mapping/mapping-departement.json");
@@ -117,7 +125,7 @@ public class JDONREFIndex
         util.showPutMapping("pays", "./src/resources/mapping/mapping-pays.json");
         util.showPutMapping("commune", "./src/resources/mapping/mapping-commune.json");
         util.showPutMapping("troncon", "./src/resources/mapping/mapping-troncon.json");
-        util.showPutMapping("voie", "./src/resources/mapping/mapping-voie.json");
+        util.showPutMapping("poizon", "./src/resources/mapping/mapping-poizon.json");
         
         if (bouchon)
         {
@@ -143,6 +151,7 @@ public class JDONREFIndex
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
             dptIndex.indexJDONREFDepartements();
+            
 //            dptIndex.indexJDONREFDepartement("01");
 //            dptIndex.indexJDONREFDepartement("02");
 //            dptIndex.indexJDONREFDepartement("03");
@@ -178,7 +187,16 @@ public class JDONREFIndex
             cIndex.setVerbose(isVerbose());
             cIndex.setConnection(connection);
             cIndex.setUtil(util);
-            cIndex.indexJDONREFCommune();
+//            cIndex.indexJDONREFCommune();
+            
+            PoizonIndex pzIndex = new PoizonIndex();
+            pzIndex.setVerbose(isVerbose());
+            pzIndex.setConnection(connection);
+            pzIndex.setUtil(util);
+            pzIndex.indexJDONREFPoizon();
+            
+            
+            
         }
         
         long end = Calendar.getInstance().getTimeInMillis();

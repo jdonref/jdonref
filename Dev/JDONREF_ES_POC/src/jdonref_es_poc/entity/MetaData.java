@@ -66,6 +66,21 @@ public class MetaData {
         return builder1.build();
     }
     
+        public JsonObject toJSONMetaDataWithoutID()
+    {
+         JsonObjectBuilder builder = Json.createObjectBuilder();
+         JsonObjectBuilder builder1 = Json.createObjectBuilder();
+         
+         builder.add("_index", index);
+         builder.add("_type", type);
+         
+         builder1.add("index", builder);
+
+
+        return builder1.build();
+    }
+    
+        
     
     
     

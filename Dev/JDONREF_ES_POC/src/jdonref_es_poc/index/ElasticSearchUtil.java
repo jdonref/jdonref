@@ -118,9 +118,31 @@ public class ElasticSearchUtil
     
     public void showDeleteIndex()
     {
+        System.out.println("Delete index : "+index);
+
         String output = deleteIndex();
         
-        System.out.println("index : "+output);
+        System.out.println(output);
+    }
+    
+    public String deleteType(String type)
+    {
+        WebResource webResource = client.resource("http://"+url+"/"+index+"/"+type);
+        
+        ClientResponse response = webResource.accept("application/json").delete(ClientResponse.class);
+        
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    public void showDeleteType(String type)
+    {
+        System.out.println("Delete type : "+index+"/"+type);
+
+        String output = deleteType(type);
+        
+        System.out.println(output);
     }
     
     public String indexStats( )
@@ -168,6 +190,7 @@ public class ElasticSearchUtil
         
         System.out.println("index : "+output);
     }
+    
 
     public String search(String object,String query)
     {

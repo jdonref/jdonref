@@ -230,7 +230,8 @@ ElasticSearchUtil util;
 
             while(rs.next())
         {
-            if (isVerbose() && i%1000==1)
+            if(paquetsBulk == 1) System.out.println(i+" troncons droit traités");    
+            if (isVerbose() && i%paquetsBulk==1)
                 System.out.println(i+" troncons droit traités");
             
             Troncon tr = new Troncon(rs,0);
@@ -271,7 +272,8 @@ ElasticSearchUtil util;
 
             while(rs.next())
         {
-            if (isVerbose() && i%1000==1)
+            if(paquetsBulk == 1) System.out.println(i+" troncons gauche traités");     
+            if (isVerbose() && i%paquetsBulk==1)
                 System.out.println(i+" troncons gauche traités");
             
             Troncon tr = new Troncon(rs,0);
