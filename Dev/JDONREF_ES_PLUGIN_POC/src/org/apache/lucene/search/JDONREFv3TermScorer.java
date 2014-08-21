@@ -32,12 +32,22 @@ public class JDONREFv3TermScorer extends Scorer {
   
   protected boolean last;
   
+  protected int index;
+  
   protected IndexSearcher searcher;
   
   public IndexSearcher getSearcher()
   {
       return searcher;
   }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
   
   public boolean isLast()
   {
@@ -63,11 +73,11 @@ public class JDONREFv3TermScorer extends Scorer {
    *          The </code>Similarity.SimScorer</code> implementation 
    *          to be used for score computations.
    */
-  public JDONREFv3TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer, boolean last, IndexSearcher searcher) {
+  public JDONREFv3TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer, int index, IndexSearcher searcher) {
     super(weight);
     this.docScorer = docScorer;
     this.docsEnum = td;
-    this.last = last;
+    this.index = index;
     this.searcher = searcher;
   }
 

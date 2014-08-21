@@ -163,7 +163,7 @@ public class JDONREFv3QueryParser implements QueryParser
         }
     }
     
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, int index, boolean last) throws IOException
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, int index,int queryIndex) throws IOException
     {
         JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
         //TermQuery query = new TermQuery(t);
@@ -171,10 +171,9 @@ public class JDONREFv3QueryParser implements QueryParser
         //Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
         if (query!=null)
         {
-            if (last)
-              query.setIsLast();
             query.setIndex(index);
             query.setBoost(boost);
+            query.setQueryIndex(queryIndex);
             booleanQuery.add(new BooleanClause(query,occur));
         }
     }
@@ -348,8 +347,18 @@ public class JDONREFv3QueryParser implements QueryParser
 
         booleanQuery.setNumTokens(numTokens);
         
+        Hashtable<String,Integer> termIndex = new Hashtable();
+        termIndex.put("ligne4",0);
+        termIndex.put("commune",1);
+        termIndex.put("codes",2);
+        termIndex.put("ligne7",3);
+        termIndex.put("code_pays",4);
+        
+        booleanQuery.setTermIndex(termIndex);
+        
         // phrase query:
           int position = -1;
+          int queryIndex = 0;
           for (int i = 0; i < numTokens; i++) {
             int positionIncrement = 1;
             try {
@@ -365,13 +374,14 @@ public class JDONREFv3QueryParser implements QueryParser
 
             position += positionIncrement;
             //addMatchQueryClause(booleanQuery,mq,new Term("fullName", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i==numTokens-1);
-            addMatchQueryClause(booleanQuery,mq,new Term("ligne4", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
-            addMatchQueryClause(booleanQuery,mq,new Term("commune", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
-            addMatchQueryClause(booleanQuery,mq,new Term("codes", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
+            addMatchQueryClause(booleanQuery,mq,new Term("ligne4", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
+            addMatchQueryClause(booleanQuery,mq,new Term("commune", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
+            addMatchQueryClause(booleanQuery,mq,new Term("codes", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
             //addMatchQueryClause(booleanQuery,mq,new Term("code_arrondissement", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
             //addMatchQueryClause(booleanQuery,mq,new Term("code_insee", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
             //addMatchQueryClause(booleanQuery,mq,new Term("code_departement", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
-            addMatchQueryClause(booleanQuery,mq,new Term("ligne7", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,i==numTokens-1);
+            addMatchQueryClause(booleanQuery,mq,new Term("ligne7", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
+            addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
           }
         
         //System.out.println(booleanQuery.toString());

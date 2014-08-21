@@ -45,6 +45,7 @@ public class JDONREFv3TermQuery extends Query {
   protected boolean last = false;
 
   protected int index;
+  protected int queryIndex;
   
   public int getIndex()
   {
@@ -59,6 +60,15 @@ public class JDONREFv3TermQuery extends Query {
   public void setIsLast() {
     this.last = true;
   }
+
+  public int getQueryIndex()
+  {
+      return queryIndex;
+  }
+          
+  public void setQueryIndex(int queryIndex) {
+      this.queryIndex = queryIndex;
+  }
   
   public final class TermWeight extends Weight {
     private final Similarity similarity;
@@ -67,30 +77,26 @@ public class JDONREFv3TermQuery extends Query {
     
     protected IndexSearcher searcher;
     
-    protected boolean last;
+    protected int index;
 
-        public Similarity getSimilarity() {
-            return similarity;
-        }
-    
-    
+    public Similarity getSimilarity() {
+        return similarity;
+    }
 
-    public JDONREFv3TermContext getContext()
-    {
+    public JDONREFv3TermContext getContext() {
         return termStates;
     }
     
-    public IndexSearcher getSearcher()
-    {
+    public IndexSearcher getSearcher() {
       return searcher;
     }
     
-    public TermWeight(IndexSearcher searcher, JDONREFv3TermContext termStates, boolean last)
+    public TermWeight(IndexSearcher searcher, JDONREFv3TermContext termStates,int index)
       throws IOException {
       assert termStates != null : "TermContext must not be null";
       this.termStates = termStates;
       this.similarity = searcher.getSimilarity();
-      this.last = last;
+      this.index = index;
       this.searcher = searcher;
       this.stats = similarity.computeWeight(
           getBoost(), 
@@ -138,7 +144,7 @@ public class JDONREFv3TermQuery extends Query {
       DocsEnum docs = termsEnum.docs(acceptDocs, null);
       assert docs != null;
       //return new TermScorer(this, docs, similarity.simScorer(stats, context));
-      return new JDONREFv3TermScorer(this, docs, similarity.simScorer(stats, context),this.last, this.searcher);
+      return new JDONREFv3TermScorer(this, docs, similarity.simScorer(stats, context),this.index, this.searcher);
     }
     
     /**
@@ -227,7 +233,7 @@ public class JDONREFv3TermQuery extends Query {
     if (docFreq != -1)
       termState.setDocFreq(docFreq);
     
-    return new TermWeight(searcher, termState,this.last);
+    return new TermWeight(searcher, termState,this.index);
   }
 
   @Override

@@ -2,6 +2,7 @@ package org.apache.lucene.search;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -14,6 +15,7 @@ import org.apache.lucene.util.Bits;
  */
 public class JDONREFv3Query extends BooleanQuery
 {
+    protected Hashtable<String, Integer> termIndex;
     
     protected int numTokens;
 
@@ -24,6 +26,15 @@ public class JDONREFv3Query extends BooleanQuery
         public void setNumTokens(int numTokens) {
             this.numTokens = numTokens;
         }
+
+    public Hashtable<String, Integer> getTermIndex()
+    {
+        return termIndex;
+    }
+        
+    public void setTermIndex(Hashtable<String, Integer> termIndex) {
+        this.termIndex = termIndex;
+    }
 /**
    * Expert: the Weight for BooleanQuery, used to
    * normalize, score and explain these queries.
@@ -204,13 +215,14 @@ public class JDONREFv3Query extends BooleanQuery
         int coord = scorer.coord(subscorers);
         if (coord!=maxcoord)
         {
-            Explanation coordExpl = new Explanation((float)coord/(float)maxcoord,"coord("+coord+"/"+maxcoord+")");
+            Explanation coordExpl = new Explanation((float)Math.pow((float)coord/(float)maxcoord,2),"coord("+coord+"/"+maxcoord+")^2");
             dotExpl.addDetail(coordExpl);
-            value *= (float)coord/(float)maxcoord;
+            value *= Math.pow((float)coord/(float)maxcoord,2);
+            
+            if (debug)
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" And coord ("+coord+"/"+maxcoord+")^2="+coordExpl.getValue());
         }
         
-        if (debug)
-        System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" And coord "+coord+"/"+maxcoord);
       }
       catch(Exception e)
       {
@@ -258,7 +270,7 @@ public class JDONREFv3Query extends BooleanQuery
       }
 
       if (!scoreDocsInOrder && topScorer && required.size() == 0 && minNrShouldMatch <= 1) {
-        return new JDONREFv3Scorer(this, protectedDisableCoord, minNrShouldMatch, optional, prohibited, maxCoord, context);
+        return new JDONREFv3Scorer(this, protectedDisableCoord, minNrShouldMatch, optional, prohibited, maxCoord, context, termIndex);
       }
       else
           throw new IOException("MultiNrShouldMatch nor required clause are not supported by JDONREFv3Scorer.");
