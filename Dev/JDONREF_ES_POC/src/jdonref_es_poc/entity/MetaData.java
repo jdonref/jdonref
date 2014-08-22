@@ -13,7 +13,27 @@ public class MetaData {
     String index;
     String type;
     int id;
+    int version;
 
+    
+    public MetaData() {
+    }
+    
+    public MetaData(String index, String type, int id) {
+        this.index = index;
+        this.type = type;
+        this.id = id;
+    }
+
+    public MetaData(String index, String type, int id, int version) {
+        this.index = index;
+        this.type = type;
+        this.id = id;
+        this.version = version;
+    }
+        
+     
+    
     public int getId() {
         return id;
     }
@@ -38,20 +58,17 @@ public class MetaData {
         this.type = type;
     }
 
-    public MetaData() {
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 
     
-    
-    public MetaData(String index, String type, int id) {
-        this.index = index;
-        this.type = type;
-        this.id = id;
-    }
-    
-    
-    
-        public JsonObject toJSONMetaData()
+    public JsonObject toJSONMetaData()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
          JsonObjectBuilder builder1 = Json.createObjectBuilder();
@@ -66,7 +83,23 @@ public class MetaData {
         return builder1.build();
     }
     
-        public JsonObject toJSONMetaDataWithoutID()
+    public JsonObject toJSONMetaDataVersionning()
+    {
+         JsonObjectBuilder builder = Json.createObjectBuilder();
+         JsonObjectBuilder builder1 = Json.createObjectBuilder();
+         
+         builder.add("_index", index);
+         builder.add("_type", type);
+         builder.add("_id", id);
+         builder.add("_version", version);
+         
+         builder1.add("index", builder);
+
+
+        return builder1.build();
+    }
+    
+    public JsonObject toJSONMetaDataWithoutID()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
          JsonObjectBuilder builder1 = Json.createObjectBuilder();

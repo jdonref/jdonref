@@ -108,16 +108,17 @@ public class JDONREFIndex
             System.out.println("Démarrage de l'indexation");
         long start = Calendar.getInstance().getTimeInMillis();
         
-        util.showDeleteType("departement");
-        util.showDeleteType("voie");
-        util.showDeleteType("adresse");
-        util.showDeleteType("pays");
-        util.showDeleteType("commune");
-        //commenter si MAJ POIZON
-        util.showDeleteType("poizon");   
+//        util.showDeleteType("departement");
+//        util.showDeleteType("voie");
+//        util.showDeleteType("adresse");
+//        util.showDeleteType("pays");
+//       // util.showDeleteType("commune");
+//        util.showDeleteType("troncon");
+//        commenter si MAJ POIZON
+//        util.showDeleteType("poizon");   
 
 //        util.showDeleteIndex();
-        //util.deleteIndex();
+//        util.deleteIndex();
         util.showCreateIndex("./src/resources/index/jdonrefv3es-settings.json");
         util.showPutMapping("departement", "./src/resources/mapping/mapping-departement.json");
         util.showPutMapping("voie", "./src/resources/mapping/mapping-voie.json");
@@ -150,7 +151,7 @@ public class JDONREFIndex
             dptIndex.setVerbose(isVerbose());
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
-            dptIndex.indexJDONREFDepartements();
+//            dptIndex.indexJDONREFDepartements();
             
 //            dptIndex.indexJDONREFDepartement("01");
 //            dptIndex.indexJDONREFDepartement("02");
@@ -179,6 +180,7 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("24");
 //            dptIndex.indexJDONREFDepartement("25");      
 //            dptIndex.indexJDONREFDepartement("75");      
+
     
 
 //            AllDepVoieAdrTron(dptIndex);
@@ -195,8 +197,6 @@ public class JDONREFIndex
             pzIndex.setUtil(util);
             pzIndex.indexJDONREFPoizon();
             
-            
-            
         }
         
         long end = Calendar.getInstance().getTimeInMillis();
@@ -209,20 +209,20 @@ public class JDONREFIndex
     // une classe DepartementDAO ...
     public void AllDepVoieAdrTron(DepartementIndex dptIndex) throws IOException, SQLException
     {
-//        for(int i=1;i<10;i++)
-//            dptIndex.indexJDONREFDepartement("0"+i);
-//        for(int i=10;i<20;i++)
-//            dptIndex.indexJDONREFDepartement(""+i);
-////        dptIndex.indexJDONREFDepartement("20");
-//        dptIndex.indexJDONREFDepartement("20_a");
-//        dptIndex.indexJDONREFDepartement("20_b");
-//        for(int i=21;i<96;i++)
-//            dptIndex.indexJDONREFDepartement(""+i);
-//        for(int j=1;j<7;j++)
-//            dptIndex.indexJDONREFDepartement(97+""+j);
-//        dptIndex.indexJDONREFDepartement(98+""+4);
-//        for(int j=6;j<9;j++)
-//            dptIndex.indexJDONREFDepartement(98+""+j);
+        for(int i=1;i<10;i++)
+            dptIndex.indexJDONREFDepartement("0"+i);
+        for(int i=10;i<20;i++)
+            dptIndex.indexJDONREFDepartement(""+i);
+//        dptIndex.indexJDONREFDepartement("20");
+        dptIndex.indexJDONREFDepartement("20_a");
+        dptIndex.indexJDONREFDepartement("20_b");
+        for(int i=21;i<96;i++)
+            dptIndex.indexJDONREFDepartement(""+i);
+        for(int j=1;j<7;j++)
+            dptIndex.indexJDONREFDepartement(97+""+j);
+        dptIndex.indexJDONREFDepartement(98+""+4);
+        for(int j=6;j<9;j++)
+            dptIndex.indexJDONREFDepartement(98+""+j);
 
     }
     

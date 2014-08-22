@@ -53,7 +53,8 @@ public class PoizonDAO {
         "st_AsGeoJSON(st_transform(geometrie,4326))," +                     //32
         "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) " +        //33
         "FROM poizon " +
-                "WHERE t0>= '"+lastUpdate+"'";      
+                "WHERE t0>= '"+lastUpdate+"'" +
+                "order by t0";      
         
 
         PreparedStatement ps = connection.prepareStatement(sql);
