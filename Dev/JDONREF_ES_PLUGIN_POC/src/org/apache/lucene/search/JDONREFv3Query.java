@@ -15,6 +15,10 @@ import org.apache.lucene.util.Bits;
  */
 public class JDONREFv3Query extends BooleanQuery
 {
+    boolean DEBUG = false;
+    
+    public static String DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
+    
     protected Hashtable<String, Integer> termIndex;
     
     protected int numTokens;
@@ -151,8 +155,6 @@ public class JDONREFv3Query extends BooleanQuery
       return sumExpl;
     }
     
-    boolean DEBUG = false;
-    
     @Override
     public Explanation explain(AtomicReaderContext context, int doc)
       throws IOException {
@@ -161,7 +163,7 @@ public class JDONREFv3Query extends BooleanQuery
       
       boolean debug = false;
       
-      if (context.reader().document(doc).get("fullName").equals("130 RUE REMY DUHEM 59500 DOUAI FRANCE"))
+      if (context.reader().document(doc).get("fullName").equals(DEBUGREFERENCE))
           debug = DEBUG;
       
       if (debug)
