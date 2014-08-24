@@ -25,7 +25,7 @@
                 },
                 "jdonrefv3es_nGram" : {
                     "type" : "edgeNGram",
-                    "min_ngram": 1,
+                    "min_ngram": 3,
                     "max_gram": 15
                 }
             }

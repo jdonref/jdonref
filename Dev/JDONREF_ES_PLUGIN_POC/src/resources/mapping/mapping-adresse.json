@@ -9,7 +9,7 @@
                             "code_insee_commune" : { "type" : "string", "store" : true,  "index":"not_analyzed", "copy_to": "codes"},
                             "code_departement" : { "type" : "string", "store" : true,  "index":"not_analyzed", "copy_to": "codes"},
                             "code_pays" : { "type" : "string" , "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index_nosyn","search_analyzer":"jdonrefv3es_search"},
-                            "numero" : { "type" : "string", "store": true, "index":"not_analyzed"},
+                            "numero" : { "type" : "integer", "store": true, "index":"not_analyzed"},
                             "repetition" : { "type" : "string", "store": true, "index":"not_analyzed"},
                             "type_de_voie" : { "type" : "string", "store": true, "index":"not_analyzed"},
                             "article" : { "type" : "string", "store": true, "index":"not_analyzed"},

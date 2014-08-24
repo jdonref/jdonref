@@ -38,7 +38,7 @@ import org.elasticsearch.index.similarity.SimilarityService;
  */
 public class JDONREFv3Scorer extends Scorer {
   
-    boolean DEBUG = false;
+    public static boolean DEBUG = true;
     public static String DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
     
   public final static float ORDERMALUS = 0.5f;
@@ -59,7 +59,7 @@ public class JDONREFv3Scorer extends Scorer {
      * @param term
      * @return
      */
-    public boolean cumuler(String term)
+    public static boolean cumuler(String term)
     {
         if (term.equals("codes")) return false;
         
@@ -67,24 +67,20 @@ public class JDONREFv3Scorer extends Scorer {
     }
     
     // DefaultSimilarity only
-    public float score(JDONREFv3TermScorer scorer,Bucket bucket, Term term) throws IOException
+    public float score(TermWeight weight,Document d, int doc, Term term,IndexSearcher searcher) throws IOException
     {
-        int doc = bucket.doc;
         long start = Calendar.getInstance().getTimeInMillis();
         
         // DefaultSimilarity only
-        TermWeight weight = (TermWeight) scorer.getWeight();
-        JDONREFv3TermQuery query = (JDONREFv3TermQuery) weight.getQuery(); // NB: pas de cohérence entre term et query. En fait, le boost query n'est pas supporté, et le weight est le même quelque soit la requête ...
-        IndexSearcher searcher = weight.getSearcher();
-        
-        //IndexSearcher searcher = this.protectedWeight.getSearcher(); // celui-ci ne dépend pas de la requête.
-        // queryNorm = 1/racine(somme queryWeight^2)
+        //IndexSearcher searcher = weight.getSearcher();
         
         String field = term.field();
         CollectionStatistics collectionStats = searcher.collectionStatistics(field);
         JDONREFv3TermContext termStates = JDONREFv3TermContext.build(searcher.getTopReaderContext(), term);
         TermStatistics termStats = searcher.termStatistics(term, termStates.getContext());
-        float value = (float)(Math.log(collectionStats.maxDoc()/(double)(termStats.docFreq()+1)) + 1.0);
+        
+        long docFreq = termStats.docFreq();
+        float value = (float)(Math.log(collectionStats.maxDoc()/(double)(docFreq+1)) + 1.0);
         
         AtomicReader atomicreader = context.reader();
         DocsEnum docsEnum = atomicreader.termDocsEnum(term);
@@ -94,7 +90,7 @@ public class JDONREFv3Scorer extends Scorer {
         if (cumuler(field))
             freq = docsEnum.freq();
         else
-            freq = 1;
+            freq = 1; // les tokens doivent être recherchés autant de fois qu'il y a de termes ?
         //float freq = collectionStats.sumTotalTermFreq();
         
         float queryBoost = 1.0f;
@@ -107,25 +103,26 @@ public class JDONREFv3Scorer extends Scorer {
         float normvalue = ((DefaultSimilarity)searcher.getDefaultSimilarity()).decodeNormValue(normvalues);
         float newscore = (float)Math.sqrt(freq) * normvalue        // propre au document
                          * queryBoost * weight.getQueryNorm() * topLevelBoost  // propre à la requête
-	                 * value * value ;
+	                 * value * value
+                         / freq ; // divided by the frequency inside the document.
         boolean debug = false;
-        if (bucket.d.get("fullName").equals(DEBUGREFERENCE))
+        if (d.get("fullName").equals(DEBUGREFERENCE))
         {
             debug = DEBUG;
         }
         
         if (debug)
         {
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " ");
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " ");
         
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " docFreq:"+termStats.docFreq());
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " maxDoc:"+collectionStats.maxDoc());
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " queryNorm:"+weight.getQueryNorm());
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " fieldNorm:"+normvalue);
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " topLevelBoost:"+topLevelBoost);
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " queryBoost:"+queryBoost);
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " idf:"+value);
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+ " tf:"+Math.sqrt(freq));
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " docFreq:"+docFreq);
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " maxDoc:"+collectionStats.maxDoc());
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " queryNorm:"+weight.getQueryNorm());
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " fieldNorm:"+normvalue);
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " topLevelBoost:"+topLevelBoost);
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " queryBoost:"+queryBoost);
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " idf:"+value);
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+ " tf:"+Math.sqrt(freq));
 
             System.out.println("Thread "+Thread.currentThread().getName()+" Calcul du Score for Term :"+term.field()+"="+term.text()+" for doc :"+doc+" = "+newscore);
             long end = Calendar.getInstance().getTimeInMillis();
@@ -133,6 +130,22 @@ public class JDONREFv3Scorer extends Scorer {
         }
         
         return newscore;
+    }
+    
+    // DefaultSimilarity only
+    public float score(JDONREFv3TermScorer scorer,Bucket bucket, Term term) throws IOException
+    {
+        TermWeight weight = (TermWeight) scorer.getWeight();
+        
+        return score(weight,bucket.d,bucket.doc,term,weight.searcher);
+    }
+    
+    // DefaultSimilarity only
+    public float score(JDONREFv3TermScorer scorer,Bucket bucket, Term term, IndexSearcher searcher) throws IOException
+    {
+        TermWeight weight = (TermWeight) scorer.getWeight();
+        
+        return score(weight,bucket.d,bucket.doc,term,searcher);
     }
   
     /** Calcule le score total théorique que peut rapporter un terme d'un document
@@ -151,6 +164,8 @@ public class JDONREFv3Scorer extends Scorer {
         AtomicReader atomicreader = context.reader();
         Terms terms = atomicreader.getTermVector(bucket.doc,term);
         if (terms==null) return 0.0f; // le terme n'existe pas dans ce document.
+        
+        IndexSearcher searcher = scorer.getSearcher(); // same searcher for all terms
         
         if (debug)
         System.out.println("Thread "+Thread.currentThread().getName()+" totalScore for Term :"+term+", doc :"+bucket.doc);
@@ -175,16 +190,14 @@ public class JDONREFv3Scorer extends Scorer {
             int length = t.text().length();
             int offset = startOffsets[i];
             
-            //System.out.println("Check "+t.text()+" at "+offset);
-            
-            float score = score(scorer,bucket,t);
+            float score = score(scorer,bucket,t,searcher);
             
             Float lastscore = scoresPosition.get(offset);
             Integer lastlength = lengthPosition.get(offset);
             
             if (lastscore!=null)
             {
-                if (lastlength < length)// || lastscore < score) ... le plus long n'est pas toujours le plus pertinent !?
+                if (lastscore < score || lastscore==score && lastlength<length) // lastlength < length  ... le plus gros score n'est pas toujours le plus pertinent !?
                 {
                     if (cumuler(term))
                     {
@@ -193,9 +206,8 @@ public class JDONREFv3Scorer extends Scorer {
                     }
                     else
                     {
-                        totalScore = Math.max(score,totalScore);
+                        totalScore = Math.max(score,totalScore); // lastscore may be == totalScore !? no need to check
                     }
-                    //System.out.println("totalScore now :"+totalScore);
                     scoresPosition.put(offset, score);
                     lengthPosition.put(offset, length);
                 }
@@ -209,7 +221,6 @@ public class JDONREFv3Scorer extends Scorer {
                     totalScore = Math.max(totalScore,score);
                 scoresPosition.put(offset, score);
                 lengthPosition.put(offset, length);
-                //System.out.println("totalScore now :"+totalScore);
             }
             
             i++;
@@ -243,26 +254,6 @@ public class JDONREFv3Scorer extends Scorer {
             bucket.total_score_by_term[termIndex.get("ligne7")] = this.totalScore(scorer,"ligne7", bucket);
         if (bucket.score_by_term[termIndex.get("code_pays")]>0)
             bucket.total_score_by_term[termIndex.get("code_pays")] = this.totalScore(scorer,"code_pays", bucket);
-        
-        // le poids de la commune n'est pas prise en compte si seul un code est présent
-        /*if (bucket.score_by_term.get("codes")!=null && bucket.score_by_term.get("commune")==null)
-            bucket.total_score_by_term.put("commune",null);
-        else
-            bucket.total_score_by_term.put("commune", this.totalScore(scorer,"commune", bucket));*/
-        
-        // le poids des codes n'est pas pris en compte si seul une commune est présente
-        /*if (bucket.score_by_term.get("commune")!=null && bucket.score_by_term.get("codes")==null)
-            bucket.total_score_by_term.put("codes",null);
-        else
-            bucket.total_score_by_term.put("codes", this.totalScore(scorer,"codes", bucket));*/
-        
-        //bucket.total_score_by_term.put("ligne4", this.totalScore(scorer,"ligne4", bucket));
-        
-        // le pays n'est pris en compte que si un pays est recherché.
-        /*if (bucket.score_by_term.get("ligne7")!=null)
-            bucket.total_score_by_term.put("ligne7", this.totalScore(scorer,"ligne7", bucket));
-        if (bucket.score_by_term.get("code_pays")!=null)
-            bucket.total_score_by_term.put("code_pays", this.totalScore(scorer,"code_pays", bucket));*/
     }
     
     public float getSumTotalScore(Bucket bucket)
@@ -284,35 +275,13 @@ public class JDONREFv3Scorer extends Scorer {
             }
             total += subscore;
         }
-        
-          /*Iterator<String> terms = bucket.total_score_by_term.keySet().iterator();
-          while (terms.hasNext()) {
-              try {
-                  String term = terms.next();
-
-                  Float subscore = bucket.total_score_by_term.get(term);
-                  if (subscore!=null)
-                  {
-                    total += subscore;
-                  
-                    if (debug)
-                    {
-                        System.out.println("Thread "+Thread.currentThread().getName()+" SumTotalScore for doc :"+bucket.doc+" "+term+": "+subscore);
-                    }
-                  }
-
-              } catch (IllegalArgumentException ex) {
-                  Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
-                  total = 0;
-              }
-          }*/
           
-          if (debug)
-          {
-               System.out.println("Thread "+Thread.currentThread().getName()+" SumTotalScore for doc :"+bucket.doc+" total: "+total);
-          }
+        if (debug)
+        {
+            System.out.println("Thread "+Thread.currentThread().getName()+" SumTotalScore for doc :"+bucket.doc+" total: "+total);
+        }
           
-          return total;
+        return total;
     }
     
     public float getSumScore(Bucket bucket)
@@ -329,6 +298,7 @@ public class JDONREFv3Scorer extends Scorer {
             System.out.println("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc);
         }
         
+        int[] freq_by_term = new int[bucket.score_by_term.length];
         for(int i=0;i<bucket.score_by_subquery.length;i++)
         {
             float score = bucket.score_by_subquery[i];
@@ -339,39 +309,39 @@ public class JDONREFv3Scorer extends Scorer {
 
                 if (freq > 0) {
                     score /= freq;
+                    
                     String term = bucket.term_by_subquery[i];
-                    float lastscore = bucket.score_by_term[termIndex.get(term)];
+                    int termIdx = termIndex.get(term);
+                    float lastscore = bucket.score_by_term[termIdx];
 
+                    if (debug && freq>1)
+                        System.out.println("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" ");
+                    
                     if (cumuler(term)) {
                         sum += score;
-                        score += lastscore;
+                        bucket.coord += 1.0f/freq;
+                        bucket.score_by_term[termIdx] = score+lastscore;
                     } else {
-                        score = Math.max(lastscore, score);
-                        sum += score;
-                        sum -= lastscore;
+                        if ((score = Math.max(lastscore, score))>lastscore)
+                        {
+                            sum += score;
+                            bucket.coord += 1.0f/freq;
+                            if (lastscore>0)
+                            {
+                                sum -= lastscore;
+                                bucket.coord -= 1.0f/freq_by_term[termIdx];
+                            }   
+                            bucket.score_by_term[termIdx] = score;
+                            freq_by_term[termIdx] = freq;
+                        }
                     }
-                    bucket.score_by_term[termIndex.get(term)] = score;
+                    if (debug)
+                    {
+                        System.out.println("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" subquery "+i+"="+score);
+                    }
                 }
             }
         }
-        /*
-        Iterator<String> terms = bucket.score_by_term.keySet().iterator();
-        while (terms.hasNext()) {
-            try {
-                String term = terms.next();
-
-                float subscore = bucket.score_by_term.get(term);
-                sum += subscore;
-
-                if (debug) {
-                    System.out.println(term + ": " + subscore);
-                }
-
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
-                sum = 0;
-            }
-        }*/
         
         if (debug) {
             System.out.println("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" total: " + sum);
@@ -414,7 +384,6 @@ public class JDONREFv3Scorer extends Scorer {
           
           // ramené à 200.
           bucket.score *= 200;
-          if (bucket.score>200) bucket.score = 200; // maximum
           
           if (debug)
           {
@@ -541,28 +510,13 @@ public class JDONREFv3Scorer extends Scorer {
         bucket.d = this.context.reader().document(doc);
         
         bucket.bits = mask;                       // initialize mask
-        bucket.coord = 1;                         // initialize coord
-
+        //bucket.coord = 1;                         // initialize coord ... not here because it depend on token frequency
+        
         bucket.next = table.first;                // push onto valid list
         table.first = bucket;
       } else {                                    // valid bucket
-        
-        /*Float lastscore;
-        if (cumuler(term.field()))
-        {
-            lastscore = ((lastscore=bucket.score_by_term.get(term.field()))==null)?0.0f:lastscore;
-            //System.out.println("Ajoute "+term.field()+"="+term.text()+" : "+score+" à "+lastscore);
-            score += lastscore;
-        }
-        else
-        {
-            score = Math.max(score,((lastscore=bucket.score_by_term.get(term.field()))==null)?0.0f:lastscore);
-            //System.out.println("Remplace "+term.field()+"="+term.text()+" : "+lastscore+" par "+score);
-        }
-        bucket.score_by_term.put(term.field(),score);*/
-        
         bucket.bits |= mask;                      // add bits in mask
-        bucket.coord++;                           // increment coord
+        //bucket.coord++;                           // increment coord ... not here because it depend on token frequency
       }
       
         if (bucket.d.get("fullName").equals(DEBUGREFERENCE))
@@ -570,13 +524,14 @@ public class JDONREFv3Scorer extends Scorer {
             debug = DEBUG;
         }
         
+        // Additionnal collection of data for later scoring adjustment
         JDONREFv3TermQuery query = (JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery();
         term = query.getTerm();
-        int termIndex = query.getIndex();
+        int token = query.getToken();
         termQueryIndex = query.getQueryIndex();
         
-        // term frequencies
-        bucket.requestTokenFrequencies[termIndex]++;
+        // increment token frequencies
+        bucket.requestTokenFrequencies[token]++;
         
         if (debug)
         System.out.println("Thread "+Thread.currentThread().getName()+" collect score for Term :"+term+", termQueryIndex:"+termQueryIndex+" doc :"+bucket.doc);
@@ -587,30 +542,10 @@ public class JDONREFv3Scorer extends Scorer {
         analyzeCodeBeforeAdress(bucket,term);
         analyzeAdressNumber(bucket, term);
         
-        // premier score (pas de cumul)
         //bucket.score_by_term.put(term.field(),score);
         bucket.score_by_subquery[termQueryIndex] = score;
-        bucket.token_by_subquery[termQueryIndex] = termIndex;
+        bucket.token_by_subquery[termQueryIndex] = token;
         bucket.term_by_subquery[termQueryIndex] = term.field();
-        
-      
-      /*
-      if (scorer.isLast())
-      {
-          try
-          {
-            makeFinalScore(scorer,bucket);
-          }
-          catch(Exception ex)
-          {
-              Logger.getLogger(JDONREFv3Scorer.class.getName()).log(Level.SEVERE, null, ex);
-              bucket.score = 0;
-          }
-      }
-      if (debug && !scorer.isLast())
-      {
-          System.out.println("Thread "+Thread.currentThread().getName()+" collect score for Term :"+term+", termQueryIndex:"+termQueryIndex+", doc :"+bucket.doc+": There still more terms");
-      }*/
     }
     
     @Override
@@ -881,8 +816,12 @@ public class JDONREFv3Scorer extends Scorer {
             // malus pour les éléments non trouvés.
             JDONREFv3Query query = (JDONREFv3Query)this.protectedWeight.getQuery();
             float maxCoord = (query).getNumTokens();
-            bs.score = current.score * Math.pow(current.coord / maxCoord,2) ;
+            bs.score = current.score * Math.pow(current.coord / maxCoord,3) ;
             
+            // arrondi le résultat à 10^-2
+            bs.score = (float)Math.ceil(100*bs.score)/100.0f;
+            if (bs.score>200) bs.score = 200; // maximum
+          
             if (debug)
             {
                 System.out.println("Thread "+Thread.currentThread().getName()+" Collect doc "+current.doc+" coord: ("+current.coord+"/"+maxCoord+")^2 = "+Math.pow(current.coord / maxCoord,2));
@@ -1013,11 +952,6 @@ public class JDONREFv3Scorer extends Scorer {
       bucket.doc = doc;
       
       return totalScore(subscorers,bucket);
-  }
-  
-  public int coord(ArrayList<JDONREFv3TermScorer> subscorers)
-  {
-      return subscorers.size();
   }
   
   public int maxCoord() throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException

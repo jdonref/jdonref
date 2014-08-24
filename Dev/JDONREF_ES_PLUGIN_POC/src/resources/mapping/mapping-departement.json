@@ -2,8 +2,9 @@
      "departement": {
         "path" : "just_name",
         "properties" : {
-                            "code_departement" : { "type" : "string", "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "code_departement" : { "type" : "string", "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "copy_to": "codes"},
                             "code_pays" : { "type" : "string" , "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "codes" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index_nosyn","search_analyzer":"jdonrefv3es_search"},
                             "pays" : { "type" : "string" , "store" : true, "index": "no"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},

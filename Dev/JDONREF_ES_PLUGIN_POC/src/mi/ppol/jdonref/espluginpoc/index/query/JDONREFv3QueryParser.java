@@ -163,7 +163,7 @@ public class JDONREFv3QueryParser implements QueryParser
         }
     }
     
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, int index,int queryIndex) throws IOException
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, int token,int queryIndex) throws IOException
     {
         JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
         //TermQuery query = new TermQuery(t);
@@ -171,7 +171,7 @@ public class JDONREFv3QueryParser implements QueryParser
         //Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
         if (query!=null)
         {
-            query.setIndex(index);
+            query.setToken(token);
             query.setBoost(boost);
             query.setQueryIndex(queryIndex);
             booleanQuery.add(new BooleanClause(query,occur));

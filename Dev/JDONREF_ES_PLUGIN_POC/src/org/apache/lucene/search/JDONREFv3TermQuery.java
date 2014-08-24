@@ -44,18 +44,18 @@ public class JDONREFv3TermQuery extends Query {
 
   protected boolean last = false;
 
-  protected int index;
+  protected int token;
   protected int queryIndex;
   
-  public int getIndex()
+  public int getToken()
   {
-      return index;
+      return token;
   }
   
-    public void setIndex(int index)
-    {
-        this.index = index;
-    }
+  public void setToken(int token)
+  {
+      this.token = token;
+  }
   
   public void setIsLast() {
     this.last = true;
@@ -233,7 +233,7 @@ public class JDONREFv3TermQuery extends Query {
     if (docFreq != -1)
       termState.setDocFreq(docFreq);
     
-    return new TermWeight(searcher, termState,this.index);
+    return new TermWeight(searcher, termState,this.token);
   }
 
   @Override

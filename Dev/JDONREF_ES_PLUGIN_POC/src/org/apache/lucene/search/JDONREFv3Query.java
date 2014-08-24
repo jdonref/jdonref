@@ -5,7 +5,14 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.JDONREFv3TermContext;
+import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.JDONREFv3TermQuery.TermWeight;
+import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.util.Bits;
 
 
@@ -15,7 +22,7 @@ import org.apache.lucene.util.Bits;
  */
 public class JDONREFv3Query extends BooleanQuery
 {
-    boolean DEBUG = false;
+    public static boolean DEBUG = false;
     
     public static String DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
     
@@ -83,6 +90,90 @@ public class JDONREFv3Query extends BooleanQuery
       return subscorers;
     }
 
+    public Explanation explainScore(AtomicReaderContext context,TermWeight weight, int doc) throws IOException
+    {
+        JDONREFv3TermScorer scorer = (JDONREFv3TermScorer) weight.scorer(context, true, false, context.reader().getLiveDocs());
+        
+        if (scorer!=null)
+        {
+            int newDoc = scorer.advance(doc);
+
+            if (newDoc==doc)
+            {
+                ComplexExplanation expl = new ComplexExplanation();
+
+                // DefaultSimilarity only
+                JDONREFv3TermQuery query = (JDONREFv3TermQuery) weight.getQuery(); // NB: pas de cohérence entre term et query. En fait, le boost query n'est pas supporté, et le weight est le même quelque soit la requête ...
+                IndexSearcher searcher = weight.getSearcher();
+                Term term = query.getTerm();
+
+                String field = term.field();
+                CollectionStatistics collectionStats = searcher.collectionStatistics(field);
+                JDONREFv3TermContext termStates = JDONREFv3TermContext.build(searcher.getTopReaderContext(), term);
+                TermStatistics termStats = searcher.termStatistics(term, termStates.getContext());
+                float value = (float)(Math.log(collectionStats.maxDoc()/(double)(termStats.docFreq()+1)) + 1.0);
+
+                AtomicReader atomicreader = context.reader();
+                DocsEnum docsEnum = atomicreader.termDocsEnum(term);
+                docsEnum.advance(doc);
+                float freq;
+
+                if (JDONREFv3Scorer.cumuler(field))
+                    freq = docsEnum.freq();
+                else
+                    freq = 1; // les tokens doivent être recherchés autant de fois qu'il y a de termes ?
+
+                float queryBoost = 1.0f;
+                float topLevelBoost = 1.0f;
+
+                NumericDocValues numdocvalues = atomicreader.getNormValues(field);
+                long normvalues = numdocvalues.get(doc);
+                float normvalue = ((DefaultSimilarity)searcher.getDefaultSimilarity()).decodeNormValue(normvalues);
+                float newscore = (float)Math.sqrt(freq) * normvalue        // propre au document
+                                 * queryBoost * weight.getQueryNorm() * topLevelBoost  // propre à la requête
+                                 * value * value
+                                 / freq ;
+
+                Explanation freqExpl = new Explanation(1.0f/freq, "1/frequency(freq="+freq+")="+(1.0f/freq));
+                
+                Explanation fieldNormExpl = new Explanation(normvalue,"fieldnorm(doc="+doc+")");
+                Explanation idfExpl = new Explanation(value,"idf(docFreq="+termStats.docFreq()+",maxDocs="+collectionStats.maxDoc()+")");
+                Explanation tfExpl = new Explanation((float)Math.sqrt(freq),"tf(freq="+freq+")");
+
+                Explanation fieldWeightExpl = new ComplexExplanation();
+                fieldWeightExpl.setDescription("fieldWeight in "+doc+", product of:");
+                fieldWeightExpl.setValue((float)Math.sqrt(freq)*value*normvalue);
+                fieldWeightExpl.addDetail(tfExpl);
+                fieldWeightExpl.addDetail(idfExpl);
+                fieldWeightExpl.addDetail(fieldNormExpl);
+
+                Explanation queryNormExpl = new Explanation(weight.getQueryNorm(),"queryNorm");
+
+                Explanation queryWeightExpl = new ComplexExplanation();
+                queryWeightExpl.setValue(value*weight.getQueryNorm());
+                queryWeightExpl.setDescription("queryWeight, product of:");
+                queryWeightExpl.addDetail(idfExpl);
+                queryWeightExpl.addDetail(queryNormExpl);
+
+                Explanation productExpl = new ComplexExplanation();
+                productExpl.setValue(newscore);
+                productExpl.setDescription("score(doc="+doc+",freq="+freq+", termFreq="+freq+"), product of:");
+                productExpl.addDetail(queryWeightExpl);
+
+                expl.setValue(newscore);
+                expl.setDescription("weight("+term.field()+":"+term.text()+" in "+doc+") ["+weight.getSimilarity()+"], result of");
+                expl.addDetail(productExpl);
+                expl.addDetail(fieldWeightExpl);
+                expl.addDetail(freqExpl);
+                expl.setMatch(newscore>0);
+
+                return expl;
+            }
+        }
+        
+        return new ComplexExplanation(false, 0.0f, "no matching term");
+    }
+    
     /**
      * Copy from BooleanQuery without coord explanation.
      * @param context
@@ -95,64 +186,142 @@ public class JDONREFv3Query extends BooleanQuery
         JDONREFv3Query.this.getMinimumNumberShouldMatch();
         
         ComplexExplanation sumExpl = new ComplexExplanation();
-      sumExpl.setDescription("sum of:");
-      int coord = 0;
-      float sum = 0.0f;
-      boolean fail = false;
-      int shouldMatchCount = 0;
-      Iterator<BooleanClause> cIter = clauses().iterator();
-      for (Iterator<Weight> wIter = weights.iterator(); wIter.hasNext();) {
-        Weight w = wIter.next();
-        BooleanClause c = cIter.next();
-        if (w.scorer(context, true, true, context.reader().getLiveDocs()) == null) {
-          if (c.isRequired()) {
-            fail = true;
-            Explanation r = new Explanation(0.0f, "no match on required clause (" + c.getQuery().toString() + ")");
-            sumExpl.addDetail(r);
+          sumExpl.setDescription("sum of:");
+          float coord = 0;
+          float sum = 0.0f;
+          int shouldMatchCount = 0;
+          int[] requestTokenFrequencies = new int[JDONREFv3Query.this.numTokens];
+          ArrayList<Explanation> explanations = new ArrayList<Explanation>();
+          ArrayList<Integer> tokens = new ArrayList<Integer>();
+          ArrayList<Integer> terms = new ArrayList<Integer>();
+          ArrayList<Boolean> cumuler = new ArrayList<Boolean>();
+
+          // Get explanations
+          Iterator<BooleanClause> cIter = clauses().iterator();
+          for (Iterator<Weight> wIter = weights.iterator(); wIter.hasNext();) {
+              Weight w = wIter.next();
+              BooleanClause c = cIter.next();
+              if (w.scorer(context, true, true, context.reader().getLiveDocs()) == null) {
+                  continue;
+              }
+              Explanation e = explainScore(context, (TermWeight) w, doc);
+              if (e.isMatch()) {
+                  JDONREFv3TermQuery query = (JDONREFv3TermQuery) w.getQuery();
+                  String term = query.getTerm().field();
+                  int token = query.getToken();
+                  boolean cumul = JDONREFv3Scorer.cumuler(term);
+
+                  requestTokenFrequencies[token]++;
+                  tokens.add(token);
+                  explanations.add(e);
+                  terms.add(termIndex.get(term));
+                  cumuler.add(cumul);
+
+                  if (c.getOccur() == BooleanClause.Occur.SHOULD) {
+                      shouldMatchCount++;
+                  }
+              }
           }
-          continue;
-        }
-        Explanation e = w.explain(context, doc);
-        if (e.isMatch()) {
-          if (!c.isProhibited()) {
-            sumExpl.addDetail(e);
-            sum += e.getValue();
-            coord++;
-          } else {
-            Explanation r =
-              new Explanation(0.0f, "match on prohibited clause (" + c.getQuery().toString() + ")");
-            r.addDetail(e);
-            sumExpl.addDetail(r);
-            fail = true;
+
+          float[] max_by_term = new float[maxCoord];
+          float[] coord_by_term = new float[maxCoord];
+          Explanation[] noncumulExpl = new Explanation[maxCoord];
+
+          // Apply token frequencies and add details
+          for (int i = 0; i < explanations.size(); i++) {
+              Explanation e = explanations.get(i);
+              int token = tokens.get(i);
+              int freq = requestTokenFrequencies[token];
+              assert (freq > 0);
+
+              if (cumuler.get(i)) {
+                  sum += e.getValue() / freq;
+                  coord += 1.0f / freq;
+
+                  if (freq == 1) {
+                      sumExpl.addDetail(e);
+                  } else {
+                      Explanation dotExpl = new ComplexExplanation();
+                      dotExpl.setDescription("coord product of");
+                      dotExpl.addDetail(e);
+
+                      Explanation freqExpl = new Explanation(1.0f / freq, "coord : 1/" + freq);
+                      dotExpl.addDetail(freqExpl);
+
+                      dotExpl.setValue(e.getValue() / freq);
+                      sumExpl.addDetail(dotExpl);
+                  }
+              } else {
+                  int term = terms.get(i);
+                  float score = e.getValue() / freq;
+                  float lastscore = max_by_term[term];
+                  if (score > lastscore) {
+                      sum += e.getValue() / freq;
+                      coord += 1.0f / freq;
+                      if (lastscore > 0) {
+                          sum -= lastscore;
+                          coord -= coord_by_term[term];
+                      } else // noncumulExpl creation shall be here !
+                      {
+                          noncumulExpl[term] = new ComplexExplanation();
+                          noncumulExpl[term].setDescription("Maximum of");
+                          sumExpl.addDetail(noncumulExpl[term]);
+                      }
+
+                      max_by_term[term] = score;
+                      coord_by_term[term] = 1.0f / freq;
+                      noncumulExpl[term].setValue(max_by_term[term]);
+                  }
+
+                  if (freq == 1) {
+                      noncumulExpl[term].addDetail(e);
+                  } else {
+                      Explanation dotExpl = new ComplexExplanation();
+                      dotExpl.setDescription("coord product of");
+                      dotExpl.addDetail(e);
+
+                      Explanation freqExpl = new Explanation(1.0f / freq, "coord : 1/" + freq);
+                      dotExpl.addDetail(freqExpl);
+
+                      dotExpl.setValue(sum);
+                      noncumulExpl[term].addDetail(dotExpl);
+                  }
+              }
           }
-          if (c.getOccur() == BooleanClause.Occur.SHOULD) {
-            shouldMatchCount++;
+
+          // return
+          if (shouldMatchCount < minShouldMatch) {
+              sumExpl.setMatch(Boolean.FALSE);
+              sumExpl.setValue(0.0f);
+              sumExpl.setDescription("Failure to match minimum number " +
+                      "of optional clauses: " + minShouldMatch);
+              return sumExpl;
           }
-        } else if (c.isRequired()) {
-          Explanation r = new Explanation(0.0f, "no match on required clause (" + c.getQuery().toString() + ")");
-          r.addDetail(e);
-          sumExpl.addDetail(r);
-          fail = true;
-        }
+
+          sumExpl.setMatch(0 < coord ? Boolean.TRUE : Boolean.FALSE);
+          sumExpl.setValue(sum);
+
+          return sumExpl;
       }
-      if (fail) {
-        sumExpl.setMatch(Boolean.FALSE);
-        sumExpl.setValue(0.0f);
-        sumExpl.setDescription
-          ("Failure to meet condition(s) of required/prohibited clause(s)");
-        return sumExpl;
-      } else if (shouldMatchCount < minShouldMatch) {
-        sumExpl.setMatch(Boolean.FALSE);
-        sumExpl.setValue(0.0f);
-        sumExpl.setDescription("Failure to match minimum number "+
-                               "of optional clauses: " + minShouldMatch);
-        return sumExpl;
+    
+    public float explainCoord(Explanation expl) throws IOException
+    {
+      float coord = 0.0f;
+      
+      for(int i=0;i<expl.getDetails().length;i++)
+      {
+          Explanation e = expl.getDetails()[i];
+          
+          if (e.getDescription().startsWith("coord"))
+          {
+              Explanation freq = e.getDetails()[1];
+              coord += freq.getValue();
+          }
+          else
+              coord += 1.0f;
       }
       
-      sumExpl.setMatch(0 < coord ? Boolean.TRUE : Boolean.FALSE);
-      sumExpl.setValue(sum);
-      
-      return sumExpl;
+      return coord;
     }
     
     @Override
@@ -170,7 +339,7 @@ public class JDONREFv3Query extends BooleanQuery
       System.out.println("Thread "+Thread.currentThread().getName()+" "+"Explain doc "+doc+" notation");
       
       ComplexExplanation dotExpl = new ComplexExplanation();
-      dotExpl.setDescription("Thread "+Thread.currentThread().getName()+" doc "+doc+" product of:");
+      dotExpl.setDescription("product of:");
       
       Explanation boolExpl = booleanScorerExplainWithoutCoord(context,doc);
       value = boolExpl.getValue();
@@ -214,15 +383,16 @@ public class JDONREFv3Query extends BooleanQuery
       try
       {
         int maxcoord = scorer.maxCoord();
-        int coord = scorer.coord(subscorers);
+        float coord = explainCoord(boolExpl);
         if (coord!=maxcoord)
         {
-            Explanation coordExpl = new Explanation((float)Math.pow((float)coord/(float)maxcoord,2),"coord("+coord+"/"+maxcoord+")^2");
+            float pow = (float)Math.pow(coord/(float)maxcoord,3);
+            Explanation coordExpl = new Explanation(pow,"coord("+coord+"/"+maxcoord+")^3");
             dotExpl.addDetail(coordExpl);
-            value *= Math.pow((float)coord/(float)maxcoord,2);
+            value *= pow;
             
             if (debug)
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" And coord ("+coord+"/"+maxcoord+")^2="+coordExpl.getValue());
+            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" And coord ("+coord+"/"+maxcoord+")^3="+pow);
         }
         
       }
@@ -235,6 +405,10 @@ public class JDONREFv3Query extends BooleanQuery
       Explanation twohundredexpl = new Explanation(200,"rapporté à 200");
       dotExpl.addDetail(twohundredexpl);
       value *= 200;
+      
+      // arrondi le résultat à 10^-2
+      value = (float)Math.ceil(100*value)/100.0f;
+      if (value>200) value=200.0f; // maximum
       
       // Set value
       dotExpl.setValue(value);
