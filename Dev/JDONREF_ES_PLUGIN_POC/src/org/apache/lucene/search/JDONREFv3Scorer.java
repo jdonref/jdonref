@@ -38,7 +38,7 @@ import org.elasticsearch.index.similarity.SimilarityService;
  */
 public class JDONREFv3Scorer extends Scorer {
   
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     public static String DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
     
   public final static float ORDERMALUS = 0.5f;
