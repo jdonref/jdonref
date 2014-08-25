@@ -7,6 +7,11 @@
                     "tokenizer" : "standard",
                     "filter" : ["standard", "lowercase", "jdonrefv3es_synonyme", "jdonrefv3es_nGram"]
                 },
+                "jdonrefv3es_codes_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase"]
+                },
                 "jdonrefv3es_index_nosyn" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
@@ -25,7 +30,7 @@
                 },
                 "jdonrefv3es_nGram" : {
                     "type" : "edgeNGram",
-                    "min_ngram": 3,
+                    "min_ngram": 2,
                     "max_gram": 15
                 }
             }

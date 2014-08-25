@@ -141,7 +141,7 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
     
     void importMapping() throws FileNotFoundException, IOException
     {
-        String[] mappings = new String[]{"pays","departement","commune","voie","troncon","adresse"};
+        String[] mappings = new String[]{"pays","departement","commune","voie","troncon","adresse","poizon"};
         
         for(int i=0;i<mappings.length;i++)
         {
@@ -196,6 +196,7 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
         boolean match = false;
         boolean hitPrinted = false;
         boolean explanationPrinted = false;
+        int positionMatch = -1;
             
         System.out.println(hits.length+" hit(s). Best is "+hits[0].getScore());
         for(int i=0;(i<hits.length)&&!match;i++) // on n'affiche l'explication qu'en cas d'erreur et pour le premier et le résultat attendu.
@@ -205,50 +206,34 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
             SearchHit hit = hits[i];
             Explanation ex = hits[i].explanation();
             match = assertion.equals(hit.getSource().get("fullName"));
-            if (!match || match && i>0)
+            if (ex!=null && Math.abs(hits[i].getScore()-ex.getValue())>0.05)
             {
-                hitPrinted = true;
-                System.out.println("hit "+i+" "+hit.getSourceAsString());
-                System.out.println("score : "+hit.getScore());
-                if (ex!=null && (match || i==0))
-                {
-                    explanationPrinted = true;
-                    printExplanation(ex);
-                }
+                printExplanation(ex);
+                Assert.assertTrue(Math.abs(hits[i].getScore()-ex.getValue())<=0.05); // 0.05 tolerance : no more time to dev.
             }
-            if (ex!=null && hits[i].getScore()!=ex.getValue())
-            {
-                if (!hitPrinted)
-                {
-                    hitPrinted = true;
-                    System.out.println("hit "+i+" "+hit.getSourceAsString());
-                    System.out.println("score : "+hit.getScore());
-                }
-                if (!explanationPrinted)
-                {
-                    explanationPrinted = true;
-                    printExplanation(ex);
-                }
-                Assert.assertTrue(Math.abs(hits[i].getScore()-ex.getValue())<=0.05); // tolerance : no more time to dev.
-            }
+            if (match) positionMatch = i;
         }
-        Assert.assertEquals(assertion,hits[indice].getSource().get("fullName"));
+        if (positionMatch>indice || positionMatch==-1)
+        {
+            System.out.println("hit "+0+" "+hits[0].getSourceAsString());
+            System.out.println("score : "+hits[0].getScore());
+            printExplanation(hits[0].explanation());
+        }
+        Assert.assertTrue(positionMatch<=indice);
         if (note_minimum>-1)
         {
-            if (hits[indice].getScore()<note_minimum)
+            if (hits[positionMatch].getScore()<note_minimum)
             {
                 if (!hitPrinted)
                 {
-                    hitPrinted = true;
-                    System.out.println("hit "+indice+" "+hits[indice].getSourceAsString());
-                    System.out.println("score : "+hits[indice].getScore());
+                    System.out.println("hit "+positionMatch+" "+hits[positionMatch].getSourceAsString());
+                    System.out.println("score : "+hits[positionMatch].getScore());
                 }
                 if (!explanationPrinted)
                 {
-                    explanationPrinted = true;
-                    printExplanation(hits[indice].explanation());
+                    printExplanation(hits[positionMatch].explanation());
                 }
-                Assert.assertTrue(hits[indice].getScore()>=note_minimum);
+                Assert.assertTrue(hits[positionMatch].getScore()>=note_minimum);
             }
         }
     }
@@ -261,14 +246,12 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
                 .field("code_pays","FR")
                 .field("ligne7","FRANCE")
                 .field("fullName","FRANCE")
-                .field("numero","0")
                 .field("type","pays")
                 .endObject());
         publicIndex(brb,"pays","DE",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","DE")
                 .field("ligne7","ALLEMAGNE")
                 .field("fullName","ALLEMAGNE")
-                .field("numero","0")
                 .field("type","pays")
                 .endObject());
         publicIndex(brb,"commune","75056",XContentFactory.jsonBuilder().startObject()
@@ -279,7 +262,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
                 .field("code_pays","FR")
                 .field("ligne7","FRANCE")
                 .field("fullName","PARIS FRANCE")
-                .field("numero","0")
                 .field("code_departement","75")
                 .field("type","commune")
                 .endObject());
@@ -291,7 +273,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
                 .field("code_pays","FR")
                 .field("ligne7","FRANCE")
                 .field("fullName","59500 DOUAI FRANCE")
-                .field("numero","0")
                 .field("code_departement","59")
                 .field("type","commune")
                 .endObject());
@@ -302,7 +283,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
                 .field("ligne7","FRANCE")
                 .field("commune","PARIS")
                 .field("fullName","BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("numero","0")
                 .field("code_departement","75")
                 .field("code_postal","75005")
                 .field("code_insee","75105")
@@ -315,7 +295,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
                 .field("fullName","RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("numero","0")
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
@@ -328,7 +307,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
                 .field("ligne7","FRANCE")
                 .field("commune","PARIS")
                 .field("fullName","RUE DE LA FRANCE 75013 PARIS FRANCE")
-                .field("numero","0")
                 .field("code_departement","75")
                 .field("code_postal","75005")
                 .field("code_insee","75113")
@@ -470,12 +448,75 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
                 .field("code_insee","02000")
                 .field("type","adresse")
                 .endObject());
+        publicIndex(brb,"poizon","4",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_id","KEBAB1")
+                .field("poizon_service",1)
+                .field("ligne1","KEBAB LA P'TITE FRITE")
+                .field("ligne4","130 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("fullName","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE")
+                .field("numero",130)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .field("type","poizon")
+                .endObject());
+        publicIndex(brb,"poizon","5",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_id","KEBAB1")
+                .field("poizon_service",1)
+                .field("ligne1","KEBAB DU COIN")
+                .field("ligne4","131 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("fullName","KEBAB DU COIN 131 RUE REMY DUHEM 59500 DOUAI FRANCE")
+                .field("numero",131)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .field("type","poizon")
+                .endObject());
+        publicIndex(brb,"poizon","6",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_id","KEBAB2")
+                .field("poizon_service",1)
+                .field("ligne1","KEBAB LA GROSSE FRITE")
+                .field("ligne4","59 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("fullName","KEBAB LA GROSSE FRITE 59 RUE REMY DUHEM 59500 DOUAI FRANCE")
+                .field("numero",59)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .field("type","poizon")
+                .endObject());
+        publicIndex(brb,"poizon","7",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_id","KEBAB3")
+                .field("poizon_service",1)
+                .field("ligne1","KEBAB DU COIN")
+                .field("ligne4","75 RUE REMY DUHEM")
+                .field("ligne6","75015 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("fullName","KEBAB DU COIN 75 RUE REMY DUHEM 75015 PARIS FRANCE")
+                .field("numero",75)
+                .field("code_departement","75")
+                .field("code_postal","75015")
+                .field("code_insee","75115")
+                .field("type","poizon")
+                .endObject());
         publicIndex(brb,"departement","75",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne6","75")
                 .field("ligne7","FRANCE")
                 .field("fullName","75 FRANCE")
-                .field("numero","0")
                 .field("code_departement","75")
                 .field("type","departement")
                 .endObject());
@@ -484,7 +525,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
                 .field("ligne6","59")
                 .field("ligne7","FRANCE")
                 .field("fullName","59 FRANCE")
-                .field("numero","0")
                 .field("code_departement","59")
                 .field("type","departement")
                 .endObject());
@@ -538,7 +578,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
         JDONREFv3Query.DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
         JDONREFv3Scorer.DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
         
-        searchExactAdresse("130 RUE REMY DUHEM 5950 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f); // lost of precision
         searchExactAdresse("130 RUE REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
         searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
         searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
@@ -738,6 +777,9 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
         //searchExactAdresse("59505 FRANCE","59500 DOUAI FRANCE"); // 59505 n'est pas encore pris en charge
         searchExactAdresse("59505 DOUAI","59500 DOUAI FRANCE",0,20.0f); // réduction du score : 59505 n'est pas pris en charge
         //searchExactAdresse("59505","59500 DOUAI FRANCE"); // 59505 n'est pas encore pris en charge
+        
+        searchExactAdresse("59 59500 DOUAI","59500 DOUAI FRANCE",0,200.0f);
+        
         refresh();
         searchExactAdresse("59 DOUAI FRANCE","59500 DOUAI FRANCE",0,180.0f);
         searchExactAdresse("59 DOUAI","59500 DOUAI FRANCE",0,170.0f); // mark
@@ -748,10 +790,20 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
         refresh();
         searchExactAdresse("59 FRANCE","59 FRANCE",0,199.99f);
         searchExactAdresse("59","59 FRANCE",0,199.99f);
+        //searchExactAdresse("59 FR","59 FRANCE",0,199.99f); // not supported for now
+        //searchExactAdresse("59 FR FRANCE","59 FRANCE",0,199.99f);
         
         JDONREFv3Query.DEBUGREFERENCE = "FRANCE";
         JDONREFv3Scorer.DEBUGREFERENCE = "FRANCE";
         refresh();
         searchExactAdresse("FRANCE","FRANCE",0,199.99f);
+        searchExactAdresse("FR FRANCE","FRANCE",0,199.99f);
+        
+        JDONREFv3Query.DEBUGREFERENCE = "KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE";
+        JDONREFv3Scorer.DEBUGREFERENCE = "KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE";
+        refresh();
+        searchExactAdresse("KEBAB FRITE DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",1,100.0f);
+        searchExactAdresse("KEBAB DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
+        searchExactAdresse("KEBAB RUE REMY DUHEM","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
     }
 }

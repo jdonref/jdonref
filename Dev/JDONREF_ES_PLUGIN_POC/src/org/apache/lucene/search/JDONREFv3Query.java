@@ -223,9 +223,10 @@ public class JDONREFv3Query extends BooleanQuery
               }
           }
 
-          float[] max_by_term = new float[maxCoord];
-          float[] coord_by_term = new float[maxCoord];
-          Explanation[] noncumulExpl = new Explanation[maxCoord];
+          int maxterms = ((JDONREFv3Query)this.getQuery()).termIndex.size();
+          float[] max_by_term = new float[maxterms];
+          float[] coord_by_term = new float[maxterms];
+          Explanation[] noncumulExpl = new Explanation[maxterms];
 
           // Apply token frequencies and add details
           for (int i = 0; i < explanations.size(); i++) {
@@ -256,11 +257,11 @@ public class JDONREFv3Query extends BooleanQuery
                   float score = e.getValue() / freq;
                   float lastscore = max_by_term[term];
                   if (score > lastscore) {
-                      sum += e.getValue() / freq;
+                      sum += score;
                       coord += 1.0f / freq;
                       if (lastscore > 0) {
                           sum -= lastscore;
-                          coord -= coord_by_term[term];
+                          //coord -= coord_by_term[term];
                       } else // noncumulExpl creation shall be here !
                       {
                           noncumulExpl[term] = new ComplexExplanation();
@@ -269,9 +270,11 @@ public class JDONREFv3Query extends BooleanQuery
                       }
 
                       max_by_term[term] = score;
-                      coord_by_term[term] = 1.0f / freq;
+                      //coord_by_term[term] = 1.0f / freq;
                       noncumulExpl[term].setValue(max_by_term[term]);
                   }
+                  else
+                      coord += 1.0f / freq;
 
                   if (freq == 1) {
                       noncumulExpl[term].addDetail(e);
@@ -304,24 +307,54 @@ public class JDONREFv3Query extends BooleanQuery
           return sumExpl;
       }
     
-    public float explainCoord(Explanation expl) throws IOException
+    public float explainCoord(AtomicReaderContext context, int doc) throws IOException
     {
-      float coord = 0.0f;
-      
-      for(int i=0;i<expl.getDetails().length;i++)
-      {
-          Explanation e = expl.getDetails()[i];
-          
-          if (e.getDescription().startsWith("coord"))
-          {
-              Explanation freq = e.getDetails()[1];
-              coord += freq.getValue();
+      final int minShouldMatch =
+        JDONREFv3Query.this.getMinimumNumberShouldMatch();
+        
+        ComplexExplanation sumExpl = new ComplexExplanation();
+          sumExpl.setDescription("sum of:");
+          float coord = 0;
+          int shouldMatchCount = 0;
+          int[] requestTokenFrequencies = new int[JDONREFv3Query.this.numTokens];
+          ArrayList<Integer> tokens = new ArrayList<Integer>();
+
+          // Get explanations
+          Iterator<BooleanClause> cIter = clauses().iterator();
+          for (Iterator<Weight> wIter = weights.iterator(); wIter.hasNext();) {
+              Weight w = wIter.next();
+              BooleanClause c = cIter.next();
+              if (w.scorer(context, true, true, context.reader().getLiveDocs()) == null) {
+                  continue;
+              }
+              Explanation e = explainScore(context, (TermWeight) w, doc);
+              if (e.isMatch()) {
+                  JDONREFv3TermQuery query = (JDONREFv3TermQuery) w.getQuery();
+                  int token = query.getToken();
+                  
+                  requestTokenFrequencies[token]++;
+                  tokens.add(token);
+                  
+                  if (c.getOccur() == BooleanClause.Occur.SHOULD) {
+                      shouldMatchCount++;
+                  }
+              }
           }
-          else
-              coord += 1.0f;
-      }
-      
-      return coord;
+
+          // Apply token frequencies and add details
+          for (int i = 0; i < tokens.size(); i++) {
+              int token = tokens.get(i);
+              int freq = requestTokenFrequencies[token];
+              assert (freq > 0);
+              coord += 1.0f / freq;
+          }
+
+          // return
+          if (shouldMatchCount < minShouldMatch) {
+              return 1;
+          }
+
+          return coord;
     }
     
     @Override
@@ -332,7 +365,7 @@ public class JDONREFv3Query extends BooleanQuery
       
       boolean debug = false;
       
-      if (context.reader().document(doc).get("fullName").equals(DEBUGREFERENCE))
+      if (DEBUG && context.reader().document(doc).get("fullName").equals(DEBUGREFERENCE))
           debug = DEBUG;
       
       if (debug)
@@ -383,7 +416,7 @@ public class JDONREFv3Query extends BooleanQuery
       try
       {
         int maxcoord = scorer.maxCoord();
-        float coord = explainCoord(boolExpl);
+        float coord = explainCoord(context,doc);
         if (coord!=maxcoord)
         {
             float pow = (float)Math.pow(coord/(float)maxcoord,3);

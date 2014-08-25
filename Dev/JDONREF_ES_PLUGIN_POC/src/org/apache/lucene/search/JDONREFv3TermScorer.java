@@ -120,8 +120,12 @@ public class JDONREFv3TermScorer extends Scorer {
   public float score() throws IOException
   {
     assert docID() != NO_MORE_DOCS;
+
+    //System.out.println("Thread "+Thread.currentThread().getName()+" score docId "+docID()+" for "+((JDONREFv3TermQuery)getWeight().getQuery()).getTerm().field());
     
     float score = docScorer.score(docsEnum.docID(), docsEnum.freq());
+    
+    //System.out.println("Thread "+Thread.currentThread().getName()+" end score docId "+docID()+" for "+((JDONREFv3TermQuery)getWeight().getQuery()).getTerm().field());
     
     return score;
   }

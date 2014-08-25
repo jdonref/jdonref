@@ -120,12 +120,7 @@ public class JDONREFv3QueryParser implements QueryParser
         Query query = null;
         
         if (query == null) {
-            if (mode==JDONREFv3QueryParser.SMART)
-                query = getQueryExact((String)value,parseContext);
-            else if (mode==JDONREFv3QueryParser.STRING)
-                query = getQueryStringQuery((String)value,parseContext);
-            else
-                query = getSpanQuery((String)value,parseContext);
+            query = getQueryStringQuery((String)value,parseContext);
             query.setBoost(boost);
             
             if (filterName != null) {
@@ -149,20 +144,6 @@ public class JDONREFv3QueryParser implements QueryParser
         }
     }
     
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,String attr,String value,float boost,Occur occur) throws IOException
-    {
-        Term t = new Term(attr,BytesRef.deepCopyOf(new BytesRef(value)));
-        JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
-        //TermQuery query = new TermQuery(t);
-        
-        //Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
-        if (query!=null)
-        {
-              query.setBoost(boost);
-              booleanQuery.add(new BooleanClause(query,occur));
-        }
-    }
-    
     public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, int token,int queryIndex) throws IOException
     {
         JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
@@ -177,114 +158,6 @@ public class JDONREFv3QueryParser implements QueryParser
             booleanQuery.add(new BooleanClause(query,occur));
         }
     }
-    
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,String attr,int value,float boost,Occur occur) throws IOException
-    {
-        Query query = mq.parse(MatchQuery.Type.BOOLEAN,attr,value);
-        if (query!=null)
-        {
-              query.setBoost(boost);
-              booleanQuery.add(new BooleanClause(query,occur));
-        }
-    }
-    
-    public Query getSpanQuery(String find, QueryParseContext parseContext) throws IOException
-    {
-        Hashtable<String,Boolean> hash = new Hashtable<String,Boolean>();
-        
-        String[] splitted = find.split(" ");
-        SpanTermQuery[] query = new SpanTermQuery[splitted.length];
-        for(int i=0;i<splitted.length;i++)
-        {
-            String stri = splitted[i];
-            SpanTermQuery q = new SpanTermQuery(new Term("fullName",stri));
-            query[i] = q;
-        }
-        
-        SpanNearQuery spanNear = new SpanNearQuery(query,5,true);
-        
-        System.out.println(spanNear.toString());
-        
-        return spanNear;
-    }
-    
-    public Query getQueryExact(String find, QueryParseContext parseContext) throws IOException
-    {
-        Hashtable<String,Boolean> hash = new Hashtable<String,Boolean>();
-        
-        MatchQuery mq = new MatchQuery(parseContext);
-        BooleanQuery booleanQuery = new BooleanQuery();
-        
-        boolean isThereInt = false;
-        int firstNumber = -1;
-        
-        String[] splitted = find.split(" ");
-        for(int i=0;i<splitted.length;i++)
-        {
-            String stri = splitted[i];
-            
-            if (hash.get(stri)==null)
-            {
-                hash.put(stri,true);
-                
-                if (isInt(stri))
-                {
-                    if (firstNumber==-1) firstNumber = i;
-                    isThereInt = true;
-
-                    if (stri.length()==5)
-                    {
-                        addMatchQueryClause(booleanQuery,mq,"code_insee",stri,2.5f,BooleanClause.Occur.SHOULD);
-                    }
-                    if (stri.length()==5)
-                    {
-                        addMatchQueryClause(booleanQuery,mq,"code_postal",stri,2.5f,BooleanClause.Occur.SHOULD);
-                    }
-                    float dptBoost = 1.0f;
-                    if (i==0)
-                        dptBoost = 0.5f;
-                    if (i>0 || splitted.length==1)
-                        dptBoost = 2.5f;
-                    addMatchQueryClause(booleanQuery,mq,"code_departement",stri.length()<=2?stri:stri.substring(0,2),dptBoost,BooleanClause.Occur.SHOULD);
-                    
-                    float ardtBoost = 1.0f;
-                    if (i==0)
-                        ardtBoost = 0.5f;
-                    if (i>0 || splitted.length==1)
-                        ardtBoost = 2.5f;
-                    addMatchQueryClause(booleanQuery,mq,"code_arrondissement",stri.length()<=2?stri:stri.substring(stri.length()-2),ardtBoost,BooleanClause.Occur.SHOULD);
-                    
-                    float numBoost = 1.0f;
-                    if (i==0 && splitted.length!=1)
-                        numBoost = 2.5f;
-                    else if (i>0 || splitted.length==1)
-                        numBoost = 0.5f;
-                    addMatchQueryClause(booleanQuery,mq,"numero",stri,numBoost,BooleanClause.Occur.SHOULD);
-                    
-                    addMatchQueryClause(booleanQuery,mq,"ligne4",stri,0.5f,BooleanClause.Occur.SHOULD);
-                    addMatchQueryClause(booleanQuery,mq,"ligne6",stri,0.5f,BooleanClause.Occur.SHOULD);
-                }
-                else
-                {
-                    addMatchQueryClause(booleanQuery,mq,"ligne4",stri,10f,BooleanClause.Occur.SHOULD);
-                    addMatchQueryClause(booleanQuery,mq,"ligne6",stri,0.5f,BooleanClause.Occur.SHOULD);
-                }
-            }
-        }
-        
-        float num0Boost = 1.0f;
-        if (!isThereInt || firstNumber > 0 || splitted.length==1)
-            num0Boost = 2.5f;
-        else if (firstNumber==0)
-            num0Boost = 0.5f;
-        addMatchQueryClause(booleanQuery,mq,"numero","0",num0Boost,BooleanClause.Occur.SHOULD);
-        
-        //System.out.println(booleanQuery.toString());
-        
-        return booleanQuery;
-    }
-
-    String[] fields = new String[]{"fullName"};
     
     private Query getQueryStringQuery(String find, QueryParseContext parseContext) throws IOException
     {
@@ -353,6 +226,7 @@ public class JDONREFv3QueryParser implements QueryParser
         termIndex.put("codes",2);
         termIndex.put("ligne7",3);
         termIndex.put("code_pays",4);
+        termIndex.put("ligne1",5);
         
         booleanQuery.setTermIndex(termIndex);
         
@@ -364,7 +238,7 @@ public class JDONREFv3QueryParser implements QueryParser
             try {
               boolean hasNext = buffer.incrementToken();
               assert hasNext == true;
-              termAtt.fillBytesRef();
+              termAtt.fillBytesRef();  // here, BytesRef is updated !
               if (posIncrAtt != null) {
                 positionIncrement = posIncrAtt.getPositionIncrement();
               }
@@ -381,7 +255,8 @@ public class JDONREFv3QueryParser implements QueryParser
             //addMatchQueryClause(booleanQuery,mq,new Term("code_insee", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
             //addMatchQueryClause(booleanQuery,mq,new Term("code_departement", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,false);
             addMatchQueryClause(booleanQuery,mq,new Term("ligne7", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-            addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
+            //addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
+            addMatchQueryClause(booleanQuery,mq,new Term("ligne1", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
           }
         
         //System.out.println(booleanQuery.toString());
