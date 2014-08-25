@@ -113,13 +113,15 @@ public class Departement {
          
          departement.add("code_departement", code_departement);
          departement.add("code_pays","FR1");
+         departement.add("codes","");
          departement.add("pays","FRANCE");
 //         departement.add("dpt_referentiel", dpt_referentiel);
          departement.add("t0" , getDatForm(t0));
          departement.add("t1" , getDatForm(t1));
          departement.add("ligne6",toLigne6());
-         departement.add("ligne7",toLigne7());  
-         departement.add("pin" , centroideJSON(centroide));
+         departement.add("ligne7",toLigne7()); 
+         departement.add("type","departement");
+//         departement.add("pin" , centroideJSON(centroide));
          departement.add("geometrie" , geometrieJSON(geometrie));
          departement.add("fullName",toString());
 //         departement.add("fullName_sansngram",toString().trim());

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -93,8 +94,6 @@ public class Poizon {
         centroide = rs.getString(33);
 
     }
-
-
     
     
     public JsonObject geometrieJSON(String geometrie) {
@@ -124,71 +123,52 @@ public class Poizon {
          JsonObjectBuilder builder = Json.createObjectBuilder();
         
          JsonObjectBuilder poizon = Json.createObjectBuilder();
-         
-         
-         poizon.add("poizon_service", poizon_service);
-         if(poizon_cle!=null)
-            poizon.add("poizon_cle", poizon_cle);
-         if(poizon_cle_pq!=null)
-            poizon.add("poizon_cle_pq", poizon_cle_pq);
-         if(poizon_lbl!=null)
-            poizon.add("poizon_lbl", poizon_lbl);
-         if(poizon_lbl_pq!=null)
-            poizon.add("poizon_lbl_pq", poizon_lbl_pq);
-         if(poizon_lbl_sans_articles!=null)
-            poizon.add("poizon_lbl_sans_articles", poizon_lbl_sans_articles);
-         if(poizon_lbl_sans_articles_pq!=null)
-            poizon.add("poizon_lbl_sans_articles_pq", poizon_lbl_sans_articles_pq);
-         if(poizon_id1!=null)
-            poizon.add("poizon_id1", poizon_id1);
-         if(poizon_id2!=null)
-            poizon.add("poizon_id2", poizon_id2);
-         if(poizon_id3!=null)
-            poizon.add("poizon_id3", poizon_id3);
+
+         poizon.add("poizon_id", poizon_id1);  
          if(poizon_id4!=null)
-            poizon.add("poizon_id4", poizon_id4);
-         if(poizon_id5!=null)
-            poizon.add("poizon_id5", poizon_id5);
-         if(poizon_id6!=null)
-            poizon.add("poizon_id6", poizon_id6);
+            poizon.add("adr_id",poizon_id4);
+//         poizon.add("tro_id","..");
+//         poizon.add("voi_id","..");
+//         poizon.add("code_insee_commune","..");         
+         if(poizon_id6!=null){
+            poizon.add("code_insee",poizon_id6);
+            poizon.add("code_departement",poizon_donnee6.substring(0,2));
+            poizon.add("code_arrondissement",poizon_donnee6.substring(3,5));
+         }
          if(poizon_id7!=null)
-            poizon.add("poizon_id7", poizon_id7);
-         if(poizon_donnee1!=null)
-            poizon.add("poizon_donnee1", poizon_donnee1);
-        if(poizon_donnee2!=null)
-            poizon.add("poizon_donnee2", poizon_donnee2);
-        if(poizon_donnee3!=null)
-            poizon.add("poizon_donnee3", poizon_donnee3);
-        if(poizon_donnee4!=null)
-            poizon.add("poizon_donnee4", poizon_donnee4);
-        if(poizon_donnee5!=null)
-            poizon.add("poizon_donnee5", poizon_donnee5);
-        if(poizon_donnee6!=null)
-            poizon.add("poizon_donnee6", poizon_donnee6);
-        if(poizon_donnee7!=null)
-            poizon.add("poizon_donnee7", poizon_donnee7);
-        if(poizon_donnee_origine1!=null)
-            poizon.add("poizon_donnee_origine1", poizon_donnee_origine1);
-        if(poizon_donnee_origine2!=null)
-            poizon.add("poizon_donnee_origine2", poizon_donnee_origine2);
-        if(poizon_donnee_origine3!=null)
-            poizon.add("poizon_donnee_origine3", poizon_donnee_origine3);
-        if(poizon_donnee_origine4!=null)
-            poizon.add("poizon_donnee_origine4", poizon_donnee_origine4);
-        if(poizon_donnee_origine5!=null)
-            poizon.add("poizon_donnee_origine5", poizon_donnee_origine5);
-        if(poizon_donnee_origine6!=null)
-            poizon.add("poizon_donnee_origine6", poizon_donnee_origine6);
-        if(poizon_donnee_origine7!=null)
-            poizon.add("poizon_donnee_origine7", poizon_donnee_origine7);
-        
+            poizon.add("code_pays", poizon_id7);
+         poizon.add("codes","");
+//         poizon.add("numero","..");
+//        poizon.add("repetition","..");
+//         poizon.add("type_de_voie","..");
+//         poizon.add("article","..");
+//         poizon.add("libelle","..");
+//         poizon.add("commune",".."); //////
+         
+         if(poizon_donnee6!=null)
+         poizon.add("code_postal",poizon_donnee6);
+         poizon.add("pays","FRANCE");
         poizon.add("t0" , getDatForm(t0));
         poizon.add("t1" , getDatForm(t1));
-        
-        poizon.add("poizon_referentiel", poizon_referentiel);
+        poizon.add("poizon_service", poizon_service); 
+        if(poizon_donnee1!=null)
+            poizon.add("ligne1", poizon_donnee1);
+        if(poizon_donnee2!=null)
+            poizon.add("ligne2", poizon_donnee2);
+        if(poizon_donnee3!=null)
+            poizon.add("ligne3", poizon_donnee3);
+        if(poizon_donnee4!=null)
+            poizon.add("ligne4", poizon_donnee4);
+        if(poizon_donnee5!=null)
+            poizon.add("ligne5", poizon_donnee5);
+        if(poizon_donnee6!=null)
+            poizon.add("ligne6", poizon_donnee6);
+        if(poizon_donnee7!=null)
+            poizon.add("ligne7", poizon_donnee7);
+        poizon.add("type","poizon");
+//        poizon.add("poizon_referentiel", poizon_referentiel);
          poizon.add("geometrie" , geometrieJSON(geometrie));
-         poizon.add("pin" , centroideJSON(centroide));
-
+//         poizon.add("pin" , centroideJSON(centroide));
 //         poizon.add("fullName",toString().trim());
 
          builder.add("adresse", poizon);         
@@ -196,8 +176,7 @@ public class Poizon {
     }
     
     
-    
-    
+
     
     
     

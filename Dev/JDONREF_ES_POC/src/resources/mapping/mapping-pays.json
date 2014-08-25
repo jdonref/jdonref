@@ -2,10 +2,10 @@
     "pays": {
        "path" : "just_name",
        "properties" : {
-                            "code_pays" : { "type" : "string" , "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
-                            "pays" : { "type" : "string" , "store" : true, "index": "no"},
-                            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
-                            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "store":true},
+                            "code_pays" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search"},
+                            "pays" : { "type" : "string" , "index": "no"},
+                            "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
+                            "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
                             "ligne7" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "type" : { "type" : "string", "store" : true,  "index":"not_analyzed"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},

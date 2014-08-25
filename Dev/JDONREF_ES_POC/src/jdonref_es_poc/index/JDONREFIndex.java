@@ -108,17 +108,19 @@ public class JDONREFIndex
             System.out.println("Démarrage de l'indexation");
         long start = Calendar.getInstance().getTimeInMillis();
         
+        util.showDeleteIndex();
+//        util.deleteIndex();        
+        
+        
 //        util.showDeleteType("departement");
 //        util.showDeleteType("voie");
 //        util.showDeleteType("adresse");
 //        util.showDeleteType("pays");
-//       // util.showDeleteType("commune");
+//        util.showDeleteType("commune");
 //        util.showDeleteType("troncon");
-//        commenter si MAJ POIZON
 //        util.showDeleteType("poizon");   
 
-//        util.showDeleteIndex();
-//        util.deleteIndex();
+
         util.showCreateIndex("./src/resources/index/jdonrefv3es-settings.json");
         util.showPutMapping("departement", "./src/resources/mapping/mapping-departement.json");
         util.showPutMapping("voie", "./src/resources/mapping/mapping-voie.json");
@@ -151,7 +153,7 @@ public class JDONREFIndex
             dptIndex.setVerbose(isVerbose());
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
-//            dptIndex.indexJDONREFDepartements();
+            dptIndex.indexJDONREFDepartements();
             
 //            dptIndex.indexJDONREFDepartement("01");
 //            dptIndex.indexJDONREFDepartement("02");
@@ -172,7 +174,7 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("17");
 //            dptIndex.indexJDONREFDepartement("18");
 //            dptIndex.indexJDONREFDepartement("19");
-//            dptIndex.indexJDONREFDepartement("20_a");
+            dptIndex.indexJDONREFDepartement("20_a");
 //            dptIndex.indexJDONREFDepartement("20_b");
 //            dptIndex.indexJDONREFDepartement("21");
 //            dptIndex.indexJDONREFDepartement("22");
@@ -195,7 +197,7 @@ public class JDONREFIndex
             pzIndex.setVerbose(isVerbose());
             pzIndex.setConnection(connection);
             pzIndex.setUtil(util);
-            pzIndex.indexJDONREFPoizon();
+//            pzIndex.indexJDONREFPoizon();
             
         }
         

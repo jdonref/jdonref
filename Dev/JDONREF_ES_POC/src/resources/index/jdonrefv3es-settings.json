@@ -5,17 +5,17 @@
                 "jdonrefv3es_index" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["standard", "lowercase", "jdonrefv3es_synonyme", "jdonrefv3es_nGram"]
+                    "filter" : ["standard", "lowercase", "jdonrefv3es_synonyme", "jdonrefv3es_nGram", "jdonrefv3es_metaphone"]
                 },
-                "jdonrefv3es_index_sans_ngram" : {
+                "jdonrefv3es_codes_index" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["standard", "lowercase", "jdonrefv3es_synonyme"]
+                    "filter" : ["standard", "lowercase"]
                 },
                 "jdonrefv3es_search" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["standard", "lowercase"]
+                    "filter" : ["standard", "lowercase", "jdonrefv3es_metaphone"]
                 }
             },
             "filter" : {
@@ -30,7 +30,7 @@
                 },
                 "jdonrefv3es_nGram" : {
                     "type" : "edgeNGram",
-                    "min_ngram": 1,
+                    "min_ngram": 2,
                     "max_gram": 15
                 }
             }

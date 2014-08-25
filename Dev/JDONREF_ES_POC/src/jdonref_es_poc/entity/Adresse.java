@@ -154,6 +154,7 @@ public class Adresse
             adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
         adresse.add("code_departement",voie.commune.getCodeDepartement());
         adresse.add("code_pays","FR1");
+        adresse.add("codes","");
         if (numero!=null)
             adresse.add("numero",numero); // need a boost ?
         if (repetition!=null)
@@ -169,17 +170,16 @@ public class Adresse
         adresse.add("pays","FRANCE");
         adresse.add("t0" , getDatForm(t0));
         adresse.add("t1" , getDatForm(t1));
-        adresse.add("ligne1","ligne1");
         adresse.add("ligne2","ligne2");
         adresse.add("ligne3","ligne3");
         adresse.add("ligne4",toLigne4().trim());
         adresse.add("ligne5","ligne5");
         adresse.add("ligne6",toLigne6().trim());
         adresse.add("ligne7",toLigne7().trim());
-        adresse.add("pin" , centroideJSON(geometrie)); 
+        adresse.add("type","adresse");
+//        adresse.add("pin" , centroideJSON(geometrie)); 
         adresse.add("geometrie" , geometrieJSON(geometrie));   
         adresse.add("fullName",toString().trim());
-//        adresse.add("fullName_sansngram",toString().trim());
 
 //        JsonArray coordinates = Json.createArrayBuilder()
 //                .add(lat)

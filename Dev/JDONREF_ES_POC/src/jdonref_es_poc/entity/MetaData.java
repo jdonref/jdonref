@@ -92,6 +92,7 @@ public class MetaData {
          builder.add("_type", type);
          builder.add("_id", id);
          builder.add("_version", version);
+         builder.add("_version_type", "force");
          
          builder1.add("index", builder);
 

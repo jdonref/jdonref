@@ -164,20 +164,23 @@ public class Commune
          commmune.add("code_insee",codeinsee);
 //         commmune.add("code_departement",getCodeDepartement());
          commmune.add("code_departement",dpt_code_departement);
+         if (com_code_insee_commune!=null)
+            commmune.add("code_insee_commune",com_code_insee_commune);
          commmune.add("code_pays","FR1");
          commmune.add("commune",commune);
          String code_arrondissement = getCodeArrondissement();
          if (code_arrondissement!=null)
             commmune.add("code_arrondissement",code_arrondissement);         
          commmune.add("code_postal",codepostal);
+         commmune.add("codes","");
          commmune.add("pays","FRANCE");
          commmune.add("t0" ,getDatForm(t0));
          commmune.add("t1",getDatForm(t1));
-         commmune.add("ligne4","ligne 4");
          commmune.add("ligne5","ligne 5");
          commmune.add("ligne6",toLigne6().trim());
          commmune.add("ligne7",toLigne7().trim());
-         commmune.add("pin" , centroideJSON(centroide)); 
+         commmune.add("type","commmune");
+//         commmune.add("pin" , centroideJSON(centroide)); 
          commmune.add("geometrie" , geometrieJSON(geometrie));         
          commmune.add("fullName",toString().trim());
 

@@ -178,19 +178,19 @@ public class DepartementIndex
         vIndex.setConnection(connection);
         vIndex.setVerbose(isVerbose());
         vIndex.indexJDONREFVoiesDepartement(dpt);
-        
+
         AdresseIndex adrIndex = new AdresseIndex();
         adrIndex.setUtil(util);
         adrIndex.setConnection(connection);
         adrIndex.setVerbose(isVerbose());
         adrIndex.indexJDONREFAdressesDepartement(dpt);
         
-//        TronconIndex tIndex = new TronconIndex();
-//        tIndex.setUtil(util);
-//        tIndex.setConnection(connection);
-//        tIndex.setVerbose(isVerbose());
-//        tIndex.indexJDONREFTronconsDepD(dpt);
-//        tIndex.indexJDONREFTronconsDepG(dpt);
+        TronconIndex tIndex = new TronconIndex();
+        tIndex.setUtil(util);
+        tIndex.setConnection(connection);
+        tIndex.setVerbose(isVerbose());
+        tIndex.indexJDONREFTronconsDepD(dpt);
+        tIndex.indexJDONREFTronconsDepG(dpt);
 
 //        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
 //        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);

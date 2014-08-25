@@ -219,16 +219,17 @@ public class Voie
          voie.add("code_insee_commune",commune.com_code_insee_commune);
          voie.add("code_departement",commune.dpt_code_departement);
          voie.add("code_pays","FR1");
+         voie.add("codes","");
          voie.add("numero_min",min_numero);
          voie.add("numero_max",max_numero);
          voie.add("type_de_voie",typedevoie);
          voie.add("article",article);
          voie.add("libelle",libelle);
          voie.add("commune",commune.commune);       
-         voie.add("code_postal",cdp_code_postal);
          String code_arrondissement = commune.getCodeArrondissement();
          if (code_arrondissement!=null)
             voie.add("code_arrondissement",code_arrondissement);
+         voie.add("code_postal",cdp_code_postal);
          voie.add("pays","FRANCE");
          voie.add("t0" , getDatForm(t0));
          voie.add("t1" , getDatForm(t1));
@@ -236,6 +237,7 @@ public class Voie
          voie.add("ligne5","ligne 5");
          voie.add("ligne6",toLigne6().trim());
          voie.add("ligne7",toLigne7().trim());
+         voie.add("type","voie");
          voie.add("geometrie" , geometrieJSON(geometrie));
          voie.add("fullName",toString().trim());
 //         voie.add("fullName_sansngram",toString().trim());

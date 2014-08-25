@@ -122,8 +122,11 @@ public class Troncon {
          if(voi_id!=null)
          troncon.add("voi_id", voi_id);
          troncon.add("code_insee", voie.commune.codeinsee);
+         if (voie.commune.com_code_insee_commune!=null)
+            troncon.add("code_insee_commune", voie.commune.com_code_insee_commune);
          troncon.add("code_departement", voie.commune.dpt_code_departement);
          troncon.add("code_pays", "FR1");
+         troncon.add("codes", "");
          troncon.add("numero_debut", tro_numero_debut);
          troncon.add("numero_fin", tro_numero_fin);
          if(tro_rep_debut != null)
@@ -134,10 +137,10 @@ public class Troncon {
          troncon.add("article", voie.article);
          troncon.add("libelle", voie.libelle);
          troncon.add("commune", voie.commune.commune);
-         troncon.add("code_postal", voie.cdp_code_postal);
          String code_arrondissement = voie.commune.getCodeArrondissement();
          if (code_arrondissement!=null)
             troncon.add("code_arrondissement",code_arrondissement);
+         troncon.add("code_postal", voie.cdp_code_postal);
          troncon.add("pays", "FRANCE");
          troncon.add("t0" , getDatForm(t0));
          troncon.add("t1" , getDatForm(t1));
@@ -145,10 +148,9 @@ public class Troncon {
          troncon.add("ligne5" , "ligne5");
          troncon.add("ligne6" , "ligne6");
          troncon.add("ligne7" , toLigne7().trim());
+         troncon.add("type" , "troncon");
          troncon.add("geometrie" , geometrieJSON(geometrie));
-         
          troncon.add("fullName",toString().trim());
-//         troncon.add("fullName_sansngram",toString().trim());
 
          builder.add("adresse", troncon);
          
