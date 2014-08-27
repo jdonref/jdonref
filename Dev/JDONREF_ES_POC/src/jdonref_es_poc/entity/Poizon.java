@@ -120,8 +120,7 @@ public class Poizon {
     
         public JsonObject toJSONDocument()
     {
-         JsonObjectBuilder builder = Json.createObjectBuilder();
-        
+
          JsonObjectBuilder poizon = Json.createObjectBuilder();
 
          poizon.add("poizon_id", poizon_id1);  
@@ -171,8 +170,7 @@ public class Poizon {
 //         poizon.add("pin" , centroideJSON(centroide));
 //         poizon.add("fullName",toString().trim());
 
-         builder.add("adresse", poizon);         
-         return builder.build();   
+         return poizon.build();   
     }
     
     

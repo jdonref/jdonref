@@ -209,8 +209,6 @@ public class Voie
     
     public JsonObject toJSONDocument()
     {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
-        
         JsonObjectBuilder voie = Json.createObjectBuilder();
         
         voie.add("voi_id", idvoie);    
@@ -241,9 +239,7 @@ public class Voie
          voie.add("geometrie" , geometrieJSON(geometrie));
          voie.add("fullName",toString().trim());
 //         voie.add("fullName_sansngram",toString().trim());
-         
-         builder.add("adresse", voie);
-         
-        return builder.build();
+     
+        return voie.build();
     }
 }

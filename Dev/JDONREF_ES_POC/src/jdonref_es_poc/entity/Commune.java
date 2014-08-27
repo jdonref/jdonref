@@ -157,8 +157,7 @@ public class Commune
     
     public JsonObject toJSONDocument()
     {
-         JsonObjectBuilder builder = Json.createObjectBuilder();
-         
+
          JsonObjectBuilder commmune = Json.createObjectBuilder();
 
          commmune.add("code_insee",codeinsee);
@@ -184,8 +183,6 @@ public class Commune
          commmune.add("geometrie" , geometrieJSON(geometrie));         
          commmune.add("fullName",toString().trim());
 
-         builder.add("adresse", commmune);
-         
-        return builder.build();
+        return commmune.build();
     }
 }

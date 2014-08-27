@@ -142,8 +142,6 @@ public class Adresse
     
     public JsonObject toJSONDocument()
     {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
-        
         JsonObjectBuilder adresse = Json.createObjectBuilder();
         
         adresse.add("adr_id",idadresse);
@@ -192,9 +190,8 @@ public class Adresse
 //                .build();
 //        adresse.add("geometrie",point);
         
-        builder.add("adresse", adresse);
         
-        return builder.build();
+        return adresse.build();
     }
     
     public boolean equals(Adresse a)

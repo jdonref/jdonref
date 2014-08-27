@@ -108,7 +108,6 @@ public class Departement {
     public JsonObject toJSONDocument()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
-        
          JsonObjectBuilder departement = Json.createObjectBuilder();
          
          departement.add("code_departement", code_departement);
@@ -125,8 +124,12 @@ public class Departement {
          departement.add("geometrie" , geometrieJSON(geometrie));
          departement.add("fullName",toString());
 //         departement.add("fullName_sansngram",toString().trim());
-         builder.add("adresse", departement);         
-         return builder.build();   
+
+//         builder.add("properties", departement);
+//         return builder.build();
+         
+           return departement.build();
+         
     }
 
 }
