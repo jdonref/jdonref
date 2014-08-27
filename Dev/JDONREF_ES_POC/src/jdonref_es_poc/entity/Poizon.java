@@ -140,11 +140,11 @@ public class Poizon {
             poizon.add("adr_id",poizon_id4);
 //         poizon.add("tro_id","..");
 //         poizon.add("voi_id","..");
-//         poizon.add("code_insee_commune","..");         
+//         poizon.add("code_insee_commune","..");
          if(poizon_id6!=null){
             poizon.add("code_insee",poizon_id6);
             poizon.add("code_departement",poizon_donnee6.substring(0,2));
-            poizon.add("code_arrondissement",poizon_donnee6.substring(3,5));
+            //poizon.add("code_arrondissement",poizon_donnee6.substring(3,5)); // TODO : uniquement dans quelques communes
          }
          if(poizon_id7!=null)
             poizon.add("code_pays", poizon_id7);

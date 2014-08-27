@@ -144,9 +144,9 @@ public class Troncon {
          troncon.add("pays", "FRANCE");
          troncon.add("t0" , getDatForm(t0));
          troncon.add("t1" , getDatForm(t1));
-         troncon.add("ligne4" , "ligne4");
-         troncon.add("ligne5" , "ligne5");
-         troncon.add("ligne6" , "ligne6");
+         //troncon.add("ligne4" , "");
+         //troncon.add("ligne5" , "");
+         //troncon.add("ligne6" , "");
          troncon.add("ligne7" , toLigne7().trim());
          troncon.add("type" , "troncon");
          if (withGeometry)

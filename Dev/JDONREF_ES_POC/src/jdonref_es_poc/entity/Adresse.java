@@ -91,14 +91,14 @@ public class Adresse
     
     public String toLigne4()
     {
-        String arrondissement = voie.commune.getCodeArrondissement();
-        
-        return voie.commune.codepostal+ " "+ voie.commune.commune+(arrondissement==null?"":(" "+arrondissement));
+        return numero+" "+((repetition==null||repetition.endsWith("0"))?"":(repetition+" "))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle;
     }
     
     public String toLigne6()
     {
-        return numero+" "+((repetition==null||repetition.endsWith("0"))?"":(repetition+" "))+(voie.typedevoie==null?"":(voie.typedevoie+" "))+(voie.article==null?"":(voie.article+" "))+voie.libelle;
+        String arrondissement = voie.commune.getCodeArrondissement();
+        
+        return voie.commune.codepostal+ " "+ voie.commune.commune+(arrondissement==null?"":(" "+arrondissement));
     }
     
     public String toLigne7()
@@ -169,10 +169,10 @@ public class Adresse
         adresse.add("pays","FRANCE");
         adresse.add("t0" , getDatForm(t0));
         adresse.add("t1" , getDatForm(t1));
-        adresse.add("ligne2","ligne2");
-        adresse.add("ligne3","ligne3");
+        //adresse.add("ligne2","");
+        //adresse.add("ligne3","");
         adresse.add("ligne4",toLigne4().trim());
-        adresse.add("ligne5","ligne5");
+        //adresse.add("ligne5","");
         adresse.add("ligne6",toLigne6().trim());
         adresse.add("ligne7",toLigne7().trim());
         adresse.add("type","adresse");

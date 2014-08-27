@@ -175,7 +175,7 @@ public class Commune
          commmune.add("pays","FRANCE");
          commmune.add("t0" ,getDatForm(t0));
          commmune.add("t1",getDatForm(t1));
-         commmune.add("ligne5","ligne 5");
+         //commmune.add("ligne5","");
          commmune.add("ligne6",toLigne6().trim());
          commmune.add("ligne7",toLigne7().trim());
          commmune.add("type","commmune");

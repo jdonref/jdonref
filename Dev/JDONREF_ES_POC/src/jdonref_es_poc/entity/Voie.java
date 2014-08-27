@@ -233,7 +233,7 @@ public class Voie
          voie.add("t0" , getDatForm(t0));
          voie.add("t1" , getDatForm(t1));
          voie.add("ligne4",toLigne4().trim());
-         voie.add("ligne5","ligne 5");
+         //voie.add("ligne5","");
          voie.add("ligne6",toLigne6().trim());
          voie.add("ligne7",toLigne7().trim());
          voie.add("type","voie");
