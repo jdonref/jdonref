@@ -171,7 +171,7 @@ public class Commune
          if (code_arrondissement!=null)
             commmune.add("code_arrondissement",code_arrondissement);         
          commmune.add("code_postal",codepostal);
-         commmune.add("codes","");
+//         commmune.add("codes","");
          commmune.add("pays","FRANCE");
          commmune.add("t0" ,getDatForm(t0));
          commmune.add("t1",getDatForm(t1));

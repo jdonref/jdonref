@@ -125,7 +125,7 @@ public class Troncon {
             troncon.add("code_insee_commune", voie.commune.com_code_insee_commune);
          troncon.add("code_departement", voie.commune.dpt_code_departement);
          troncon.add("code_pays", "FR1");
-         troncon.add("codes", "");
+//         troncon.add("codes", "");
          troncon.add("numero_debut", tro_numero_debut);
          troncon.add("numero_fin", tro_numero_fin);
          if(tro_rep_debut != null)

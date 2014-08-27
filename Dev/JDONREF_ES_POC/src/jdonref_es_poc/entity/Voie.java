@@ -132,7 +132,7 @@ public class Voie
     {
         nom = nom.substring(typedevoie.length()).trim();
         int index = nom.indexOf(libelle);
-        if (index==0) return "";
+        if (index==0) return null;
         if (index==-1)
         {
             return nom.trim();
@@ -217,11 +217,12 @@ public class Voie
          voie.add("code_insee_commune",commune.com_code_insee_commune);
          voie.add("code_departement",commune.dpt_code_departement);
          voie.add("code_pays","FR1");
-         voie.add("codes","");
+//         voie.add("codes","");
          voie.add("numero_min",min_numero);
          voie.add("numero_max",max_numero);
          voie.add("type_de_voie",typedevoie);
-         voie.add("article",article);
+         if (article!=null)
+            voie.add("article",article);
          voie.add("libelle",libelle);
          voie.add("commune",commune.commune);       
          String code_arrondissement = commune.getCodeArrondissement();

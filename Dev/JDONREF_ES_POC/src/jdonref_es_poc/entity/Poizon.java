@@ -96,6 +96,18 @@ public class Poizon {
     }
     
     
+    public String toString()
+    {
+        return poizon_donnee1 +" "
+                +(poizon_donnee2==null?"":(poizon_donnee2+" "))
+                +(poizon_donnee3==null?"":(poizon_donnee3+" "))
+                +(poizon_donnee4==null?"":(poizon_donnee4+" "))
+                +(poizon_donnee5==null?"":(poizon_donnee5+" "))
+                +(poizon_donnee6==null?"":(poizon_donnee6+" "))
+                +(poizon_donnee7==null?"":(poizon_donnee7+" "));     
+    }
+    
+    
     public JsonObject geometrieJSON(String geometrie) {
         GeomUtil geomUtil = new GeomUtil();
         HashMap<String, String> hash = geomUtil.toHashGeo(geometrie);
@@ -136,7 +148,7 @@ public class Poizon {
          }
          if(poizon_id7!=null)
             poizon.add("code_pays", poizon_id7);
-         poizon.add("codes","");
+//         poizon.add("codes","");
 //         poizon.add("numero","..");
 //        poizon.add("repetition","..");
 //         poizon.add("type_de_voie","..");
@@ -145,8 +157,8 @@ public class Poizon {
 //         poizon.add("commune",".."); //////
          
          if(poizon_donnee6!=null)
-         poizon.add("code_postal",poizon_donnee6);
-         poizon.add("pays","FRANCE");
+            poizon.add("code_postal",poizon_donnee6);
+        poizon.add("pays","FRANCE");
         poizon.add("t0" , getDatForm(t0));
         poizon.add("t1" , getDatForm(t1));
         poizon.add("poizon_service", poizon_service); 
@@ -168,7 +180,7 @@ public class Poizon {
 //        poizon.add("poizon_referentiel", poizon_referentiel);
          poizon.add("geometrie" , geometrieJSON(geometrie));
 //         poizon.add("pin" , centroideJSON(centroide));
-//         poizon.add("fullName",toString().trim());
+         poizon.add("fullName",toString().trim());
 
          return poizon.build();   
     }

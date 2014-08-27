@@ -112,7 +112,7 @@ public class Departement {
          
          departement.add("code_departement", code_departement);
          departement.add("code_pays","FR1");
-         departement.add("codes","");
+//         departement.add("codes","");
          departement.add("pays","FRANCE");
 //         departement.add("dpt_referentiel", dpt_referentiel);
          departement.add("t0" , getDatForm(t0));

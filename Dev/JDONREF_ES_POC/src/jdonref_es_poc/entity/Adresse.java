@@ -152,7 +152,7 @@ public class Adresse
             adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
         adresse.add("code_departement",voie.commune.getCodeDepartement());
         adresse.add("code_pays","FR1");
-        adresse.add("codes","");
+//        adresse.add("codes","");
         if (numero!=null)
             adresse.add("numero",numero); // need a boost ?
         if (repetition!=null)
