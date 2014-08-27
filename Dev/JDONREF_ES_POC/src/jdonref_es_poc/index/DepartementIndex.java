@@ -25,6 +25,8 @@ public class DepartementIndex
     static int idDepTmp=0;
     int paquetsBulk=30;
     
+    boolean withGeometry = true;
+    
     public ElasticSearchUtil getUtil() {
         return util;
     }
@@ -49,10 +51,17 @@ public class DepartementIndex
         this.connection = connection;
     }
 
+    public boolean isWithGeometry() {
+        return withGeometry;
+    }
+
+    public void setWithGeometry(boolean withGeometry) {
+        this.withGeometry = withGeometry;
+    }
     
     public void addDepartment(Departement departement) throws IOException
     {
-        JsonObject data = departement.toJSONDocument();
+        JsonObject data = departement.toJSONDocument(withGeometry);
         util.indexResource("departement", data.toString());
     }
     
@@ -94,7 +103,7 @@ public class DepartementIndex
             
 //            creation de l'objet metaDataDep plus haut
             metaDataDep.setId(++idDep);
-            bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
+            bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idDep-idDepTmp)%paquetsBulk==0){
                 System.out.println("departement : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
                 util.indexResourceBulk(bulk);
@@ -133,7 +142,7 @@ public class DepartementIndex
             
 //            creation de l'objet metaDataDep plus haut
             metaDataDep.setId(++idDep);
-            bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument().toString()+"\n";
+            bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idDep-idDepTmp)%paquetsBulk==0){
                 System.out.println("departement : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
                 util.indexResourceBulk(bulk);
@@ -154,6 +163,7 @@ public class DepartementIndex
         vIndex.setUtil(util);
         vIndex.setConnection(connection);
         vIndex.setVerbose(isVerbose());
+        vIndex.setWithGeometry(withGeometry);
         vIndex.indexJDONREFVoiesDepartement(voies, dpt);
         
         // non développé
@@ -177,18 +187,21 @@ public class DepartementIndex
         vIndex.setUtil(util);
         vIndex.setConnection(connection);
         vIndex.setVerbose(isVerbose());
+        vIndex.setWithGeometry(withGeometry);
         vIndex.indexJDONREFVoiesDepartement(dpt);
 
         AdresseIndex adrIndex = new AdresseIndex();
         adrIndex.setUtil(util);
         adrIndex.setConnection(connection);
         adrIndex.setVerbose(isVerbose());
+        adrIndex.setWithGeometry(withGeometry);
         adrIndex.indexJDONREFAdressesDepartement(dpt);
         
         TronconIndex tIndex = new TronconIndex();
         tIndex.setUtil(util);
         tIndex.setConnection(connection);
         tIndex.setVerbose(isVerbose());
+        tIndex.setWithGeometry(withGeometry);
         tIndex.indexJDONREFTronconsDepD(dpt);
         tIndex.indexJDONREFTronconsDepG(dpt);
 

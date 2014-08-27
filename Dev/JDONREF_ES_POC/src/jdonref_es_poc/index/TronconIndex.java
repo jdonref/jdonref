@@ -20,12 +20,22 @@ import jdonref_es_poc.entity.Voie;
 public class TronconIndex
 {
      boolean verbose = false;
+     boolean withGeometry = true;
 ElasticSearchUtil util;
     Connection connection;
 
     static int idTroncon=0;
     static int idTronconTmp=0;
     int paquetsBulk=500;
+
+    public boolean isWithGeometry() {
+        return withGeometry;
+    }
+
+    public void setWithGeometry(boolean withGeometry) {
+        this.withGeometry = withGeometry;
+    }
+    
     
     
     public ElasticSearchUtil getUtil() {
@@ -54,7 +64,7 @@ ElasticSearchUtil util;
     private void addAdresse(Adresse a)
             throws IOException
     {
-        JsonObject data = a.toJSONDocument();
+        JsonObject data = a.toJSONDocument(withGeometry);
         
         util.indexResource("troncon", data.toString());
     }
@@ -238,7 +248,7 @@ ElasticSearchUtil util;
                         
 //            creation de l'objet metaDataTroncon plus haut
             metaDataTroncon.setId(++idTroncon);
-            bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument().toString()+"\n";
+            bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument(withGeometry).toString()+"\n";
             if((idTroncon-idTronconTmp)%paquetsBulk==0){
                 System.out.println("troncons droit : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
                 util.indexResourceBulk(bulk);
@@ -280,7 +290,7 @@ ElasticSearchUtil util;
                         
 //            creation de l'objet metaDataTroncon plus haut
             metaDataTroncon.setId(++idTroncon);
-            bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument().toString()+"\n";
+            bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument(withGeometry).toString()+"\n";
             if((idTroncon-idTronconTmp)%paquetsBulk==0){
                 System.out.println("troncons gauche : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
                 util.indexResourceBulk(bulk);

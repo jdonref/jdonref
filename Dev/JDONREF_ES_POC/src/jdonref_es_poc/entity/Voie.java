@@ -207,7 +207,7 @@ public class Voie
         return formater.format(d);
     }    
     
-    public JsonObject toJSONDocument()
+    public JsonObject toJSONDocument(boolean withGeometry)
     {
         JsonObjectBuilder voie = Json.createObjectBuilder();
         
@@ -237,7 +237,8 @@ public class Voie
          voie.add("ligne6",toLigne6().trim());
          voie.add("ligne7",toLigne7().trim());
          voie.add("type","voie");
-         voie.add("geometrie" , geometrieJSON(geometrie));
+         if (withGeometry)
+            voie.add("geometrie" , geometrieJSON(geometrie));
          voie.add("fullName",toString().trim());
 //         voie.add("fullName_sansngram",toString().trim());
      

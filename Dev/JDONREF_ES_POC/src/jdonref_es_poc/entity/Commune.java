@@ -155,7 +155,7 @@ public class Commune
         return formater.format(d);
     }    
     
-    public JsonObject toJSONDocument()
+    public JsonObject toJSONDocument(boolean withGeometry)
     {
 
          JsonObjectBuilder commmune = Json.createObjectBuilder();
@@ -180,6 +180,7 @@ public class Commune
          commmune.add("ligne7",toLigne7().trim());
          commmune.add("type","commmune");
 //         commmune.add("pin" , centroideJSON(centroide)); 
+         if (withGeometry)
          commmune.add("geometrie" , geometrieJSON(geometrie));         
          commmune.add("fullName",toString().trim());
 

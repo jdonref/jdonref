@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package jdonref_es_poc.index;
 
 import java.io.IOException;
@@ -26,9 +21,7 @@ import jdonref_es_poc.entity.Poizon;
 
 
 public class PoizonIndex {
-
-
-
+    boolean withGeometry = true;
     boolean verbose = false;
     ElasticSearchUtil util;
     Connection connection;
@@ -36,6 +29,14 @@ public class PoizonIndex {
     static int idPoizon=0;
     static int idPoizonTmp=0;
     int paquetsBulk=100;
+
+    public boolean isWithGeometry() {
+        return withGeometry;
+    }
+
+    public void setWithGeometry(boolean withGeometry) {
+        this.withGeometry = withGeometry;
+    }
     
     public ElasticSearchUtil getUtil() {
         return util;
@@ -115,7 +116,7 @@ public class PoizonIndex {
 //            metaDataPoizon.setId(++idPoizon);
             metaDataPoizon.setId(Integer.parseInt(p.poizon_id1));
             ++idPoizon;
-            bulk += metaDataPoizon.toJSONMetaData().toString()+"\n"+p.toJSONDocument().toString()+"\n";
+            bulk += metaDataPoizon.toJSONMetaData().toString()+"\n"+p.toJSONDocument(withGeometry).toString()+"\n";
             if((idPoizon-idPoizonTmp)%paquetsBulk==0){
                 System.out.println("poizon : bulk pour les ids de "+(idPoizon-paquetsBulk+1)+" à "+idPoizon);  
                 util.indexResourceBulk(bulk);

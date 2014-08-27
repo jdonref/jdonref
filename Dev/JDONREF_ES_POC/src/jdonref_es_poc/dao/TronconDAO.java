@@ -52,10 +52,10 @@ public class TronconDAO
                 "tro_rep_fin_droit, " +                 // 10
                 "tro_rep_fin_gauche, " +                // 11
                 "tro_typ_adr, " +                       // 12
-                "tro_troncons_v2_"+dpt+"_0.t0, " +         // 13
-                "tro_troncons_v2_"+dpt+"_0.t1, " +         // 14
+                "tro_troncons_"+dpt+"_0.t0, " +         // 13
+                "tro_troncons_"+dpt+"_0.t1, " +         // 14
                 "st_AsGeoJSON(st_transform(geometrie,4326)) "+ // 15
-                "FROM tro_troncons_v2_"+dpt+"_0 ";
+                "FROM tro_troncons_"+dpt+"_0 ";
 
    
         PreparedStatement ps = connection.prepareStatement(sql);
@@ -102,12 +102,12 @@ public class TronconDAO
                 "tro_rep_debut_droit, " +               // 32             
                 "tro_rep_fin_droit, " +                 // 33
                 "tro_typ_adr, " +                       // 34
-                "tro_troncons_v2_"+dpt+"_0.t0, " +         // 35
-                "tro_troncons_v2_"+dpt+"_0.t1, " +         // 36
+                "tro_troncons_"+dpt+"_0.t0, " +         // 35
+                "tro_troncons_"+dpt+"_0.t1, " +         // 36
 //                "st_astext(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " +    // 37
-                "st_AsGeoJSON(st_transform(tro_troncons_v2_"+dpt+"_0.geometrie,4326)) " +    // 37
+                "st_AsGeoJSON(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " +    // 37
 
-                "FROM voi_voies_"+dpt+", com_communes, tro_troncons_v2_"+dpt+"_0 "+
+                "FROM voi_voies_"+dpt+", com_communes, tro_troncons_"+dpt+"_0 "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee " +
                         "and voi_id_droit = voi_id";        
        
@@ -170,12 +170,12 @@ public class TronconDAO
                 "tro_rep_debut_gauche, " +               // 32             
                 "tro_rep_fin_gauche, " +                 // 33
                 "tro_typ_adr, " +                       // 34
-                "tro_troncons_v2_"+dpt+"_0.t0, " +         // 35
-                "tro_troncons_v2_"+dpt+"_0.t1, " +         // 36
+                "tro_troncons_"+dpt+"_0.t0, " +         // 35
+                "tro_troncons_"+dpt+"_0.t1, " +         // 36
 //                "st_astext(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " +    // 37
-                "st_AsGeoJSON(st_transform(tro_troncons_v2_"+dpt+"_0.geometrie,4326)) " +    // 37
+                "st_AsGeoJSON(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " +    // 37
 
-                "FROM voi_voies_"+dpt+", com_communes, tro_troncons_v2_"+dpt+"_0 "+
+                "FROM voi_voies_"+dpt+", com_communes, tro_troncons_"+dpt+"_0 "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee " +
                         "and voi_id_gauche = voi_id";        
        

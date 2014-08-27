@@ -130,7 +130,7 @@ public class Poizon {
     
     
     
-        public JsonObject toJSONDocument()
+        public JsonObject toJSONDocument(boolean withGeometry)
     {
 
          JsonObjectBuilder poizon = Json.createObjectBuilder();
@@ -178,6 +178,7 @@ public class Poizon {
             poizon.add("ligne7", poizon_donnee7);
         poizon.add("type","poizon");
 //        poizon.add("poizon_referentiel", poizon_referentiel);
+        if (withGeometry)
          poizon.add("geometrie" , geometrieJSON(geometrie));
 //         poizon.add("pin" , centroideJSON(centroide));
          poizon.add("fullName",toString().trim());

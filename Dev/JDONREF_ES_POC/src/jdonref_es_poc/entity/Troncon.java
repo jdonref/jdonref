@@ -111,7 +111,7 @@ public class Troncon {
         return formater.format(d);
     }    
     
-    public JsonObject toJSONDocument()
+    public JsonObject toJSONDocument(boolean withGeometry)
     {
 
          JsonObjectBuilder troncon = Json.createObjectBuilder();
@@ -133,6 +133,7 @@ public class Troncon {
          if(tro_rep_fin != null)
          troncon.add("repetition_fin", tro_rep_fin);
          troncon.add("type_de_voie", voie.typedevoie);
+         if (voie.article!=null)
          troncon.add("article", voie.article);
          troncon.add("libelle", voie.libelle);
          troncon.add("commune", voie.commune.commune);
@@ -148,13 +149,11 @@ public class Troncon {
          troncon.add("ligne6" , "ligne6");
          troncon.add("ligne7" , toLigne7().trim());
          troncon.add("type" , "troncon");
+         if (withGeometry)
          troncon.add("geometrie" , geometrieJSON(geometrie));
          troncon.add("fullName",toString().trim());
 
          
          return troncon.build();
     }
-    
-    
-    
 }

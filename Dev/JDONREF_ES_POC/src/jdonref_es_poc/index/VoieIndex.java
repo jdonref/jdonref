@@ -18,6 +18,7 @@ import jdonref_es_poc.entity.Voie;
  */
 public class VoieIndex {
     boolean verbose = false;
+    boolean withGeometry = true;
     ElasticSearchUtil util;
     Connection connection;
     
@@ -40,6 +41,14 @@ public class VoieIndex {
     public void setConnection(Connection connection) {
         this.connection = connection;
     }
+
+    public boolean isWithGeometry() {
+        return withGeometry;
+    }
+
+    public void setWithGeometry(boolean withGeometry) {
+        this.withGeometry = withGeometry;
+    }
     
     public boolean isVerbose() {
         return verbose;
@@ -52,7 +61,7 @@ public class VoieIndex {
     public void addVoie(Voie v)
             throws IOException
     {
-        JsonObject data = v.toJSONDocument();
+        JsonObject data = v.toJSONDocument(withGeometry);
         
         util.indexResource("voie", data.toString());
     }
@@ -99,7 +108,7 @@ public class VoieIndex {
                         
 //            creation de l'objet metaDataVoie plus haut
             metaDataVoie.setId(++idVoie);
-            bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
+            bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument(withGeometry).toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
                 util.indexResourceBulk(bulk);
@@ -142,7 +151,7 @@ public class VoieIndex {
             
 //            creation de l'objet metaDataVoie plus haut
             metaDataVoie.setId(++idVoie);
-            bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument().toString()+"\n";
+            bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument(withGeometry).toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
                 util.indexResourceBulk(bulk);
@@ -156,7 +165,4 @@ public class VoieIndex {
         }
         idVoieTmp = idVoie;
     }
-
-
-    
 }

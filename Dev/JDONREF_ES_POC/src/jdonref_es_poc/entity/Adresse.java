@@ -140,7 +140,7 @@ public class Adresse
         return formater.format(d);
     }
     
-    public JsonObject toJSONDocument()
+    public JsonObject toJSONDocument(boolean withGeometry)
     {
         JsonObjectBuilder adresse = Json.createObjectBuilder();
         
@@ -158,7 +158,8 @@ public class Adresse
         if (repetition!=null)
             adresse.add("repetition",repetition); 
         adresse.add("type_de_voie",voie.typedevoie);
-        adresse.add("article",voie.article);
+        if (voie.article!=null)
+            adresse.add("artile",voie.article);
         adresse.add("libelle",voie.libelle);
         adresse.add("commune",voie.commune.commune);
         String code_arrondissement = voie.commune.getCodeArrondissement();
@@ -176,6 +177,7 @@ public class Adresse
         adresse.add("ligne7",toLigne7().trim());
         adresse.add("type","adresse");
 //        adresse.add("pin" , centroideJSON(geometrie)); 
+        if (withGeometry)
         adresse.add("geometrie" , geometrieJSON(geometrie));   
         adresse.add("fullName",toString().trim());
 

@@ -16,12 +16,23 @@ import jdonref_es_poc.entity.MetaData;
 public class CommuneIndex
 {
     boolean verbose = false;
+    boolean withGeometry = true;
     ElasticSearchUtil util;
     Connection connection;
     
     static int idCommune=0;
     static int idCommuneTmp=0;
     int paquetsBulk=500;
+
+    public boolean isWithGeometry() {
+        return withGeometry;
+    }
+
+    public void setWithGeometry(boolean withGeometry) {
+        this.withGeometry = withGeometry;
+    }
+    
+    
 
     public ElasticSearchUtil getUtil() {
         return util;
@@ -49,7 +60,7 @@ public class CommuneIndex
     
     public void addCommune(Commune commune) throws IOException
     {
-        JsonObject data = commune.toJSONDocument();
+        JsonObject data = commune.toJSONDocument(withGeometry);
         
         util.indexResource("commune", data.toString());
     }
@@ -81,7 +92,7 @@ public class CommuneIndex
                         
 //            creation de l'objet metaDataCommune plus haut
             metaDataCommune.setId(++idCommune);
-            bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument().toString()+"\n";
+            bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument(withGeometry).toString()+"\n";
             if((idCommune-idCommuneTmp)%paquetsBulk==0){
                 System.out.println("commune : bulk pour les ids de "+(idCommune-paquetsBulk+1)+" à "+idCommune);
                 util.indexResourceBulk(bulk);
@@ -121,7 +132,7 @@ public class CommuneIndex
             
 //            creation de l'objet metaDataCommune plus haut
             metaDataCommune.setId(++idCommune);
-            bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument().toString()+"\n";
+            bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument(withGeometry).toString()+"\n";
             if((idCommune-idCommuneTmp)%paquetsBulk==0){
                 System.out.println("commune : bulk pour les ids de "+(idCommune-paquetsBulk+1)+" à "+idCommune);
                 util.indexResourceBulk(bulk);

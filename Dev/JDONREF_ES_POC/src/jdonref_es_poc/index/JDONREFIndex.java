@@ -16,9 +16,20 @@ import jdonref_es_poc.entity.Voie;
 public class JDONREFIndex
 {
     boolean verbose = false;
+    boolean withGeometry = true;
     ElasticSearchUtil util;
     String index = "jdonref";
 
+    public boolean isWithGeometry() {
+        return withGeometry;
+    }
+
+    public void setWithGeometry(boolean withGeometry) {
+        this.withGeometry = withGeometry;
+    }
+
+    
+    
     public String getIndex() {
         return index;
     }
@@ -153,9 +164,10 @@ public class JDONREFIndex
             dptIndex.setVerbose(isVerbose());
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
+            dptIndex.setWithGeometry(withGeometry);
             dptIndex.indexJDONREFDepartements();
             
-//            dptIndex.indexJDONREFDepartement("01");
+            dptIndex.indexJDONREFDepartement("01");
 //            dptIndex.indexJDONREFDepartement("02");
 //            dptIndex.indexJDONREFDepartement("03");
 //            dptIndex.indexJDONREFDepartement("04");
@@ -174,7 +186,7 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("17");
 //            dptIndex.indexJDONREFDepartement("18");
 //            dptIndex.indexJDONREFDepartement("19");
-            dptIndex.indexJDONREFDepartement("20_a");
+            //dptIndex.indexJDONREFDepartement("20_a");
 //            dptIndex.indexJDONREFDepartement("20_b");
 //            dptIndex.indexJDONREFDepartement("21");
 //            dptIndex.indexJDONREFDepartement("22");
@@ -190,12 +202,14 @@ public class JDONREFIndex
             CommuneIndex cIndex = new CommuneIndex();
             cIndex.setVerbose(isVerbose());
             cIndex.setConnection(connection);
+            cIndex.setWithGeometry(withGeometry);
             cIndex.setUtil(util);
 //            cIndex.indexJDONREFCommune();
             
             PoizonIndex pzIndex = new PoizonIndex();
             pzIndex.setVerbose(isVerbose());
             pzIndex.setConnection(connection);
+            pzIndex.setWithGeometry(withGeometry);
             pzIndex.setUtil(util);
 //            pzIndex.indexJDONREFPoizon();
             

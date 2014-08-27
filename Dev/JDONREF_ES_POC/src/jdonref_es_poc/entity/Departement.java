@@ -105,7 +105,7 @@ public class Departement {
     }
 
 
-    public JsonObject toJSONDocument()
+    public JsonObject toJSONDocument(boolean withGeometry)
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
          JsonObjectBuilder departement = Json.createObjectBuilder();
@@ -121,7 +121,8 @@ public class Departement {
          departement.add("ligne7",toLigne7()); 
          departement.add("type","departement");
 //         departement.add("pin" , centroideJSON(centroide));
-         departement.add("geometrie" , geometrieJSON(geometrie));
+         if (withGeometry)
+            departement.add("geometrie" , geometrieJSON(geometrie));
          departement.add("fullName",toString());
 //         departement.add("fullName_sansngram",toString().trim());
 

@@ -86,7 +86,7 @@ public class Valide
     }
 //"geometrie":{"type":"point","coordinates":[2.3292484283447266,48.84809494018555]}}}}
     
-    public JDONREFIndex getJDONREFIndex(boolean bouchon,boolean reindex,boolean verboseIndexation,String url,String connectionString,String user,String passwd) throws SQLException, IOException
+    public JDONREFIndex getJDONREFIndex(boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,String url,String connectionString,String user,String passwd) throws SQLException, IOException
     {
         JDONREFIndex jdonrefIndex = new JDONREFIndex(url);
         jdonrefIndex.setVerbose(verboseIndexation);
@@ -98,6 +98,7 @@ public class Valide
                 jdonrefIndex.setDepartements(getDepartements());
                 jdonrefIndex.setCommunes(getCommunes());
                 jdonrefIndex.setVoies(getVoies());
+                jdonrefIndex.setWithGeometry(withGeometry);
                 
                 jdonrefIndex.reindex();
             }
@@ -105,6 +106,7 @@ public class Valide
             {
                 Connection connection = DriverManager.getConnection(connectionString,user,passwd);
                 jdonrefIndex.setConnection(connection);
+                jdonrefIndex.setWithGeometry(withGeometry);
                 jdonrefIndex.reindex();
             }
         }
@@ -116,19 +118,20 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "192.168.183.153:9200";
+        String url = "192.168.0.11:9200";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
+        boolean withGeometry = false;
 
  
         // connection à la base de JDONREF
-        String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN2";
+        String connectionString = "jdbc:postgresql://192.168.135.129:5433/JDONREF_IGN";
         String user = "postgres";
         String passwd = "postgres";
         
         try {
-            JDONREFIndex index = getJDONREFIndex(bouchon,reindex,verboseIndexation,url,connectionString,user,passwd);
+            JDONREFIndex index = getJDONREFIndex(bouchon,reindex,verboseIndexation,withGeometry,url,connectionString,user,passwd);
             
 //            AdresseBusiness adresseBO = new AdresseBusiness(index);
 //            adresseBO.setHitsPerPage(5);
