@@ -1,6 +1,7 @@
 package mi.ppol.jdonref.espluginpoc.index.query;
 
 import java.io.IOException;
+import org.apache.lucene.search.JDONREFv3Query;
 import org.elasticsearch.common.xcontent.ToXContent.Params;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BaseQueryBuilder;
@@ -18,7 +19,9 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
     
     private String queryName;
     
-    private int mode = JDONREFv3QueryParser.SMART;
+    private int mode = JDONREFv3Query.AUTOCOMPLETE;
+    
+    protected int debugDoc = -1;
     
     /**
      *  Construct a new JDONREFv3 Query.
@@ -41,9 +44,8 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
     
     /**
      * Set the mode for this query.
-     * SMART => intelligent query
-     * SPAN => the terms are in order.
-     * STRING => query string query
+     * BULK => les scores sont relatifs aux documents trouvés (qualité de la notation)
+     * AUTOCOMPLETE => les scores sont absolus (performance)
      * 
      * @param mode
      * @return
@@ -51,6 +53,20 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
     public JDONREFv3QueryBuilder mode(int mode)
     {
         this.mode = mode;
+        return this;
+    }
+    
+    /**
+     * Set the mode for this query.
+     * BULK => les scores sont relatifs aux documents trouvés (qualité de la notation)
+     * AUTOCOMPLETE => les scores sont absolus (performance)
+     * 
+     * @param mode
+     * @return
+     */
+    public JDONREFv3QueryBuilder debugDoc(int debugDoc)
+    {
+        this.debugDoc = debugDoc;
         return this;
     }
     
@@ -70,7 +86,11 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
         builder.startObject(JDONREFv3QueryParser.NAME);
         
         builder.field("value", value);
-        builder.field("mode",mode);
+        builder.field("mode",mode==JDONREFv3Query.BULK?"bulk":"autocomplete");
+        if (debugDoc!=-1)
+        {
+            builder.field("debugDoc",debugDoc);
+        }
         if (boost != -1)
         {
             builder.field("boost", boost);
@@ -78,7 +98,6 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
         if (queryName != null) {
             builder.field("_name", queryName);
         }
-        
         builder.endObject();
     }
 }

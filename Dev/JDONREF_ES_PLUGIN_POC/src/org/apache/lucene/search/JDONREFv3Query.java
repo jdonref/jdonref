@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryParser;
+import org.apache.log4j.Logger;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DocsEnum;
@@ -22,17 +24,39 @@ import org.apache.lucene.util.Bits;
  */
 public class JDONREFv3Query extends BooleanQuery
 {
-    public static boolean DEBUG = false;
-    
-    public static String DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
-    
+    //public static boolean DEBUG = false;
+    //public static int DEBUGDOCREFERENCE = 10366; //2092;
+    public static final int AUTOCOMPLETE = 1;
+    public static final int BULK = 2;
+
     protected Hashtable<String, Integer> termIndex;
     
     protected int numTokens;
+    
+    protected int debugDoc = -1;
+    protected int mode = JDONREFv3Query.AUTOCOMPLETE;
 
-        public int getNumTokens() {
-            return numTokens;
-        }
+    public int getNumTokens() {
+        return numTokens;
+    }
+
+    public void setDebugDoc(int debugDoc) {
+        this.debugDoc = debugDoc;
+    }
+    
+    public int getDebugDoc()
+    {
+        return debugDoc;
+    }
+
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
+    
+    public int getMode()
+    {
+        return mode;
+    }
 
         public void setNumTokens(int numTokens) {
             this.numTokens = numTokens;
@@ -56,20 +80,23 @@ public class JDONREFv3Query extends BooleanQuery
   {
     protected IndexSearcher searcher; // nécessaire pour affiner la notation
     protected boolean protectedDisableCoord;
-    
+    protected int mode;
+    protected int debugDoc;
     
     public IndexSearcher getSearcher()
     {
         return searcher;
     }
     
-    public JDONREFv3ESWeight(IndexSearcher searcher, boolean disableCoord)
+    public JDONREFv3ESWeight(IndexSearcher searcher, boolean disableCoord,int mode,int debugDoc)
     throws IOException
     {
       super(searcher,disableCoord);
       
       this.protectedDisableCoord = disableCoord;
       this.searcher = searcher;
+      this.mode = mode;
+      this.debugDoc = debugDoc;
     }
     
     ArrayList<JDONREFv3TermScorer> getSubScorers(AtomicReaderContext context, int doc) throws IOException
@@ -365,11 +392,18 @@ public class JDONREFv3Query extends BooleanQuery
       
       boolean debug = false;
       
-      if (DEBUG && context.reader().document(doc).get("fullName").equals(DEBUGREFERENCE))
+      // Attention ! context.reader().document(doc) ne permet pas d'identifier le bon document !
+      if (debugDoc!=-1 && doc==debugDoc)
+          debug = true;
+      /*
+      if (DEBUG && context.reader().document(doc+context.docBase).get("fullName").equals(DEBUGREFERENCE))
           debug = DEBUG;
       
+      if (DEBUG && context.reader().document(doc+context.docBase).get("fullName").equals(DEBUGREFERENCE))
+          debug = DEBUG;
+      */
       if (debug)
-      System.out.println("Thread "+Thread.currentThread().getName()+" "+"Explain doc "+doc+" notation");
+      Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" "+"Explain doc "+doc+" notation");
       
       ComplexExplanation dotExpl = new ComplexExplanation();
       dotExpl.setDescription("product of:");
@@ -379,7 +413,7 @@ public class JDONREFv3Query extends BooleanQuery
       dotExpl.addDetail(boolExpl);
       
       if (debug)
-      System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" value "+value);
+      Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+doc+" value "+value);
       
       JDONREFv3Scorer scorer = (JDONREFv3Scorer) scorer(context, false, true, context.reader().getLiveDocs());
       ArrayList<JDONREFv3TermScorer> subscorers = getSubScorers(context,doc);
@@ -394,61 +428,68 @@ public class JDONREFv3Query extends BooleanQuery
       value *= malus;
       
       if (debug)
-      System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" and malus "+malus);
+      Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+doc+" and malus "+malus);
       
-      // total
-      try
+      if (value>0)
       {
-        float total = scorer.totalScore(subscorers,doc);
-        Explanation totalExpl = new Explanation(1/total,"maximum Score ("+total+" inverted)");
-        dotExpl.addDetail(totalExpl);
-        value /= total;
-        
-        if (debug)
-        System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" And max score 1/"+total+"="+(1/total));
-      }
-      catch(Exception e)
-      {
-          throw new IOException(e);
+          if (mode==JDONREFv3Query.BULK)
+          {
+              // total
+              try
+              {
+                float total = scorer.totalScore(subscorers,doc);
+                Explanation totalExpl = new Explanation(1/total,"maximum Score ("+total+" inverted)");
+                dotExpl.addDetail(totalExpl);
+                value /= total;
+
+                if (debug)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+doc+" And max score 1/"+total+"="+(1/total));
+              }
+              catch(Exception e)
+              {
+                  throw new IOException(e);
+              }
+          }
+          // coord
+          try
+          {
+            int maxcoord = scorer.maxCoord();
+            float coord = explainCoord(context,doc);
+            if (coord!=maxcoord)
+            {
+                float pow = (float)Math.pow(coord/(float)maxcoord,3);
+                Explanation coordExpl = new Explanation(pow,"coord("+coord+"/"+maxcoord+")^3");
+                dotExpl.addDetail(coordExpl);
+                value *= pow;
+
+                if (debug)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+doc+" And coord ("+coord+"/"+maxcoord+")^3="+pow);
+            }
+          }
+          catch(Exception e)
+          {
+              throw new IOException(e);
+          }
       }
       
-      // coord
-      try
+      if (mode==BULK)
       {
-        int maxcoord = scorer.maxCoord();
-        float coord = explainCoord(context,doc);
-        if (coord!=maxcoord)
-        {
-            float pow = (float)Math.pow(coord/(float)maxcoord,3);
-            Explanation coordExpl = new Explanation(pow,"coord("+coord+"/"+maxcoord+")^3");
-            dotExpl.addDetail(coordExpl);
-            value *= pow;
-            
-            if (debug)
-            System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" And coord ("+coord+"/"+maxcoord+")^3="+pow);
-        }
-        
-      }
-      catch(Exception e)
-      {
-          throw new IOException(e);
-      }
+        // 200
+        Explanation twohundredexpl = new Explanation(200,"rapporté à 200");
+        dotExpl.addDetail(twohundredexpl);
+        value *= 200;
       
-      // 200
-      Explanation twohundredexpl = new Explanation(200,"rapporté à 200");
-      dotExpl.addDetail(twohundredexpl);
-      value *= 200;
-      
-      // arrondi le résultat à 10^-2
-      value = (float)Math.ceil(100*value)/100.0f;
-      if (value>200) value=200.0f; // maximum
+        // arrondi le résultat à 10^-2
+        value = (float)Math.ceil(100*value)/100.0f;
+        if (value>200) value=200.0f; // maximum
+      }
       
       // Set value
       dotExpl.setValue(value);
       dotExpl.setMatch(value>0);
       
       if (debug)
-        System.out.println("Thread "+Thread.currentThread().getName()+" doc "+doc+" ce qui donne "+value);
+        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+doc+" ce qui donne "+value);
       
       return dotExpl;
     }
@@ -479,7 +520,7 @@ public class JDONREFv3Query extends BooleanQuery
       }
 
       if (!scoreDocsInOrder && topScorer && required.size() == 0 && minNrShouldMatch <= 1) {
-        return new JDONREFv3Scorer(this, protectedDisableCoord, minNrShouldMatch, optional, prohibited, maxCoord, context, termIndex);
+        return new JDONREFv3Scorer(this, protectedDisableCoord, minNrShouldMatch, optional, prohibited, maxCoord, context, termIndex,this.mode,this.debugDoc);
       }
       else
           throw new IOException("MultiNrShouldMatch nor required clause are not supported by JDONREFv3Scorer.");
@@ -488,6 +529,6 @@ public class JDONREFv3Query extends BooleanQuery
     
     @Override
   public Weight createWeight(IndexSearcher searcher) throws IOException {
-    return new JDONREFv3ESWeight(searcher, isCoordDisabled());
+    return new JDONREFv3ESWeight(searcher, isCoordDisabled(),this.mode,this.debugDoc);
   }
 }

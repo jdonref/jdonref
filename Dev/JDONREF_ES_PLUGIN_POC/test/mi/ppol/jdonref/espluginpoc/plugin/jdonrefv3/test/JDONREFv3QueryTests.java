@@ -16,7 +16,6 @@ import org.apache.lucene.search.JDONREFv3Scorer;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.action.admin.indices.optimize.OptimizeResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
@@ -32,7 +31,6 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
-import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
 import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
 import org.junit.After;
@@ -49,7 +47,7 @@ import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilde
 @ClusterScope(scope=Scope.SUITE, numNodes=1)
 public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
 {
-    final static String INDEX_NAME = "jdonref";
+    final static String INDEX_NAME = "jdonrefTest";
     final static String DOC_TYPE_NAME = "test";
     
     public void publicIndex(BulkRequestBuilder brb,String type,String id, XContentBuilder data)

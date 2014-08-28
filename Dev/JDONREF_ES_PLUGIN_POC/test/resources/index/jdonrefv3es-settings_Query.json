@@ -5,33 +5,53 @@
                 "jdonrefv3es_index" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["standard", "lowercase", "jdonrefv3es_synonyme", "jdonrefv3es_nGram"]
+                    "filter" : ["french_elision", "lowercase", "french_stop",/*/"french_keywords",*/ "french_stemmer","jdonrefv3es_synonyme", "jdonrefv3es_nGram"]
                 },
                 "jdonrefv3es_codes_index" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
                     "filter" : ["standard", "lowercase"]
                 },
-                "jdonrefv3es_index_nosyn" : {
-                    "type" : "custom",
-                    "tokenizer" : "standard",
-                    "filter" : ["standard", "lowercase", "jdonrefv3es_nGram"]
-                },
                 "jdonrefv3es_search" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["standard", "lowercase"]
+                    "filter" : ["french_elision", "lowercase", "french_stop",/*/"french_keywords",*/ "french_stemmer"]
                 }
             },
             "filter" : {
+                "french_elision": {
+                  "type":         "elision",
+                  "articles": [ "l", "m", "t", "qu", "n", "s",
+                                  "j", "d", "c", "jusqu", "quoiqu",
+                                  "lorsqu", "puisqu"
+                              ]
+                },
+                "french_stop": {
+                  "type":       "stop",
+                  "stopwords":  "_french_" 
+                },
+                //"french_keywords": {
+                //  "type":       "keyword_marker",
+                //  "keywords":   [] 
+                //},
+                "french_stemmer": {
+                  "type":       "stemmer",
+                  "language":   "light_french"
+                },
+                "jdonrefv3es_metaphone" : {
+                    "type" : "phonetic",
+                    "encoder" : "metaphone",
+                    "replace" : true
+                },
                 "jdonrefv3es_synonyme" : {
                     "type" : "synonym",
                     "synonyms_path": "./src/resources/analysis/jdonrefv3es_synonym.fr_FR.txt"
                 },
                 "jdonrefv3es_nGram" : {
                     "type" : "edgeNGram",
-                    "min_ngram": 2,
-                    "max_gram": 15
+                    "min_gram": 2,
+                    "max_gram": 15,
+                    "token_chars": ["digit"]
                 }
             }
         }
