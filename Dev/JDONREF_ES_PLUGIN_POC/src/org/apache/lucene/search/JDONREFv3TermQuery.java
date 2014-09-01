@@ -78,7 +78,7 @@ public class JDONREFv3TermQuery extends Query {
       throws IOException {
       assert termStates != null : "TermContext must not be null";
       this.termStates = termStates;
-      this.similarity = searcher.getSimilarity();
+      this.similarity = searcher.getSimilarity(); // lol
       this.index = index;
       this.searcher = searcher;
       this.stats = similarity.computeWeight(

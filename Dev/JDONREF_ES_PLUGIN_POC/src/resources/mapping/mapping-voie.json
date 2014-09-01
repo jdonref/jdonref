@@ -6,26 +6,26 @@
                             "code_insee" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
                             "code_insee_commune" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
                             "code_departement" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
-                            "code_pays" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search"},
-                            "codes" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search"},
+                            "code_pays" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
+                            "codes" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
                             "numero_min" : { "type" : "integer", "index":"not_analyzed"},
                             "numero_max" : { "type" : "integer", "index":"not_analyzed"},
                             "type_de_voie" : { "type" : "string", "index":"not_analyzed"},
                             "article" : { "type" : "string", "index":"not_analyzed"},
                             "libelle" : { "type" : "string", "index":"not_analyzed"},
-                            "commune" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "commune" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
                             "code_arrondissement" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
                             "code_postal" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
                             "pays" : { "type" : "string" , "index": "no"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
-                            "ligne4" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "ligne4" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
                             "ligne5" : { "type" : "string",  "index":"no"},
                             "ligne6" : { "type" : "string", "index": "no"},
-                            "ligne7" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
+                            "ligne7" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
                             "type" : { "type" : "string", "store":true, "index":"not_analyzed"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-                            "fullName" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
+                            "fullName" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"}
                         }
    }
  }

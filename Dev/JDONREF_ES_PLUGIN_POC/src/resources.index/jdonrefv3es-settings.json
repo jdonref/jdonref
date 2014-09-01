@@ -53,6 +53,11 @@
                     "max_gram": 15,
                     "token_chars": ["digit"]
                 }
+            },
+            "similarity": {
+                "jdonrefv3es" : {
+                    "type": "org.apache.lucene.search.similarities.JDONREFv3TermSimilarity"
+                }
             }
         }
     }

@@ -126,20 +126,42 @@ public class JDONREFv3Scorer extends Scorer {
         return newscore;
     }
     
-    // DefaultSimilarity only
+    // JDONREFv3TermSimilarity only
     public float score(JDONREFv3TermScorer scorer,Bucket bucket, Term term) throws IOException
     {
-        TermWeight weight = (TermWeight) scorer.getWeight();
+        if (bucket.doc == scorer.docID())
+        {
+            if (debugDoc!=-1 && debugDoc==bucket.doc)
+            {
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc :"+bucket.doc+" use native scorer");
+            }
+            return scorer.score();
+        }
+        else
+        {
+            TermWeight weight = (TermWeight) scorer.getWeight();
         
-        return score(weight,bucket.d,bucket.doc,term,weight.searcher);
+            return score(weight,bucket.d,bucket.doc,term,weight.searcher);
+        }
     }
     
-    // DefaultSimilarity only
+    // JDONREFv3TermSimilarity only
     public float score(JDONREFv3TermScorer scorer,Bucket bucket, Term term, IndexSearcher searcher) throws IOException
     {
-        TermWeight weight = (TermWeight) scorer.getWeight();
+        if (bucket.doc == scorer.docID())
+        {
+            if (debugDoc!=-1 && debugDoc==bucket.doc)
+            {
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc :"+bucket.doc+" use native scorer");
+            }
+            return scorer.score();
+        }
+        else
+        {
+            TermWeight weight = (TermWeight) scorer.getWeight();
         
-        return score(weight,bucket.d,bucket.doc,term,searcher);
+            return score(weight,bucket.d,bucket.doc,term,searcher);
+        }
     }
   
     /** Calcule le score total théorique que peut rapporter un terme d'un document
@@ -539,7 +561,11 @@ public class JDONREFv3Scorer extends Scorer {
             Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName() + " collect score for Term :" + term + ", termQueryIndex:" + termQueryIndex + " doc :" + bucket.doc);
         //float score = scorer.score();
         }
-        float score = score(scorer, bucket, term);
+        float score;
+        if (scorer.docID()==bucket.doc)
+            score = score(scorer, bucket,term);
+        else
+            score = score(scorer, bucket,term);
         analyzeOrder(bucket, term);
         analyzeCodeBeforeAdress(bucket, term);
         analyzeAdressNumber(bucket, term);
