@@ -2,6 +2,7 @@ package mi.ppol.jdonref.espluginpoc.index.query;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.logging.Filter;
 import org.apache.lucene.search.JDONREFv3Query;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CachingTokenFilter;
@@ -9,9 +10,13 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.FilteredQuery.FilterStrategy;
 import org.apache.lucene.search.JDONREFv3TermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
@@ -40,9 +45,17 @@ public class JDONREFv3QueryParser implements QueryParser
     @Nullable
     private final ClusterService clusterService;
     
+    protected Hashtable<String,Integer> termIndex = new Hashtable();
+    
      public JDONREFv3QueryParser()
      {
           clusterService = null;
+          termIndex.put("ligne4",0);
+          termIndex.put("commune",1);
+          termIndex.put("codes",2);
+          termIndex.put("ligne7",3);
+          termIndex.put("code_pays",4);
+          termIndex.put("ligne1",5);
      }
     
     @Inject
@@ -139,22 +152,17 @@ public class JDONREFv3QueryParser implements QueryParser
         }
     }
     
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost,Occur occur, int token,int queryIndex) throws IOException
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost, int token,int queryIndex) throws IOException
     {
         JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
         query.setToken(token);
         query.setBoost(boost);
         query.setQueryIndex(queryIndex);
-        booleanQuery.add(new BooleanClause(query,occur));
+        booleanQuery.add(new BooleanClause(query,BooleanClause.Occur.SHOULD));
     }
     
     private Query getQueryStringQuery(String find, QueryParseContext parseContext,int mode,int debugDoc) throws IOException
     {
-        JDONREFv3Query booleanQuery = new JDONREFv3Query();
-        booleanQuery.setMode(mode);
-        booleanQuery.setDebugDoc(debugDoc);
-        MatchQuery mq = new MatchQuery(parseContext);
-        
         Analyzer analyser = parseContext.mapperService().analysisService().analyzer("jdonrefv3es_search");
         
         CachingTokenFilter buffer = null;
@@ -209,45 +217,49 @@ public class JDONREFv3QueryParser implements QueryParser
         
         BytesRef bytes = termAtt == null ? null : termAtt.getBytesRef();
 
+        JDONREFv3Query booleanQuery = new JDONREFv3Query();
+        booleanQuery.setMode(mode);
+        booleanQuery.setDebugDoc(debugDoc);
         booleanQuery.setNumTokens(numTokens);
-        
-        Hashtable<String,Integer> termIndex = new Hashtable();
-        termIndex.put("ligne4",0);
-        termIndex.put("commune",1);
-        termIndex.put("codes",2);
-        termIndex.put("ligne7",3);
-        termIndex.put("code_pays",4);
-        termIndex.put("ligne1",5);
-        
         booleanQuery.setTermIndex(termIndex);
         
+        BooleanFilter boolFilters = new BooleanFilter();
+        
+        MatchQuery mq = new MatchQuery(parseContext);
+        
         // phrase query:
-          int position = -1;
-          int queryIndex = 0;
-          for (int i = 0; i < numTokens; i++) {
+        int position = -1;
+        int queryIndex = 0;
+        for (int i = 0; i < numTokens; i++) {
             int positionIncrement = 1;
             try {
-              boolean hasNext = buffer.incrementToken();
-              assert hasNext == true;
-              termAtt.fillBytesRef();  // here, BytesRef is updated !
-              if (posIncrAtt != null) {
-                positionIncrement = posIncrAtt.getPositionIncrement();
-              }
+                boolean hasNext = buffer.incrementToken();
+                assert hasNext == true;
+                termAtt.fillBytesRef();  // here, BytesRef is updated !
+
+                if (posIncrAtt != null) {
+                    positionIncrement = posIncrAtt.getPositionIncrement();
+                }
             } catch (IOException e) {
-              // safe to ignore, because we know the number of tokens
+                // safe to ignore, because we know the number of tokens
             }
 
             position += positionIncrement;
-            addMatchQueryClause(booleanQuery,mq,new Term("ligne4", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-            addMatchQueryClause(booleanQuery,mq,new Term("commune", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-            addMatchQueryClause(booleanQuery,mq,new Term("codes", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-            addMatchQueryClause(booleanQuery,mq,new Term("ligne7", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
+            addMatchQueryClause(booleanQuery, mq, new Term("ligne4", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
+            addMatchQueryClause(booleanQuery, mq, new Term("commune", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
+            addMatchQueryClause(booleanQuery, mq, new Term("codes", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
+            addMatchQueryClause(booleanQuery, mq, new Term("ligne7", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
             //addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-            addMatchQueryClause(booleanQuery,mq,new Term("ligne1", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-          }
-        
+            addMatchQueryClause(booleanQuery, mq, new Term("ligne1", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
+            
+            TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
+            boolFilters.add(filter, Occur.MUST);
+        }
+
         //System.out.println(booleanQuery.toString());
         
-        return booleanQuery;
+        FilteredQuery filteredQuery = new FilteredQuery(booleanQuery,boolFilters,FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
+        
+        return filteredQuery;
     }
 }

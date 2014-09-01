@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryParser;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -499,8 +498,6 @@ public class JDONREFv3Query extends BooleanQuery
         boolean topScorer, Bits acceptDocs)
         throws IOException {
         
-      List<Scorer> required = new ArrayList<Scorer>();
-      List<Scorer> prohibited = new ArrayList<Scorer>();
       List<Scorer> optional = new ArrayList<Scorer>();
       Iterator<BooleanClause> cIter = clauses().iterator();
       for (Weight w  : weights) {
@@ -511,19 +508,16 @@ public class JDONREFv3Query extends BooleanQuery
             return null;
           }
         } else if (c.isRequired()) {
-          required.add(subScorer);
+            throw(new IOException("Required clauses are not available."));
         } else if (c.isProhibited()) {
-          prohibited.add(subScorer);
+            throw(new IOException("Prohibited clauses are not available."));
         } else {
           optional.add(subScorer);
         }
       }
 
-      if (!scoreDocsInOrder && topScorer && required.size() == 0 && minNrShouldMatch <= 1) {
-        return new JDONREFv3Scorer(this, protectedDisableCoord, minNrShouldMatch, optional, prohibited, maxCoord, context, termIndex,this.mode,this.debugDoc);
-      }
-      else
-          throw new IOException("MultiNrShouldMatch nor required clause are not supported by JDONREFv3Scorer.");
+      //if (!scoreDocsInOrder && topScorer && minNrShouldMatch <= 1) {
+        return new JDONREFv3Scorer(this, optional, maxCoord, context, termIndex,this.mode,this.debugDoc);
     }
   }
     

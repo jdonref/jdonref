@@ -56,6 +56,7 @@ public class JDONREFv3Scorer extends Scorer {
     }
     
     // DefaultSimilarity only
+    // TODO : paste to JDONREFv3TermScorer with a tuned Similarity
     public float score(TermWeight weight,Document d, int doc, Term term,IndexSearcher searcher) throws IOException
     {
         boolean debug = false;
@@ -304,7 +305,7 @@ public class JDONREFv3Scorer extends Scorer {
         
         if (debug)
         {
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc);
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" "+bucket.d.getValues("fullName")[0]);
         }
         
         int[] freq_by_term = new int[bucket.score_by_term.length];
@@ -348,7 +349,7 @@ public class JDONREFv3Scorer extends Scorer {
                     }
                     if (debug)
                     {
-                        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" subquery "+i+"="+score);
+                        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" term: "+term+" subquery "+i+"="+score);
                     }
                 }
             }
@@ -386,7 +387,7 @@ public class JDONREFv3Scorer extends Scorer {
         
           if (debug)
           {
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"  doc "+bucket.doc);
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"  makeFinalScore doc "+bucket.doc);
           }
           
           // Score relatif
@@ -406,6 +407,7 @@ public class JDONREFv3Scorer extends Scorer {
           {
               if (mode==JDONREFv3Query.BULK)
               {
+                // score absolu
                 setTotalScore(scorer,bucket);
                 float totalScore = getSumTotalScore(bucket);
                 bucket.score /= totalScore;
@@ -448,7 +450,15 @@ public class JDONREFv3Scorer extends Scorer {
     {
         if (term.field().equals("ligne4"))
         {
-            if (isNumber(term.text()))
+            String[] numbers = bucket.d.getValues("numero");
+            if (debugDoc!=-1 && debugDoc==bucket.doc)
+            {
+                if (numbers.length>0)
+                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" check doc "+bucket.doc+" for adress number "+numbers[0]+"=="+term.text()+"?");
+                else
+                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" check doc "+bucket.doc+" no adress number");
+            }
+            if (numbers.length>0 && numbers[0].equals(term.text()))
                 bucket.adressNumberPresent = true;
         }
     }
@@ -478,6 +488,10 @@ public class JDONREFv3Scorer extends Scorer {
         if (bucket.currentAnalyzedType==null)
         {
             bucket.currentAnalyzedType = term.field();
+            System.out.println("bucket.analyzedTypes==null :"+bucket.analyzedTypes==null);
+            System.out.println("termIndex==null : "+termIndex==null);
+            System.out.println("term.field()==null : "+term.field()==null);
+            
             bucket.analyzedTypes[termIndex.get(term.field())] = true;
             //bucket.analyzedTypes.put(term.field(),true);
         }
@@ -502,6 +516,42 @@ public class JDONREFv3Scorer extends Scorer {
             }
         }
     }
+    
+  protected void collectBucket(Bucket bucket, JDONREFv3TermScorer scorer) throws IOException
+  {
+        //if (scorer.docID() != bucket.doc) return;
+      
+        boolean debug = false;
+        // Additionnal collection of data for later scoring adjustment
+        JDONREFv3TermQuery query = (JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery();
+        Term term = query.getTerm();
+        int token = query.getToken();
+        int termQueryIndex = query.getQueryIndex();
+
+        // increment token frequencies
+        bucket.requestTokenFrequencies[token]++;
+
+        if (debugDoc!=-1 && debugDoc==bucket.doc)
+        {
+            debug = true;
+        }
+        if (debug) {
+            Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName() + " collect score for Term :" + term + ", termQueryIndex:" + termQueryIndex + " doc :" + bucket.doc);
+        //float score = scorer.score();
+        }
+        float score = score(scorer, bucket, term);
+        analyzeOrder(bucket, term);
+        analyzeCodeBeforeAdress(bucket, term);
+        analyzeAdressNumber(bucket, term);
+
+        //bucket.score_by_term.put(term.field(),score);
+        bucket.score_by_subquery[termQueryIndex] = score;
+        bucket.token_by_subquery[termQueryIndex] = token;
+        bucket.term_by_subquery[termQueryIndex] = term.field();
+        if (debug) {
+            Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName() + " end collect score for Term :" + term + ", termQueryIndex:" + termQueryIndex + " doc :" + bucket.doc);
+        }
+  }
   
   private final class JDONREFv3ScorerCollector extends Collector {
     private BucketTable bucketTable;
@@ -525,13 +575,9 @@ public class JDONREFv3Scorer extends Scorer {
       final Bucket bucket = table.buckets[i];
       
       boolean debug = false;
-      Term term;
-      int termQueryIndex;
       
       if (bucket.doc != doc) {                    // invalid bucket
         bucket.doc = doc;                         // set doc
-        
-        //bucket.d = this.scorer.getSearcher().doc(doc); // which one ?
         bucket.d = this.context.reader().document(doc);
         
         if (debugDoc!=-1 && debugDoc==bucket.doc)
@@ -558,31 +604,7 @@ public class JDONREFv3Scorer extends Scorer {
         //bucket.coord++;                           // increment coord ... not here because it depend on token frequency
       }
       
-        // Additionnal collection of data for later scoring adjustment
-        JDONREFv3TermQuery query = (JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery();
-        term = query.getTerm();
-        int token = query.getToken();
-        termQueryIndex = query.getQueryIndex();
-        
-        // increment token frequencies
-        bucket.requestTokenFrequencies[token]++;
-        
-        if (debug)
-        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" collect score for Term :"+term+", termQueryIndex:"+termQueryIndex+" doc :"+bucket.doc);
-        
-        //float score = scorer.score();
-        float score = score(scorer,bucket,term);
-        analyzeOrder(bucket, term);
-        analyzeCodeBeforeAdress(bucket,term);
-        analyzeAdressNumber(bucket, term);
-        
-        //bucket.score_by_term.put(term.field(),score);
-        bucket.score_by_subquery[termQueryIndex] = score;
-        bucket.token_by_subquery[termQueryIndex] = token;
-        bucket.term_by_subquery[termQueryIndex] = term.field();
-        if (debug)
-        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" end collect score for Term :"+term+", termQueryIndex:"+termQueryIndex+" doc :"+bucket.doc);
-        
+      collectBucket(bucket,scorer);
     }
     
     @Override
@@ -736,13 +758,8 @@ public class JDONREFv3Scorer extends Scorer {
     }
   }
   
-  private SubScorer scorers = null;
+  private SubScorer scorers = null; // for collect mode
   private BucketTable bucketTable;
-  //private float[] coordFactors; // no need for that
-  
-  // TODO: re-enable this if BQ ever sends us required clauses
-  //private int requiredMask = 0;
-  private final int minNrShouldMatch;
   private int end;
   private Bucket current;
   // Any time a prohibited clause matches we set bit 0:
@@ -751,19 +768,24 @@ public class JDONREFv3Scorer extends Scorer {
   protected int maxCoord;
   
   protected int mode;
-  
   protected int debugDoc;
+  
+  protected int doc = -1;
   
   protected JDONREFv3ESWeight protectedWeight;
   
-  public JDONREFv3Scorer(JDONREFv3ESWeight weight, boolean disableCoord, int minNrShouldMatch,
-      List<Scorer> optionalScorers, List<Scorer> prohibitedScorers,
+  protected JDONREFv3TermScorer[] subScorers = null; // for nextDoc & advance mode
+  protected int numScorers;
+  protected int nrMatchers = -1;
+  protected double score = Float.NaN;
+  
+  public JDONREFv3Scorer(JDONREFv3ESWeight weight,
+      List<Scorer> optionalScorers,
       int maxCoord, AtomicReaderContext context, Hashtable<String, Integer> termIndex,
       int mode, int debugDoc) throws IOException {
     super(weight);
     
     this.protectedWeight = weight;
-    this.minNrShouldMatch = minNrShouldMatch;
     this.context = context;
     this.maxCoord = maxCoord;
     this.termIndex = termIndex;
@@ -774,6 +796,11 @@ public class JDONREFv3Scorer extends Scorer {
 
     if (optionalScorers != null && optionalScorers.size() > 0)
     {
+       // nextDoc & advance mode
+       subScorers = new JDONREFv3TermScorer[optionalScorers.size()];
+       numScorers = subScorers.length;
+       
+       // collect mode 
        for(int i=optionalScorers.size()-1;i>=0;i--) // set scorers in order because they are reversed chained !
        {
           JDONREFv3TermScorer scorer = (JDONREFv3TermScorer) optionalScorers.get(i);
@@ -783,127 +810,81 @@ public class JDONREFv3Scorer extends Scorer {
             scorers = new SubScorer(scorer, false, false, bucketTable.newCollector(0), scorers);
           }
        }
+       // and set subScorers in order !
+       for(int i=0;i<optionalScorers.size();i++)
+       {
+           JDONREFv3TermScorer scorer = (JDONREFv3TermScorer) optionalScorers.get(i);
+           subScorers[i] = scorer;
+       }
+       
+       
+       heapify(); // NB: un nextDoc a été appliqué à chaque scorer
     }
-    
-    /* // These are not usefull
-    if (prohibitedScorers != null && prohibitedScorers.size() > 0) {
-      for (Scorer scorer : prohibitedScorers) {
-        if (scorer.nextDoc() != NO_MORE_DOCS) {
-          scorers = new SubScorer(scorer, false, true, bucketTable.newCollector(PROHIBITED_MASK), scorers);
-        }
-      }
-    }
-
-    coordFactors = new float[optionalScorers.size() + 1];
-    for (int i = 0; i < coordFactors.length; i++) {
-      coordFactors[i] = disableCoord ? 1.0f : weight.coord(i, maxCoord); 
-    }*/
   }
 
-  // firstDocID is ignored since nextDoc() initializes 'current'
-  @Override
-  public boolean score(Collector collector, int max, int firstDocID) throws IOException {
-    // Make sure it's only BooleanScorer that calls us:
-    assert firstDocID == -1;
-    boolean more;
-    Bucket tmp;
-    BucketScorer bs = new BucketScorer(protectedWeight);
-
-    //long start = java.util.Calendar.getInstance().getTimeInMillis();
-    
-    // The internal loop will set the score and doc before calling collect.
-    collector.setScorer(bs);
-    do {
-      bucketTable.first = null;
-      
-      while (current != null) {         // more queued 
-
-        // check prohibited & required
-        if ((current.bits & PROHIBITED_MASK) == 0) {
-
-          // TODO: re-enable this if BQ ever sends us required
-          // clauses
-          //&& (current.bits & requiredMask) == requiredMask) {
-          
-          // NOTE: Lucene always passes max =
-          // Integer.MAX_VALUE today, because we never embed
-          // a BooleanScorer inside another (even though
-          // that should work)... but in theory an outside
-          // app could pass a different max so we must check
-          // it:
-          if (current.doc >= max){
-            tmp = current;
-            current = current.next;
-            tmp.next = bucketTable.first;
-            bucketTable.first = tmp;
-            continue;
-          }
-          
-          if (current.coord >= minNrShouldMatch) {
-            boolean debug = false;
-            if (debugDoc!=-1 && debugDoc==current.doc)
-            {
-                debug = true;
-            }
-            try
-            {
-                makeFinalScore(scorers.scorer,current); // peu importe le scorer choisi, seule la valeur de queryNorm est utilisée (la même pour tous les scorer).
-            }
-            catch(Exception ex)
-            {
-              Logger.getLogger(JDONREFv3Scorer.class.toString()).error(ex);
-              current.score = 0;
-            }
-            
-            // malus pour les éléments non trouvés.
-            JDONREFv3Query query = (JDONREFv3Query)this.protectedWeight.getQuery();
-            float maxCoord = (query).getNumTokens();
-            bs.score = current.score * Math.pow(current.coord / maxCoord,3) ;
-            
-            // arrondi le résultat à 10^-2
-            bs.score = (float)Math.ceil(100*bs.score)/100.0f;
-            if (bs.score>200) bs.score = 200; // maximum
-          
-            if (debug)
-            {
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" Collect doc "+current.doc+" coord: ("+current.coord+"/"+maxCoord+")^3 = "+Math.pow(current.coord / maxCoord,2));
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" Collect doc "+current.doc+" final Score: "+bs.score);
-            }
-            bs.doc = current.doc;
-            bs.freq = current.coord;
-            collector.collect(current.doc);
-          }
+  /** 
+   * extract from DisjunctionScorer
+   * Organize subScorers into a min heap with scorers generating the earliest document on top.
+   */
+  protected final void heapify() {
+    for (int i = (numScorers >> 1) - 1; i >= 0; i--) {
+      heapAdjust(i);
+    }
+  }
+  
+  /** 
+   * extract from DisjunctionScorer
+   * The subtree of subScorers at root is a min heap except possibly for its root element.
+   * Bubble the root down as required to make the subtree a heap.
+   */
+  protected final void heapAdjust(int root) {
+    JDONREFv3TermScorer scorer = subScorers[root];
+    int doc = scorer.docID();
+    int i = root;
+    while (i <= (numScorers >> 1) - 1) {
+      int lchild = (i << 1) + 1;
+      JDONREFv3TermScorer lscorer = subScorers[lchild];
+      int ldoc = lscorer.docID();
+      int rdoc = Integer.MAX_VALUE, rchild = (i << 1) + 2;
+      JDONREFv3TermScorer rscorer = null;
+      if (rchild < numScorers) {
+        rscorer = subScorers[rchild];
+        rdoc = rscorer.docID();
+      }
+      if (ldoc < doc) {
+        if (rdoc < ldoc) {
+          subScorers[i] = rscorer;
+          subScorers[rchild] = scorer;
+          i = rchild;
+        } else {
+          subScorers[i] = lscorer;
+          subScorers[lchild] = scorer;
+          i = lchild;
         }
-        
-        current = current.next;         // pop the queue
+      } else if (rdoc < doc) {
+        subScorers[i] = rscorer;
+        subScorers[rchild] = scorer;
+        i = rchild;
+      } else {
+        return;
       }
-      
-      if (bucketTable.first != null){
-        current = bucketTable.first;
-        bucketTable.first = current.next;
-        
-        //long end = java.util.Calendar.getInstance().getTimeInMillis();
-        //Logger.getLogger(this.getClass().toString()).debug("Collect took "+(end-start)+" ms");
-        return true;
-      }
-
-      // refill the queue
-      more = false;
-      end += BucketTable.SIZE;
-      for (SubScorer sub = scorers; sub != null; sub = sub.next) {
-        int subScorerDocID = sub.scorer.docID();
-        if (subScorerDocID != NO_MORE_DOCS) {
-          
-          more |= sub.scorer.score(sub.collector, end, subScorerDocID);
-        }
-      }
-      
-      current = bucketTable.first;
-      
-    } while (current != null || more);
-    //long end = java.util.Calendar.getInstance().getTimeInMillis();
-    //Logger.getLogger(this.getClass().toString()).debug("Collect took "+(end-start)+" ms");
-    return false;
+    }
+  }
+  
+  /** 
+   * extract from DisjunctionScorer
+   * Remove the root Scorer from subScorers and re-establish it as a heap
+   */
+  protected final void heapRemoveRoot() {
+    if (numScorers == 1) {
+      subScorers[0] = null;
+      numScorers = 0;
+    } else {
+      subScorers[0] = subScorers[numScorers - 1];
+      subScorers[numScorers - 1] = null;
+      --numScorers;
+      heapAdjust(0);
+    }
   }
   
   /**
@@ -915,11 +896,19 @@ public class JDONREFv3Scorer extends Scorer {
   public void calculateMalus(Bucket bucket)
   {
       String type = getType(bucket);
+
+      boolean debug = false;
+      if (debugDoc!=-1 && debugDoc==bucket.doc)
+      {
+          debug = true;
+      }
       
       if (type.equals("poizon"))
       {
           if (!(bucket.score_by_term[termIndex.get("ligne1")]>0 || bucket.score_by_term[termIndex.get("ligne4")]>0))
           {
+              if (debug)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : poizon but ligne1 & 4 is not present");
               bucket.malus = 0.0f;
               return;
           }
@@ -929,6 +918,8 @@ public class JDONREFv3Scorer extends Scorer {
           if (!(bucket.score_by_term[termIndex.get("ligne4")]>0 && 
                 (bucket.score_by_term[termIndex.get("codes")]>0 || bucket.score_by_term[termIndex.get("commune")]>0) ))
           {
+              if (debug)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : voie or adress but ligne4 & (commune || codes) is not present");
               bucket.malus = 0.0f;
               return;
           }
@@ -937,6 +928,8 @@ public class JDONREFv3Scorer extends Scorer {
       {
           if (!(bucket.score_by_term[termIndex.get("codes")]>0 || bucket.score_by_term[termIndex.get("commune")]>0))
           {
+              if (debug)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : commune but codes || commune is not present");
               bucket.malus = 0.0f;
               return;
           }
@@ -945,6 +938,9 @@ public class JDONREFv3Scorer extends Scorer {
       {
           if (!(bucket.score_by_term[termIndex.get("codes")]>0))
           {
+              if (debug)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : departement but codes is not present");
+
               bucket.malus = 0.0f;
               return;
           }
@@ -953,6 +949,9 @@ public class JDONREFv3Scorer extends Scorer {
       {
           if (!(bucket.score_by_term[termIndex.get("ligne7")]>0)) // TODO : || bucket.score_by_term[termIndex.get("code_pays")]>0 lorsqu'il sera supporté
           {
+              if (debug)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : pays but ligne7 is not present");
+
               bucket.malus = 0.0f;
               return;
           }
@@ -964,6 +963,9 @@ public class JDONREFv3Scorer extends Scorer {
       }
       if (bucket.isOfTypeAdress) {
           if (!bucket.adressNumberPresent) {
+             if (debug)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : adresse but number is not present");
+
               malus *= NUMBERMALUS;
           }
       }
@@ -983,15 +985,10 @@ public class JDONREFv3Scorer extends Scorer {
       {
           scorer = subscorers.get(i);
           
-          Term term = ((JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery()).getTerm();
-
-          //float score = scorer.score();
-          score(scorer, bucket, term);
-          analyzeOrder(bucket, term);
-          analyzeCodeBeforeAdress(bucket, term);
-          analyzeAdressNumber(bucket, term);
+          collectBucket(bucket, scorer);
       }
       
+      getSumScore(bucket); // prérequis pour calculateMalus
       calculateMalus(bucket);
       
       return bucket.malus;
@@ -1041,34 +1038,265 @@ public class JDONREFv3Scorer extends Scorer {
       return ((JDONREFv3Query)this.getWeight().getQuery()).getNumTokens();
   }
   
+  // firstDocID is ignored since nextDoc() initializes 'current'
   @Override
-  public int advance(int target) {
-    throw new UnsupportedOperationException();
+  public boolean score(Collector collector, int max, int firstDocID) throws IOException
+  {
+    // Make sure it's only BooleanScorer that calls us:
+    assert firstDocID == -1;
+    boolean more;
+    Bucket tmp;
+    BucketScorer bs = new BucketScorer(protectedWeight);
+
+    //long start = java.util.Calendar.getInstance().getTimeInMillis();
+    
+    // The internal loop will set the score and doc before calling collect.
+    collector.setScorer(bs);
+    do {
+      bucketTable.first = null;
+      
+      while (current != null) {         // more queued 
+
+        // check prohibited & required
+        if ((current.bits & PROHIBITED_MASK) == 0) {
+
+          // TODO: re-enable this if BQ ever sends us required
+          // clauses
+          //&& (current.bits & requiredMask) == requiredMask) {
+          
+          // NOTE: Lucene always passes max =
+          // Integer.MAX_VALUE today, because we never embed
+          // a BooleanScorer inside another (even though
+          // that should work)... but in theory an outside
+          // app could pass a different max so we must check
+          // it:
+          if (current.doc >= max){
+            tmp = current;
+            current = current.next;
+            tmp.next = bucketTable.first;
+            bucketTable.first = tmp;
+            continue;
+          }
+          
+          if (current.coord >= 1) {
+            boolean debug = false;
+            if (debugDoc!=-1 && debugDoc==current.doc)
+            {
+                debug = true;
+            }
+            try
+            {
+                makeFinalScore(scorers.scorer,current); // peu importe le scorer choisi, seule la valeur de queryNorm est utilisée (la même pour tous les scorer).
+            }
+            catch(Exception ex)
+            {
+              Logger.getLogger(JDONREFv3Scorer.class.toString()).error(ex);
+              current.score = 0;
+            }
+            
+            // malus pour les éléments non trouvés.
+            JDONREFv3Query query = (JDONREFv3Query)this.protectedWeight.getQuery();
+            float maxCoord = (query).getNumTokens();
+            bs.score = current.score * Math.pow(current.coord / maxCoord,3) ;
+            
+            // arrondi le résultat à 10^-2
+            bs.score = (float)Math.ceil(100*bs.score)/100.0f;
+            if (bs.score>200) bs.score = 200; // maximum
+            
+            if (debug)
+            {
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" Collect doc "+current.doc+" coord: ("+current.coord+"/"+maxCoord+")^3 = "+Math.pow(current.coord / maxCoord,2));
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" Collect doc "+current.doc+" final Score: "+bs.score);
+            }
+            bs.doc = current.doc;
+            bs.freq = current.coord;
+            collector.collect(current.doc);
+          }
+        }
+        
+        current = current.next;         // pop the queue
+      }
+      
+      if (bucketTable.first != null){
+        current = bucketTable.first;
+        bucketTable.first = current.next;
+        
+        //long end = java.util.Calendar.getInstance().getTimeInMillis();
+        //Logger.getLogger(this.getClass().toString()).debug("Collect took "+(end-start)+" ms");
+        return true;
+      }
+
+      // refill the queue
+      more = false;
+      end += BucketTable.SIZE;
+      for (SubScorer sub = scorers; sub != null; sub = sub.next) {
+        int subScorerDocID = sub.scorer.docID();
+        if (subScorerDocID != NO_MORE_DOCS) {
+          more |= sub.scorer.score(sub.collector, end, subScorerDocID);
+        }
+      }
+      
+      current = bucketTable.first;
+      
+    } while (current != null || more);
+    //long end = java.util.Calendar.getInstance().getTimeInMillis();
+    //Logger.getLogger(this.getClass().toString()).debug("Collect took "+(end-start)+" ms");
+    return false;
+  }
+  
+  @Override
+  public int advance(int target) throws IOException {
+    assert doc != NO_MORE_DOCS;
+    boolean debug = false;
+    if (debugDoc!=-1 && debugDoc==target)
+    {
+        debug = true;
+    }
+    if (debug)
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" advance to "+target);
+    while(true) {
+      if (subScorers[0].advance(target) != NO_MORE_DOCS) {
+        heapAdjust(0);
+      } else {
+        heapRemoveRoot();
+        if (numScorers == 0) {
+          return doc = NO_MORE_DOCS;
+        }
+      }
+      if (subScorers[0].docID() >= target) {
+        afterNext();
+        
+        //if (score!=0.0f || doc==NO_MORE_DOCS)
+            return doc;
+      }
+    }
+  }
+  
+  protected void afterNext() throws IOException {
+      final JDONREFv3TermScorer sub = subScorers[0];
+      doc = sub.docID();
+      boolean debug = false;
+      if (debugDoc!=-1 && debugDoc==doc)
+      {
+          debug = true;
+      }
+      if (debug)
+          Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Préparation pour le document "+doc);
+      if (doc != NO_MORE_DOCS) {
+          Bucket b = new Bucket(this.maxCoord);
+          b.doc = doc;
+          b.d = this.context.reader().document(doc);
+
+          if (debug)
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Calcul du score pour le document "+doc+" scorer "+0);
+          collectBucket(b, subScorers[0]);
+          nrMatchers = 1;
+          countMatches(b, 1);
+          countMatches(b, 2);
+
+          try {
+              makeFinalScore(scorers.scorer, b); // peu importe le scorer choisi, seule la valeur de queryNorm est utilisée (la même pour tous les scorer).
+
+          } catch (Exception ex) {
+              throw new IOException(ex);
+          }
+
+          // malus pour les éléments non trouvés.
+          JDONREFv3Query query = (JDONREFv3Query) this.protectedWeight.getQuery();
+          float maxCoord = (query).getNumTokens();
+          score = b.score * Math.pow(b.coord / maxCoord, 3);
+
+          // arrondi le résultat à 10^-2
+          score = (float) Math.ceil(100 * score) / 100.0f;
+          if (score > 200) {
+              score = 200; // maximum
+          }
+          
+          if (debug)
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Calcul du score final pour le document "+doc+" score: "+score);
+      }
+  }
+  
+  protected void countMatches(Bucket b,int root) throws IOException {
+    boolean debug = false;
+    if (debugDoc!=-1 && debugDoc==doc)
+    {
+        debug = true;
+    }
+    if (debug)
+        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" countMatches "+doc);
+    if (root < numScorers && subScorers[root].docID() == doc)
+    {
+      nrMatchers++;
+      collectBucket(b,subScorers[root]);
+      countMatches(b,(root<<1)+1);
+      countMatches(b,(root<<1)+2);
+    }
   }
 
   @Override
   public int docID() {
-    throw new UnsupportedOperationException();
+    return doc;
   }
 
   @Override
-  public int nextDoc() {
-    throw new UnsupportedOperationException();
+  public int nextDoc() throws IOException {
+    assert doc != NO_MORE_DOCS;
+    boolean debug = false;
+    if (debugDoc!=-1 && debugDoc==doc)
+    {
+        debug = true;
+    }
+    if (debug)
+        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"subscorers size : "+subScorers.length+" first : "+(subScorers[0]==null));
+    while(true) {
+      if (subScorers[0].nextDoc() != NO_MORE_DOCS) {
+        if (debug)
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Nouveau document :"+subScorers[0].docID());
+        heapAdjust(0);
+      } else {
+        if (debug)
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Plus de documents dans root");
+        heapRemoveRoot();
+        if (numScorers == 0) {
+          return doc = NO_MORE_DOCS;
+        }
+      }
+      if (subScorers[0].docID() != doc) {
+        if (debug)
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Nouveau document trouvé, préparation.");
+        afterNext();
+        
+        //if (score!=0.0f || doc == NO_MORE_DOCS)
+            return doc;
+      }
+    }
   }
 
   @Override
   public float score() {
-    throw new UnsupportedOperationException();
+    return (float) score;
   }
 
   @Override
   public int freq() throws IOException {
-    throw new UnsupportedOperationException();
+    return nrMatchers;
   }
 
   @Override
   public long cost() {
-    return Integer.MAX_VALUE;
+    long sum = 0;
+    boolean debug = false;
+    if (debugDoc!=-1 && debugDoc==doc)
+    {
+        debug = true;
+    }
+    if (debug)
+        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"subscorers size : "+subScorers.length+" numScorers : "+numScorers);
+    for (int i = 0; i < numScorers; i++) {
+      sum += subScorers[i].cost();
+    }
+    return sum;
   }
 
   @Override
@@ -1090,6 +1318,10 @@ public class JDONREFv3Scorer extends Scorer {
   
   @Override
   public Collection<ChildScorer> getChildren() {
-    throw new UnsupportedOperationException();
+    ArrayList<ChildScorer> children = new ArrayList<ChildScorer>(numScorers);
+    for (int i = 0; i < numScorers; i++) {
+      children.add(new ChildScorer(subScorers[i], "SHOULD"));
+    }
+    return children;
   }
 }

@@ -25,7 +25,7 @@
                             "ligne7" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"},
                             "type" : { "type" : "string", "store":true, "index":"not_analyzed"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-                            "fullName" : {"type": "string", "store": true, "index": "no"}
+                            "fullName" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search"}
                         }
    }
  }

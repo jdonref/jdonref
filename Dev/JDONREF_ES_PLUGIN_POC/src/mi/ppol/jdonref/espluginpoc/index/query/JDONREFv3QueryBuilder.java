@@ -95,7 +95,8 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
         {
             builder.field("boost", boost);
         }
-        if (queryName != null) {
+        if (queryName != null)
+        {
             builder.field("_name", queryName);
         }
         builder.endObject();

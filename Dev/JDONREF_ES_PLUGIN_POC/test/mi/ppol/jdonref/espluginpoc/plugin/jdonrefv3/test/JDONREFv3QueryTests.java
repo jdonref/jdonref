@@ -179,7 +179,7 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
         System.out.println("Test Number "+testNumber++);
         System.out.println("Searching "+voie);
         QueryBuilder qb = (QueryBuilder) new JDONREFv3QueryBuilder(voie);
-        ((JDONREFv3QueryBuilder)qb).mode(JDONREFv3QueryParser.STRING);
+        ((JDONREFv3QueryBuilder)qb).mode(JDONREFv3Query.AUTOCOMPLETE);
         //QueryBuilder qb = new QueryStringQueryBuilder(voie);
         long start = Calendar.getInstance().getTimeInMillis();
         SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
@@ -573,9 +573,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
 
         // 183 tests au total
         
-        JDONREFv3Query.DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
-        JDONREFv3Scorer.DEBUGREFERENCE = "130 RUE REMY DUHEM 59500 DOUAI FRANCE";
-        
         searchExactAdresse("130 RUE REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
         searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
         searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
@@ -669,8 +666,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
         searchExactAdresse("130 REMY 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
         searchExactAdresse("130 REMY 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
         
-        JDONREFv3Query.DEBUGREFERENCE = "RUE REMY DUHEM 59500 DOUAI FRANCE";
-        JDONREFv3Scorer.DEBUGREFERENCE = "RUE REMY DUHEM 59500 DOUAI FRANCE";
         refresh();
         searchExactAdresse("RUE REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
         searchExactAdresse("RUE REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
@@ -761,8 +756,6 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
         searchExactAdresse("REMY 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,30.0f);
         searchExactAdresse("REMY 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);*/
         
-        JDONREFv3Query.DEBUGREFERENCE = "59500 DOUAI FRANCE";
-        JDONREFv3Scorer.DEBUGREFERENCE = "59500 DOUAI FRANCE";
         refresh();
         searchExactAdresse("59500 DOUAI FRANCE","59500 DOUAI FRANCE",0,199.99f);
         searchExactAdresse("59500 FRANCE","59500 DOUAI FRANCE",0,199.99f);
@@ -783,22 +776,16 @@ public class JDONREFv3QueryTests// extends ElasticsearchIntegrationTest
         searchExactAdresse("59 DOUAI","59500 DOUAI FRANCE",0,170.0f); // mark
         //searchExactAdresse("59 FRANCE","59 FRANCE"); // DOUAI n'est pas le meilleur résultat dans ce cas !
 
-        JDONREFv3Query.DEBUGREFERENCE = "59 FRANCE";
-        JDONREFv3Scorer.DEBUGREFERENCE = "59 FRANCE";
         refresh();
         searchExactAdresse("59 FRANCE","59 FRANCE",0,199.99f);
         searchExactAdresse("59","59 FRANCE",0,199.99f);
         //searchExactAdresse("59 FR","59 FRANCE",0,199.99f); // not supported for now
         //searchExactAdresse("59 FR FRANCE","59 FRANCE",0,199.99f);
         
-        JDONREFv3Query.DEBUGREFERENCE = "FRANCE";
-        JDONREFv3Scorer.DEBUGREFERENCE = "FRANCE";
         refresh();
         searchExactAdresse("FRANCE","FRANCE",0,199.99f);
         searchExactAdresse("FR FRANCE","FRANCE",0,199.99f);
         
-        JDONREFv3Query.DEBUGREFERENCE = "KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE";
-        JDONREFv3Scorer.DEBUGREFERENCE = "KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE";
         refresh();
         searchExactAdresse("KEBAB FRITE DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",1,100.0f);
         searchExactAdresse("KEBAB DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
