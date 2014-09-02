@@ -151,7 +151,7 @@ public class Troncon {
          troncon.add("type" , "troncon");
          if (withGeometry)
          troncon.add("geometrie" , geometrieJSON(geometrie));
-         troncon.add("fullName",toString().trim());
+         //troncon.add("fullName",toString().trim());
 
          
          return troncon.build();

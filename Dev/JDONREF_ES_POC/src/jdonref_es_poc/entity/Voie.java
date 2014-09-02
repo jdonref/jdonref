@@ -239,8 +239,7 @@ public class Voie
          voie.add("type","voie");
          if (withGeometry)
             voie.add("geometrie" , geometrieJSON(geometrie));
-         voie.add("fullName",toString().trim());
-//         voie.add("fullName_sansngram",toString().trim());
+         //voie.add("fullName",toString().trim());
      
         return voie.build();
     }

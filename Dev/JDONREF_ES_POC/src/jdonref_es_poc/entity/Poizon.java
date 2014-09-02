@@ -181,7 +181,7 @@ public class Poizon {
         if (withGeometry)
          poizon.add("geometrie" , geometrieJSON(geometrie));
 //         poizon.add("pin" , centroideJSON(centroide));
-         poizon.add("fullName",toString().trim());
+         //poizon.add("fullName",toString().trim());
 
          return poizon.build();   
     }

@@ -179,7 +179,7 @@ public class Adresse
 //        adresse.add("pin" , centroideJSON(geometrie)); 
         if (withGeometry)
         adresse.add("geometrie" , geometrieJSON(geometrie));   
-        adresse.add("fullName",toString().trim());
+        //adresse.add("fullName",toString().trim());
 
 //        JsonArray coordinates = Json.createArrayBuilder()
 //                .add(lat)

@@ -123,7 +123,7 @@ public class Departement {
 //         departement.add("pin" , centroideJSON(centroide));
          if (withGeometry)
             departement.add("geometrie" , geometrieJSON(geometrie));
-         departement.add("fullName",toString());
+         //departement.add("fullName",toString());
 //         departement.add("fullName_sansngram",toString().trim());
 
 //         builder.add("properties", departement);

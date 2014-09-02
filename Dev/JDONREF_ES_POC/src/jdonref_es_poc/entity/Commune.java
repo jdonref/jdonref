@@ -182,7 +182,7 @@ public class Commune
 //         commmune.add("pin" , centroideJSON(centroide)); 
          if (withGeometry)
          commmune.add("geometrie" , geometrieJSON(geometrie));         
-         commmune.add("fullName",toString().trim());
+         //commmune.add("fullName",toString().trim());
 
         return commmune.build();
     }
