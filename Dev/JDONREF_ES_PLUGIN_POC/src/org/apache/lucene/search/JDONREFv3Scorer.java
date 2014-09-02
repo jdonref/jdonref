@@ -129,6 +129,7 @@ public class JDONREFv3Scorer extends Scorer {
     // JDONREFv3TermSimilarity only
     public float score(JDONREFv3TermScorer scorer,Bucket bucket, Term term) throws IOException
     {
+        assert(this.mode==JDONREFv3Query.AUTOCOMPLETE && bucket.doc == scorer.docID() || this.mode==JDONREFv3Query.BULK);
         if (bucket.doc == scorer.docID())
         {
             if (debugDoc!=-1 && debugDoc==bucket.doc)

@@ -2,30 +2,32 @@
     "voie": {
        "path" : "just_name",
        "properties" : {
+                            "_source": {"excludes": ["geometrie"]},
                             "voi_id" : { "type" : "string", "index":"not_analyzed"},
-                            "code_insee" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
-                            "code_insee_commune" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
-                            "code_departement" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
-                            "code_pays" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
+                            "code_insee" : { "type" : "string", "index":"not_analyzed", "copy_to": ["codes","fullName"]},
+                            "code_insee_commune" : { "type" : "string", "index":"not_analyzed", "copy_to": ["codes","fullName"]},
+                            "code_departement" : { "type" : "string", "index":"not_analyzed", "copy_to": ["codes","fullName"]},
+                            "code_pays" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es", "copy_to":"fullName"},
                             "codes" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
                             "numero_min" : { "type" : "integer", "index":"not_analyzed"},
                             "numero_max" : { "type" : "integer", "index":"not_analyzed"},
                             "type_de_voie" : { "type" : "string", "index":"not_analyzed"},
                             "article" : { "type" : "string", "index":"not_analyzed"},
                             "libelle" : { "type" : "string", "index":"not_analyzed"},
-                            "commune" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
-                            "code_arrondissement" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
-                            "code_postal" : { "type" : "string", "index":"not_analyzed", "copy_to": "codes"},
+                            "commune" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es", "copy_to":"fullName"},
+                            "code_arrondissement" : { "type" : "string", "index":"not_analyzed", "copy_to": ["codes","fullName"]},
+                            "code_postal" : { "type" : "string", "index":"not_analyzed", "copy_to": ["codes","fullName"]},
                             "pays" : { "type" : "string" , "index": "no"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
-                            "ligne4" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
+                            "ligne4" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es", "copy_to":"fullName"},
                             "ligne5" : { "type" : "string",  "index":"no"},
                             "ligne6" : { "type" : "string", "index": "no"},
-                            "ligne7" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"},
+                            "ligne7" : { "type" : "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es", "copy_to":"fullName"},
                             "type" : { "type" : "string", "store":true, "index":"not_analyzed"},
+                            "centroide": { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-                            "fullName" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"}
+                            "fullName" : {"type": "string", "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"}
                         }
    }
  }
