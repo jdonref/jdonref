@@ -105,8 +105,8 @@ public class TronconDAO
                 "tro_troncons_"+dpt+"_0.t0, " +         // 35
                 "tro_troncons_"+dpt+"_0.t1, " +         // 36
 //                "st_astext(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " +    // 37
-                "st_AsGeoJSON(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " +    // 37
-
+                "st_AsGeoJSON(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)), " +    // 37
+                "st_AsGeoJSON(ST_Centroid(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " + //38
                 "FROM voi_voies_"+dpt+", com_communes, tro_troncons_"+dpt+"_0 "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee " +
                         "and voi_id_droit = voi_id";        
@@ -173,8 +173,8 @@ public class TronconDAO
                 "tro_troncons_"+dpt+"_0.t0, " +         // 35
                 "tro_troncons_"+dpt+"_0.t1, " +         // 36
 //                "st_astext(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " +    // 37
-                "st_AsGeoJSON(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " +    // 37
-
+                "st_AsGeoJSON(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)), " +    // 37
+                "st_AsGeoJSON(ST_Centroid(st_transform(tro_troncons_"+dpt+"_0.geometrie,4326)) " + //38
                 "FROM voi_voies_"+dpt+", com_communes, tro_troncons_"+dpt+"_0 "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee " +
                         "and voi_id_gauche = voi_id";        

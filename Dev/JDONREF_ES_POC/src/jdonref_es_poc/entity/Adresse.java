@@ -127,14 +127,6 @@ public class Adresse
         return geo.build();
     }        
     
-    public JsonObject centroideJSON(String centroide){
-        GeomUtil geomUtil = new GeomUtil();
-        HashMap<String,String> hash = geomUtil.toHashGeo(centroide);
-        JsonObjectBuilder geo = Json.createObjectBuilder()  
-                .add("centroide", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
-        return geo.build();
-    }
-    
     public String getDatForm(Date d){
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return formater.format(d);
@@ -176,9 +168,8 @@ public class Adresse
         adresse.add("ligne6",toLigne6().trim());
         adresse.add("ligne7",toLigne7().trim());
         adresse.add("type","adresse");
-//        adresse.add("pin" , centroideJSON(geometrie)); 
         if (withGeometry)
-        adresse.add("geometrie" , geometrieJSON(geometrie));   
+            adresse.add("geometrie" , geometrieJSON(geometrie));   
         //adresse.add("fullName",toString().trim());
 
 //        JsonArray coordinates = Json.createArrayBuilder()

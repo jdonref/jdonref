@@ -197,6 +197,12 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("25");      
 //            dptIndex.indexJDONREFDepartement("75");      
 
+            PoizonIndex pzIndex = new PoizonIndex();
+            pzIndex.setVerbose(isVerbose());
+            pzIndex.setConnection(connection);
+            pzIndex.setWithGeometry(withGeometry);
+            pzIndex.setUtil(util);
+            pzIndex.indexJDONREFPoizon();
             
             CommuneIndex cIndex = new CommuneIndex();
             cIndex.setVerbose(isVerbose());
@@ -204,13 +210,6 @@ public class JDONREFIndex
             cIndex.setWithGeometry(withGeometry);
             cIndex.setUtil(util);
             cIndex.indexJDONREFCommune();
-            
-            PoizonIndex pzIndex = new PoizonIndex();
-            pzIndex.setVerbose(isVerbose());
-            pzIndex.setConnection(connection);
-            pzIndex.setWithGeometry(withGeometry);
-            pzIndex.setUtil(util);
-            pzIndex.indexJDONREFPoizon();
             
         }
         
@@ -223,7 +222,6 @@ public class JDONREFIndex
 //
     public void AllDepVoieAdrTron(DepartementIndex dptIndex) throws IOException, SQLException
     {
-        
         for(int i=95;i>0;i--){
             if(i == 20){
                 dptIndex.indexJDONREFDepartement("20_a");

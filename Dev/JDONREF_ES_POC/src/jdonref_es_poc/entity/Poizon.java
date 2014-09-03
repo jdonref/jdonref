@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -111,14 +110,17 @@ public class Poizon {
     public JsonObject geometrieJSON(String geometrie) {
         GeomUtil geomUtil = new GeomUtil();
         HashMap<String, String> hash = geomUtil.toHashGeo(geometrie);
-        JsonObjectBuilder geo = Json.createObjectBuilder().add("type", hash.get("type")).add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+        JsonObjectBuilder geo = Json.createObjectBuilder()
+                .add("type", hash.get("type"))
+                .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }
 
-    public JsonObject centroideJSON(String centroide) {
+    public JsonObject centroideJSON(String centroide){
         GeomUtil geomUtil = new GeomUtil();
-        HashMap<String, String> hash = geomUtil.toHashGeo(centroide);
-        JsonObjectBuilder geo = Json.createObjectBuilder().add("centroide", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+        HashMap<String,String> hash = geomUtil.toHashGeo(centroide);
+        JsonObjectBuilder geo = Json.createObjectBuilder()  
+                .add("centroide", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }
 
@@ -179,8 +181,9 @@ public class Poizon {
         poizon.add("type","poizon");
 //        poizon.add("poizon_referentiel", poizon_referentiel);
         if (withGeometry)
-         poizon.add("geometrie" , geometrieJSON(geometrie));
-//         poizon.add("pin" , centroideJSON(centroide));
+            poizon.add("geometrie" , geometrieJSON(geometrie));
+        poizon.add("pin" , centroideJSON(centroide));
+            
          //poizon.add("fullName",toString().trim());
 
          return poizon.build();   

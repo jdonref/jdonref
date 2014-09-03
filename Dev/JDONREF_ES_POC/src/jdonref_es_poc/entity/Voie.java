@@ -207,6 +207,8 @@ public class Voie
         return formater.format(d);
     }    
     
+    //TODO fct centroide 
+    
     public JsonObject toJSONDocument(boolean withGeometry)
     {
         JsonObjectBuilder voie = Json.createObjectBuilder();
@@ -237,8 +239,10 @@ public class Voie
          voie.add("ligne6",toLigne6().trim());
          voie.add("ligne7",toLigne7().trim());
          voie.add("type","voie");
-         if (withGeometry)
+         if (withGeometry){
             voie.add("geometrie" , geometrieJSON(geometrie));
+         }
+//         voie.add("pin" , centroideJSON(centroide)); TODO centroide JSON
          //voie.add("fullName",toString().trim());
      
         return voie.build();

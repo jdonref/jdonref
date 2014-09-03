@@ -88,7 +88,7 @@ public class Departement {
                 .add("type", hash.get("type"))
                 .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
-    }
+    }     
     
     public JsonObject centroideJSON(String centroide){
         GeomUtil geomUtil = new GeomUtil();
@@ -120,9 +120,11 @@ public class Departement {
          departement.add("ligne6",toLigne6());
          departement.add("ligne7",toLigne7()); 
          departement.add("type","departement");
-//         departement.add("pin" , centroideJSON(centroide));
-         if (withGeometry)
+         
+         if (withGeometry)  
             departement.add("geometrie" , geometrieJSON(geometrie));
+         departement.add("pin" , centroideJSON(centroide));   
+         
          //departement.add("fullName",toString());
 //         departement.add("fullName_sansngram",toString().trim());
 

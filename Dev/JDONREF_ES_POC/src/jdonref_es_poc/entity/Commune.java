@@ -1,5 +1,6 @@
 package jdonref_es_poc.entity;
 
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -179,9 +180,11 @@ public class Commune
          commmune.add("ligne6",toLigne6().trim());
          commmune.add("ligne7",toLigne7().trim());
          commmune.add("type","commmune");
-//         commmune.add("pin" , centroideJSON(centroide)); 
+         
          if (withGeometry)
-         commmune.add("geometrie" , geometrieJSON(geometrie));         
+            commmune.add("geometrie" , geometrieJSON(geometrie));
+         commmune.add("pin" , centroideJSON(centroide));  
+
          //commmune.add("fullName",toString().trim());
 
         return commmune.build();

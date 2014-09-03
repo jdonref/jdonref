@@ -38,6 +38,8 @@ public class Troncon {
   public Date t0;
   public Date t1;
   public String geometrie;
+  public String centroide;
+  
 
   public String voi_id;
   public int tro_numero_debut;
@@ -83,6 +85,7 @@ public class Troncon {
         this.t0 = rs.getTimestamp(35);
         this.t1 = rs.getTimestamp(36);
         this.geometrie = rs.getString(37);
+        this.centroide = rs.getString(38);
         
     }
     
@@ -104,7 +107,15 @@ public class Troncon {
                 .add("type", hash.get("type"))
                 .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
-    }       
+    }    
+    
+    public JsonObject centroideJSON(String centroide){
+        GeomUtil geomUtil = new GeomUtil();
+        HashMap<String,String> hash = geomUtil.toHashGeo(centroide);
+        JsonObjectBuilder geo = Json.createObjectBuilder()  
+                .add("centroide", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+        return geo.build();
+    }
     
     public String getDatForm(Date d){
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -150,7 +161,9 @@ public class Troncon {
          troncon.add("ligne7" , toLigne7().trim());
          troncon.add("type" , "troncon");
          if (withGeometry)
-         troncon.add("geometrie" , geometrieJSON(geometrie));
+            troncon.add("geometrie" , geometrieJSON(geometrie));
+         troncon.add("pin" , centroideJSON(centroide));
+         
          //troncon.add("fullName",toString().trim());
 
          
