@@ -167,6 +167,8 @@ public class JDONREFIndex
             dptIndex.setWithGeometry(withGeometry);
             dptIndex.indexJDONREFDepartements();
             
+//            AllDepVoieAdrTron(dptIndex);
+            
             dptIndex.indexJDONREFDepartement("01");
 //            dptIndex.indexJDONREFDepartement("02");
 //            dptIndex.indexJDONREFDepartement("03");
@@ -195,23 +197,20 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("25");      
 //            dptIndex.indexJDONREFDepartement("75");      
 
-    
-
-//            AllDepVoieAdrTron(dptIndex);
-
+            
             CommuneIndex cIndex = new CommuneIndex();
             cIndex.setVerbose(isVerbose());
             cIndex.setConnection(connection);
             cIndex.setWithGeometry(withGeometry);
             cIndex.setUtil(util);
-//            cIndex.indexJDONREFCommune();
+            cIndex.indexJDONREFCommune();
             
             PoizonIndex pzIndex = new PoizonIndex();
             pzIndex.setVerbose(isVerbose());
             pzIndex.setConnection(connection);
             pzIndex.setWithGeometry(withGeometry);
             pzIndex.setUtil(util);
-//            pzIndex.indexJDONREFPoizon();
+            pzIndex.indexJDONREFPoizon();
             
         }
         
@@ -221,25 +220,22 @@ public class JDONREFIndex
             System.out.println("Indexation complète en "+(end-start)+" millis.");
     }
     
-    // C'est tout de même dommage d'écrire en dur les départements alors qu'il existe
-    // une classe DepartementDAO ...
+//
     public void AllDepVoieAdrTron(DepartementIndex dptIndex) throws IOException, SQLException
     {
-        for(int i=1;i<10;i++)
-            dptIndex.indexJDONREFDepartement("0"+i);
-        for(int i=10;i<20;i++)
-            dptIndex.indexJDONREFDepartement(""+i);
-//        dptIndex.indexJDONREFDepartement("20");
-        dptIndex.indexJDONREFDepartement("20_a");
-        dptIndex.indexJDONREFDepartement("20_b");
-        for(int i=21;i<96;i++)
-            dptIndex.indexJDONREFDepartement(""+i);
-        for(int j=1;j<7;j++)
+        
+        for(int i=95;i>0;i--){
+            if(i == 20){
+                dptIndex.indexJDONREFDepartement("20_a");
+                dptIndex.indexJDONREFDepartement("20_b"); 
+            }
+            else{
+                if(i<10) dptIndex.indexJDONREFDepartement("0"+i);
+                else dptIndex.indexJDONREFDepartement(""+i);
+            }
+        }
+        for(int j=1;j<=4;j++)
             dptIndex.indexJDONREFDepartement(97+""+j);
-        dptIndex.indexJDONREFDepartement(98+""+4);
-        for(int j=6;j<9;j++)
-            dptIndex.indexJDONREFDepartement(98+""+j);
-
     }
     
     

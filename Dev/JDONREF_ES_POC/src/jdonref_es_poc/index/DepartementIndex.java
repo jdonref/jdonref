@@ -197,13 +197,13 @@ public class DepartementIndex
         adrIndex.setWithGeometry(withGeometry);
         adrIndex.indexJDONREFAdressesDepartement(dpt);
         
-        TronconIndex tIndex = new TronconIndex();
-        tIndex.setUtil(util);
-        tIndex.setConnection(connection);
-        tIndex.setVerbose(isVerbose());
-        tIndex.setWithGeometry(withGeometry);
-        tIndex.indexJDONREFTronconsDepD(dpt);
-        tIndex.indexJDONREFTronconsDepG(dpt);
+//        TronconIndex tIndex = new TronconIndex();
+//        tIndex.setUtil(util);
+//        tIndex.setConnection(connection);
+//        tIndex.setVerbose(isVerbose());
+//        tIndex.setWithGeometry(withGeometry);
+//        tIndex.indexJDONREFTronconsDepD(dpt);
+//        tIndex.indexJDONREFTronconsDepG(dpt);
 
 //        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
 //        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
