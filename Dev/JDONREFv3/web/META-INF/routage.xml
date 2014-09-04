@@ -53,49 +53,49 @@
         
         <rule>
             <cle>
-                <identifiant>1001</identifiant>
+                <identifiant>10001</identifiant>
                 <nom>adresse</nom>
                 <nom>TYPEDEVOIE</nom>
                 <ligne>4</ligne>
             </cle>
             <cle>
-                <identifiant>1002</identifiant>
+                <identifiant>10002</identifiant>
                 <nom>point adresse</nom>
                 <parent>1</parent>
                 <ligne>4</ligne>
             </cle>
             <cle>
-                <identifiant>1003</identifiant>
+                <identifiant>10003</identifiant>
                 <nom>troncon</nom>
                 <parent>1</parent>
                 <ligne>4</ligne>
             </cle>
             <cle>
-                <identifiant>1004</identifiant>
+                <identifiant>10004</identifiant>
                 <nom>voie</nom>
                 <parent>1</parent>
                 <ligne>4</ligne>
             </cle>
             <cle>
-                <identifiant>1005</identifiant>
+                <identifiant>10005</identifiant>
                 <nom>commune</nom>
                 <parent>1</parent>
                 <ligne>4</ligne>
             </cle>
             <cle>
-                <identifiant>1006</identifiant>
+                <identifiant>10006</identifiant>
                 <nom>departement</nom>
                 <parent>1</parent>
                 <ligne>4</ligne>
             </cle>
             <cle>
-                <identifiant>1007</identifiant>
+                <identifiant>10007</identifiant>
                 <nom>PAYS</nom>
                 <parent>1</parent>
                 <ligne>7</ligne>
             </cle>
             <webservice>
-                <wsdl>http://localhost:80/JADRREF2/JADRREF?wsdl</wsdl>
+                <wsdl>http://localhost:80/JDONREFv3v4/JDONREFv3v4?wsdl</wsdl>
                 <service>JDONREFService</service>
                 <uri>http://jdonref.ppol/</uri>
             </webservice>

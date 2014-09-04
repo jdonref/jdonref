@@ -1483,6 +1483,13 @@ public void jspInit()
                             <option value="5">commune</option>
                             <option value="6">departement</option>
                             <option value="7">pays</option>
+                            <option value="10001">ES_Adresse</option>
+                            <option value="10002">ES_point adresse</option>
+                            <option value="10003">ES_troncon</option>
+                            <option value="10004">ES_voie</option>
+                            <option value="10005">ES_commune</option>
+                            <option value="10006">ES_departement</option>
+                            <option value="10007">ES_pays</option>
                             <option value="100">POIZON</option>
                             <option value="101">POI</option>
                             <option value="102">ZON</option>
