@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : departementsSynonymes.xml
+    Created on : 15 sept 2011
+    Author     : waroche
+    Description:
+        Fichier des departements ayant des synonymes.
+        Liste les departements dont le code departement peut s'ecrire de plusieurs facons
+        Specifie pour chaqun d'eux leur code officiel et leurs synonymes
+-->
+<!DOCTYPE Library  SYSTEM "./departementsSynonymes.dtd">
+<departements>
+    <codeDpt code="20 A">
+		<synonymes>
+			<synonyme>2 A</synonyme>
+		</synonymes>
+    </codeDpt>
+    <codeDpt code="20 B">
+		<synonymes>
+			<synonyme>2 B</synonyme>
+		</synonymes>
+    </codeDpt>
+</departements>

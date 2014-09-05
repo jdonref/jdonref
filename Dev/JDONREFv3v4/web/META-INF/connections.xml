@@ -1,0 +1,11 @@
+<connections>
+    <connection>
+        <server>localhost</server>
+        <database>jdonref-navteq-bspp</database>
+        <port>5432</port>
+        <user>jdonrefadmin</user>
+        <password>passwd-jdonrefadmin</password>
+        <ponderation>1</ponderation>
+        <connections>1</connections>
+    </connection>
+</connections>
