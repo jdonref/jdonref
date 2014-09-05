@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoints version="2.0" xmlns="http://java.sun.com/xml/ns/jax-ws/ri/runtime">
+  <endpoint implementation="ppol.jdonrefv3v4.JDONREFv3v4" name="JDONREFv3v4" url-pattern="/JDONREFv3v4"/>
+</endpoints>
