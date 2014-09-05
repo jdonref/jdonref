@@ -749,7 +749,8 @@ public class GestionAdr {
         // PAYS
         boolean gestionPays = lignes.length > 6 || ((operation & 256) != 0);
         for (Integer service : services) {
-            if (service == GestionReferentiel.SERVICE_PAYS) {
+            Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromCle(service).getId();
+            if (id == GestionReferentiel.SERVICE_PAYS) {
                 gestionPays = true;
                 break;
             }

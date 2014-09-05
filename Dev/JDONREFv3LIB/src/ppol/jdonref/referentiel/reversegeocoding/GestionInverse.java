@@ -54,6 +54,7 @@ import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.Tables.GestionTables;
 import ppol.jdonref.referentiel.GestionGeocodage;
 import ppol.jdonref.referentiel.GestionHistoriqueTables;
+import ppol.jdonref.referentiel.JDONREFv3Lib;
 import ppol.jdonref.utils.DateUtils;
 import ppol.jdonref.utils.GeometryUtils;
 import ppol.jdonref.utils.MiscUtils;
@@ -284,7 +285,9 @@ public class GestionInverse {
         GeocodageInverse[] tro_res = null;
         GeocodageInverse[] pla_res = null;
         for (Integer service : services) {
-            switch (service) {
+            //
+            Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromCle(service).getId();
+            switch (id) {
                 case SERVICE_ADRESSE:
                     adr_res.addAll(inverseSurDepartement(dpt, application, operation, date, pos, dst, projection, io, connection));
                     if (!adr_res.isEmpty()) {
@@ -559,12 +562,13 @@ public class GestionInverse {
         boolean serviceAdresse = false;
         boolean serviceDpt = false;
         for (Integer service : services) {
-            if (service == SERVICE_ADRESSE) {
+            Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromCle(service).getId();
+            if (id == SERVICE_ADRESSE) {
                 serviceAdresse = true;
-            } else if (service == SERVICE_DEPARTEMENT) {
+            } else if (id == SERVICE_DEPARTEMENT) {
                 serviceDpt = true;
             }
-            if (service == SERVICE_PAYS) {
+            if (id == SERVICE_PAYS) {
                 servicePays = true;
             }
         }

@@ -260,7 +260,9 @@ public class GestionGeocodage {
         res.nontrouve = false;
         res.x = p.getX();
         res.y = p.getY();
+        
         res.setService(GestionReferentiel.SERVICE_DEPARTEMENT);
+
 
 
         return res;
@@ -2525,9 +2527,10 @@ public class GestionGeocodage {
             int projection, String defaultWorldProj, Date date, Connection connection) throws SQLException, GestionReferentielException {
         final List<String[]> listRet = new ArrayList<String[]>();
         for (int service : services) {
-            if (service == GestionReferentiel.SERVICE_ADRESSE) {
+            Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromCle(service).getId();
+            if (id == GestionReferentiel.SERVICE_ADRESSE) {
                 listRet.add(geocodeAdresse(application, voi_id, numero, repetition, code_insee, paysSovAc3, projection, defaultWorldProj, date, connection));
-            } else if (service == GestionReferentiel.SERVICE_PAYS) {
+            } else if (id == GestionReferentiel.SERVICE_PAYS) {
                 RetourGeocodage rgPay = geocodePays(paysSovAc3, date, defaultWorldProj, projection, connection);
                 if ((!rgPay.nontrouve) && (rgPay.errorcode == 0)) {
                      jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PAYS, true);
@@ -2546,8 +2549,8 @@ public class GestionGeocodage {
 
                 // Obtient la projection et le référentiel concerné
                 String[] projectionEtReferentiel = obtientProjectionEtReferentiel(code_departement, date, projection, connection);
-                if (service == GestionReferentiel.SERVICE_POINT_ADRESSE || service == GestionReferentiel.SERVICE_DEPARTEMENT || service == GestionReferentiel.SERVICE_COMMUNE) {
-                    switch (service) {
+                if (id == GestionReferentiel.SERVICE_POINT_ADRESSE || id == GestionReferentiel.SERVICE_DEPARTEMENT || id == GestionReferentiel.SERVICE_COMMUNE) {
+                    switch (id) {
                         case GestionReferentiel.SERVICE_DEPARTEMENT:
                             RetourGeocodage rgDep = geocodeDepartement(code_departement, date, projection, connection);
                             if (!rgDep.nontrouve && rgDep.errorcode == 0) {
@@ -2584,7 +2587,7 @@ public class GestionGeocodage {
                          jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                         listRet.add(formateResultatGeocodage(rg));
                     } else {
-                        switch (service) {
+                        switch (id) {
                             case GestionReferentiel.SERVICE_VOIE:
                                 RetourGeocodage rgVoi = new RetourGeocodage();
                                 rgVoi = geocodeCentroideVoie(gf, voi_id, date, projection, tableTroncons, connection);
@@ -2715,9 +2718,10 @@ public class GestionGeocodage {
             int projection, String defaultWorldProj, Date date, Connection connection) throws SQLException, GestionReferentielException {
         final List<String[]> listRet = new ArrayList<String[]>();
         for (int service : services) {
-            if (service == GestionReferentiel.SERVICE_ADRESSE) {
+            Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromCle(service).getId();
+            if (id == GestionReferentiel.SERVICE_ADRESSE) {
                 listRet.add(geocodeAdresse(application, voi_id, numero, distance, repetition, code_insee, paysSovAc3, projection, defaultWorldProj, date, connection));
-            } else if (service == GestionReferentiel.SERVICE_PAYS) {
+            } else if (id == GestionReferentiel.SERVICE_PAYS) {
                 RetourGeocodage rgPay = geocodePays(paysSovAc3, date, defaultWorldProj, projection, connection);
                 if ((!rgPay.nontrouve) && (rgPay.errorcode == 0)) {
                      jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_PAYS, true);
@@ -2736,8 +2740,8 @@ public class GestionGeocodage {
 
                 // Obtient la projection et le référentiel concerné
                 String[] projectionEtReferentiel = obtientProjectionEtReferentiel(code_departement, date, projection, connection);
-                if (service == GestionReferentiel.SERVICE_POINT_ADRESSE || service == GestionReferentiel.SERVICE_DEPARTEMENT || service == GestionReferentiel.SERVICE_COMMUNE) {
-                    switch (service) {
+                if (id == GestionReferentiel.SERVICE_POINT_ADRESSE || id == GestionReferentiel.SERVICE_DEPARTEMENT || id == GestionReferentiel.SERVICE_COMMUNE) {
+                    switch (id) {
                         case GestionReferentiel.SERVICE_DEPARTEMENT:
                             RetourGeocodage rgDep = geocodeDepartement(code_departement, date, projection, connection);
                             if (!rgDep.nontrouve && rgDep.errorcode == 0) {
@@ -2774,7 +2778,7 @@ public class GestionGeocodage {
                          jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                         listRet.add(formateResultatGeocodage(rg));
                     } else {
-                        switch (service) {
+                        switch (id) {
                             case GestionReferentiel.SERVICE_VOIE:
                                 RetourGeocodage rgVoi = new RetourGeocodage();
                                 rgVoi = geocodeCentroideVoie(gf, voi_id, date, projection, tableTroncons, connection);
