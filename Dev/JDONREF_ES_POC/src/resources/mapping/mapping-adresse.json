@@ -1,6 +1,7 @@
 {
      "adresse": {
         "path" : "just_name",
+        "_source": {"excludes": ["geometrie"]},
         "properties" : {
                             "adr_id" : { "type" : "string", "index":"not_analyzed"},
                             "tro_id" : { "type" : "string", "index":"not_analyzed"},
