@@ -42,6 +42,16 @@ public class JDONREFv3Scorer extends Scorer {
   
   protected Hashtable<String, Integer> termIndex;
   
+  protected String getFullName(Bucket bucket)
+  {
+      String ligne4 = bucket.d.getValues("ligne4")[0];
+      String code_postal = bucket.d.getValues("code_postal")[0];
+      String commune = bucket.d.getValues("commune")[0];
+      String ligne7 = bucket.d.getValues("ligne7")[0];
+      
+      return ligne4+" "+code_postal+" "+commune+ " "+ligne7;
+  }
+  
     /**
      * Retourne vrai si le poids de tous les champs du terme doivent être cumulés.
      * Retourne faux si seul le poids le plus élevé de tous les champs du terme doit être pris en compte.
@@ -328,7 +338,7 @@ public class JDONREFv3Scorer extends Scorer {
         
         if (debug)
         {
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" "+bucket.d.getValues("fullName")[0]);
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" "+getFullName(bucket));
         }
         
         int[] freq_by_term = new int[bucket.score_by_term.length];
@@ -612,7 +622,7 @@ public class JDONREFv3Scorer extends Scorer {
             debug = true;
         }
         if (debug)
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" new doc :"+bucket.doc+" fullName:"+bucket.d.get("fullName"));
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" new doc :"+bucket.doc+" fullName:"+getFullName(bucket));
         
         bucket.bits = mask;                       // initialize mask
         //bucket.coord = 1;                         // initialize coord ... not here because it depend on token frequency
