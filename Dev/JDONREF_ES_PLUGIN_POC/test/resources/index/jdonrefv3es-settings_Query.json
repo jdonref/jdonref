@@ -28,7 +28,7 @@
                 },
                 "french_stop": {
                   "type":       "stop",
-                  "stopwords":  "_french_" 
+                  "stopwords":  "_french_"
                 },
                 //"french_keywords": {
                 //  "type":       "keyword_marker",
@@ -38,11 +38,11 @@
                   "type":       "stemmer",
                   "language":   "light_french"
                 },
-                "jdonrefv3es_metaphone" : {
-                    "type" : "phonetic",
-                    "encoder" : "metaphone",
-                    "replace" : true
-                },
+                //"jdonrefv3es_metaphone" : {
+                //    "type" : "phonetic",
+                //    "encoder" : "metaphone",
+                //    "replace" : true
+                //},
                 "jdonrefv3es_synonyme" : {
                     "type" : "synonym",
                     "synonyms_path": "./src/resources/analysis/jdonrefv3es_synonym.fr_FR.txt"
