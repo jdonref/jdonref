@@ -30,11 +30,6 @@ import org.apache.lucene.util.BytesRef;
  * @author Julien
  */
 public class JDONREFv3Scorer extends Scorer {
-  
-    //public static boolean DEBUG = true;
-    //public static int DEBUGDOCREFERENCE = 2092; //10366;
-    //public static String DEBUGREFERENCE = "RUE AIME VINGTRINIER 01500 AMBERIEU EN BUGEY FRANCE";
-    
   public final static float ORDERMALUS = 0.5f;
   public final static float NUMBERMALUS = 0;
   
@@ -42,14 +37,27 @@ public class JDONREFv3Scorer extends Scorer {
   
   protected Hashtable<String, Integer> termIndex;
   
+  /**
+   * For debug purposes only
+   */
   protected String getFullName(Bucket bucket)
   {
-      String ligne4 = bucket.d.getValues("ligne4")[0];
-      String code_postal = bucket.d.getValues("code_postal")[0];
-      String commune = bucket.d.getValues("commune")[0];
-      String ligne7 = bucket.d.getValues("ligne7")[0];
-      
-      return ligne4+" "+code_postal+" "+commune+ " "+ligne7;
+      String ligne1,ligne4, ligne7, code_postal, commune;
+      if (bucket.d.getValues("ligne1").length>0) ligne1 = bucket.d.getValues("ligne1")[0];
+      else ligne1 = "";
+      if (bucket.d.getValues("ligne4").length>0) ligne4 = bucket.d.getValues("ligne4")[0];
+      else ligne4 = "";
+      if (bucket.d.getValues("code_postal").length>0) code_postal = bucket.d.getValues("code_postal")[0];
+      else code_postal = "";
+      if (bucket.d.getValues("commune").length>0) commune = bucket.d.getValues("commune")[0];
+      else commune = "";
+      if (bucket.d.getValues("ligne7").length>0) ligne7 = bucket.d.getValues("ligne7")[0];
+      else ligne7 = "";
+      return ligne1+(ligne1.length()>0?" ":"")+
+             ligne4+(ligne4.length()>0?" ":"")+
+             code_postal+(code_postal.length()>0?" ":"")+
+             commune+(commune.length()>0?" ":"")+
+             ligne7;
   }
   
     /**
@@ -521,9 +529,6 @@ public class JDONREFv3Scorer extends Scorer {
         if (bucket.currentAnalyzedType==null)
         {
             bucket.currentAnalyzedType = term.field();
-            System.out.println("bucket.analyzedTypes==null :"+bucket.analyzedTypes==null);
-            System.out.println("termIndex==null : "+termIndex==null);
-            System.out.println("term.field()==null : "+term.field()==null);
             
             bucket.analyzedTypes[termIndex.get(term.field())] = true;
             //bucket.analyzedTypes.put(term.field(),true);
