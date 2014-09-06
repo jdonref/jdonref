@@ -169,7 +169,9 @@ public class Adresse
         adresse.add("ligne7",toLigne7().trim());
         adresse.add("type","adresse");
         if (withGeometry)
-            adresse.add("geometrie" , geometrieJSON(geometrie));   
+            adresse.add("geometrie" , geometrieJSON(geometrie));
+        adresse.add("pin" , geometrieJSON(geometrie));
+        
         //adresse.add("fullName",toString().trim());
 
 //        JsonArray coordinates = Json.createArrayBuilder()

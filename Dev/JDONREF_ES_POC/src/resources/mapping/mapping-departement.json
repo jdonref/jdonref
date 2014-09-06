@@ -12,7 +12,6 @@
                             "ligne6" : { "type" : "string", "store": true, "index": "no"},
                             "ligne7" : { "type" : "string", "store": true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es", "copy_to":"fullName"},
                             "type" : { "type" : "string", "store" : true,  "index":"not_analyzed"},
-//                            "pin" : { "properties" : { "centroide" : { "type" : "geo_point" , "fielddata" : { "format" : "compressed" , "precision" : "1cm"}, "lat_lon":true}}},
                             "pin" : { "properties" : { "centroide" : { "type" : "geo_point" , "fielddata" : { "format" : "compressed" , "precision" : "1cm"}}}},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
                             "fullName" : {"type": "string", "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"}
