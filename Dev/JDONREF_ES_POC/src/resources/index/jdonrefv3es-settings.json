@@ -49,7 +49,7 @@
                 },
                 "jdonrefv3es_nGram" : {
                     "type" : "edgeNGram",
-                    "min_gram": 5,
+                    "min_gram": 1,
                     "max_gram": 15,
                     "token_chars": ["digit"]
                 }
