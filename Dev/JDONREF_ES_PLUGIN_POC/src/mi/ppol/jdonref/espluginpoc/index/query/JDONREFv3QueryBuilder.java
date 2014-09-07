@@ -23,6 +23,8 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
     
     protected int debugDoc = -1;
     
+    protected int maxSizePerType = JDONREFv3QueryParser.DEFAULTMAXSIZE;
+    
     /**
      *  Construct a new JDONREFv3 Query.
      * 
@@ -31,6 +33,15 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
     public JDONREFv3QueryBuilder(String value)
     {
         this.value = value;
+    }
+    
+    /**
+    * Set the maximum size for each type return by the query.
+    * Default to 300.
+    */
+    public JDONREFv3QueryBuilder maxSize(int maxsize) {
+        this.maxSizePerType = maxsize;
+        return this;
     }
     
     /**
@@ -86,6 +97,7 @@ public class JDONREFv3QueryBuilder extends BaseQueryBuilder implements Boostable
         builder.startObject(JDONREFv3QueryParser.NAME);
         
         builder.field("value", value);
+        builder.field("maxSizePerType", maxSizePerType);
         builder.field("mode",mode==JDONREFv3Query.BULK?"bulk":"autocomplete");
         if (debugDoc!=-1)
         {

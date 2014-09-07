@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryParser;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -34,6 +35,8 @@ public class JDONREFv3Query extends BooleanQuery
     
     protected int debugDoc = -1;
     protected int mode = JDONREFv3Query.AUTOCOMPLETE;
+    
+    protected int maxSizePerType = JDONREFv3QueryParser.DEFAULTMAXSIZE;
 
     public int getNumTokens() {
         return numTokens;
@@ -69,6 +72,15 @@ public class JDONREFv3Query extends BooleanQuery
     public void setTermIndex(Hashtable<String, Integer> termIndex) {
         this.termIndex = termIndex;
     }
+
+    public int getMaxSizePerType() {
+        return maxSizePerType;
+    }
+
+    public void setMaxSizePerType(int maxSizePerType) {
+        this.maxSizePerType = maxSizePerType;
+    }
+    
 /**
    * Expert: the Weight for BooleanQuery, used to
    * normalize, score and explain these queries.
@@ -251,7 +263,6 @@ public class JDONREFv3Query extends BooleanQuery
 
           int maxterms = ((JDONREFv3Query)this.getQuery()).termIndex.size();
           float[] max_by_term = new float[maxterms];
-          float[] coord_by_term = new float[maxterms];
           Explanation[] noncumulExpl = new Explanation[maxterms];
 
           // Apply token frequencies and add details
@@ -498,11 +509,11 @@ public class JDONREFv3Query extends BooleanQuery
         boolean topScorer, Bits acceptDocs)
         throws IOException {
         
-      List<Scorer> optional = new ArrayList<Scorer>();
+      List<JDONREFv3TermScorer> optional = new ArrayList<JDONREFv3TermScorer>();
       Iterator<BooleanClause> cIter = clauses().iterator();
       for (Weight w  : weights) {
         BooleanClause c =  cIter.next();
-        Scorer subScorer = w.scorer(context, true, false, acceptDocs);
+        JDONREFv3TermScorer subScorer = (JDONREFv3TermScorer) w.scorer(context, true, false, acceptDocs);
         if (subScorer == null) {
           if (c.isRequired()) {
             return null;
@@ -516,8 +527,9 @@ public class JDONREFv3Query extends BooleanQuery
         }
       }
 
-      //if (!scoreDocsInOrder && topScorer && minNrShouldMatch <= 1) {
-        return new JDONREFv3Scorer(this, optional, maxCoord, context, termIndex,this.mode,this.debugDoc);
+      JDONREFv3Scorer scorer = new JDONREFv3Scorer(this, optional, maxCoord, context, termIndex,this.mode,this.debugDoc, maxSizePerType);
+      
+      return scorer;
     }
   }
     

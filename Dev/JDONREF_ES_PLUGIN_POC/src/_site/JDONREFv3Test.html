@@ -14,30 +14,37 @@
  
      Adresse à rechercher :<input id="search" type="text" autocomplete="off" size="40"/>
      
-     mode bulk:<input id="mode_bulk" type="checkbox" />
+     mode bulk:<input id="mode_bulk" type="checkbox" /><br>
+     debug:<input id="debug" type="checkbox" /><input id="debugDocId" type="text" /><br>
+     maxSizePerType:<input id="maxSizePerType" type="text" /><br>
      <!-- chemin de belvoir par défaut-->
-     actif:<input id="active" type="checkbox" />
+     actif:<input id="active" type="checkbox" /><br>
      X1:<input id="minlon" type="text" value="6.61"/>
      X2:<input id="maxlon" type="text" value="6.62"/>
      Y1:<input id="minlat" type="text" value="44.88"/>
      Y2:<input id="maxlat" type="text" value="44.89"/>
      
      <div id="speed"></div>
+     <div id="count"></div>
      <div id="results"></div>
   <script>
       var res = '';
       (function(){
           var searchElement = document.getElementById('search'),
           mode_bulk = document.getElementById('mode_bulk'),
+          maxSizePerType = document.getElementById('maxSizePerType'),
           active = document.getElementById('active'),
           speed = document.getElementById('speed'),
+          count = document.getElementById('count'),
           minlon = document.getElementById('minlon'),
           maxlon = document.getElementById('maxlon'),
           minlat = document.getElementById('minlat'),
           maxlat = document.getElementById('maxlat'),
           results = document.getElementById('results'),
+          debug = document.getElementById('debug'),
+          debugDocId = document.getElementById('debugDocId');
           selectedResult = -1,
-          previousRequest,
+          previousRequest = active.checked,
           previousactive = active.value,
           previousValue = searchElement.value,
           previousminlon = minlon.value,
@@ -45,6 +52,10 @@
           previousminlat = minlat.value,
           previousmaxlat = maxlat.value;
           
+          function isInt(n){
+                return typeof n== "number" && isFinite(n) && n%1===0;
+          }
+             
           function getResults(keywords,minlon,maxlon,minlat,maxlat)
           {
                 var xhr = new XMLHttpRequest();
@@ -61,9 +72,20 @@
                 {
                     mode = ',"mode":"bulk"';
                 }
-                var jdonrefv3es = '"jdonrefv3es":{"value":"'+keywords+'"'+mode+'}';
+                var maxSizePerTypeStr = '';
+                if (maxSizePerType.value!='')
+                    maxSizePerTypeStr = ',"maxSizePerType":'+maxSizePerType.value;
+                var debugStr = '';
+                if (debug.checked)
+                {
+                    if (isInt(debugDocId.value))
+                        debugStr = ',"debugDoc":'+debugDocId.value;
+                    else
+                        debugStr = ',"debugDoc":1';
+                }
+                var jdonrefv3es = '"jdonrefv3es":{"value":"'+keywords+'"'+mode+debugStr+maxSizePerTypeStr+'}';
                 var params = '';
-    
+      
                 if (active.checked)
                 {
                     params = '{"query":{"filtered":{"query":{'+jdonrefv3es+'},"filter":{'+geo_shape+'}}}}';
@@ -118,6 +140,7 @@
           
                 speed.innerHTML = res.took+' ms';
                 results.style.display = total>0 ? 'block' : 'none'; // On cache le conteneur si on n'a pas de résultats
+                count.innerHTML = 'Nombre de réponses :'+res.hits.total;
                 if (total>0) { // On ne modifie les résultats que si on en a obtenu
                     results.innerHTML = ''; // On vide les résultats
                     for (var i = 0, div ; i < total ; i++) {

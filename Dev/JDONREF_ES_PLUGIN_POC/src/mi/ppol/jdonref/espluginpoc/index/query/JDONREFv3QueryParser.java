@@ -2,7 +2,8 @@ package mi.ppol.jdonref.espluginpoc.index.query;
 
 import java.io.IOException;
 import java.util.Hashtable;
-import java.util.logging.Filter;
+import mi.ppol.jdonref.espluginpoc.common.lucene.search.MyLimitFilter;
+import org.apache.log4j.Logger;
 import org.apache.lucene.search.JDONREFv3Query;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CachingTokenFilter;
@@ -15,9 +16,10 @@ import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
-import org.apache.lucene.search.FilteredQuery.FilterStrategy;
 import org.apache.lucene.search.JDONREFv3TermQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
@@ -26,6 +28,7 @@ import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.index.mapper.DocumentMapper;
 import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.index.query.QueryParser;
 import org.elasticsearch.index.query.QueryParsingException;
@@ -39,6 +42,7 @@ import org.elasticsearch.index.search.MatchQuery;
 public class JDONREFv3QueryParser implements QueryParser
 {
     public static final String NAME = "jdonrefv3es";
+    public static final int DEFAULTMAXSIZE = 300;
     
     private Settings settings;
     
@@ -76,6 +80,7 @@ public class JDONREFv3QueryParser implements QueryParser
         Object value = null;
         float boost = 1.0f;
         int debugDoc = -1;
+        int maxSizePerType = DEFAULTMAXSIZE;
         int mode = JDONREFv3Query.AUTOCOMPLETE;
 
         String filterName = null;
@@ -109,6 +114,8 @@ public class JDONREFv3QueryParser implements QueryParser
                     else throw new QueryParsingException(parseContext.index(), "[jdonrefv3es] query does not support "+modeStr+" for [" + currentFieldName + "]");
                 } else if ("boost".equals(currentFieldName)) {
                     boost = parser.floatValue();
+                } else if ("maxSizePerType".equals(currentFieldName)) {
+                    maxSizePerType = parser.intValue();
                 } else if ("debugDoc".equals(currentFieldName)) {
                     debugDoc = parser.intValue();
                 } else if ("value".equals(currentFieldName)) {
@@ -128,7 +135,7 @@ public class JDONREFv3QueryParser implements QueryParser
         Query query = null;
         
         if (query == null) {
-            query = getQueryStringQuery((String)value,parseContext,mode,debugDoc);
+            query = getQueryStringQuery((String)value,parseContext,mode,debugDoc,maxSizePerType);
             query.setBoost(boost);
             
             if (filterName != null) {
@@ -152,16 +159,17 @@ public class JDONREFv3QueryParser implements QueryParser
         }
     }
     
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost, int token,int queryIndex) throws IOException
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost, int token,int queryIndex,int maxSizePerType) throws IOException
     {
         JDONREFv3TermQuery query = new JDONREFv3TermQuery(t);
         query.setToken(token);
         query.setBoost(boost);
         query.setQueryIndex(queryIndex);
+        query.setMaxSizePerType(maxSizePerType);
         booleanQuery.add(new BooleanClause(query,BooleanClause.Occur.SHOULD));
     }
     
-    private Query getQueryStringQuery(String find, QueryParseContext parseContext,int mode,int debugDoc) throws IOException
+    private Query getQueryStringQuery(String find, QueryParseContext parseContext,int mode,int debugDoc,int maxSizePerType) throws IOException
     {
         Analyzer analyser = parseContext.mapperService().analysisService().analyzer("jdonrefv3es_search");
         
@@ -170,8 +178,6 @@ public class JDONREFv3QueryParser implements QueryParser
         PositionIncrementAttribute posIncrAtt = null;
         TokenStream source = null;
         int numTokens = 0;
-        int positionCount = 0;
-        boolean severalTokensAtSamePosition = false;
         boolean hasMoreTokens = false;
     
         try
@@ -193,12 +199,6 @@ public class JDONREFv3QueryParser implements QueryParser
           hasMoreTokens = buffer.incrementToken();
           while (hasMoreTokens) {
             numTokens++;
-            int positionIncrement = (posIncrAtt != null) ? posIncrAtt.getPositionIncrement() : 1;
-            if (positionIncrement != 0) {
-              positionCount += positionIncrement;
-            } else {
-              severalTokensAtSamePosition = true;
-            }
             hasMoreTokens = buffer.incrementToken();
           }
         } catch (IOException e) {
@@ -222,44 +222,68 @@ public class JDONREFv3QueryParser implements QueryParser
         booleanQuery.setDebugDoc(debugDoc);
         booleanQuery.setNumTokens(numTokens);
         booleanQuery.setTermIndex(termIndex);
+        booleanQuery.setMaxSizePerType(maxSizePerType);
         
         BooleanFilter boolFilters = new BooleanFilter();
         
         MatchQuery mq = new MatchQuery(parseContext);
         
         // phrase query:
-        int position = -1;
         int queryIndex = 0;
         for (int i = 0; i < numTokens; i++) {
-            int positionIncrement = 1;
             try {
                 boolean hasNext = buffer.incrementToken();
                 assert hasNext == true;
                 termAtt.fillBytesRef();  // here, BytesRef is updated !
-
-                if (posIncrAtt != null) {
-                    positionIncrement = posIncrAtt.getPositionIncrement();
-                }
             } catch (IOException e) {
                 // safe to ignore, because we know the number of tokens
             }
 
-            position += positionIncrement;
-            addMatchQueryClause(booleanQuery, mq, new Term("ligne4", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-            addMatchQueryClause(booleanQuery, mq, new Term("commune", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-            addMatchQueryClause(booleanQuery, mq, new Term("codes", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-            addMatchQueryClause(booleanQuery, mq, new Term("ligne7", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-            //addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-            addMatchQueryClause(booleanQuery, mq, new Term("ligne1", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
+            if (bytes.length>0)
+            {
+                addMatchQueryClause(booleanQuery, mq, new Term("ligne4", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
+                addMatchQueryClause(booleanQuery, mq, new Term("commune", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
+                addMatchQueryClause(booleanQuery, mq, new Term("codes", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
+                addMatchQueryClause(booleanQuery, mq, new Term("ligne7", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
+                //addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
+                addMatchQueryClause(booleanQuery, mq, new Term("ligne1", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
             
-            TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
-            boolFilters.add(filter, Occur.MUST);
+                TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
+                boolFilters.add(filter, Occur.MUST);
+            }
         }
-
-        //System.out.println(booleanQuery.toString());
         
         FilteredQuery filteredQuery = new FilteredQuery(booleanQuery,boolFilters,FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
         
+        if (debugDoc>0)
+        {
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" query :"+filteredQuery.toString());   
+        }
         return filteredQuery;
+    }
+    
+    protected Query getAndTypeQuery(QueryParseContext parseContext,String type,int size)
+    {
+        Filter adresseTypeFilter = getTypeFilter(parseContext,type);
+        Filter limitFilter = new MyLimitFilter(size);
+        BooleanFilter typeAndFilter = new BooleanFilter();
+        typeAndFilter.add(adresseTypeFilter, Occur.MUST);
+        typeAndFilter.add(limitFilter, Occur.MUST);
+        
+        FilteredQuery filteredQuery = new FilteredQuery(new MatchAllDocsQuery(),typeAndFilter);
+        
+        return filteredQuery;
+    }
+    
+    protected Filter getTypeFilter(QueryParseContext parseContext,String value)
+    {
+        Filter typeFilter;
+        DocumentMapper documentMapper = parseContext.mapperService().documentMapper(value);
+        if (documentMapper == null) {
+            typeFilter = new TermFilter(new Term("type", value));
+        } else {
+            typeFilter = documentMapper.typeFilter();
+        }
+        return typeFilter;
     }
 }

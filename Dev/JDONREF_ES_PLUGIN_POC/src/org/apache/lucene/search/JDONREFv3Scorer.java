@@ -36,6 +36,7 @@ public class JDONREFv3Scorer extends Scorer {
   protected AtomicReaderContext context;
   
   protected Hashtable<String, Integer> termIndex;
+  protected int maxSizePerType;
   
   /**
    * For debug purposes only
@@ -43,6 +44,7 @@ public class JDONREFv3Scorer extends Scorer {
   protected String getFullName(Bucket bucket)
   {
       String ligne1,ligne4, ligne7, code_postal, commune;
+      
       if (bucket.d.getValues("ligne1").length>0) ligne1 = bucket.d.getValues("ligne1")[0];
       else ligne1 = "";
       if (bucket.d.getValues("ligne4").length>0) ligne4 = bucket.d.getValues("ligne4")[0];
@@ -405,16 +407,19 @@ public class JDONREFv3Scorer extends Scorer {
     
     public boolean isOfTypeAdresse(Bucket bucket)
     {
-        String[] values = bucket.d.getValues("type");
-        if (values==null || values.length==0) return false;
-        return Arrays.binarySearch(values, "adresse")>=0;
+        return getType(bucket).equals("adresse");
+    }
+    
+    public String getType(Document d)
+    {
+        String[] values = d.getValues("_type");
+        assert(values.length==1);
+        return values[0];
     }
     
     public String getType(Bucket bucket)
     {
-        String[] values = bucket.d.getValues("type");
-        assert(values.length==1);
-        return values[0];
+        return getType(bucket.d);
     }
     
     public void makeFinalScore(JDONREFv3TermScorer scorer,Bucket bucket) throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
@@ -512,7 +517,7 @@ public class JDONREFv3Scorer extends Scorer {
      */
     public void analyzeCodeBeforeAdress(Bucket bucket, Term term)
     {
-        if (bucket.currentAnalyzedType.equals("codes"))
+        if (bucket.currentAnalyzedField.equals("codes"))
         {
             if (term.field().equals("ligne4"))
                 bucket.isThereCodeBeforeAdress = true;
@@ -526,25 +531,25 @@ public class JDONREFv3Scorer extends Scorer {
      */
     public void analyzeOrder(Bucket bucket, Term term)
     {
-        if (bucket.currentAnalyzedType==null)
+        if (bucket.currentAnalyzedField==null)
         {
-            bucket.currentAnalyzedType = term.field();
+            bucket.currentAnalyzedField = term.field();
             
-            bucket.analyzedTypes[termIndex.get(term.field())] = true;
+            bucket.analyzedFields[termIndex.get(term.field())] = true;
             //bucket.analyzedTypes.put(term.field(),true);
         }
         else
         {
-            if (bucket.currentAnalyzedType.equals(term.field()))
+            if (bucket.currentAnalyzedField.equals(term.field()))
             {
                 // do nothing, right order
             }
-            else if (!bucket.analyzedTypes[termIndex.get(term.field())])
+            else if (!bucket.analyzedFields[termIndex.get(term.field())])
             //else if (bucket.analyzedTypes.get(term.field())==null)
             {
                 // new field discovered !
-                bucket.currentAnalyzedType = term.field();
-                bucket.analyzedTypes[termIndex.get(term.field())] = true;
+                bucket.currentAnalyzedField = term.field();
+                bucket.analyzedFields[termIndex.get(term.field())] = true;
                 //bucket.analyzedTypes.put(term.field(),true);
             }
             else
@@ -557,9 +562,12 @@ public class JDONREFv3Scorer extends Scorer {
     
   protected void collectBucket(Bucket bucket, JDONREFv3TermScorer scorer) throws IOException
   {
-        //if (scorer.docID() != bucket.doc) return;
-      
         boolean debug = false;
+        if (debugDoc!=-1 && debugDoc==bucket.doc)
+        {
+            debug = true;
+        }
+        
         // Additionnal collection of data for later scoring adjustment
         JDONREFv3TermQuery query = (JDONREFv3TermQuery) ((TermWeight) scorer.getWeight()).getQuery();
         Term term = query.getTerm();
@@ -569,10 +577,6 @@ public class JDONREFv3Scorer extends Scorer {
         // increment token frequencies
         bucket.requestTokenFrequencies[token]++;
 
-        if (debugDoc!=-1 && debugDoc==bucket.doc)
-        {
-            debug = true;
-        }
         if (debug) {
             Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName() + " collect score for Term :" + term + ", termQueryIndex:" + termQueryIndex + " doc :" + bucket.doc);
         //float score = scorer.score();
@@ -622,6 +626,12 @@ public class JDONREFv3Scorer extends Scorer {
         bucket.doc = doc;                         // set doc
         bucket.d = this.context.reader().document(doc);
         
+        String type = getType(bucket);
+        if (!typeReachLimit(type))
+            increaseCountByType(type);
+        else
+            return;
+        
         if (debugDoc!=-1 && debugDoc==bucket.doc)
         {
             debug = true;
@@ -635,13 +645,18 @@ public class JDONREFv3Scorer extends Scorer {
         bucket.next = table.first;                // push onto valid list
         table.first = bucket;
       } else {                                    // valid bucket
+          
+        String type = getType(bucket);
+        if (typeReachLimit(type))
+            return;
+        
         if (debugDoc!=-1 && debugDoc==bucket.doc)
         {
             debug = true;
         }
         if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" old doc :"+bucket.doc);
-          
+        
         bucket.bits |= mask;                      // add bits in mask
         //bucket.coord++;                           // increment coord ... not here because it depend on token frequency
       }
@@ -710,9 +725,9 @@ public class JDONREFv3Scorer extends Scorer {
     boolean adressNumberPresent; // présence du numéro d'adresse ...
     boolean isThereCodeBeforeAdress; // présence d'un code devant la ligne 4 de l'adresse
     
-    String currentAnalyzedType;            // current Type beeing analyzed
+    String currentAnalyzedField;            // current Type beeing analyzed
     //HashMap<String,Boolean> analyzedTypes; // all types already been analyzed in order
-    boolean[] analyzedTypes; // all types already been analyzed in order
+    boolean[] analyzedFields; // all types already been analyzed in order
     boolean wrongOrder;
     
     int[] requestTokenFrequencies; // Combien de fois chaque terme de la requête a-t-elle de correspondance ?
@@ -743,7 +758,7 @@ public class JDONREFv3Scorer extends Scorer {
         //analyzedTypes = new HashMap<String,Boolean>();
         score_by_term = new float[termIndex.size()];
         total_score_by_term = new float[termIndex.size()];
-        analyzedTypes = new boolean[termIndex.size()];
+        analyzedFields = new boolean[termIndex.size()];
         
         requestTokenFrequencies = new int[maxTokens];
         score_by_subquery = new float[maxTokens*termIndex.size()];
@@ -816,15 +831,32 @@ public class JDONREFv3Scorer extends Scorer {
   
   protected JDONREFv3ESWeight protectedWeight;
   
+  protected HashMap<String,Integer> countByType;
+  
   protected JDONREFv3TermScorer[] subScorers = null; // for nextDoc & advance mode
   protected int numScorers;
   protected int nrMatchers = -1;
   protected double score = Float.NaN;
   
+  public void increaseCountByType(String type)
+  {
+      Integer i = countByType.get(type);
+      if (i==null) i = 1;
+      else i++;
+      countByType.put(type,i);
+  }
+  
+  public boolean typeReachLimit(String type)
+  {
+      Integer i = countByType.get(type);
+      boolean reached = i!=null && i>maxSizePerType;
+      return reached;
+  }
+  
   public JDONREFv3Scorer(JDONREFv3ESWeight weight,
-      List<Scorer> optionalScorers,
+      List<JDONREFv3TermScorer> optionalScorers,
       int maxCoord, AtomicReaderContext context, Hashtable<String, Integer> termIndex,
-      int mode, int debugDoc) throws IOException {
+      int mode, int debugDoc, int maxSizePerType) throws IOException {
     super(weight);
     
     this.protectedWeight = weight;
@@ -833,6 +865,8 @@ public class JDONREFv3Scorer extends Scorer {
     this.termIndex = termIndex;
     this.mode = mode;
     this.debugDoc = debugDoc;
+    this.maxSizePerType = maxSizePerType;
+    this.countByType = new HashMap<String,Integer>();
     
     bucketTable = new BucketTable(context, weight.weights.size());
 
@@ -845,7 +879,7 @@ public class JDONREFv3Scorer extends Scorer {
        // collect mode 
        for(int i=optionalScorers.size()-1;i>=0;i--) // set scorers in order because they are reversed chained !
        {
-          JDONREFv3TermScorer scorer = (JDONREFv3TermScorer) optionalScorers.get(i);
+          JDONREFv3TermScorer scorer = optionalScorers.get(i);
           
           if (scorer.nextDoc() != NO_MORE_DOCS)
           {
@@ -855,7 +889,8 @@ public class JDONREFv3Scorer extends Scorer {
        // and set subScorers in order !
        for(int i=0;i<optionalScorers.size();i++)
        {
-           JDONREFv3TermScorer scorer = (JDONREFv3TermScorer) optionalScorers.get(i);
+           JDONREFv3TermScorer scorer = optionalScorers.get(i);
+           scorer.setParentScorer(this);
            subScorers[i] = scorer;
        }
        
@@ -1228,6 +1263,9 @@ public class JDONREFv3Scorer extends Scorer {
           Bucket b = new Bucket(this.maxCoord);
           b.doc = doc;
           b.d = this.context.reader().document(doc);
+          
+          String type = getType(b); // they have already been check by TermScorer nextDoc
+          increaseCountByType(type); // 0n Top Scorers only, this is the key
 
           if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Calcul du score pour le document "+doc+" scorer "+0);
@@ -1292,7 +1330,9 @@ public class JDONREFv3Scorer extends Scorer {
     if (debug)
         Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"subscorers size : "+subScorers.length+" first : "+(subScorers[0]==null));
     while(true) {
-      if (subScorers[0].nextDoc() != NO_MORE_DOCS) {
+      int doc = subScorers[0].nextDoc();
+      
+      if (doc != NO_MORE_DOCS) {
         if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Nouveau document :"+subScorers[0].docID());
         heapAdjust(0);
