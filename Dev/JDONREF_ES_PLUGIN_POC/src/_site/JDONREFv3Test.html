@@ -78,10 +78,7 @@
                 var debugStr = '';
                 if (debug.checked)
                 {
-                    if (isInt(debugDocId.value))
-                        debugStr = ',"debugDoc":'+debugDocId.value;
-                    else
-                        debugStr = ',"debugDoc":1';
+                    debugStr = ',"debugDoc":'+debugDocId.value;
                 }
                 var jdonrefv3es = '"jdonrefv3es":{"value":"'+keywords+'"'+mode+debugStr+maxSizePerTypeStr+'}';
                 var params = '';

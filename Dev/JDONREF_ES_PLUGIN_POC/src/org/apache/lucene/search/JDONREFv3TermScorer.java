@@ -2,6 +2,7 @@ package org.apache.lucene.search;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.search.similarities.Similarity;
@@ -132,15 +133,38 @@ public class JDONREFv3TermScorer extends Scorer {
         return adressNumberPresent;
     }
 
+  /**
+   * Expert: Collects matching documents in a range. Hook for optimization.
+   * Note, <code>firstDocID</code> is added to ensure that {@link #nextDoc()}
+   * was called before this method.
+   * 
+   * @param collector
+   *          The collector to which all matching documents are passed.
+   * @param max
+   *          Do not score documents past this.
+   * @param firstDocID
+   *          The first document ID (ensures {@link #nextDoc()} is called before
+   *          this method.
+   * @return true if more matching documents may remain.
+   */
+  public boolean score(Collector collector, int max, int firstDocID) throws IOException {
+    assert docID() == firstDocID;
+    collector.setScorer(this);
+    int doc;
+    for (doc = firstDocID; doc < max; doc = nextDoc()) {
+      if (this.parentScorer!=null && this.parentScorer.debugDoc==doc)
+          Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc :"+doc+" start collect for term "+((JDONREFv3TermQuery)getWeight().getQuery()).getTerm().field());
+        
+      collector.collect(doc);
+    }
+    return doc != NO_MORE_DOCS;
+  }
+    
     @Override
     public float score() throws IOException {
         assert docID() != NO_MORE_DOCS;
 
-        //System.out.println("Thread "+Thread.currentThread().getName()+" score docId "+docID()+" for "+((JDONREFv3TermQuery)getWeight().getQuery()).getTerm().field());
-
         float score = docScorer.score(docsEnum.docID(), docsEnum.freq());
-
-        //System.out.println("Thread "+Thread.currentThread().getName()+" end score docId "+docID()+" for "+((JDONREFv3TermQuery)getWeight().getQuery()).getTerm().field());
 
         return score;
     }
@@ -150,10 +174,16 @@ public class JDONREFv3TermScorer extends Scorer {
         
         if (doc!=NO_MORE_DOCS)
         {
+            if (target==this.parentScorer.debugDoc && doc!=target )
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" miss "+target);
             Document d = this.searcher.doc(doc);
             String type = this.parentScorer.getType(d);
             if (this.parentScorer.typeReachLimit(type))
+            {
+                if (target==this.parentScorer.debugDoc && doc!=target )
+                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" "+target+" reach "+((JDONREFv3TermQuery)weight.getQuery()).getTerm().field()+" limit");
                 return nextDoc();
+            }
         }
         
         return doc;

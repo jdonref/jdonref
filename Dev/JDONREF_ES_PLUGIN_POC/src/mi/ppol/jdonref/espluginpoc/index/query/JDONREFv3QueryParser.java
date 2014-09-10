@@ -259,6 +259,7 @@ public class JDONREFv3QueryParser implements QueryParser
         {
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" query :"+filteredQuery.toString());   
         }
+        
         return filteredQuery;
     }
     

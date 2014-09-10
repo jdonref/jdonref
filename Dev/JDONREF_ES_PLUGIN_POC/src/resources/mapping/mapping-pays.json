@@ -4,7 +4,7 @@
         "_type": {"store": true},
        "_source": {"excludes": ["geometrie"]},
        "properties" : { 
-                            "code_pays" : { "type" : "string" , "store":true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_codes_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es", "copy_to":"fullName"},
+                            "code_pays" : { "type" : "string" , "store" : true, "term_vector" : "with_positions_offsets", "index":"not_analyzed", "similarity":"jdonrefv3es", "copy_to":"fullName"},
                             "pays" : { "type" : "string" , "index": "no"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
