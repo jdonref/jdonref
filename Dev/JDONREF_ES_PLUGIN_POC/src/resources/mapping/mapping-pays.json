@@ -14,4 +14,4 @@
                             "fullName" : {"type": "string", "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv3es_index","search_analyzer":"jdonrefv3es_search", "similarity":"jdonrefv3es"}
                         }
    }
- }
+  }
