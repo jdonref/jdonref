@@ -160,6 +160,13 @@ public class JDONREFIndex
         {
             Connection connection = getConnection();
         
+            PaysIndex paysIndex = new PaysIndex();
+            paysIndex.setVerbose(isVerbose());
+            paysIndex.setConnection(connection);
+            paysIndex.setUtil(util);
+            paysIndex.setWithGeometry(withGeometry);
+            paysIndex.indexJDONREFPays();
+            
             DepartementIndex dptIndex = new DepartementIndex();
             dptIndex.setVerbose(isVerbose());
             dptIndex.setConnection(connection);
