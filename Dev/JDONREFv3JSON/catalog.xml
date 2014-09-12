@@ -12,4 +12,6 @@
     <system systemId="http://localhost:80/JDONREFv3/JDONREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/localhost_80/JDONREFv3/JDONREF.xsd_1.xsd"/>
     <system systemId="http://test-jdonrefv3.ppol.mi/JDONREFv3/JDONREF?wsdl" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/test-jdonrefv3.ppol.mi/JDONREFv3/JDONREF.wsdl"/>
     <system systemId="http://test-jdonrefv3.ppol.mi:80/JDONREFv3/JDONREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/test-jdonrefv3.ppol.mi_80/JDONREFv3/JDONREF.xsd_1.xsd"/>
+    <system systemId="http://10.213.92.191/JDONREFv3/JDONREF?wsdl" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/10.213.92.191/JDONREFv3/JDONREF.wsdl"/>
+    <system systemId="http://10.213.92.191:80/JDONREFv3/JDONREF?xsd=1" uri="src/conf/xml-resources/web-service-references/JDONREF/wsdl/10.213.92.191_80/JDONREFv3/JDONREF.xsd_1.xsd"/>
 </catalog>

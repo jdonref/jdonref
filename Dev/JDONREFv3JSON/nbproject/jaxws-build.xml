@@ -21,7 +21,7 @@
         </condition>
     </target>
     <target name="wsimport-client-JDONREF" depends="wsimport-init,wsimport-client-check-JDONREF" unless="wsimport-client-JDONREF.notRequired">
-        <wsimport xendorsed="true" fork="true" package="ppol.jdonref.json.client" verbose="true" sourcedestdir="${build.generated.dir}/wsimport/client" extension="true" destdir="${build.generated.dir}/wsimport/binaries" wsdl="${basedir}/${conf-dir}xml-resources/web-service-references/JDONREF/wsdl/test-jdonrefv3.ppol.mi/JDONREFv3/JDONREF.wsdl" wsdlLocation="http://test-jdonrefv3.ppol.mi/JDONREFv3/JDONREF?wsdl" catalog="catalog.xml">
+        <wsimport xendorsed="true" fork="true" package="ppol.jdonref.json.client" verbose="true" sourcedestdir="${build.generated.dir}/wsimport/client" extension="true" destdir="${build.generated.dir}/wsimport/binaries" wsdl="${basedir}/${conf-dir}xml-resources/web-service-references/JDONREF/wsdl/10.213.92.191/JDONREFv3/JDONREF.wsdl" wsdlLocation="http://10.213.92.191/JDONREFv3/JDONREF?wsdl" catalog="catalog.xml">
             <jvmarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
         </wsimport>
         <copy todir="${build.classes.dir}">

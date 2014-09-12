@@ -130,8 +130,8 @@ public class JDONREFIndex
 //        util.showDeleteType("commune");
 //        util.showDeleteType("troncon");
 //        util.showDeleteType("poizon");   
-
-
+        
+        
         util.showCreateIndex("./src/resources/index/jdonrefv3es-settings.json");
         util.showPutMapping("departement", "./src/resources/mapping/mapping-departement.json");
         util.showPutMapping("voie", "./src/resources/mapping/mapping-voie.json");
@@ -174,9 +174,9 @@ public class JDONREFIndex
             dptIndex.setWithGeometry(withGeometry);
             dptIndex.indexJDONREFDepartements();
             
-//            AllDepVoieAdrTron(dptIndex);
+            AllDepVoieAdrTron(dptIndex);
             
-            dptIndex.indexJDONREFDepartement("01");
+//            dptIndex.indexJDONREFDepartement("01");
 //            dptIndex.indexJDONREFDepartement("02");
 //            dptIndex.indexJDONREFDepartement("03");
 //            dptIndex.indexJDONREFDepartement("04");
@@ -195,7 +195,7 @@ public class JDONREFIndex
 //            dptIndex.indexJDONREFDepartement("17");
 //            dptIndex.indexJDONREFDepartement("18");
 //            dptIndex.indexJDONREFDepartement("19");
-            //dptIndex.indexJDONREFDepartement("20_a");
+//            dptIndex.indexJDONREFDepartement("20_a");
 //            dptIndex.indexJDONREFDepartement("20_b");
 //            dptIndex.indexJDONREFDepartement("21");
 //            dptIndex.indexJDONREFDepartement("22");
