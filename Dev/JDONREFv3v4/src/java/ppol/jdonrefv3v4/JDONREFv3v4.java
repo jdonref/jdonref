@@ -1,7 +1,7 @@
 /**
- * Version 2.1.5 – Juin 2009
+ * Version 4 – 2014
  * CeCILL Copyright © Préfecture de Police
- * Contributeurs : MIOCT/PP/DOSTL/SDSIC, MIOCT/PP/DPJ
+ * Contributeurs : MIOCT/PP/DOSTL/SDSIC
  * julien.moquet@interieur.gouv.fr
  *
  * Ce logiciel est un service web servant à valider et géocoder des adresses postales.
@@ -28,8 +28,15 @@
  */
 package ppol.jdonrefv3v4;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import java.text.ParseException;
 import ppol.jdonref.referentiel.JDONREFv3Lib;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,11 +51,17 @@ import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
+import ppol.jdonref.dao.PoizonBean;
+import ppol.jdonref.poizon.GestionPoizon;
 import ppol.jdonref.referentiel.GestionAdr;
 import ppol.jdonref.referentiel.GestionReferentiel;
+import ppol.jdonref.referentiel.GestionReferentielES;
+import ppol.jdonref.referentiel.JDONREFv3LibES;
 import ppol.jdonref.referentiel.reversegeocoding.GestionInverse;
+import ppol.jdonref.utils.DateUtils;
 import ppol.jdonref.utils.MiscUtils;
 import ppol.jdonref.wservice.IJDONREFv3;
+import ppol.jdonref.wservice.PropositionGeocodage;
 import ppol.jdonref.wservice.PropositionVersion;
 import ppol.jdonref.wservice.ResultatContacte;
 import ppol.jdonref.wservice.ResultatDecoupage;
@@ -89,7 +102,8 @@ public class JDONREFv3v4 implements IJDONREFv3 {
     private JDONREFv3Lib jdonrefv3lib;
     JDONREFParams params = null;
 
-
+    private final static DateUtils.DateFormatType sdformat = DateUtils.DateFormatType.SimpleSlashed;
+    
     /**
      * Constructeur du service web.
      */
@@ -110,15 +124,10 @@ public class JDONREFv3v4 implements IJDONREFv3 {
     // FONCTION QUI CHARGE LE FICHIER DE CONFIGURATION
     public JDONREFv3Lib chargeConf(JDONREFv3Lib lib) {
         if (lib == null) {
-            lib = JDONREFv3Lib.getInstance(getContext(context).getInitParameter("file"));
+            lib = JDONREFv3LibES.getInstance(getContext(context).getInitParameter("file"));
         }
         return lib;
     }
-    
-   
-    
-    
-    
 
     /**
      * Effectue les opérations de normalisation demandées.
@@ -317,6 +326,7 @@ public class JDONREFv3v4 implements IJDONREFv3 {
 
         // EXECUTION DU SERVICE
         final GestionAdr gestionAdr = jdonrefv3lib.getGestionAdr();
+        
         final List<String[]> result = gestionAdr.valide(application, services, operation, donnees, date, force, null);
 
         return ResultAdapter.adapteValide(result, gererPays, fantoire);
@@ -422,10 +432,96 @@ public class JDONREFv3v4 implements IJDONREFv3 {
         // EXECUTION DU SERVICE
         final GestionAdr gestionAdr = jdonrefv3lib.getGestionAdr();
         final List<String[]> result = gestionAdr.geocode(application, services, voi_id, ligne4, code_insee, pays_id, date, distance, projection);
+        ResultatGeocodage geocodageAdresse = ResultAdapter.adapteGeocode(result);
+        
+        // Prise en charge du géocodage des POIZON
+        /*Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromId(GestionReferentielES.SERVICE_POIZON).getCle();
+        
+        if (Arrays.binarySearch(services, id)>=0)
+        {
+            final Calendar calendar = GregorianCalendar.getInstance();
+            Date dateDt = calendar.getTime(); // Valeur par défaut      
 
-        return ResultAdapter.adapteGeocode(result);
+            if (!dateOption.trim().equals("")) {
+                try {
+                    dateDt = DateUtils.parseStringToDate(dateOption, sdformat);
+                } catch (ParseException pe) {
+                    params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
+                    Logger.getLogger(JDONREFv3v4.class.getName()).log(Level.SEVERE, "Le format de la date n'est pas valide.", pe);
+                    final ResultatGeocodage resultatRet = new ResultatGeocodage();
+                    resultatRet.setCodeRetour(0);
+                    final ResultatErreur erreur = new ResultatErreur();
+                    erreur.setCode(5);
+                    erreur.setMessage("Le format de la date n'est pas valide.");
+                    resultatRet.setErreurs(new ResultatErreur[]{erreur});
+
+                    return resultatRet;
+                }
+            }
+            
+            ResultatGeocodage geocodagePoizon = resultatGeocodagePoizon(application,services,donnees,ids,dateDt,projection);
+            ResultAdapter.fusion(geocodageAdresse,geocodagePoizon);
+        }*/
+        
+        return geocodageAdresse;
     }
 
+    @Deprecated
+    public ResultatGeocodage resultatGeocodagePoizon(int application, int[] services, String[] donnees, String[] ids, Date dateDt, int projection)
+    {
+        // Date
+
+        final GestionPoizon service = ((JDONREFv3LibES) jdonrefv3lib).getGestionPoizon();
+
+        List<PoizonBean> listPoizon;
+
+        try {
+            listPoizon = service.geocode(services, donnees, ids, dateDt, projection);
+            
+            return adapteGeocodePoizon(listPoizon);
+        } catch (JDONREFv3Exception jde) {
+            params.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
+            Logger.getLogger(JDONREFv3v4.class.getName()).log(Level.SEVERE, jde.getMessage(), jde);
+            final ResultatGeocodage resultatRet = new ResultatGeocodage();
+            resultatRet.setCodeRetour(0);
+            final ResultatErreur erreur = new ResultatErreur();
+            erreur.setCode(jde.getErrorcode());
+            erreur.setMessage(jde.getMessage());
+            resultatRet.setErreurs(new ResultatErreur[]{erreur});
+
+            return resultatRet;
+        }
+    }
+    
+    @Deprecated
+    public static ResultatGeocodage adapteGeocodePoizon(List<PoizonBean> beans) {
+        final ResultatGeocodage resultatRet = new ResultatGeocodage();
+        resultatRet.setCodeRetour(1);
+        final List<PropositionGeocodage> propositions = new ArrayList<PropositionGeocodage>();
+        for (PoizonBean bean : beans) {
+            final PropositionGeocodage proposition = new PropositionGeocodage();
+            proposition.setDate(DateUtils.formatDateToString(bean.getDate(), sdformat));
+            proposition.setReferentiel(bean.getReferentiel());
+            final Geometry geometrie = bean.getGeometrie();
+            final Point point = geometrie.getCentroid();
+            proposition.setX(String.valueOf(MiscUtils.truncate(point.getX(), 2)));
+            proposition.setY(String.valueOf(MiscUtils.truncate(point.getY(), 2)));
+            proposition.setProjection(bean.getProjection());
+            final int service = bean.getService();
+            proposition.setService(service);
+            if (geometrie instanceof Point) {
+                proposition.setType("1"); // POI
+            } else {
+                proposition.setType("6"); // ZON
+            }
+
+            propositions.add(proposition);
+        }
+        resultatRet.setPropositions(propositions.toArray(new PropositionGeocodage[propositions.size()]));
+
+        return resultatRet;
+    }
+    
     /**
      * Revalide une adresse validée au préalable.
      */

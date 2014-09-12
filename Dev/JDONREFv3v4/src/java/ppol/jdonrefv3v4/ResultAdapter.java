@@ -6,6 +6,7 @@ package ppol.jdonrefv3v4;
 
 import ppol.jdonref.wservice.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import ppol.jdonref.referentiel.JDONREFv3Lib;
@@ -455,6 +456,77 @@ public class ResultAdapter {
                     propositionList.add(builder.build());
                 }
 
+            } else if (etat == 8)
+            {
+                int offset = 6;
+                //ligne1
+                final String ligne1 = result.get(2);
+                //ligne2
+                final String ligne2 = result.get(3);
+                //ligne3
+                final String ligne3 = result.get(4);
+                //ligne5
+                final String ligne5 = result.get(5);
+                // Pays
+                String dligne7 = "";
+                String codeSovAc3 = "";
+                // WA 01/2012 Pays il y a une ligne 7 ds le resultatRet s'il y en avait une ds les lignes ou si operation & 256
+                if (pays) {
+                    String[] paysArray = result.get(6).split(";");
+                    if (paysArray.length == 2) {
+                        dligne7 = paysArray[0];
+                        codeSovAc3 = paysArray[1];
+                    } else {
+                        dligne7 = result.get(6);
+                    }
+                    offset++;
+
+                }
+
+                //poizon
+                for (int i = 0; i <
+                        size; i++) {
+                    final PropositionValidationBuilder builder = new PropositionValidationBuilder();
+                    builder.setCode(etat);
+                    builder.setDonnee(0, ligne1);
+                    builder.setDonnee(1, ligne2);
+                    builder.setDonnee(2, ligne3);
+                    builder.setDonnee(4, ligne5);
+                    if (pays) {
+                        builder.addDonnee(dligne7);
+                        builder.addId(codeSovAc3);
+                    }
+                    //poizon_id
+                    builder.setId(0, result.get(11 * i + offset));
+                    //ligne4
+                    builder.setDonnee(3, result.get(11 * i + offset + 1));
+                    //ligne4_desabbrevie
+                    builder.setDonneeOrigine(3, result.get(11 * i + offset + 2));
+                    //codeinsee
+                    builder.setId(5, result.get(11 * i + offset + 3));
+                    //ligne6
+                    builder.setDonnee(5, result.get(11 * i + offset + 4));
+                    //ligne6_desabbrevie
+                    builder.setDonneeOrigine(5, result.get(11 * i + offset + 5));
+                    //t0
+                    builder.setT0(result.get(11 * i + offset + 6));
+                    //t1
+                    builder.setT1(result.get(11 * i + offset + 7));
+                    //note
+                    builder.setNote(result.get(11 * i + offset + 8));
+                    //codefantoire
+                    if (fantoire) {
+                        builder.addOption("fantoire=" + result.get(11 * i + offset + 9));
+                    }
+                    // service
+                    // builder.setService(Integer.parseInt(result.get(11 * i + offset + 10)));
+                    Integer id = Integer.parseInt(result.get(11 * i + offset + 10));
+                    Integer cle = JDONREFv3Lib.getInstance().getServices().getServiceFromId(id).getCle();
+                    builder.setService(cle);
+
+                    propositionList.add(builder.build());
+
+                }
             }
 
             resultatRet.setPropositions(propositionList.toArray(new PropositionValidation[propositionList.size()]));
@@ -546,6 +618,80 @@ public class ResultAdapter {
         }
 
         return resultatRet;
+    }
+
+    public static void fusionErreur(ResultatGeocodage geocodageAdresse, ResultatGeocodage geocodagePoizon)
+    {
+        if (geocodagePoizon.getErreurs()!=null && geocodagePoizon.getErreurs().length>0)
+        {
+            ResultatErreur[] erreurs = geocodageAdresse.getErreurs();
+            if (erreurs==null || erreurs.length==0)
+            {
+                geocodageAdresse.setErreurs(geocodagePoizon.getErreurs());
+            }
+            else
+            {
+                ResultatErreur[] new_erreurs = new ResultatErreur[erreurs.length+geocodagePoizon.getErreurs().length];
+                for(int i=0;i<erreurs.length;i++)
+                    new_erreurs[i] = erreurs[i];
+                for(int i=0;i<geocodagePoizon.getErreurs().length;i++)
+                    new_erreurs[i+erreurs.length] = geocodagePoizon.getErreurs()[i];
+                geocodageAdresse.setErreurs(new_erreurs);
+            }
+            
+            geocodageAdresse.setCodeRetour(geocodagePoizon.getCodeRetour());
+        }
+    }
+    
+    public static void fusionOptions(ResultatGeocodage geocodageAdresse, ResultatGeocodage geocodagePoizon)
+    {
+        if (geocodagePoizon.getOptions()!=null && geocodagePoizon.getOptions().length>0)
+        {
+            String[] options = geocodageAdresse.getOptions();
+            if (options==null || options.length==0)
+            {
+                geocodageAdresse.setOptions(geocodagePoizon.getOptions());
+            }
+            else
+            {
+                String[] new_options = new String[options.length+geocodagePoizon.getOptions().length];
+                for(int i=0;i<options.length;i++)
+                    new_options[i] = options[i];
+                for(int i=0;i<geocodagePoizon.getOptions().length;i++)
+                    new_options[i+options.length] = geocodagePoizon.getOptions()[i];
+                geocodageAdresse.setOptions(new_options);
+            }
+        }
+    }
+    
+    public static void fusionPropositions(ResultatGeocodage geocodageAdresse, ResultatGeocodage geocodagePoizon)
+    {
+        if (geocodagePoizon.getPropositions()!=null && geocodagePoizon.getPropositions().length>0)
+        {
+            PropositionGeocodage[] propositions = geocodageAdresse.getPropositions();
+            if (propositions==null || propositions.length==0)
+            {
+                geocodageAdresse.setOptions(geocodagePoizon.getOptions());
+            }
+            else
+            {
+                PropositionGeocodage[] new_propositions = new PropositionGeocodage[propositions.length+geocodagePoizon.getPropositions().length];
+                for(int i=0;i<propositions.length;i++)
+                    new_propositions[i] = propositions[i];
+                for(int i=0;i<geocodagePoizon.getPropositions().length;i++)
+                    new_propositions[i+propositions.length] = geocodagePoizon.getPropositions()[i];
+                geocodageAdresse.setPropositions(new_propositions);
+            }
+        }
+    }
+            
+    public static void fusion(ResultatGeocodage geocodageAdresse, ResultatGeocodage geocodagePoizon)
+    {
+        fusionErreur(geocodageAdresse, geocodagePoizon);
+        
+        fusionOptions(geocodageAdresse, geocodagePoizon);
+        
+        fusionPropositions(geocodageAdresse,geocodagePoizon);
     }
 
     private static List<ResultatValidation> adapteValideResultList(List<String[]> resultList, boolean pays, boolean fantoire) {
