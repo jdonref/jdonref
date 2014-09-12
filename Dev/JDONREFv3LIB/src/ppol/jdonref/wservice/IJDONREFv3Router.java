@@ -1,18 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ppol.jdonref.wservice;
 
 import java.util.List;
 import ppol.jdonref.JDONREFv3Exception;
+import ppol.jdonref.referentiel.JDONREFv3Lib;
 
 /**
  *
- * @author marcanhe
+ * @author marcanhe, moquetju
  */
 public interface IJDONREFv3Router {
 
+    void init(JDONREFv3Lib jdonrefv3lib)
+            throws JDONREFv3Exception;
+    
     List<ServiceParameters> normalise(
             int application,
             int[] services,

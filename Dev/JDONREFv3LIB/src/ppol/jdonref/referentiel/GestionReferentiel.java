@@ -114,18 +114,16 @@ public class GestionReferentiel {
     static public final int MAJ_TABLEVOIES = 64;
     static public final int MAJ_TABLECODEPOSTAUX = 128;
     static public final int MAJ_VOIESAMBIGUES = 256;
-    private JDONREFParams jdonrefParams = null;
-    private GestionMots gestionMots = null;
-    private GestionMiseAJour gestionMiseAJour = null;
-    private GestionValidation gestionValidation = null;
+    protected JDONREFParams jdonrefParams = null;
+    protected GestionMots gestionMots = null;
+    protected GestionMiseAJour gestionMiseAJour = null;
+    protected GestionValidation gestionValidation = null;
     // Utilisé pour formatter les dates des méthodes de validation.
     // WA 09/2011 DateFormat n'est pas threadSafe : remplace par DateUtils
 //   static final DateFormat dtformat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,DateFormat.SHORT,Locale.FRANCE);
 //   static final DateFormat dformat = DateFormat.getDateInstance(DateFormat.MEDIUM,Locale.FRANCE);
 //   static final SimpleDateFormat sdformat = new SimpleDateFormat("dd/MM/yyyy",Locale.FRANCE);
-    private final static DateUtils.DateFormatType sdformat = DateUtils.DateFormatType.SimpleSlashed;
-    private Service service=new Service();
-    
+    protected final static DateUtils.DateFormatType sdformat = DateUtils.DateFormatType.SimpleSlashed;
 
     public GestionValidation getGestionValidation() {
         return gestionValidation;

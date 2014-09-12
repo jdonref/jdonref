@@ -1,11 +1,33 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Version 3 – 2014
+ * CeCILL Copyright © Préfecture de Police
+ * Contributeurs : MIOCT/PP/DOSTL/SDSIC, MIOCT/PP/DPJ
+ * julien.moquet@interieur.gouv.fr
+ *
+ * Ce logiciel est un service web servant à valider et géocoder des adresses postales.
+ * Ce logiciel est régi par la licence CeCILL soumise au droit français et respectant
+ * les principes de diffusion des logiciels libres. Vous pouvez utiliser, modifier
+ * et/ou redistribuer ce programme sous les conditions de la licence CeCILL telle que
+ * diffusée par le CEA, le CNRS et l'INRIA sur le site "http://www.cecill.info".
+ * En contrepartie de l'accessibilité au code source et des droits de copie, de
+ * modification et de redistribution accordés par cette licence, il n'est offert aux
+ * utilisateurs qu'une garantie limitée.  Pour les mêmes raisons, seule une
+ * responsabilité restreinte pèse sur l'auteur du programme, le titulaire des droits
+ * patrimoniaux et les concédants successifs.
+ * A cet égard l'attention de l'utilisateur est attirée sur les risques associés au
+ * chargement,  à l'utilisation,  à la modification et/ou au développement et à la
+ * reproduction du logiciel par l'utilisateur étant donné sa spécificité de logiciel
+ * libre, qui peut le rendre complexe à manipuler et qui le réserve donc à des
+ * développeurs et des professionnels avertis possédant  des  connaissances
+ * informatiques approfondies.  Les utilisateurs sont donc invités à charger  et tester
+ * l'adéquation  du logiciel à leurs besoins dans des conditions permettant d'assurer la
+ * sécurité de leurs systèmes et ou de leurs données et, plus généralement, à l'utiliser
+ * et l'exploiter dans les mêmes conditions de sécurité.
+ * Le fait que vous puissiez accéder à cet en-tête signifie que vous avez pris
+ * connaissance de la licence CeCILL, et que vous en avez accepté les termes.
  */
 package ppol.jdonref.referentiel;
 
-import ppol.jdonref.referentiel.*;
-import ppol.jdonref.*;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -18,13 +40,7 @@ import ppol.jdonref.JDONREFException;
 import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.JDONREFv3Exception;
 import ppol.jdonref.mots.GestionMots;
-import ppol.jdonref.referentiel.GestionCodesDepartements;
-import ppol.jdonref.referentiel.GestionDescriptionTables;
-import ppol.jdonref.referentiel.GestionMiseAJour;
-import ppol.jdonref.referentiel.GestionReferentiel;
 import ppol.jdonref.referentiel.reversegeocoding.GestionInverse;
-import ppol.jdonref.referentiel.GestionAdr;
-import ppol.jdonref.referentiel.Services;
 
 /**
  *
@@ -32,11 +48,11 @@ import ppol.jdonref.referentiel.Services;
  */
 public class JDONREFv3Lib {
 
-    private final JDONREFParams params = new JDONREFParams();
-    private GestionMail gestionMail;
-    private GestionAdr gestionAdr;
-    private static JDONREFv3Lib INSTANCE;
-    private  Services services;
+    protected final JDONREFParams params = new JDONREFParams();
+    protected GestionMail gestionMail;
+    protected GestionAdr gestionAdr;
+    protected static JDONREFv3Lib INSTANCE;
+    protected  Services services;
 
     public static JDONREFv3Lib getInstance() {
         if (INSTANCE == null) {
@@ -60,7 +76,7 @@ public class JDONREFv3Lib {
         return INSTANCE;
     }
 
-    private JDONREFv3Lib() {
+    protected JDONREFv3Lib() {
         // Initialise les paramètres
         try {
             params.load("webapps/JADRREF/META-INF/", "params.xml");
@@ -75,7 +91,7 @@ public class JDONREFv3Lib {
         }
     }
 
-    private JDONREFv3Lib(String file) {
+    protected JDONREFv3Lib(String file) {
         // Initialise les paramètres
         try {
             params.load(file);
@@ -90,7 +106,7 @@ public class JDONREFv3Lib {
         }
     }
 
-    private JDONREFv3Lib init() {
+    protected JDONREFv3Lib init() {
         Logger.getLogger(JDONREFv3Lib.class.getName()).log(Level.INFO, "Début d'initialisation de JDONREFv3Lib...");
 
         // Initialise la connection

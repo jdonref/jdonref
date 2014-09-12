@@ -7,7 +7,6 @@ package ppol.jdonref.poizon;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +29,7 @@ public class Services {
 
     private final Map<Integer, Service> serviceMap = new HashMap<Integer, Service>();
     private static Services instance;
+    private final Map<Integer, Integer> serviceByCle = new HashMap<Integer, Integer>();
     
     public static Services getInstance(String configPath) throws JDONREFv3Exception {
         if (instance == null) {
@@ -37,6 +37,50 @@ public class Services {
         }
 
         return instance;
+    }
+    
+    public int getServiceByCle(int cle)
+    {
+        return serviceByCle.get(cle);
+    }
+    
+    public int[] getServicesByCle(int[] cles)
+    {
+        int[] res = new int[cles.length];
+        for(int i=0;i<cles.length;i++)
+        {
+            res[i] = getServiceByCle(cles[i]);
+        }
+        return res;
+    }
+    
+    public HashMap<Integer,Integer> getHashMapServiceByCle(int[] services)
+    {
+        HashMap<Integer,Integer> hash = new HashMap<Integer,Integer>();
+        
+        for(int i=0;i<services.length;i++)
+        {
+            int cle = getCleByService(services[i]);
+            hash.put(cle,services[i]);
+        }
+        
+        return hash;
+    }
+    
+    public int getCleByService(int identifiant)
+    {
+        Service s = serviceMap.get(identifiant);
+        return s.getCle();
+    }
+    
+    public int[] getClesByService(int[] identifiants)
+    {
+        int[] res = new int[identifiants.length];
+        for(int i=0;i<identifiants.length;i++)
+        {
+            res[i] = getCleByService(identifiants[i]);
+        }
+        return res;
     }
 
     private Services(String configPath) throws JDONREFv3Exception {
@@ -58,12 +102,24 @@ public class Services {
             final int identifiant = Integer.parseInt(serviceElement.getChildText("identifiant"));
             final String nom = serviceElement.getChildText("nom");
             final Element parentElement = serviceElement.getChild("parent");
+            final String cle = serviceElement.getChildText("cle");
             int parent = 0;
             if (parentElement != null) {
                 parent = Integer.parseInt(parentElement.getText());
             }
             final Service service = new Service(identifiant, nom, parent);
             serviceMap.put(identifiant, service);
+            if (cle==null)
+            {
+                serviceByCle.put(identifiant,identifiant);
+                service.setCle(identifiant);
+            }
+            else
+            {
+                int cle_i = Integer.parseInt(cle);
+                serviceByCle.put(cle_i,identifiant);
+                service.setCle(cle_i);
+            }
         }
 
         buildChildren();

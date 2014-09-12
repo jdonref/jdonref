@@ -16,6 +16,7 @@ public class Service{
     private final int identifiant;
     private final String nom;
     private final int parent;
+    private int cle;
     private final List<Integer> children = new ArrayList<Integer>();
     private final List<Integer> leaves = new ArrayList<Integer>();
 
@@ -23,6 +24,16 @@ public class Service{
         this.identifiant = identifiant;
         this.nom = nom;
         this.parent = parent;
+    }
+    
+    public int getCle()
+    {
+        return cle;
+    }
+    
+    public void setCle(int cle)
+    {
+        this.cle = cle;
     }
 
     public int getIdentifiant() {

@@ -51,6 +51,7 @@ import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.Tables.GestionTables;
 import ppol.jdonref.dao.GeometryDao;
 import ppol.jdonref.dao.JDRWktGeometryBean;
+import ppol.jdonref.poizon.GestionPoizon;
 import ppol.jdonref.utils.DateUtils;
 import ppol.jdonref.utils.GeometryUtils;
 
@@ -2539,7 +2540,8 @@ public class GestionGeocodage {
                      jdonrefParams.getGestionLog().logGeocodage(application, AGestionLogs.FLAG_GEOCODE_ERREUR, false);
                     listRet.add(formateResultatGeocodage(rgPay));
                 }
-            } else {
+            }
+            else {
                 // WA 09/2011 Remplace par computeCodeDptFromCodeInseeOrCodeDpt de GestionCodesDepartements
                 //  if (code_insee.length()<2) // logguée à un niveau supérieur.
                 //   throw(new GestionReferentielException("Le code insee est invalide",GestionReferentielException.PARAMETREERRONNE,5));

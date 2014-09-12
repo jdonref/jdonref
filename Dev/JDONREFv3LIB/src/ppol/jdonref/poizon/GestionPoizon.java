@@ -1,10 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ppol.jdonref.poizon;
 
-import ppol.jdonref.*;
 import ppol.jdonref.poizon.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -12,18 +7,14 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import org.apache.log4j.Logger;
 import ppol.jdonref.Algos;
 import ppol.jdonref.GestionConnection;
 import ppol.jdonref.JDONREFParams;
-import ppol.jdonref.wservice.ResultatErreur;
 import ppol.jdonref.dao.PoizonDao;
 import ppol.jdonref.JDONREFv3Exception;
 import ppol.jdonref.mots.GestionMots;
-import ppol.jdonref.utils.DateUtils;
 import ppol.jdonref.dao.PoizonBean;
-import ppol.jdonref.wservice.PropositionDecoupage;
-import ppol.jdonref.wservice.ResultatDecoupage;
 
 /**
  *
@@ -34,21 +25,34 @@ public final class GestionPoizon {
     private final JDONREFParams params;
     private final GestionMots gestionMots;
     private final GestionConnection gestionConnection;
+    protected Services servicesTree = null;
 
     public GestionPoizon(JDONREFParams params, GestionMots gestionMots, GestionConnection gestionConnection) {
         this.params = params;
         this.gestionMots = gestionMots;
         this.gestionConnection = gestionConnection;
+        
+        try
+        {
+            this.servicesTree = Services.getInstance(params.obtientConfigPath());
+        }
+        catch(JDONREFv3Exception ex)
+        {
+            Logger.getLogger("GestionPoizon").fatal("La lecture du fichier services.xml a posé problème.",ex);
+        }
     }
 
     public List<PoizonBean> normalise(
             int[] services,
             int operation,
-            String[] donnees) {
+            String[] donnees)
+    {
         final List<PoizonBean> listRet = new ArrayList<PoizonBean>();
         final String donnee1 = normalise(operation, donnees[0]);
-        for (int service : services) {
+        for (int service : services)
+        {
             final PoizonBean poizon = new PoizonBean();
+            
             poizon.setDonnee1(donnee1);
             poizon.setDonnee2((donnees.length > 1) ? donnees[1] : "");
             poizon.setDonnee3((donnees.length > 2) ? donnees[2] : "");
@@ -70,12 +74,14 @@ public final class GestionPoizon {
             Date date,
             int projection)
             throws JDONREFv3Exception {
+        services = servicesTree.getClesByService(services);
         final List<PoizonBean> listRet = new ArrayList<PoizonBean>();
-        final Services servicesTree = Services.getInstance(params.obtientConfigPath());
         int[] servicesLeaves = servicesTree.getLeaves(services);
-        final PoizonDao dao = new PoizonDao(params, gestionConnection);
+        HashMap<Integer,Integer> serviceByCle = servicesTree.getHashMapServiceByCle(servicesLeaves);
+        final PoizonDao dao = new PoizonDao(params, gestionConnection,servicesTree);
+        dao.setServiceByCle(serviceByCle);
         listRet.addAll(dao.findGeocodageInverse(servicesLeaves, position, distance, date, projection));
-
+        
         return listRet;
     }
 
@@ -91,9 +97,11 @@ public final class GestionPoizon {
             final Calendar calendar = GregorianCalendar.getInstance();
             date = calendar.getTime();
         }
-        final Services servicesTree = Services.getInstance(params.obtientConfigPath());
+        services = servicesTree.getClesByService(services);
         int[] servicesLeaves = servicesTree.getLeaves(services);
-        final PoizonDao dao = new PoizonDao(params, gestionConnection);
+        HashMap<Integer,Integer> serviceByCle = servicesTree.getHashMapServiceByCle(servicesLeaves);
+        final PoizonDao dao = new PoizonDao(params, gestionConnection,servicesTree);
+        dao.setServiceByCle(serviceByCle);
         listRet.addAll(dao.findGeocodage(servicesLeaves, donnees, ids, date, projection));
 
         return listRet;
@@ -112,11 +120,13 @@ public final class GestionPoizon {
             final Calendar calendar = GregorianCalendar.getInstance();
             date = calendar.getTime();
         }
-        final Services servicesTree = Services.getInstance(params.obtientConfigPath());
+        services = servicesTree.getClesByService(services);
         int[] servicesLeaves = servicesTree.getLeaves(services);
+        HashMap<Integer,Integer> serviceByCle = servicesTree.getHashMapServiceByCle(servicesLeaves);
         final String donnee1 = normalise(operation, donnees[0]);
         final Ligne1 ligne1 = Ligne1.getNewInstance(donnee1, servicesTree, gestionMots);
-        final PoizonDao dao = new PoizonDao(params, gestionConnection);
+        final PoizonDao dao = new PoizonDao(params, gestionConnection,servicesTree);
+        dao.setServiceByCle(serviceByCle);
         listRet.addAll(dao.findValidation(servicesLeaves, donnees, ids, force, date, ligne1));
 
         return listRet;
@@ -129,9 +139,11 @@ public final class GestionPoizon {
             Date dateOption)
             throws JDONREFv3Exception {
         final List<PoizonBean> listRet = new ArrayList<PoizonBean>();
-        final Services servicesTree = Services.getInstance(params.obtientConfigPath());
+        services = servicesTree.getClesByService(services);
         int[] servicesLeaves = servicesTree.getLeaves(services);
-        final PoizonDao dao = new PoizonDao(params, gestionConnection);
+        HashMap<Integer,Integer> serviceByCle = servicesTree.getHashMapServiceByCle(servicesLeaves);
+        final PoizonDao dao = new PoizonDao(params, gestionConnection,servicesTree);
+        dao.setServiceByCle(serviceByCle);
         listRet.addAll(dao.findRevalidation(servicesLeaves, ids, dateParam, dateOption));
 
         return listRet;
@@ -144,7 +156,6 @@ public final class GestionPoizon {
             throws JDONREFv3Exception {
         final List<PoizonBean> listRet = new ArrayList<PoizonBean>();
         Ligne1 ligne1 = null;
-        final Services servicesTree = Services.getInstance(params.obtientConfigPath());
         ligne1 = Ligne1.getNewInstance(donnees[0], servicesTree, gestionMots);
         for (int service : services) {
             final PoizonBean poizon = new PoizonBean();

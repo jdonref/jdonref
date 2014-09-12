@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ppol.jdonref.dao;
 
 import ppol.jdonref.JDONREFv3Exception;
@@ -13,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +19,7 @@ import ppol.jdonref.JDONREFParams;
 import ppol.jdonref.RefConnection;
 import ppol.jdonref.utils.GeometryUtils;
 import ppol.jdonref.poizon.Ligne1;
+import ppol.jdonref.poizon.Services;
 import ppol.jdonref.utils.MiscUtils;
 
 /**
@@ -32,12 +30,24 @@ public class PoizonDao {
 
     private final JDONREFParams params;
     private final GestionConnection gestionConnection;
+    private final Services servicesTree;
 
-    public PoizonDao(JDONREFParams params, GestionConnection gestionConnection) {
+    protected HashMap<Integer,Integer> serviceByCle = null;
+
+    public PoizonDao(JDONREFParams params, GestionConnection gestionConnection, Services servicesTree) {
         this.params = params;
         this.gestionConnection = gestionConnection;
+        this.servicesTree = servicesTree;
+    }
+    
+    public HashMap<Integer, Integer> getServiceByCle() {
+        return serviceByCle;
     }
 
+    public void setServiceByCle(HashMap<Integer, Integer> serviceByCle) {
+        this.serviceByCle = serviceByCle;
+    }
+    
     public List<PoizonBean> findGeocodageInverse(
             int[] services,
             String[] position,
@@ -267,7 +277,7 @@ public class PoizonDao {
     private PoizonBean getBeanForValidation(ResultSet rs) throws SQLException {
         final PoizonBean beanRet = new PoizonBean();
         beanRet.setNote(rs.getInt(1));
-        beanRet.setService(rs.getInt(2));
+        beanRet.setService(this.serviceByCle.get(rs.getInt(2)));
         beanRet.setT0(new Date(rs.getTimestamp(3).getTime()));
         beanRet.setT1(new Date(rs.getTimestamp(4).getTime()));
         beanRet.setDonnee1(rs.getString(5));
@@ -297,7 +307,7 @@ public class PoizonDao {
 
     private PoizonBean getBeanForRevalidation(ResultSet rs) throws SQLException {
         final PoizonBean beanRet = new PoizonBean();
-        beanRet.setService(rs.getInt(1));
+        beanRet.setService(this.serviceByCle.get(rs.getInt(1)));
         beanRet.setT0(new Date(rs.getTimestamp(2).getTime()));
         beanRet.setT1(new Date(rs.getTimestamp(3).getTime()));
         beanRet.setDonnee1(rs.getString(4));
@@ -328,7 +338,7 @@ public class PoizonDao {
     private PoizonBean getBeanForGeocodage(ResultSet rs, int projection, Date date) throws SQLException, JDONREFv3Exception {
         final PoizonBean beanRet = new PoizonBean();
         beanRet.setProjection((projection != 0) ? String.valueOf(projection) : params.obtientProjectionPardefaut());
-        beanRet.setService(rs.getInt(2));
+        beanRet.setService(this.serviceByCle.get(rs.getInt(2)));
         beanRet.setReferentiel(rs.getString(3));
         beanRet.setDonnee1(rs.getString(4));
         beanRet.setId1(rs.getString(5));
@@ -348,7 +358,7 @@ public class PoizonDao {
     private PoizonBean getBeanForGeocodageInverse(ResultSet rs) throws SQLException, JDONREFv3Exception {
         final PoizonBean beanRet = new PoizonBean();
         beanRet.setDistance(MiscUtils.truncate(rs.getDouble(1), 2));
-        beanRet.setService(rs.getInt(2));
+        beanRet.setService(this.serviceByCle.get(rs.getInt(2)));
         beanRet.setT0(new Date(rs.getTimestamp(3).getTime()));
         beanRet.setT1(new Date(rs.getTimestamp(4).getTime()));
         beanRet.setDonnee1(rs.getString(5));

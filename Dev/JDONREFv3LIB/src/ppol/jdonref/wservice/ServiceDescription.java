@@ -1,25 +1,37 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package ppol.jdonref.wservice;
+
+import java.util.ArrayList;
 
 /**
  *
  * @author marcanhe
  */
 public class ServiceDescription {
-
-
     private final String wsdl;
     private final String uri;
     private final String service;
+    private final ArrayList<String> operations;
 
     public ServiceDescription(String wsdl, String uri, String service) {
         this.wsdl = wsdl;
         this.uri = uri;
         this.service = service;
+        this.operations = new ArrayList<String>();
+    }
+    
+    public void addOperation(String operation)
+    {
+        operations.add(operation);
+    }
+    
+    public void addAllOperation(ArrayList<String> operations)
+    {
+        this.operations.addAll(operations);
+    }
+    
+    public boolean isOperation(String operation)
+    {
+        return operations.contains(operation);
     }
 
     public String getService() {

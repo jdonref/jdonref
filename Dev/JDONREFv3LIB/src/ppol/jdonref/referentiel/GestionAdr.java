@@ -66,10 +66,10 @@ import ppol.jdonref.referentiel.reversegeocoding.GestionInverse;
  */
 public class GestionAdr {
 
-    private final GestionConnection gestionConnection;
-    private final GestionMots gestionMots;
-    private final GestionReferentiel gestionReferentiel;
-    private final GestionInverse gestionInverse;
+    protected final GestionConnection gestionConnection;
+    protected final GestionMots gestionMots;
+    protected final GestionReferentiel gestionReferentiel;
+    protected final GestionInverse gestionInverse;
     protected JDONREFParams params;
     
 
