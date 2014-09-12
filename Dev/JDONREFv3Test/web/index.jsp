@@ -88,6 +88,9 @@ public void jspInit()
         function parseDate(strdate)
         {
             var reg = new RegExp("/","g");
+            
+            strdate = strdate.replace("-","/").substr(0,10);
+            
             var data = strdate.split(reg);
             var date = new Date();
             date.setYear(eval(data[2])); // Dans l'ordre Year, Month, Date pour la correction du 31 en fin de mois.
@@ -101,6 +104,9 @@ public void jspInit()
         {
             var reg = new RegExp("/","g");
             
+            t0 = t0.replace("-","/").substr(0,10);
+            t1 = t1.replace("-","/").substr(0,10);
+        
             var data0 = t0.split(reg);
             var date0 = new Date();
             date0.setYear(eval(data0[2])); // Dans l'ordre Year, Month, Date pour la correction du 31 en fin de mois.
@@ -459,6 +465,8 @@ public void jspInit()
                                     {
                                     balise += "<tr><td>";
                                     balise += "</td><td>";
+                                    balise += data.propositions[i].donnees[0];
+                                    balise += "</td><td>";
                                     balise += data.propositions[i].donnees[3];
                                     balise += "</td><td>";
                                     balise += data.propositions[i].donnees[5];
@@ -512,29 +520,30 @@ public void jspInit()
                                     balise += "<button onclick=\"revalidation(" + i + ");\">Revalider</button>";
                                     balise += "<button onclick=\"choisi("+i+");\">Choisir</button>";
                                     balise += "</td></tr>";
-                                    }else if (data.propositions[i].code==100){
-                                    balise += "<tr><td>";
-                                    balise += data.propositions[i].donnees[0];
-                                    balise += "</td><td>";
-                                    balise += data.propositions[i].donnees[3];
-                                    balise += "</td><td>";
-                                    balise += data.propositions[i].donnees[5];
-                                    balise += "</td><td>";
-                                    if(data.propositions[i].donnees.length > 6 && data.propositions[i].donnees[6] != null )
+                                    }else if (data.propositions[i].code==100 || data.propositions[i].code==8)
                                     {
-                                        balise += data.propositions[i].donnees[6];
-                                    }
-                                    balise += "</td><td>";
-                                    balise += strestcourant;
-                                    balise += "</td><td>"
-                                    balise += "note :"+ data.propositions[i].note;
-                                    balise += "</td><td>";
-                                    balise += "service :"+ data.propositions[i].service;
-                                    balise += "</td><td>";
-                                    balise += "<button onclick=\"changePoizon(" + i + ");\">Geocoder</button>";
-                                    balise += "<button onclick=\"revalidation(" + i + ");\">Revalider</button>";
-                                    balise += "<button onclick=\"choisi("+i+");\">Choisir</button>";
-                                    balise += "</td></tr>";
+                                        balise += "<tr><td>";
+                                        balise += data.propositions[i].donnees[0];
+                                        balise += "</td><td>";
+                                        balise += data.propositions[i].donnees[3];
+                                        balise += "</td><td>";
+                                        balise += data.propositions[i].donnees[5];
+                                        balise += "</td><td>";
+                                        if(data.propositions[i].donnees.length > 6 && data.propositions[i].donnees[6] != null )
+                                        {
+                                            balise += data.propositions[i].donnees[6];
+                                        }
+                                        balise += "</td><td>";
+                                        balise += strestcourant;
+                                        balise += "</td><td>"
+                                        balise += "note :"+ data.propositions[i].note;
+                                        balise += "</td><td>";
+                                        balise += "service :"+ data.propositions[i].service;
+                                        balise += "</td><td>";
+                                        balise += "<button onclick=\"changePoizon(" + i + ");\">Geocoder</button>";
+                                        balise += "<button onclick=\"revalidation(" + i + ");\">Revalider</button>";
+                                        balise += "<button onclick=\"choisi("+i+");\">Choisir</button>";
+                                        balise += "</td></tr>";
                                     }
                             }
                             balise += "</table>";
@@ -545,7 +554,7 @@ public void jspInit()
                             currentindex = 0;
                             if(data.propositions[0].code > 0 && data.propositions[0].code < 7){
                                 change(0);
-                            }else if(data.propositions[0].code == 100){
+                            }else if(data.propositions[0].code == 100 || data.propositions[0].code == 8){
                                 changePoizon(0);
                             }
                           }
@@ -1355,7 +1364,7 @@ public void jspInit()
                 case 19: texte = "sans articles: Supprime les articles trouvés dans l'adresse"; break;
                 case 20: texte = "Ligne 7 : Pays"; break;
                 case 21: texte = "Code de la projection"; break;
-                case 22: texte = "Service"; break;
+                case 22: texte = "Choix du service concerné"; break;
                 case 23: texte = "Valide POIZON : Obtiens une liste bouchon de POI/ZONE."; break;
                 case 24: texte = "Opération"; break;
                 case 25: texte = "Distance du décalage gauche/droite lors du géocodage"; break;
@@ -1490,6 +1499,7 @@ public void jspInit()
                             <option value="10005">ES_commune</option>
                             <option value="10006">ES_departement</option>
                             <option value="10007">ES_pays</option>
+                            <option value="10008">ES_POIZON</option>
                             <option value="100">POIZON</option>
                             <option value="101">POI</option>
                             <option value="102">ZON</option>
