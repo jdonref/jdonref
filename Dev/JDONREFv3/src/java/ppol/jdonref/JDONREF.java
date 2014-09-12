@@ -87,7 +87,7 @@ public class JDONREF implements IJDONREFv3 {
     @Resource
     private WebServiceContext context;
     private static ServletContext servletContext;
-    private JDONREFv3Lib jdonrefv3lib;
+    private ppol.jdonref.referentiel.JDONREFv3Lib jdonrefv3lib;
 
     /**
      * Constructeur du service web.
@@ -104,7 +104,7 @@ public class JDONREF implements IJDONREFv3 {
     }
 
     // FONCTION QUI CHARGE LE FICHIER DE CONFIGURATION
-    public JDONREFv3Lib chargeConf(JDONREFv3Lib lib) {
+    public ppol.jdonref.referentiel.JDONREFv3Lib chargeConf(ppol.jdonref.referentiel.JDONREFv3Lib lib) {
         if (lib == null) {
             lib = JDONREFv3Lib.getInstance(getContext(context).getInitParameter("file"));
         }

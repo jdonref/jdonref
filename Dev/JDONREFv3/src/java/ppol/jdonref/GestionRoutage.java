@@ -40,14 +40,14 @@ public class GestionRoutage implements IJDONREFv3Router {
     private final Map<Integer, ServiceDescription> serviceMap = new HashMap<Integer, ServiceDescription>();
     private final Map<Integer, ServiceDescription> serviceParentMap = new HashMap<Integer, ServiceDescription>();
     private final Map<String, Integer> categorieMap = new HashMap<String, Integer>();
-    private JDONREFv3Lib jdonrefv3lib;
+    private ppol.jdonref.referentiel.JDONREFv3Lib jdonrefv3lib;
 
     // Instantiation par reflection
     public GestionRoutage() throws JDONREFv3Exception {
         
     }
     
-    public void init(JDONREFv3Lib jdonrefv3lib)throws JDONREFv3Exception{
+    public void init(ppol.jdonref.referentiel.JDONREFv3Lib jdonrefv3lib)throws JDONREFv3Exception{
         this.jdonrefv3lib = jdonrefv3lib;
         loadServices();
     }
@@ -305,9 +305,9 @@ public class GestionRoutage implements IJDONREFv3Router {
 
         // TRAITEMENT GENERIQUE
        // final Mot mot = jdonrefv3lib.getGestionMots().chercheMotPourRoutage(ligne);
-        final Mot mot = JDONREFv3Lib.getInstance().getGestionMots().chercheMotPourRoutage(ligne);
+        final Mot mot = ((JDONREFv3Lib)JDONREFv3Lib.getInstance()).getGestionMots().chercheMotPourRoutage(ligne);
         //final Abbreviation abb = jdonrefv3lib.getGestionMots().chercheAbbreviationPourRoutage(ligne);
-        final Abbreviation abb = JDONREFv3Lib.getInstance().getGestionMots().chercheAbbreviationPourRoutage(ligne);
+        final Abbreviation abb = ((JDONREFv3Lib)JDONREFv3Lib.getInstance()).getGestionMots().chercheAbbreviationPourRoutage(ligne);
         List<CategorieMot> categorieList = new ArrayList<CategorieMot>();
         Mot motAbb = null;
         if (abb != null) {
@@ -349,8 +349,8 @@ public class GestionRoutage implements IJDONREFv3Router {
             case 3:
                 break;
             case 4:
-                final ArrayList<RefNumero> numeros = jdonrefv3lib.getGestionMots().trouveNumeros(ligne);
-                final RefCle typedevoie = jdonrefv3lib.getGestionMots().trouveTypeVoie(ligne, numeros);
+                final ArrayList<RefNumero> numeros = ((JDONREFv3Lib)jdonrefv3lib).getGestionMots().trouveNumeros(ligne);
+                final RefCle typedevoie = ((JDONREFv3Lib)jdonrefv3lib).getGestionMots().trouveTypeVoie(ligne, numeros);
                 if (typedevoie != null) {
                     categorieList.add(CategorieMot.TypeDeVoie);
                 }

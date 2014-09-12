@@ -12,9 +12,18 @@
         <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
         </servlet>
+    <servlet>
+        <servlet-name>ServletAdaptor</servlet-name>
+        <servlet-class>com.sun.ws.rest.impl.container.servlet.ServletAdaptor</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
     <servlet-mapping>
         <servlet-name>JDONREF</servlet-name>
         <url-pattern>/JDONREF</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ServletAdaptor</servlet-name>
+        <url-pattern>/resources/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

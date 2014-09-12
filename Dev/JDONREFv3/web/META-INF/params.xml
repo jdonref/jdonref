@@ -59,7 +59,7 @@
 <gestiondepartements>true</gestiondepartements>
 <gestionpays>true</gestionpays>
 
-<routerclassname>ppol.jdonref.GestionRoutage</routerclassname>
+<routerclassname>ppol.jdonref.GestionRoutageES</routerclassname>
 
 <notepourcle>28</notepourcle>
 <notepourpoizon>50</notepourpoizon>

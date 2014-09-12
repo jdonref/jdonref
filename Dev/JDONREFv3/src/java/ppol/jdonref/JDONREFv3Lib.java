@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ppol.jdonref;
 
 
@@ -19,19 +15,14 @@ import ppol.jdonref.referentiel.GestionReferentiel;
  *
  * @author marcanhe
  */
-public class JDONREFv3Lib {
+public class JDONREFv3Lib extends ppol.jdonref.referentiel.JDONREFv3Lib {
 
-    /**
-     * Les paramètres des gestionnaires.
-     */
-    private final JDONREFParams params = new JDONREFParams();
     /**
      * Le gestionnaire de mots.
      */
     private final GestionMots gestionMots = new GestionMots();
-    private static JDONREFv3Lib INSTANCE;
 
-    public static JDONREFv3Lib getInstance() {
+    public static ppol.jdonref.referentiel.JDONREFv3Lib getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new JDONREFv3Lib().init();
         }
@@ -39,7 +30,7 @@ public class JDONREFv3Lib {
         return INSTANCE;
     }
 
-    public static JDONREFv3Lib getInstance(String file) {
+    public static ppol.jdonref.referentiel.JDONREFv3Lib getInstance(String file) {
         if (INSTANCE == null) {
             INSTANCE = new JDONREFv3Lib(file).init();
         }
@@ -77,7 +68,7 @@ public class JDONREFv3Lib {
         }
     }
 
-    private JDONREFv3Lib init() {
+    protected ppol.jdonref.referentiel.JDONREFv3Lib init() {
         Logger.getLogger(JDONREFv3Lib.class.getName()).log(Level.INFO, "Début d'initialisation de JDONREFv3Lib...");
 
         try {

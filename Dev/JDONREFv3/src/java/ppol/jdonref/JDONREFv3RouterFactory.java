@@ -17,10 +17,10 @@ public class JDONREFv3RouterFactory {
 
     private static IJDONREFv3Router instance;
 
-    public static IJDONREFv3Router getInstance(JDONREFv3Lib jodnrefv3lib) throws JDONREFv3Exception {
+    public static IJDONREFv3Router getInstance(ppol.jdonref.referentiel.JDONREFv3Lib jdonrefv3lib) throws JDONREFv3Exception {
         if (instance == null) {
             try {
-                instance = (IJDONREFv3Router) Class.forName(jodnrefv3lib.getParams().obtientRouterClassName()).newInstance();
+                instance = (IJDONREFv3Router) Class.forName(jdonrefv3lib.getParams().obtientRouterClassName()).newInstance();
             } catch (ClassNotFoundException cnfe) {
                 Logger.getLogger(JDONREFv3RouterFactory.class.getName()).log(Level.SEVERE, "Problème lors de l'instantiation du routeur JDONREVv3.", cnfe);
                 throw new JDONREFv3Exception(1, "Erreur lors de la configuration du service de routage");
@@ -31,9 +31,7 @@ public class JDONREFv3RouterFactory {
                 Logger.getLogger(JDONREFv3RouterFactory.class.getName()).log(Level.SEVERE, "Problème lors de l'instantiation du routeur JDONREVv3.", iae);
                 throw new JDONREFv3Exception(1, "Erreur lors de la configuration du service de routage");
             }
-            if (instance instanceof GestionRoutage) {
-                ((GestionRoutage) instance).init(jodnrefv3lib);
-            }
+            instance.init(jdonrefv3lib);
         }
         
         return instance;

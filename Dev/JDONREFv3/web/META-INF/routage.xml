@@ -94,6 +94,15 @@
                 <parent>1</parent>
                 <ligne>7</ligne>
             </cle>
+            <cle>
+                <identifiant>10008</identifiant>
+                <nom>POIZON</nom>
+                <parent>1</parent>
+                <ligne>1</ligne>
+                <operations>
+                    <operation>valide</operation>
+                </operations>
+            </cle>
             <webservice>
                 <wsdl>http://localhost:80/JDONREFv3v4/JDONREFv3v4?wsdl</wsdl>
                 <service>JDONREFService</service>
@@ -208,6 +217,21 @@
                 <parent>2000</parent>
                 <nom>BSPP AUTRE ETBS</nom>
                 <ligne>1</ligne>
+            </cle>
+            <cle>
+                <identifiant>10008</identifiant>
+                <nom>POIZON</nom>
+                <parent>1</parent>
+                <ligne>1</ligne>
+                <operations>
+                    <operation>contacte</operation>
+                    <operation>decoupe</operation>
+                    <operation>normalise</operation>
+                    <operation>revalide</operation>
+                    <operation>inverse</operation>
+                    <operation>geocode</operation>
+                    <operation>getVersion</operation>
+                </operations>
             </cle>
             <webservice>
                 <wsdl>http://localhost:80/JPOIZONREF/JPOIZONREF?wsdl</wsdl>
