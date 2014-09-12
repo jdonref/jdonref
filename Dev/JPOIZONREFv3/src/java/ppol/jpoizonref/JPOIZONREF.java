@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ppol.jpoizonref;
 
 import java.text.ParseException;
@@ -53,7 +49,7 @@ public class JPOIZONREF implements IJDONREFv3 {
     @Resource
     private WebServiceContext context;
     private static ServletContext servletContext;
-    private JDONREFv3Lib jdonrefv3lib;
+    private ppol.jdonref.referentiel.JDONREFv3Lib jdonrefv3lib;
     private final static DateUtils.DateFormatType sdformat = DateUtils.DateFormatType.SimpleSlashed;
     JDONREFParams params=null ;
 
@@ -69,7 +65,7 @@ public class JPOIZONREF implements IJDONREFv3 {
     }
 
     // FONCTION QUI CHARGE LE FICHIER DE CONFIGURATION
-    public JDONREFv3Lib chargeConf(JDONREFv3Lib lib) {
+    public ppol.jdonref.referentiel.JDONREFv3Lib chargeConf(ppol.jdonref.referentiel.JDONREFv3Lib lib) {
         if (lib == null) {
             lib = JDONREFv3Lib.getInstance(getContext(context).getInitParameter("file"));
         }
@@ -123,7 +119,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         }
 
         // EXECUTION DU SERVICE
-        final GestionPoizon service = jdonrefv3lib.getGestionPoizon();
+        final GestionPoizon service = ((JDONREFv3Lib)jdonrefv3lib).getGestionPoizon();
         final ResultatNormalisation resultatRet = ResultAdapter.adapteNormalise(service.normalise(services, operation, donnees));
         params.getGestionLog().logNormalisation(application, operation, true);
 
@@ -234,7 +230,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         }
 
         // EXECUTION DU SERVICE
-        final GestionPoizon service = jdonrefv3lib.getGestionPoizon();
+        final GestionPoizon service = ((JDONREFv3Lib)jdonrefv3lib).getGestionPoizon();
         final List<PoizonBean> list = new ArrayList<PoizonBean>();
         try {
             list.addAll(service.valide(services, operation, donnees, ids, force, date));
@@ -352,7 +348,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         }
 
         // EXECUTION DU SERVICE
-        final GestionPoizon service = jdonrefv3lib.getGestionPoizon();
+        final GestionPoizon service = ((JDONREFv3Lib)jdonrefv3lib).getGestionPoizon();
         final List<PoizonBean> list = new ArrayList<PoizonBean>();
         try {
             list.addAll(service.geocode(services, donnees, ids, date, projection));
@@ -465,7 +461,7 @@ public class JPOIZONREF implements IJDONREFv3 {
 
 
         // EXECUTION DU SERVICE
-        final GestionPoizon service = jdonrefv3lib.getGestionPoizon();
+        final GestionPoizon service = ((JDONREFv3Lib)jdonrefv3lib).getGestionPoizon();
         final List<PoizonBean> list = new ArrayList<PoizonBean>();
         try {
             list.addAll(service.revalide(services, ids, dateParam, dateOptionnelle));
@@ -565,7 +561,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         }
 
         // EXECUTION DU SERVICE
-        final GestionPoizon service = jdonrefv3lib.getGestionPoizon();
+        final GestionPoizon service = ((JDONREFv3Lib)jdonrefv3lib).getGestionPoizon();
         final List<PoizonBean> list = new ArrayList<PoizonBean>();
         try {
             list.addAll(service.geocodeInverse(services, position, distance, date, projection));
@@ -638,7 +634,7 @@ public class JPOIZONREF implements IJDONREFv3 {
         }
 
         // EXECUTION DU SERVICE
-        final GestionPoizon service = jdonrefv3lib.getGestionPoizon();
+        final GestionPoizon service = ((JDONREFv3Lib)jdonrefv3lib).getGestionPoizon();
         final List<PoizonBean> list = new ArrayList<PoizonBean>();
         try {
             list.addAll(service.decoupe(services, operations, donnees));

@@ -25,23 +25,14 @@ import ppol.jdonref.referentiel.GestionReferentiel;
  *
  * @author marcanhe
  */
-public class JDONREFv3Lib {
+public class JDONREFv3Lib extends ppol.jdonref.referentiel.JDONREFv3Lib {
 
-    /**
-     * Les paramètres des gestionnaires.
-     */
-    private final JDONREFParams params = new JDONREFParams();
     /**
      * Le gestionnaire Poizon.
      */
     private GestionPoizon gestionPoizon;
-    /**
-     * Le gestionnaire de l'envoi de mails.
-     */
-    private GestionMail gestionMail;
-    private static JDONREFv3Lib INSTANCE;
 
-    public static JDONREFv3Lib getInstance() {
+    public static ppol.jdonref.referentiel.JDONREFv3Lib getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new JDONREFv3Lib().init();
         }
@@ -49,7 +40,7 @@ public class JDONREFv3Lib {
         return INSTANCE;
     }
 
-    public static JDONREFv3Lib getInstance(String file) {
+    public static ppol.jdonref.referentiel.JDONREFv3Lib getInstance(String file) {
         if (INSTANCE == null) {
             INSTANCE = new JDONREFv3Lib(file).init();
         }
@@ -87,7 +78,7 @@ public class JDONREFv3Lib {
         }
     }
 
-    private JDONREFv3Lib init() {
+    protected ppol.jdonref.referentiel.JDONREFv3Lib init() {
         Logger.getLogger(JDONREFv3Lib.class.getName()).log(Level.INFO, "Début d'initialisation de JDONREFv3Lib...");
 
         // Initialise la connection
@@ -140,7 +131,7 @@ public class JDONREFv3Lib {
             Logger.getLogger(JDONREFv3Lib.class.getName()).log(Level.SEVERE, "Problème non répertorié lié à la lecture du fichier mail.xml", ex);
             gestionMail = null;
         }
-
+        
         try {
             // Initialise les mots.
             final GestionMots gestionMots = new GestionMots();

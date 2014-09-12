@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <services>
     <service>
+        <identifiant>10008</identifiant>
+        <nom>POIZON</nom>
+        <cle>100</cle>
+    </service>
+    <service>
         <identifiant>100</identifiant>
         <nom>POIZON</nom>
     </service>
