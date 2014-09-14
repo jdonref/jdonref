@@ -1150,13 +1150,12 @@ public class JDONREFv3Scorer extends Scorer {
   {
       return ((JDONREFv3Query)this.getWeight().getQuery()).getNumTokens();
   }
-  
-  // firstDocID is ignored since nextDoc() initializes 'current'
+
+  // TODO : make a bulkscorer out of this
+  /*
   @Override
-  public boolean score(Collector collector, int max, int firstDocID) throws IOException
+  public boolean score(Collector collector, int max) throws IOException
   {
-    // Make sure it's only BooleanScorer that calls us:
-    assert firstDocID == -1;
     boolean more;
     Bucket tmp;
     BucketScorer bs = new BucketScorer(protectedWeight);
@@ -1255,7 +1254,7 @@ public class JDONREFv3Scorer extends Scorer {
     //long end = java.util.Calendar.getInstance().getTimeInMillis();
     //Logger.getLogger(this.getClass().toString()).debug("Collect took "+(end-start)+" ms");
     return false;
-  }
+  }*/
   
   @Override
   public int advance(int target) throws IOException {
@@ -1422,11 +1421,6 @@ public class JDONREFv3Scorer extends Scorer {
       sum += subScorers[i].cost();
     }
     return sum;
-  }
-
-  @Override
-  public void score(Collector collector) throws IOException {
-    score(collector, Integer.MAX_VALUE, -1);
   }
   
   @Override

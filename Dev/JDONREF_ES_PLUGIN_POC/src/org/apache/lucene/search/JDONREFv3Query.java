@@ -118,7 +118,7 @@ public class JDONREFv3Query extends BooleanQuery
       {
         Weight w = wIter.next();
         
-        JDONREFv3TermScorer subscorer = (JDONREFv3TermScorer) w.scorer(context, true, true, context.reader().getLiveDocs());
+        JDONREFv3TermScorer subscorer = (JDONREFv3TermScorer) w.scorer(context, context.reader().getLiveDocs());
         if (subscorer == null) continue;
         
         if (w.explain(context,doc).isMatch())
@@ -130,7 +130,7 @@ public class JDONREFv3Query extends BooleanQuery
 
     public Explanation explainScore(AtomicReaderContext context,TermWeight weight, int doc) throws IOException
     {
-        JDONREFv3TermScorer scorer = (JDONREFv3TermScorer) weight.scorer(context, true, false, context.reader().getLiveDocs());
+        JDONREFv3TermScorer scorer = (JDONREFv3TermScorer) weight.scorer(context, context.reader().getLiveDocs());
         
         if (scorer!=null)
         {
@@ -239,7 +239,7 @@ public class JDONREFv3Query extends BooleanQuery
           for (Iterator<Weight> wIter = weights.iterator(); wIter.hasNext();) {
               Weight w = wIter.next();
               BooleanClause c = cIter.next();
-              if (w.scorer(context, true, true, context.reader().getLiveDocs()) == null) {
+              if (w.scorer(context,context.reader().getLiveDocs()) == null) {
                   continue;
               }
               Explanation e = explainScore(context, (TermWeight) w, doc);
@@ -361,7 +361,7 @@ public class JDONREFv3Query extends BooleanQuery
           for (Iterator<Weight> wIter = weights.iterator(); wIter.hasNext();) {
               Weight w = wIter.next();
               BooleanClause c = cIter.next();
-              if (w.scorer(context, true, true, context.reader().getLiveDocs()) == null) {
+              if (w.scorer(context, context.reader().getLiveDocs()) == null) {
                   continue;
               }
               Explanation e = explainScore(context, (TermWeight) w, doc);
@@ -425,7 +425,7 @@ public class JDONREFv3Query extends BooleanQuery
       if (debug)
       Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+doc+" value "+value);
       
-      JDONREFv3Scorer scorer = (JDONREFv3Scorer) scorer(context, false, true, context.reader().getLiveDocs());
+      JDONREFv3Scorer scorer = (JDONREFv3Scorer) scorer(context, context.reader().getLiveDocs());
       ArrayList<JDONREFv3TermScorer> subscorers = getSubScorers(context,doc);
       
       // Malus
@@ -505,15 +505,14 @@ public class JDONREFv3Query extends BooleanQuery
     }
     
     @Override
-    public Scorer scorer(AtomicReaderContext context, boolean scoreDocsInOrder,
-        boolean topScorer, Bits acceptDocs)
+    public Scorer scorer(AtomicReaderContext context, Bits acceptDocs)
         throws IOException {
         
       List<JDONREFv3TermScorer> optional = new ArrayList<JDONREFv3TermScorer>();
       Iterator<BooleanClause> cIter = clauses().iterator();
       for (Weight w  : weights) {
         BooleanClause c =  cIter.next();
-        JDONREFv3TermScorer subScorer = (JDONREFv3TermScorer) w.scorer(context, true, false, acceptDocs);
+        JDONREFv3TermScorer subScorer = (JDONREFv3TermScorer) w.scorer(context, acceptDocs);
         if (subScorer == null) {
           if (c.isRequired()) {
             return null;
