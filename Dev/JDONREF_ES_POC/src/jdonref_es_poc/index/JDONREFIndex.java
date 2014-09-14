@@ -4,7 +4,9 @@ import com.sun.jersey.api.client.Client;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import jdonref_es_poc.entity.Commune;
 import jdonref_es_poc.entity.Departement;
 import jdonref_es_poc.entity.Voie;
@@ -19,7 +21,21 @@ public class JDONREFIndex
     boolean withGeometry = true;
     ElasticSearchUtil util;
     String index = "jdonref";
+    //ArrayList<String> departements;
+    
+    HashSet<FLAGS> flags = new HashSet<FLAGS>();
 
+    public static enum FLAGS
+    {
+        PAYS,
+        DEPARTEMENT,
+        COMMUNE,
+        VOIE,
+        TRONCON,
+        ADRESSE,
+        POIZON
+    };
+    
     public boolean isWithGeometry() {
         return withGeometry;
     }
@@ -28,7 +44,20 @@ public class JDONREFIndex
         this.withGeometry = withGeometry;
     }
 
+    public void addFlag(FLAGS flag)
+    {
+        flags.add(flag);
+    }
     
+    public void removeFlag(FLAGS flag)
+    {
+        flags.remove(flag);
+    }
+    
+    public boolean isFlag(FLAGS flag)
+    {
+        return flags.contains(flag);
+    }
     
     public String getIndex() {
         return index;
@@ -79,6 +108,43 @@ public class JDONREFIndex
         util.setClient(client);
         util.setUrl(url);
         util.setIndex(index);
+        
+        setDefaultFlags();
+        setDefaultCodeDepartements();
+    }
+    
+    public void setDefaultFlags()
+    {
+        flags.add(FLAGS.PAYS);
+        flags.add(FLAGS.DEPARTEMENT);
+        flags.add(FLAGS.COMMUNE);
+        flags.add(FLAGS.VOIE);
+        flags.add(FLAGS.ADRESSE);
+        flags.add(FLAGS.POIZON);
+    }
+    
+    String[] codesDepartements = null;
+
+    public void setCodesDepartements(String[] codesDepartements) {
+        this.codesDepartements = codesDepartements;
+    }
+    
+    public void setDefaultCodeDepartements()
+    {
+        codesDepartements = new String[100];
+        int index = 0;
+        for(int i=95;i>0;i--){
+            if(i == 20){
+                codesDepartements[index++] = "20_a";
+                codesDepartements[index++] = "20_b";
+            }
+            else{
+                if(i<10) codesDepartements[index++] = "0"+i;
+                else codesDepartements[index++] = ""+i;
+            }
+        }
+        for(int j=1;j<=4;j++)
+            codesDepartements[index++] = 97+""+j;
     }
     
     Departement[] departements = null;
@@ -120,8 +186,6 @@ public class JDONREFIndex
         long start = Calendar.getInstance().getTimeInMillis();
         
         util.showDeleteIndex();
-//        util.deleteIndex();        
-        
         
 //        util.showDeleteType("departement");
 //        util.showDeleteType("voie");
@@ -130,8 +194,7 @@ public class JDONREFIndex
 //        util.showDeleteType("commune");
 //        util.showDeleteType("troncon");
 //        util.showDeleteType("poizon");   
-        
-        
+
         util.showCreateIndex("./src/resources/index/jdonrefv3es-settings.json");
         util.showPutMapping("departement", "./src/resources/mapping/mapping-departement.json");
         util.showPutMapping("voie", "./src/resources/mapping/mapping-voie.json");
@@ -143,81 +206,66 @@ public class JDONREFIndex
         
         if (bouchon)
         {
-            DepartementIndex dptIndex = new DepartementIndex();
-            dptIndex.setVerbose(isVerbose());
-            dptIndex.setConnection(connection);
-            dptIndex.setUtil(util);
-            dptIndex.indexJDONREFDepartements(getDepartements());
-            dptIndex.indexJDONREFDepartement(getVoies(), "75");
+            if (isFlag(FLAGS.DEPARTEMENT))
+            {
+                DepartementIndex dptIndex = new DepartementIndex();
+                dptIndex.setVerbose(isVerbose());
+                dptIndex.setConnection(connection);
+                dptIndex.setUtil(util);
+                dptIndex.indexJDONREFDepartements(getDepartements());
+                dptIndex.indexJDONREFDepartement(getVoies(), "75");
+            }
         
-            CommuneIndex cIndex = new CommuneIndex();
-            cIndex.setVerbose(isVerbose());
-            cIndex.setConnection(connection);
-            cIndex.setUtil(util);
-            cIndex.indexJDONREFCommune(getCommunes());
+            if (isFlag(FLAGS.COMMUNE))
+            {
+                CommuneIndex cIndex = new CommuneIndex();
+                cIndex.setVerbose(isVerbose());
+                cIndex.setConnection(connection);
+                cIndex.setUtil(util);
+                cIndex.indexJDONREFCommune(getCommunes());
+            }
         }
         else
         {
-            Connection connection = getConnection();
-        
-            PaysIndex paysIndex = new PaysIndex();
-            paysIndex.setVerbose(isVerbose());
-            paysIndex.setConnection(connection);
-            paysIndex.setUtil(util);
-            paysIndex.setWithGeometry(withGeometry);
-            paysIndex.indexJDONREFPays();
+            if (isFlag(FLAGS.PAYS))
+            {
+                PaysIndex paysIndex = new PaysIndex();
+                paysIndex.setVerbose(isVerbose());
+                paysIndex.setConnection(connection);
+                paysIndex.setUtil(util);
+                paysIndex.setWithGeometry(withGeometry);
+                paysIndex.indexJDONREFPays();
+            }
             
             DepartementIndex dptIndex = new DepartementIndex();
-            dptIndex.setVerbose(isVerbose());
-            dptIndex.setConnection(connection);
-            dptIndex.setUtil(util);
-            dptIndex.setWithGeometry(withGeometry);
-            dptIndex.indexJDONREFDepartements();
+            dptIndex.setFlags(flags);
+            if (isFlag(FLAGS.DEPARTEMENT))
+            {
+                dptIndex.setVerbose(isVerbose());
+                dptIndex.setConnection(connection);
+                dptIndex.setUtil(util);
+                dptIndex.setWithGeometry(withGeometry);
+                dptIndex.indexJDONREFDepartements();
+            }
+            
+            if (isFlag(FLAGS.COMMUNE))
+            {
+                CommuneIndex cIndex = new CommuneIndex();
+                cIndex.setVerbose(isVerbose());
+                cIndex.setConnection(connection);
+                cIndex.setWithGeometry(withGeometry);
+                cIndex.setUtil(util);
+                cIndex.indexJDONREFCommune();
+            }
             
             AllDepVoieAdrTron(dptIndex);
             
-//            dptIndex.indexJDONREFDepartement("01");
-//            dptIndex.indexJDONREFDepartement("02");
-//            dptIndex.indexJDONREFDepartement("03");
-//            dptIndex.indexJDONREFDepartement("04");
-//            dptIndex.indexJDONREFDepartement("05");
-//            dptIndex.indexJDONREFDepartement("06");
-//            dptIndex.indexJDONREFDepartement("07");
-//            dptIndex.indexJDONREFDepartement("08");
-//            dptIndex.indexJDONREFDepartement("09");
-//            dptIndex.indexJDONREFDepartement("10");
-//            dptIndex.indexJDONREFDepartement("11");
-//            dptIndex.indexJDONREFDepartement("12");
-//            dptIndex.indexJDONREFDepartement("13");
-//            dptIndex.indexJDONREFDepartement("14");
-//            dptIndex.indexJDONREFDepartement("15");
-//            dptIndex.indexJDONREFDepartement("16");
-//            dptIndex.indexJDONREFDepartement("17");
-//            dptIndex.indexJDONREFDepartement("18");
-//            dptIndex.indexJDONREFDepartement("19");
-//            dptIndex.indexJDONREFDepartement("20_a");
-//            dptIndex.indexJDONREFDepartement("20_b");
-//            dptIndex.indexJDONREFDepartement("21");
-//            dptIndex.indexJDONREFDepartement("22");
-//            dptIndex.indexJDONREFDepartement("23");
-//            dptIndex.indexJDONREFDepartement("24");
-//            dptIndex.indexJDONREFDepartement("25");      
-//            dptIndex.indexJDONREFDepartement("75");      
-
             PoizonIndex pzIndex = new PoizonIndex();
             pzIndex.setVerbose(isVerbose());
             pzIndex.setConnection(connection);
             pzIndex.setWithGeometry(withGeometry);
             pzIndex.setUtil(util);
             pzIndex.indexJDONREFPoizon();
-            
-            CommuneIndex cIndex = new CommuneIndex();
-            cIndex.setVerbose(isVerbose());
-            cIndex.setConnection(connection);
-            cIndex.setWithGeometry(withGeometry);
-            cIndex.setUtil(util);
-            cIndex.indexJDONREFCommune();
-            
         }
         
         long end = Calendar.getInstance().getTimeInMillis();
@@ -229,23 +277,9 @@ public class JDONREFIndex
 //
     public void AllDepVoieAdrTron(DepartementIndex dptIndex) throws IOException, SQLException
     {
-        for(int i=95;i>0;i--){
-            if(i == 20){
-                dptIndex.indexJDONREFDepartement("20_a");
-                dptIndex.indexJDONREFDepartement("20_b"); 
-            }
-            else{
-                if(i<10) dptIndex.indexJDONREFDepartement("0"+i);
-                else dptIndex.indexJDONREFDepartement(""+i);
-            }
+        for(int i=0;i<codesDepartements.length;i++)
+        {
+            dptIndex.indexJDONREFDepartement(codesDepartements[i]);
         }
-        for(int j=1;j<=4;j++)
-            dptIndex.indexJDONREFDepartement(97+""+j);
     }
-    
-    
-
-    
-        
-    
 }

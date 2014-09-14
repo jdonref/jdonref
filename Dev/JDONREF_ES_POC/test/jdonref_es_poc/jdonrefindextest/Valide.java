@@ -107,6 +107,9 @@ public class Valide
                 Connection connection = DriverManager.getConnection(connectionString,user,passwd);
                 jdonrefIndex.setConnection(connection);
                 jdonrefIndex.setWithGeometry(withGeometry);
+                jdonrefIndex.setCodesDepartements(new String[]{"01"});
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON);
                 jdonrefIndex.reindex();
             }
         }
@@ -131,6 +134,7 @@ public class Valide
         String passwd = "postgres";
         
         try {
+            
             JDONREFIndex index = getJDONREFIndex(bouchon,reindex,verboseIndexation,withGeometry,url,connectionString,user,passwd);
             
 //            AdresseBusiness adresseBO = new AdresseBusiness(index);

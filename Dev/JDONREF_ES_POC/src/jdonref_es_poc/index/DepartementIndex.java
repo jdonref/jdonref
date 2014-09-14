@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import javax.json.JsonObject;
 import jdonref_es_poc.dao.DepartementDAO;
 import jdonref_es_poc.entity.Departement;
 import jdonref_es_poc.entity.MetaData;
 import jdonref_es_poc.entity.Voie;
+import jdonref_es_poc.index.JDONREFIndex.FLAGS;
 
 
 /**
@@ -26,6 +28,28 @@ public class DepartementIndex
     int paquetsBulk=30;
     
     boolean withGeometry = true;
+    
+    HashSet<FLAGS> flags;
+    
+    public void setFlags(HashSet<FLAGS> flags)
+    {
+        this.flags = flags;
+    }
+
+    public void addFlag(FLAGS flag)
+    {
+        flags.add(flag);
+    }
+    
+    public void removeFlag(FLAGS flag)
+    {
+        flags.remove(flag);
+    }
+    
+    public boolean isFlag(FLAGS flag)
+    {
+        return flags.contains(flag);
+    }
     
     public ElasticSearchUtil getUtil() {
         return util;
@@ -159,12 +183,15 @@ public class DepartementIndex
     
     public void indexJDONREFDepartement(Voie[] voies,String dpt) throws IOException
     {
-        VoieIndex vIndex = new VoieIndex();
-        vIndex.setUtil(util);
-        vIndex.setConnection(connection);
-        vIndex.setVerbose(isVerbose());
-        vIndex.setWithGeometry(withGeometry);
-        vIndex.indexJDONREFVoiesDepartement(voies, dpt);
+        if (isFlag(FLAGS.VOIE))
+        {
+            VoieIndex vIndex = new VoieIndex();
+            vIndex.setUtil(util);
+            vIndex.setConnection(connection);
+            vIndex.setVerbose(isVerbose());
+            vIndex.setWithGeometry(withGeometry);
+            vIndex.indexJDONREFVoiesDepartement(voies, dpt);
+        }
         
         // non développé
 //        AdresseIndex adrIndex = new AdresseIndex();
@@ -183,33 +210,38 @@ public class DepartementIndex
     
     public void indexJDONREFDepartement(String dpt) throws IOException, SQLException
     {
-        VoieIndex vIndex = new VoieIndex();
-        vIndex.setUtil(util);
-        vIndex.setConnection(connection);
-        vIndex.setVerbose(isVerbose());
-        vIndex.setWithGeometry(withGeometry);
-        vIndex.indexJDONREFVoiesDepartement(dpt);
-
-        AdresseIndex adrIndex = new AdresseIndex();
-        adrIndex.setUtil(util);
-        adrIndex.setConnection(connection);
-        adrIndex.setVerbose(isVerbose());
-        adrIndex.setWithGeometry(withGeometry);
-        adrIndex.indexJDONREFAdressesDepartement(dpt);
+        if (isFlag(FLAGS.VOIE))
+        {
+            VoieIndex vIndex = new VoieIndex();
+            vIndex.setUtil(util);
+            vIndex.setConnection(connection);
+            vIndex.setVerbose(isVerbose());
+            vIndex.setWithGeometry(withGeometry);
+            vIndex.indexJDONREFVoiesDepartement(dpt);
+        }
         
-//        TronconIndex tIndex = new TronconIndex();
-//        tIndex.setUtil(util);
-//        tIndex.setConnection(connection);
-//        tIndex.setVerbose(isVerbose());
-//        tIndex.setWithGeometry(withGeometry);
-//        tIndex.indexJDONREFTronconsDepD(dpt);
-//        tIndex.indexJDONREFTronconsDepG(dpt);
+        if (isFlag(FLAGS.ADRESSE))
+        {
+            AdresseIndex adrIndex = new AdresseIndex();
+            adrIndex.setUtil(util);
+            adrIndex.setConnection(connection);
+            adrIndex.setVerbose(isVerbose());
+            adrIndex.setWithGeometry(withGeometry);
+            adrIndex.indexJDONREFAdressesDepartement(dpt);
+        }
+        
+        if (isFlag(FLAGS.TRONCON))
+        {
+            TronconIndex tIndex = new TronconIndex();
+            tIndex.setUtil(util);
+            tIndex.setConnection(connection);
+            tIndex.setVerbose(isVerbose());
+            tIndex.setWithGeometry(withGeometry);
+            tIndex.indexJDONREFTronconsDepD(dpt);
+            tIndex.indexJDONREFTronconsDepG(dpt);
 
-//        tIndex.indexJDONREFTronconsDroitDepartement(dpt);
-//        tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
-         
-    } 
-    
-
-    
+            tIndex.indexJDONREFTronconsDroitDepartement(dpt);
+            tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
+        }
+    }
 }
