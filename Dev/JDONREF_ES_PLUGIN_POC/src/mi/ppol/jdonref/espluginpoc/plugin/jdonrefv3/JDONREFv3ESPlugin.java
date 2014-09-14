@@ -4,12 +4,13 @@ package mi.ppol.jdonref.espluginpoc.plugin.jdonrefv3;
  *
  * @author Julien
  */
-
 import java.util.Collection;
+import mi.ppol.jdonref.espluginpoc.index.analysis.JDONREFv3EdgeNGramWithPayloadsFilterFactory;
 import org.elasticsearch.plugins.AbstractPlugin;
 
 import mi.ppol.jdonref.espluginpoc.index.query.JDONREFv3QueryParser;
 import org.elasticsearch.common.inject.Module;
+import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.indices.query.IndicesQueriesModule;
 
 import static org.elasticsearch.common.collect.Lists.newArrayList;
@@ -34,6 +35,11 @@ public class JDONREFv3ESPlugin extends AbstractPlugin
         Collection<Class<? extends Module>> modules = newArrayList();
         modules.add(JDONREFv3ESModule.class);
         return modules;
+    }
+    
+    public void onModule(AnalysisModule module)
+    {
+        module.addTokenFilter("jdonrefv3es_edgengram",JDONREFv3EdgeNGramWithPayloadsFilterFactory.class);
     }
     
     public void onModule(IndicesQueriesModule module)

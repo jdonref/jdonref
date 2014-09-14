@@ -13,5 +13,4 @@ public class JDONREFv3ESModule extends AbstractModule {
     protected void configure() {
         bind(RegisterJDONREFv3ESAdresseType.class).asEagerSingleton();
     }
-
 }
