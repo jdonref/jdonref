@@ -111,7 +111,10 @@ public class VoieIndex {
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument(withGeometry).toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idVoie;
             }
@@ -120,8 +123,11 @@ public class VoieIndex {
 //            addVoie(v);
         }
         if(!bulk.equals("")){
-        System.out.println("voie : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
-        util.indexResourceBulk(bulk);
+                System.out.println("voie : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idVoieTmp = idVoie;
     }
@@ -154,14 +160,20 @@ public class VoieIndex {
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument(withGeometry).toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idVoie;
             }
         }
         if(!bulk.equals("")){
-        System.out.println("voie : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
-        util.indexResourceBulk(bulk);
+                System.out.println("voie : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idVoieTmp = idVoie;
     }

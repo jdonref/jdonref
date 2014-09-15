@@ -82,7 +82,10 @@ public class ElasticSearchUtil
     {
         String output = indexResourceBulk(bulk);
         
-        System.out.println("bulk : "+output);
+        if (output.contains("errors:\":true"))
+            System.out.println("bulk : "+output);
+        else
+            System.out.println("bulk : "+output.substring(0,30)+" ...");
     }
     
     public String indexResourceBulk(String bulk)

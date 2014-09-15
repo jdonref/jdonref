@@ -91,15 +91,21 @@ public class PaysIndex
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idPays-idPaysTmp)%paquetsBulk==0){
                 System.out.println("pays : bulk pour les ids de "+(idPays-paquetsBulk+1)+" à "+idPays);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idPays;
             }
             i++;
         }
         if(!bulk.equals("")){
-        System.out.println("pays : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPays));        
-        util.indexResourceBulk(bulk);
+                System.out.println("pays : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPays));        
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idPaysTmp = idPays;
     }
@@ -130,14 +136,20 @@ public class PaysIndex
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idPays-idPaysTmp)%paquetsBulk==0){
                 System.out.println("pays : bulk pour les ids de "+(idPays-paquetsBulk+1)+" à "+idPays);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idPays;
             }
         }
         if(!bulk.equals("")){
         System.out.println("pays : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPays));        
-        util.indexResourceBulk(bulk);
+        if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idPaysTmp = idPays;
     }

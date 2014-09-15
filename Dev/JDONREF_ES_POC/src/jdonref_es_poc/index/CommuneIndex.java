@@ -95,7 +95,10 @@ public class CommuneIndex
             bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument(withGeometry).toString()+"\n";
             if((idCommune-idCommuneTmp)%paquetsBulk==0){
                 System.out.println("commune : bulk pour les ids de "+(idCommune-paquetsBulk+1)+" à "+idCommune);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idCommune;
             }
@@ -135,7 +138,10 @@ public class CommuneIndex
             bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument(withGeometry).toString()+"\n";
             if((idCommune-idCommuneTmp)%paquetsBulk==0){
                 System.out.println("commune : bulk pour les ids de "+(idCommune-paquetsBulk+1)+" à "+idCommune);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idCommune;
             }

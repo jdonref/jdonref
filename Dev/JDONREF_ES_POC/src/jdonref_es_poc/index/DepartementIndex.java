@@ -130,7 +130,10 @@ public class DepartementIndex
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idDep-idDepTmp)%paquetsBulk==0){
                 System.out.println("departement : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idDep;
             }
@@ -138,7 +141,10 @@ public class DepartementIndex
         }
         if(!bulk.equals("")){
         System.out.println("departement : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
-        util.indexResourceBulk(bulk);
+        if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idDepTmp = idDep;
     }
@@ -169,14 +175,20 @@ public class DepartementIndex
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idDep-idDepTmp)%paquetsBulk==0){
                 System.out.println("departement : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idDep;
             }
         }
         if(!bulk.equals("")){
-        System.out.println("departement : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
-        util.indexResourceBulk(bulk);
+            System.out.println("departement : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
+            if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idDepTmp = idDep;
     }

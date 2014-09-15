@@ -251,15 +251,21 @@ ElasticSearchUtil util;
             bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument(withGeometry).toString()+"\n";
             if((idTroncon-idTronconTmp)%paquetsBulk==0){
                 System.out.println("troncons droit : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idTroncon;
             }
             i++;
         }
         if(!bulk.equals("")){
-        System.out.println("troncons droit : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
-        util.indexResourceBulk(bulk);
+                System.out.println("troncons droit : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idTronconTmp = idTroncon;
     }
@@ -293,15 +299,21 @@ ElasticSearchUtil util;
             bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument(withGeometry).toString()+"\n";
             if((idTroncon-idTronconTmp)%paquetsBulk==0){
                 System.out.println("troncons gauche : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
-                util.indexResourceBulk(bulk);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idTroncon;
             }
             i++;
         }
         if(!bulk.equals("")){
-        System.out.println("troncons gauche : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
-        util.indexResourceBulk(bulk);
+                System.out.println("troncons gauche : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idTronconTmp = idTroncon;
     }

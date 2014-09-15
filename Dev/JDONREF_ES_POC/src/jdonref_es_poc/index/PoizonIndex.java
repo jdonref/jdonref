@@ -118,16 +118,22 @@ public class PoizonIndex {
             ++idPoizon;
             bulk += metaDataPoizon.toJSONMetaData().toString()+"\n"+p.toJSONDocument(withGeometry).toString()+"\n";
             if((idPoizon-idPoizonTmp)%paquetsBulk==0){
-                System.out.println("poizon : bulk pour les ids de "+(idPoizon-paquetsBulk+1)+" à "+idPoizon);  
-                util.indexResourceBulk(bulk);
+                System.out.println("poizon : bulk pour les ids de "+(idPoizon-paquetsBulk+1)+" à "+idPoizon);
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
                 bulk="";
                 lastIdBulk=idPoizon;
             }
             i++;
         }
         if(!bulk.equals("")){
-        System.out.println("poizon : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPoizon));        
-        util.indexResourceBulk(bulk);
+                System.out.println("poizon : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPoizon));
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk);
+                else
+                    util.showIndexResourceBulk(bulk);
         }
         idPoizonTmp = idPoizon;
     }
