@@ -1,5 +1,6 @@
 package jdonref_es_poc.index;
 
+import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -8,6 +9,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.Iterator;
+import java.util.Set;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 
 
 /**
@@ -67,6 +77,70 @@ public class ElasticSearchUtil
         System.out.println("health : "+output);
     }
     
+    public Iterator<String> getLastAliasIndices(String alias)
+    {
+        WebResource webResource = client.resource("http://"+url+"/_alias/"+alias);
+        
+        ClientResponse response = webResource.accept("application/json").get(ClientResponse.class);
+        String output = response.getEntity(String.class);
+        
+        JsonReader reader = Json.createReader(new StringReader(output));
+        JsonObject obj = reader.readObject();
+        
+        if (obj.containsKey("error")) return null;
+        
+        Set<String> keys = obj.keySet();
+        
+        return keys.iterator();
+    }
+    
+    public String setNewAlias(String index,String alias)
+    {
+        Iterator<String> lastindices = getLastAliasIndices(alias);
+        
+        WebResource webResource = client.resource("http://"+url+"/_aliases");
+        
+        JsonObjectBuilder newindex = Json.createObjectBuilder();
+        newindex.add("index", index);
+        newindex.add("alias", alias);
+        
+        JsonObjectBuilder addnewindex = Json.createObjectBuilder();
+        addnewindex.add("add", newindex);
+        
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        jab.add(addnewindex);
+        if (lastindices!=null)
+        while(lastindices.hasNext())
+        {
+            JsonObjectBuilder lastindex = Json.createObjectBuilder();
+            lastindex.add("index", lastindices.next());
+            lastindex.add("alias", alias);
+        
+            JsonObjectBuilder removelastindex = Json.createObjectBuilder();
+            removelastindex.add("remove", lastindex);
+            
+            jab.add(removelastindex);
+        }
+        
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("actions", jab);
+        
+        String data = job.build().toString();
+        System.out.println(data);
+        
+        ClientResponse response = webResource.accept("application/json").post(ClientResponse.class,data);
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    public void showSetNewAlias(String index,String alias)
+    {
+        String output = setNewAlias(index, alias);
+        
+        System.out.println("setNewAlias : "+output);
+    }
+    
     public String indexResource(String object,String data)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/");
@@ -82,10 +156,14 @@ public class ElasticSearchUtil
     {
         String output = indexResourceBulk(bulk);
         
-        if (output.contains("errors:\":true"))
-            System.out.println("bulk : "+output);
-        else
+        JsonReader reader = Json.createReader(new StringReader(output));
+        JsonObject object = reader.readObject();
+        boolean errors = object.getBoolean("errors");
+        
+        if (!errors)
             System.out.println("bulk : "+output.substring(0,30)+" ...");
+        else
+            System.out.println("bulk : "+output);
     }
     
     public String indexResourceBulk(String bulk)

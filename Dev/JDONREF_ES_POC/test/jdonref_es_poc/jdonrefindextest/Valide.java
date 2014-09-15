@@ -110,6 +110,10 @@ public class Valide
                 jdonrefIndex.setCodesDepartements(new String[]{"01"});
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
                 jdonrefIndex.reindex();
             }
         }

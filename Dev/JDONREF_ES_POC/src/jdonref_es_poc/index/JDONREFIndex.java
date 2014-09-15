@@ -21,6 +21,7 @@ public class JDONREFIndex
     boolean withGeometry = true;
     ElasticSearchUtil util;
     String index = "jdonref";
+    String alias = "jdonref";
     //ArrayList<String> departements;
     
     HashSet<FLAGS> flags = new HashSet<FLAGS>();
@@ -104,6 +105,9 @@ public class JDONREFIndex
     public JDONREFIndex(String url)
     {
         this.util = new ElasticSearchUtil();
+        
+        this.index += Calendar.getInstance().getTimeInMillis();
+        
         Client client = Client.create();
         util.setClient(client);
         util.setUrl(url);
@@ -185,7 +189,7 @@ public class JDONREFIndex
             System.out.println("Démarrage de l'indexation");
         long start = Calendar.getInstance().getTimeInMillis();
         
-        util.showDeleteIndex();
+        //util.showDeleteIndex(); // useless : random index
         
 //        util.showDeleteType("departement");
 //        util.showDeleteType("voie");
@@ -259,14 +263,18 @@ public class JDONREFIndex
             }
             
             AllDepVoieAdrTron(dptIndex);
-            
-            PoizonIndex pzIndex = new PoizonIndex();
-            pzIndex.setVerbose(isVerbose());
-            pzIndex.setConnection(connection);
-            pzIndex.setWithGeometry(withGeometry);
-            pzIndex.setUtil(util);
-            pzIndex.indexJDONREFPoizon();
+            if (isFlag(FLAGS.POIZON))
+            {
+                PoizonIndex pzIndex = new PoizonIndex();
+                pzIndex.setVerbose(isVerbose());
+                pzIndex.setConnection(connection);
+                pzIndex.setWithGeometry(withGeometry);
+                pzIndex.setUtil(util);
+                pzIndex.indexJDONREFPoizon();
+            }
         }
+        
+        util.showSetNewAlias(index, alias);
         
         long end = Calendar.getInstance().getTimeInMillis();
         
