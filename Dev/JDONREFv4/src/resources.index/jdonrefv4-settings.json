@@ -1,0 +1,70 @@
+{
+    "index" : {
+        "analysis" : {
+            "analyzer": {
+                "jdonrefv4_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer","jdonrefv4_synonyme", "jdonrefv4_nGram"]
+                },
+                "jdonrefv4_codes_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase"]
+                },
+                "jdonrefv4_search" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["lowercase", "french_elision", "french_stop",/*/"french_keywords",*/ "french_stemmer"]
+                }
+            },
+            "filter" : {
+                "delimited_payload_filter" : {
+                  "type": "delimited_payload_filter",
+                  "delimiter" : "|",
+                  "encoding" : "int"
+                },
+                "french_elision": {
+                  "type":         "elision",
+                  "articles": [ "l", "m", "t", "qu", "n", "s",
+                                  "j", "d", "c", "jusqu", "quoiqu",
+                                  "lorsqu", "puisqu"
+                              ]
+                },
+                "french_stop": {
+                  "type":       "stop",
+                  "stopwords":  "_french_" 
+                },
+  //                "french_keywords": {
+//                  "type":       "keyword_marker",
+//                  "keywords":   [] 
+//                },
+                "french_stemmer": {
+                  "type":       "stemmer",
+                  "language":   "light_french"
+                },
+//                "jdonrefv3es_metaphone" : {
+//                    "type" : "phonetic",
+//                    "encoder" : "metaphone",
+//                    "replace" : true
+//                },
+                "jdonrefv4_synonyme" : {
+                    "type" : "synonym",
+                    "synonyms_path": "jdonrefv4_synonym.fr_FR.txt"
+                },
+                "jdonrefv4_nGram" : {
+                    "type" : "jdonrefv4_edgengram",
+                    "min_gram": 1,
+                    "max_gram": 15,
+                    "token_chars": ["digit"],
+                    "withPayloads": true
+                }
+            },
+            "similarity": {
+                "jdonrefv4" : {
+                    "type": "org.apache.lucene.search.similarities.JDONREFv4TermSimilarity"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/resources.index/jdonrefv4-settings.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/resources/mapping/mapping-adresse.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/resources/mapping/mapping-commune.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/resources/mapping/mapping-departement.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/resources/mapping/mapping-pays.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/resources/mapping/mapping-poizon.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/resources/mapping/mapping-troncon.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/resources/mapping/mapping-voie.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/test/resources/index/jdonrefv4-settings_Query.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/test/resources/index/jdonrefv4-settings.json</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/org/elasticsearch/common/lucene/search/jdonrefv4/JDONREFv4Scorer.java</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/org/elasticsearch/common/lucene/search/jdonrefv4/JDONREFv4Query.java</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/org/elasticsearch/common/lucene/search/jdonrefv4/JDONREFv4TermQuery.java</file>
+        <file>file:/D:/Users/Julien/Documents/NetBeansProjects/JDONREFSourceForge/Dev/JDONREF_ES_PLUGIN_POC/src/org/elasticsearch/common/lucene/search/jdonrefv4/JDONREFv4TermScorer.java</file>
+    </open-files>
+</project-private>
