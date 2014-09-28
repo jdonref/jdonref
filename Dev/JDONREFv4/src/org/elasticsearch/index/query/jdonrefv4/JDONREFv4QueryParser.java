@@ -21,6 +21,8 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.spans.GroupedPayloadSpanQuery;
+import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 import org.elasticsearch.cluster.ClusterService;
@@ -225,7 +227,8 @@ public class JDONREFv4QueryParser implements QueryParser
         booleanQuery.setTermIndex(termIndex);
         booleanQuery.setMaxSizePerType(maxSizePerType);
         
-        BooleanFilter boolFilters = new BooleanFilter();
+        //BooleanFilter boolFilters = new BooleanFilter();
+        GroupedPayloadSpanQuery spanQuery = new GroupedPayloadSpanQuery();
         
         MatchQuery mq = new MatchQuery(parseContext);
         
@@ -249,10 +252,14 @@ public class JDONREFv4QueryParser implements QueryParser
                 //addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
                 addMatchQueryClause(booleanQuery, mq, new Term("ligne1", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
             
-                TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
-                boolFilters.add(filter, Occur.MUST);
+                //TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
+                //boolFilters.add(filter, Occur.MUST);
+                MultiPayloadSpanTermQuery filter = new MultiPayloadSpanTermQuery(new Term("fullName",BytesRef.deepCopyOf(bytes)));
+                spanQuery.addClause(filter);
             }
         }
+        
+        Filter boolFilters = org.elasticsearch.common.lucene.search.Queries.wrap(spanQuery); 
         
         FilteredQuery filteredQuery = new FilteredQuery(booleanQuery,boolFilters,FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
         
