@@ -53,7 +53,7 @@
                     "synonyms_path": "jdonrefv4_synonym.fr_FR.txt"
                 },
                 "jdonrefv4_nGram" : {
-                    "type" : "jdonrefv4_edgengram",
+                    "type" : "payloadedgengram",
                     "min_gram": 1,
                     "max_gram": 15,
                     "token_chars": ["digit"],

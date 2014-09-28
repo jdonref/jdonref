@@ -1,0 +1,30 @@
+{
+    "index" : {
+        "analysis" : {
+            "analyzer": {
+                "jdonrefv4_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase", "jdonrefv4_synonyme", "jdonrefv4_nGram"]
+                },
+                "jdonrefv4_search" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase"]
+                }
+            },
+            "filter" : {
+                "jdonrefv4_synonyme" : {
+                    "type" : "synonym",
+                    "synonyms_path": "./src/resources/analysis/jdonrefv4_synonym.fr_FR.txt"
+                },
+                "jdonrefv4_nGram" : {
+                    "type" : "edgeNGram",
+                    "min_gram": 2,
+                    "max_gram": 15,
+                    "token_chars": ["digit"]
+                }
+            }
+        }
+    }
+}
