@@ -1,5 +1,6 @@
 package org.elasticsearch.index.query;
 
+import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.spans.GroupedPayloadSpanQuery;
@@ -35,7 +36,7 @@ public class GroupedPayloadSpanQueryParser implements QueryParser {
 
         String queryName = null;
         
-        List<SpanQuery> clauses = newArrayList();
+        List<MultiPayloadSpanTermQuery> clauses = newArrayList();
 
         XContentParser.Token token;
         String currentFieldName = null;
@@ -46,10 +47,10 @@ public class GroupedPayloadSpanQueryParser implements QueryParser {
                 if ("clauses".equals(currentFieldName)) {
                     while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
                         Query query = parseContext.parseInnerQuery();
-                        if (!(query instanceof SpanQuery)) {
-                            throw new QueryParsingException(parseContext.index(), NAME+" [clauses] must be of type span query");
+                        if (!(query instanceof MultiPayloadSpanTermQuery)) {
+                            throw new QueryParsingException(parseContext.index(), NAME+" [clauses] must be of type span_multipayloadterm");
                         }
-                        clauses.add((SpanQuery) query);
+                        clauses.add((MultiPayloadSpanTermQuery) query);
                     }
                 } else {
                     throw new QueryParsingException(parseContext.index(), "["+NAME+"] query does not support [" + currentFieldName + "]");
@@ -67,7 +68,7 @@ public class GroupedPayloadSpanQueryParser implements QueryParser {
             throw new QueryParsingException(parseContext.index(), "span_near must include [clauses]");
         }
         
-        GroupedPayloadSpanQuery gpsQuery = new GroupedPayloadSpanQuery(clauses.toArray(new SpanQuery[clauses.size()]));
+        GroupedPayloadSpanQuery gpsQuery = new GroupedPayloadSpanQuery(clauses.toArray(new MultiPayloadSpanTermQuery[clauses.size()]));
         
         if (queryName != null) {
             parseContext.addNamedQuery(queryName, gpsQuery);

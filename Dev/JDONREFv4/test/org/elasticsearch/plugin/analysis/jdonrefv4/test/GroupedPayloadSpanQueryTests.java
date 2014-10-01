@@ -108,11 +108,10 @@ public class GroupedPayloadSpanQueryTests extends QueryTests
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
         // NB: no search analyzer !
-        /*searchExactAdresse("rue pari gagnant","RUE DU PARIS GAGNANT","59500 DOUAI",1); // match 1 not 2
+        searchExactAdresse("rue pari gagnant","RUE DU PARIS GAGNANT","59500 DOUAI",1); // match 1 not 2
         searchExactAdresse("aa bb cc dd","AA BB CC","75007 AA BB DD",1); // match 3 not 4
-        searchExactAdresse("aa bb cc aa","AA BB CC","75007 AA BB DD",1); // match 3 not 4*/
+        searchExactAdresse("aa bb cc aa","AA BB CC","75007 AA BB DD",1); // match 3 not 4
         searchExactAdresse("aa bb dd cc","AA BB DD","75007 CC",1); // match 3 not 4
-        //searchExactAdresse("RUE DU PARIS GAGNANT","RUE DU PARIS GAGNANT","59500 DOUAI");
     }
 
     @Override

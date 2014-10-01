@@ -12,27 +12,16 @@ import org.apache.lucene.util.Bits;
 
 import java.io.IOException;
 import java.util.Map;
+import org.apache.lucene.index.AtomicReader;
 
 /**
  *
  * @author Julien
  */
-public class MultiPayloadSpanTermQuery extends SpanTermQuery
+public class TermVectorMultiPayloadSpanTermQuery extends MultiPayloadSpanTermQuery
 {
-  protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
-    
-  /** Construct a SpanTermQuery matching the named term's spans. */
-  public MultiPayloadSpanTermQuery(Term term) { super(term); }
-  
-  public int termCountPayloadFactor()
-  {
-      return termCountPayloadFactor();
-  }
-  
-  public void setTermCountPayloadFactor(int factor)
-  {
-      this.termCountPayloadFactor = factor;
-  }
+    /** Construct a SpanTermQuery matching the named term's spans. */
+  public TermVectorMultiPayloadSpanTermQuery(Term term) { super(term); }
   
   /**
    * :P
@@ -40,13 +29,13 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
    * @param term
    * @return 
    */
-  protected MultiPayloadTermSpans makeTermSpans(DocsAndPositionsEnum postings,Term term)
+  protected TermVectorMultiPayloadTermSpans makeTermSpans(DocsAndPositionsEnum postings,Term term, AtomicReader reader, Bits acceptDocs)
   {
-      return new MultiPayloadTermSpans(postings, term, termCountPayloadFactor);
+      return new TermVectorMultiPayloadTermSpans(postings, term, reader, acceptDocs, termCountPayloadFactor);
   }
   
   @Override
-  public MultiPayloadTermSpans getSpans(final AtomicReaderContext context, Bits acceptDocs, Map<Term,TermContext> termContexts) throws IOException {
+  public TermVectorMultiPayloadTermSpans getSpans(final AtomicReaderContext context, Bits acceptDocs, Map<Term,TermContext> termContexts) throws IOException {
     TermContext termContext = termContexts.get(term);
     final TermState state;
     if (termContext == null) {
@@ -73,7 +62,7 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
     }
     
     if (state == null) { // term is not present in that reader
-      return MultiPayloadTermSpans.emptyTermSpans();
+      return TermVectorMultiPayloadTermSpans.emptyTermSpans();
     }
     
     final TermsEnum termsEnum = context.reader().terms(term.field()).iterator(null);
@@ -82,7 +71,7 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
     final DocsAndPositionsEnum postings = termsEnum.docsAndPositions(acceptDocs, null, DocsAndPositionsEnum.FLAG_PAYLOADS);
     
     if (postings != null) {
-      return makeTermSpans(postings, term);
+      return makeTermSpans(postings, term, context.reader(), acceptDocs);
     } else {
       // term does exist, but has no positions
       throw new IllegalStateException("field \"" + term.field() + "\" was indexed without position data; cannot run SpanTermQuery (term=" + term.text() + ")");

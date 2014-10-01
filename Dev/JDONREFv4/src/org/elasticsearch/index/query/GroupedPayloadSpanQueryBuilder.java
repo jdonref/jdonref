@@ -17,7 +17,7 @@ public class GroupedPayloadSpanQueryBuilder extends BaseQueryBuilder implements 
     
     protected String queryName;
 
-    public GroupedPayloadSpanQueryBuilder clause(SpanQueryBuilder clause) {
+    public GroupedPayloadSpanQueryBuilder clause(MultiPayloadSpanTermQueryBuilder clause) {
         clauses.add(clause);
         return this;
     }

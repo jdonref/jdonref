@@ -4,6 +4,8 @@ package org.elasticsearch.plugin.analysis.jdonrefv4;
  *
  * @author Julien
  */
+import org.elasticsearch.index.query.TermVectorMultiPayloadSpanTermQueryParser;
+import org.elasticsearch.index.query.PayloadVersusTypeSpanQueryParser;
 import org.elasticsearch.index.query.MultiPayloadSpanTermQueryParser;
 import org.elasticsearch.index.query.GroupedPayloadSpanQueryParser;
 import org.elasticsearch.plugin.analysis.UnsplitFilterFactory;
@@ -51,5 +53,7 @@ public class JDONREFv4Plugin extends AbstractPlugin
         module.addQuery(new JDONREFv4QueryParser());
         module.addQuery(new GroupedPayloadSpanQueryParser());
         module.addQuery(new MultiPayloadSpanTermQueryParser());
+        module.addQuery(new PayloadVersusTypeSpanQueryParser());
+        module.addQuery(new TermVectorMultiPayloadSpanTermQueryParser());
     }
 }

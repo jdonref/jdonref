@@ -179,7 +179,10 @@ public abstract class QueryTests
         SearchHit[] hits = search.getHits().getHits();
         
         if (hits.length==0)
+        {
             System.out.println("No results");
+            if (size==0) return;
+        }
         if (size==-1)
             Assert.assertTrue(hits.length>0);
         else

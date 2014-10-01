@@ -15,7 +15,7 @@ public class MultiPayloadSpanTermQueryBuilder extends SpanTermQueryBuilder
     protected Object protectedValue;
     protected float protectedBoost;
     protected String protectedQueryName;
-        
+    
     public MultiPayloadSpanTermQueryBuilder(String name, String value) {
         super(name,value);
         this.protectedName = name;
@@ -51,6 +51,7 @@ public class MultiPayloadSpanTermQueryBuilder extends SpanTermQueryBuilder
         this.protectedBoost = boost;
         return this;
     }
+    
 
     /**
      * Sets the query name for the filter that can be used when searching for matched_filters per hit.

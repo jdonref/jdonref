@@ -10,7 +10,6 @@ import org.apache.lucene.analysis.util.CharacterUtils;
 import org.apache.lucene.util.Version;
 
 import java.io.IOException;
-import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.util.BytesRef;
 
@@ -20,7 +19,7 @@ import org.apache.lucene.util.BytesRef;
  * 
  * @author Julien
  */
-public class EdgeNGramWithPayloadsFilter extends TokenFilter
+public class TokenCountPayloadsFilter extends TokenFilter
 {
   public static final Side DEFAULT_SIDE = Side.FRONT;
   public static final int DEFAULT_MAX_GRAM_SIZE = 1;
@@ -90,7 +89,7 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
    * @param withPayloads true to keep payloads
    */
   @Deprecated
-  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, Side side, int minGram, int maxGram, boolean withPayloads) {
+  public TokenCountPayloadsFilter(Version version, TokenStream input, Side side, int minGram, int maxGram, boolean withPayloads) {
     super(input);
 
     if (version == null) {
@@ -134,7 +133,7 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
    * @param withPayloads true to keep payloads
    */
   @Deprecated
-  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, String sideLabel, int minGram, int maxGram, boolean withPayloads) {
+  public TokenCountPayloadsFilter(Version version, TokenStream input, String sideLabel, int minGram, int maxGram, boolean withPayloads) {
     this(version, input, Side.getSide(sideLabel), minGram, maxGram,withPayloads);
   }
 
@@ -148,7 +147,7 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
    * @param maxGram the largest n-gram to generate
    * @param withPayloads true to keep payloads
    */
-  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, int minGram, int maxGram, boolean withPayloads) {
+  public TokenCountPayloadsFilter(Version version, TokenStream input, int minGram, int maxGram, boolean withPayloads) {
     this(version, input, Side.FRONT, minGram, maxGram,withPayloads);
   }
 
@@ -199,9 +198,6 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
           posLenAtt.setPositionLength(savePosLen);
           termAtt.copyBuffer(curTermBuffer, start, end - start);
           payloadAtt.setPayload(curPayload);
-          
-          Logger.getLogger("edgengram").info("payload :"+payloadAtt);
-          
           curGramSize++;
           return true;
         }

@@ -30,6 +30,7 @@ package org.apache.lucene.search.spans;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,22 +41,35 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermContext;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.BytesRef;
 
 /**
- * Matches span which are grouped by payload values.
+ * Matches span where payload for a given type.
  * @author Julien
  */
-public class GroupedPayloadSpanQuery extends SpanQuery implements Cloneable
+public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
 {
-    protected List<MultiPayloadSpanTermQuery> clauses;
+    protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
+  
+    protected List<TermVectorMultiPayloadSpanTermQuery> clauses;
     
     protected String field;
-
     
+    protected Hashtable<String,BytesRef[]> requiredPayloads = new Hashtable<>();
+   
+    public int termCountPayloadFactor() {
+        return termCountPayloadFactor();
+    }
 
+    public void setTermCountPayloadFactor(int factor) {
+        this.termCountPayloadFactor = factor;
+        for(int i=0;i<clauses.size();i++)
+            this.clauses.get(i).termCountPayloadFactor = termCountPayloadFactor;
+    }
+  
     /** Return the clauses whose spans are matched. */
-    public MultiPayloadSpanTermQuery[] getClauses() {
-        return clauses.toArray(new MultiPayloadSpanTermQuery[clauses.size()]);
+    public TermVectorMultiPayloadSpanTermQuery[] getClauses() {
+        return clauses.toArray(new TermVectorMultiPayloadSpanTermQuery[clauses.size()]);
     }
     
     @Override
@@ -68,13 +82,22 @@ public class GroupedPayloadSpanQuery extends SpanQuery implements Cloneable
         }
     }
     
+    public void setRequiredPayloads(String type, BytesRef[] requiredPayloads)
+    {
+        this.requiredPayloads.put(type,requiredPayloads);
+    }
+    
+    public void addRequiredPayloads(Hashtable<String,BytesRef[]> requiredPayloads)
+    {
+        this.requiredPayloads.putAll(requiredPayloads);
+    }
+    
     /** Construct a GroupedPayloadSpanQuery.  Matches spans matching a span from each
      * clause, the spans from each clause must be grouped by payload values.
      * Term without payloads must be grouped together.
      * @param clauses the clauses to find near each other
      * */
-    public GroupedPayloadSpanQuery(MultiPayloadSpanTermQuery... clauses) {
-
+    public PayloadVersusTypeSpanQuery(TermVectorMultiPayloadSpanTermQuery... clauses) {
         // copy clauses array into an ArrayList
         this.clauses = new ArrayList<>(clauses.length);
         for (int i = 0; i < clauses.length; i++) {
@@ -83,24 +106,22 @@ public class GroupedPayloadSpanQuery extends SpanQuery implements Cloneable
     }
 
     /** Adds a clause to this query */
-    public final void addClause(MultiPayloadSpanTermQuery clause) {
+    public final void addClause(TermVectorMultiPayloadSpanTermQuery clause) {
         if (field == null) {
             field = clause.getField();
         } else if (clause.getField() != null && !clause.getField().equals(field)) {
             throw new IllegalArgumentException("Clauses must have same field.");
         }
+        clause.termCountPayloadFactor = termCountPayloadFactor;
         this.clauses.add(clause);
     }
 
-    @Override
+    @Override 
     public Spans getSpans(final AtomicReaderContext context, Bits acceptDocs, Map<Term,TermContext> termContexts) throws IOException {
         if (clauses.isEmpty())                      // optimize 0-clause case
           return new SpanOrQuery(getClauses()).getSpans(context, acceptDocs, termContexts);
-
-        if (clauses.size() == 1)                      // optimize 1-clause case
-          return clauses.get(0).getSpans(context, acceptDocs, termContexts);
-
-        return new SpansGroupedByPayload(this, context, acceptDocs, termContexts);
+        
+        return new SpansPayloadVersusType(this, context, acceptDocs, termContexts, requiredPayloads);
     }
 
     /** Returns true iff <code>o</code> is equal to this. */
@@ -109,16 +130,18 @@ public class GroupedPayloadSpanQuery extends SpanQuery implements Cloneable
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final GroupedPayloadSpanQuery gpsQuery = (GroupedPayloadSpanQuery) o;
+        final PayloadVersusTypeSpanQuery gpsQuery = (PayloadVersusTypeSpanQuery) o;
 
-        return clauses.equals(gpsQuery.clauses);
+        return clauses.equals(gpsQuery.clauses) && 
+                requiredPayloads.equals(gpsQuery.requiredPayloads) &&
+                  termCountPayloadFactor == gpsQuery.termCountPayloadFactor;
     }
     
     @Override
     public String toString(String field) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("GroupedPayloadSpan([");
-        Iterator<MultiPayloadSpanTermQuery> i = clauses.iterator();
+        Iterator<TermVectorMultiPayloadSpanTermQuery> i = clauses.iterator();
         while (i.hasNext()) {
             SpanQuery clause = i.next();
             buffer.append(clause.toString(field));
@@ -135,27 +158,35 @@ public class GroupedPayloadSpanQuery extends SpanQuery implements Cloneable
         int h = clauses.hashCode();
         h ^= (h << 10) | (h >>> 23);
         h ^= Float.floatToRawIntBits(getBoost());
+        h ^= requiredPayloads.hashCode();
+        h ^= termCountPayloadFactor;
         return h;
     }
     
     @Override
-    public GroupedPayloadSpanQuery clone() {
+    public PayloadVersusTypeSpanQuery clone() {
         int sz = clauses.size();
-        MultiPayloadSpanTermQuery[] newClauses = new MultiPayloadSpanTermQuery[sz];
+        TermVectorMultiPayloadSpanTermQuery[] newClauses = new TermVectorMultiPayloadSpanTermQuery[sz];
 
         for (int i = 0; i < sz; i++) {
-            newClauses[i] = (MultiPayloadSpanTermQuery) clauses.get(i).clone();
+            newClauses[i] = (TermVectorMultiPayloadSpanTermQuery) clauses.get(i).clone();
         }
-        GroupedPayloadSpanQuery soq = new GroupedPayloadSpanQuery(newClauses);
+        
+        PayloadVersusTypeSpanQuery soq = new PayloadVersusTypeSpanQuery(newClauses);
+        
+        soq.addRequiredPayloads((Hashtable<String,BytesRef[]>)requiredPayloads.clone());
+        
+        soq.setTermCountPayloadFactor(termCountPayloadFactor);
+        
         return soq;
     }
     
     @Override
     public Query rewrite(IndexReader reader) throws IOException {
-        GroupedPayloadSpanQuery clone = null;
+        PayloadVersusTypeSpanQuery clone = null;
         for (int i = 0; i < clauses.size(); i++) {
-            MultiPayloadSpanTermQuery c = clauses.get(i);
-            MultiPayloadSpanTermQuery query = (MultiPayloadSpanTermQuery) c.rewrite(reader);
+            TermVectorMultiPayloadSpanTermQuery c = clauses.get(i);
+            TermVectorMultiPayloadSpanTermQuery query = (TermVectorMultiPayloadSpanTermQuery) c.rewrite(reader);
             if (query != c) {                     // clause rewrote: must clone
                 if (clone == null) {
                     clone = this.clone();

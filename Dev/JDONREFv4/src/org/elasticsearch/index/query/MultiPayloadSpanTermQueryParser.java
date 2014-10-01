@@ -18,7 +18,7 @@ import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
  */
 public class MultiPayloadSpanTermQueryParser implements QueryParser {
 
-    public static final String NAME = "span_multipayloadterm";
+    public static String NAME = "span_multipayloadterm";
 
     @Inject
     public MultiPayloadSpanTermQueryParser() {
@@ -59,7 +59,8 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
                         boost = parser.floatValue();
                     } else if ("_name".equals(currentFieldName)) {
                         queryName = parser.text();
-                    } else {
+                    }
+                    else {
                         throw new QueryParsingException(parseContext.index(), "["+NAME+"] query does not support [" + currentFieldName + "]");
                     }
                 }
@@ -87,6 +88,11 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
             valueBytes = new BytesRef(value);
         }
 
+        return makeQuery(parseContext, fieldName, valueBytes, boost, queryName);
+    }
+    
+    public Query makeQuery(QueryParseContext parseContext,String fieldName, BytesRef valueBytes,float boost,String queryName)
+    {
         MultiPayloadSpanTermQuery query = new MultiPayloadSpanTermQuery(new Term(fieldName, valueBytes));
         query.setBoost(boost);
         if (queryName != null) {
