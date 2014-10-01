@@ -152,7 +152,7 @@ public class MultiPayloadTermSpans extends TermSpans
         {
             int payloadStuff = PayloadHelper.decodeInt(payload.bytes,payload.offset);
             //int payloadValue     = payload/termCountPayloadFactor;
-            int payloadValue = payloadStuff/termCountPayloadFactor;
+            int payloadValue = payloadStuff%termCountPayloadFactor;
             
             return encoder.encode(Integer.toString(payloadValue).toCharArray());
         }
@@ -166,7 +166,7 @@ public class MultiPayloadTermSpans extends TermSpans
         {
             int payloadStuff = PayloadHelper.decodeInt(payload.bytes,payload.offset);
             //int payloadValue     = payload/termCountPayloadFactor;
-            int payloadTermCount = payloadStuff%termCountPayloadFactor;
+            int payloadTermCount = payloadStuff/termCountPayloadFactor;
             
             return payloadTermCount;
         }

@@ -8,10 +8,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.search.spans.PayloadVersusTypeSpanQuery;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
-import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.GroupedPayloadSpanQuery;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.xcontent.XContentParser;
 

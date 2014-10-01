@@ -50,7 +50,7 @@
 //                },
                 "jdonrefv4_synonyme" : {
                     "type" : "synonym",
-                    "synonyms_path": "jdonrefv4_synonym.fr_FR.txt"
+                    "synonyms_path": "./src/resources/analysis/jdonrefv4_synonym.fr_FR.txt"
                 },
                 "jdonrefv4_nGram" : {
                     "type" : "payloadedgengram",

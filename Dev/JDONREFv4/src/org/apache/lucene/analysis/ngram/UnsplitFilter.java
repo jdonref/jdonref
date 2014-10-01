@@ -6,13 +6,10 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionLengthAttribute;
-import org.apache.lucene.analysis.util.CharacterUtils;
-import org.apache.lucene.util.Version;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 
 /**

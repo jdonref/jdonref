@@ -10,6 +10,11 @@ import org.apache.lucene.analysis.util.CharacterUtils;
 import org.apache.lucene.util.Version;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import org.apache.lucene.analysis.payloads.IdentityEncoder;
+import org.apache.lucene.analysis.payloads.IntegerEncoder;
+import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.util.BytesRef;
 
@@ -19,197 +24,142 @@ import org.apache.lucene.util.BytesRef;
  * 
  * @author Julien
  */
-public class TokenCountPayloadsFilter extends TokenFilter
-{
-  public static final Side DEFAULT_SIDE = Side.FRONT;
-  public static final int DEFAULT_MAX_GRAM_SIZE = 1;
-  public static final int DEFAULT_MIN_GRAM_SIZE = 1;
+public class TokenCountPayloadsFilter extends TokenFilter {
 
-  /** Specifies which side of the input the n-gram should be generated from */
-  public static enum Side {
+    public static final int NOTERMCOUNTPAYLOADFACTOR = -1;
+    protected Version version;
+    protected int termCountPayloadFactor = TokenCountPayloadsFilterFactory.NOTERMCOUNTPAYLOADFACTOR;
+    protected final CharacterUtils charUtils;
+    
+    IntegerEncoder encoder = new IntegerEncoder();
+    
+    protected Hashtable<BytesRef,Integer> payloadsCounts = new Hashtable<>();
+    protected ArrayList<Token> tokens = new ArrayList<>();
+    
+    protected boolean updateOffsets; // never if the length changed before this filter
+    protected final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    protected final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
+    protected final PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
+    protected final PositionLengthAttribute posLenAtt = addAttribute(PositionLengthAttribute.class);
+    protected final PayloadAttribute payloadAtt = addAttribute(PayloadAttribute.class);
 
-    /** Get the n-gram from the front of the input */
-    FRONT {
-      @Override
-      public String getLabel() { return "front"; }
-    },
+    /**
+     * Creates EdgeNGramTokenFilter that can generate n-grams in the sizes of the given range
+     * and may be keep payloads
+     * 
+     * @param version the <a href="#version">Lucene match version</a>
+     * @param input {@link TokenStream} holding the input to be tokenized
+     * @param side the {@link Side} from which to chop off an n-gram
+     * @param minGram the smallest n-gram to generate
+     * @param maxGram the largest n-gram to generate
+     * @param withPayloads true to keep payloads
+     */
+    public TokenCountPayloadsFilter(TokenStream input, int termCountPayloadFactor, Version version) {
+        super(input);
 
-    /** Get the n-gram from the end of the input */
-    @Deprecated
-    BACK  {
-      @Override
-      public String getLabel() { return "back"; }
-    };
-
-    public abstract String getLabel();
-
-    // Get the appropriate Side from a string
-    public static Side getSide(String sideName) {
-      if (FRONT.getLabel().equals(sideName)) {
-        return FRONT;
-      }
-      if (BACK.getLabel().equals(sideName)) {
-        return BACK;
-      }
-      return null;
-    }
-  }
-
-  protected final Version version;
-  protected final CharacterUtils charUtils;
-  protected final int minGram;
-  protected final int maxGram;
-  protected Side side;
-  protected char[] curTermBuffer;
-  protected int curTermLength;
-  protected int curCodePointCount;
-  protected int curGramSize;
-  protected int tokStart;
-  protected int tokEnd; // only used if the length changed before this filter
-  protected boolean updateOffsets; // never if the length changed before this filter
-  protected int savePosIncr;
-  protected int savePosLen;
-  protected BytesRef curPayload;
-  
-  protected final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
-  protected final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
-  protected final PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
-  protected final PositionLengthAttribute posLenAtt = addAttribute(PositionLengthAttribute.class);
-  protected final PayloadAttribute payloadAtt = addAttribute(PayloadAttribute.class);
-
-  /**
-   * Creates EdgeNGramTokenFilter that can generate n-grams in the sizes of the given range
-   * and may be keep payloads
-   * 
-   * @param version the <a href="#version">Lucene match version</a>
-   * @param input {@link TokenStream} holding the input to be tokenized
-   * @param side the {@link Side} from which to chop off an n-gram
-   * @param minGram the smallest n-gram to generate
-   * @param maxGram the largest n-gram to generate
-   * @param withPayloads true to keep payloads
-   */
-  @Deprecated
-  public TokenCountPayloadsFilter(Version version, TokenStream input, Side side, int minGram, int maxGram, boolean withPayloads) {
-    super(input);
-
-    if (version == null) {
-      throw new IllegalArgumentException("version must not be null");
+        this.version = version;
+        this.termCountPayloadFactor = termCountPayloadFactor;
+        this.charUtils = version.onOrAfter(Version.LUCENE_44)
+                ? CharacterUtils.getInstance(version)
+                : CharacterUtils.getJava4Instance();
     }
 
-    if (version.onOrAfter(Version.LUCENE_44) && side == Side.BACK) {
-      throw new IllegalArgumentException("Side.BACK is not supported anymore as of Lucene 4.4, use ReverseStringFilter up-front and afterward");
-    }
-
-    if (side == null) {
-      throw new IllegalArgumentException("sideLabel must be either front or back");
-    }
-
-    if (minGram < 1) {
-      throw new IllegalArgumentException("minGram must be greater than zero");
-    }
-
-    if (minGram > maxGram) {
-      throw new IllegalArgumentException("minGram must not be greater than maxGram");
-    }
-
-    this.version = version;
-    this.charUtils = version.onOrAfter(Version.LUCENE_44)
-        ? CharacterUtils.getInstance(version)
-        : CharacterUtils.getJava4Instance();
-    this.minGram = minGram;
-    this.maxGram = maxGram;
-    this.side = side;
-  }
-
-  /**
-   * Creates JDONREFv3EdgeNGramFilterWithPayload that can generate n-grams in the sizes of the given range
-   * and may be keep payloads
-   *
-   * @param version the <a href="#version">Lucene match version</a>
-   * @param input {@link TokenStream} holding the input to be tokenized
-   * @param sideLabel the name of the {@link Side} from which to chop off an n-gram
-   * @param minGram the smallest n-gram to generate
-   * @param maxGram the largest n-gram to generate
-   * @param withPayloads true to keep payloads
-   */
-  @Deprecated
-  public TokenCountPayloadsFilter(Version version, TokenStream input, String sideLabel, int minGram, int maxGram, boolean withPayloads) {
-    this(version, input, Side.getSide(sideLabel), minGram, maxGram,withPayloads);
-  }
-
-  /**
-   * Creates EdgeNGramTokenFilter that can generate n-grams in the sizes of the given range
-   * and may be keep payloads
-   *
-   * @param version the <a href="#version">Lucene match version</a>
-   * @param input {@link TokenStream} holding the input to be tokenized
-   * @param minGram the smallest n-gram to generate
-   * @param maxGram the largest n-gram to generate
-   * @param withPayloads true to keep payloads
-   */
-  public TokenCountPayloadsFilter(Version version, TokenStream input, int minGram, int maxGram, boolean withPayloads) {
-    this(version, input, Side.FRONT, minGram, maxGram,withPayloads);
-  }
-
-  @Override
-  public final boolean incrementToken() throws IOException {
-    while (true) {
-      if (curTermBuffer == null) {
-        if (!input.incrementToken()) {
-          return false;
-        } else {
-          curTermBuffer = termAtt.buffer().clone();
-          curTermLength = termAtt.length();
-          curPayload = payloadAtt.getPayload();
-          curCodePointCount = charUtils.codePointCount(termAtt);
-          curGramSize = minGram;
-          tokStart = offsetAtt.startOffset();
-          tokEnd = offsetAtt.endOffset();
-          if (version.onOrAfter(Version.LUCENE_44)) {
-            // Never update offsets
-            updateOffsets = false;
-          } else {
-            // if length by start + end offsets doesn't match the term text then assume
-            // this is a synonym and don't adjust the offsets.
-            updateOffsets = (tokStart + curTermLength) == tokEnd;
-          }
-          savePosIncr += posIncrAtt.getPositionIncrement();
-          savePosLen = posLenAtt.getPositionLength();
+    public class Token
+    {
+        char[] curTermBuffer;
+        int curTermLength;
+        int curCodePointCount;
+        int positionIncrement;
+        int positionLength;
+        int tokStart;
+        int tokEnd;
+        BytesRef payload;
+        
+        public Token(char[] curTermBuffer, int curTermLength, int curCodePointCount, int positionIncrement, int positionLength, int tokStart, int tokEnd, BytesRef payload)
+        {
+            this.curTermBuffer = curTermBuffer;
+            this.curTermLength = curTermLength;
+            this.curCodePointCount = curCodePointCount;
+            this.positionIncrement = positionIncrement;
+            this.positionLength = positionLength;
+            this.tokStart = tokStart;
+            this.tokEnd = tokEnd;
+            this.payload = payload;
         }
-      }
-      if (curGramSize <= maxGram) {         // if we have hit the end of our n-gram size range, quit
-        if (curGramSize <= curCodePointCount) { // if the remaining input is too short, we can't generate any n-grams
-          // grab gramSize chars from front or back
-          final int start = side == Side.FRONT ? 0 : charUtils.offsetByCodePoints(curTermBuffer, 0, curTermLength, curTermLength, -curGramSize);
-          final int end = charUtils.offsetByCodePoints(curTermBuffer, 0, curTermLength, start, curGramSize);
-          clearAttributes();
-          if (updateOffsets) {
-            offsetAtt.setOffset(tokStart + start, tokStart + end);
-          } else {
-            offsetAtt.setOffset(tokStart, tokEnd);
-          }
-          // first ngram gets increment, others don't
-          if (curGramSize == minGram) {
-            posIncrAtt.setPositionIncrement(savePosIncr);
-            savePosIncr = 0;
-          } else {
-            posIncrAtt.setPositionIncrement(0);
-          }
-          posLenAtt.setPositionLength(savePosLen);
-          termAtt.copyBuffer(curTermBuffer, start, end - start);
-          payloadAtt.setPayload(curPayload);
-          curGramSize++;
-          return true;
-        }
-      }
-      curTermBuffer = null;
     }
-  }
+    
+    public void addToken(char[] curTermBuffer, int curTermLength, int curCodePointCount, int positionIncrement, int positionLength, int tokStart, int tokEnd, BytesRef payload)
+    {
+        Token t = new Token(curTermBuffer, curTermLength, curCodePointCount, positionIncrement, positionLength, tokStart, tokEnd, payload);
+        
+        Integer count = payloadsCounts.get(payload);
+        if (count==null)
+            payloadsCounts.put(payload,1);
+        else
+            payloadsCounts.put(payload,count+1);
+        
+        tokens.add(t);
+    }
+    
+    public BytesRef getNewPayload(BytesRef payload,int count)
+    {
+        int payloadStuff = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+        int newPayloadStuff = termCountPayloadFactor*count + payloadStuff;
+        
+        BytesRef bytes = encoder.encode(Integer.toString(newPayloadStuff).toCharArray());
+        return bytes;
+    }
+    
+    public void writeToken(Token t)
+    {
+        int count = payloadsCounts.get(t.payload);
+        assert(count>0);
+        
+        BytesRef newPayload = getNewPayload(t.payload,count);
+        
+        clearAttributes();
+        offsetAtt.setOffset(t.tokStart, t.tokEnd);
+        posIncrAtt.setPositionIncrement(t.positionIncrement);
+        posLenAtt.setPositionLength(t.positionLength);
+        termAtt.copyBuffer(t.curTermBuffer, 0, t.curTermLength);
+        payloadAtt.setPayload(newPayload);
+    }
+    
+    int current = 0;
+    
+    @Override
+    public final boolean incrementToken() throws IOException {
+        
+        // get all payloads & counts
+        if (input.incrementToken())
+        {
+            current = 0;
+            do
+            {
+                char[] curTermBuffer = termAtt.buffer().clone();
+                int curTermLength = termAtt.length();
+                int curCodePointCount = charUtils.codePointCount(termAtt);
+                int positionIncrement = posIncrAtt.getPositionIncrement();
+                int positionLength = posLenAtt.getPositionLength();
+                int tokStart = offsetAtt.startOffset();
+                int tokEnd = offsetAtt.endOffset();
+                BytesRef payload = payloadAtt.getPayload();
+                
+                addToken(curTermBuffer,curTermLength,curCodePointCount,positionIncrement,positionLength,tokStart,tokEnd,payload);
+            } while(input.incrementToken());
+        }
+        
+        while (current<tokens.size()) {
+            writeToken(tokens.get(current++));
+            return true;
+        }
+        return false;
+    }
 
-  @Override
-  public void reset() throws IOException {
-    super.reset();
-    curTermBuffer = null;
-    savePosIncr = 0;
-  }
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        payloadsCounts.clear();
+        tokens.clear();
+    }
 }

@@ -10,25 +10,21 @@ import org.apache.lucene.analysis.util.TokenFilterFactory;
  */
 public class TokenCountPayloadsFilterFactory extends TokenFilterFactory
 {
-  protected boolean withPayloads = false;
-  protected int nonPrivateMinGramSize;
-  protected int nonPrivateMaxGramSize;
-  protected String nonPrivateSide;
-  
+    public static final int NOTERMCOUNTPAYLOADFACTOR = -1;
+    
+    protected int termCountPayloadFactor = TokenCountPayloadsFilterFactory.NOTERMCOUNTPAYLOADFACTOR;
+    
   /** Creates a new EdgeNGramFilterFactory */
   public TokenCountPayloadsFilterFactory(Map<String, String> args) {
     super(args);
-    nonPrivateMinGramSize = getInt(args, "minGramSize", EdgeNGramTokenFilter.DEFAULT_MIN_GRAM_SIZE);
-    nonPrivateMaxGramSize = getInt(args, "maxGramSize", EdgeNGramTokenFilter.DEFAULT_MAX_GRAM_SIZE);
-    nonPrivateSide = get(args, "side", EdgeNGramTokenFilter.Side.FRONT.getLabel());
-    withPayloads = getBoolean(args, "withPayloads", false);
+    termCountPayloadFactor = getInt(args, "factor", TokenCountPayloadsFilterFactory.NOTERMCOUNTPAYLOADFACTOR);
     if (!args.isEmpty()) {
       throw new IllegalArgumentException("Unknown parameters: " + args);
     }
   }
 
   @Override
-  public EdgeNGramWithPayloadsFilter create(TokenStream input) {
-      return new EdgeNGramWithPayloadsFilter(luceneMatchVersion, input, nonPrivateSide, nonPrivateMinGramSize, nonPrivateMaxGramSize, withPayloads);
+  public TokenCountPayloadsFilter create(TokenStream input) {
+      return new TokenCountPayloadsFilter(input, termCountPayloadFactor,luceneMatchVersion);
   }
 }

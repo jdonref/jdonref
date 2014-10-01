@@ -61,12 +61,12 @@ public class PayloadVersusTypeSpanQueryTests extends QueryTests
         publicIndex(brb,"payloadversustypespanquery","1",XContentFactory.jsonBuilder().startObject()
                 .field("ligne4","AA BB")
                 .field("ligne6","CC")
-                .field("fullName","AA|1002 BB|1002 CC|2001 DD|3001")
+                .field("fullName","AA|2001 BB|2001 CC|1002 DD|1003")
                 .endObject());
         publicIndex(brb,"payloadversustypespanquery","2",XContentFactory.jsonBuilder().startObject()
                 .field("ligne4","AA")
                 .field("ligne6","CC")
-                .field("fullName","AA|1001 CC|2001 DD|3001")
+                .field("fullName","AA|1001 CC|1002 DD|1003")
                 .endObject());
         
         BulkResponse br = brb.execute().actionGet();

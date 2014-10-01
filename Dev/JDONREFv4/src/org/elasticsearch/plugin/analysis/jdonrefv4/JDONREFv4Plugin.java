@@ -4,6 +4,7 @@ package org.elasticsearch.plugin.analysis.jdonrefv4;
  *
  * @author Julien
  */
+import org.elasticsearch.plugin.analysis.TokenCountPayloadsFilterFactory;
 import org.elasticsearch.index.query.TermVectorMultiPayloadSpanTermQueryParser;
 import org.elasticsearch.index.query.PayloadVersusTypeSpanQueryParser;
 import org.elasticsearch.index.query.MultiPayloadSpanTermQueryParser;
@@ -46,6 +47,7 @@ public class JDONREFv4Plugin extends AbstractPlugin
     {
         module.addTokenFilter("payloadedgengram",EdgeNGramWithPayloadsFilterFactory.class);
         module.addTokenFilter("unsplit",UnsplitFilterFactory.class);
+        module.addTokenFilter("tokencountpayloads",TokenCountPayloadsFilterFactory.class);
     }
     
     public void onModule(IndicesQueriesModule module)
