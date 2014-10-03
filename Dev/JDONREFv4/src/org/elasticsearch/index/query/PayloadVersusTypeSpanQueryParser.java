@@ -1,6 +1,6 @@
 package org.elasticsearch.index.query;
 
-import org.apache.lucene.search.spans.TermVectorMultiPayloadSpanTermQuery;
+import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 import org.apache.lucene.analysis.payloads.IdentityEncoder;
 import org.apache.lucene.analysis.payloads.FloatEncoder;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
@@ -44,7 +44,7 @@ public class PayloadVersusTypeSpanQueryParser implements QueryParser {
         String queryName = null;
         ArrayList<BytesRef> payloads = new ArrayList<>();
         
-        List<TermVectorMultiPayloadSpanTermQuery> clauses = newArrayList();
+        List<MultiPayloadSpanTermQuery> clauses = newArrayList();
         Hashtable<String,BytesRef[]> requiredPayloads = new Hashtable<>();
         int termCountPayloadFactor = NOTERMCOUNTPAYLOADFACTOR;
         
@@ -61,10 +61,10 @@ public class PayloadVersusTypeSpanQueryParser implements QueryParser {
                 if ("clauses".equals(currentFieldName)) {
                     while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
                         Query query = parseContext.parseInnerQuery();
-                        if (!(query instanceof TermVectorMultiPayloadSpanTermQuery)) {
+                        if (!(query instanceof MultiPayloadSpanTermQuery)) {
                             throw new QueryParsingException(parseContext.index(), NAME+" [clauses] must be of type span_multipayloadterm");
                         }
-                        clauses.add((TermVectorMultiPayloadSpanTermQuery) query);
+                        clauses.add((MultiPayloadSpanTermQuery) query);
                     }
                 } else if ("requiredPayloads".equals(currentFieldName)) {
                     while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY)
@@ -143,7 +143,7 @@ public class PayloadVersusTypeSpanQueryParser implements QueryParser {
             throw new QueryParsingException(parseContext.index(), "span_payloadversustype must include [clauses]");
         }
         
-        PayloadVersusTypeSpanQuery gpsQuery = new PayloadVersusTypeSpanQuery(clauses.toArray(new TermVectorMultiPayloadSpanTermQuery[clauses.size()]));
+        PayloadVersusTypeSpanQuery gpsQuery = new PayloadVersusTypeSpanQuery(clauses.toArray(new MultiPayloadSpanTermQuery[clauses.size()]));
         gpsQuery.addRequiredPayloads(requiredPayloads);
         gpsQuery.setTermCountPayloadFactor(termCountPayloadFactor);
         if (queryName != null) {

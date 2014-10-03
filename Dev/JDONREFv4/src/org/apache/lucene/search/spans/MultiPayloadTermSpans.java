@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.Fields;
+import org.apache.lucene.util.Bits;
 
 /**
  * TermSpans that returns all the available payload for each match.
@@ -29,6 +33,8 @@ public class MultiPayloadTermSpans extends TermSpans
   
     Collection<byte[]> payloads = new ArrayList<>();
     Collection<Integer> termCountsByPayload = new ArrayList<>();
+    protected Bits acceptDocs;
+    protected AtomicReader reader;
     
     public int termCountPayloadFactor()
     {
@@ -98,6 +104,27 @@ public class MultiPayloadTermSpans extends TermSpans
     public MultiPayloadTermSpans(DocsAndPositionsEnum postings, Term term,int termCountPayloadFactor) {
         super(postings, term);
         this.termCountPayloadFactor = termCountPayloadFactor;
+    }
+    
+    public MultiPayloadTermSpans(DocsAndPositionsEnum postings, Term term, int termCountPayloadFactor, AtomicReader reader, Bits acceptDocs) {
+        this(postings, term, termCountPayloadFactor);
+        this.reader = reader;
+        this.acceptDocs = acceptDocs;
+    }
+    
+    public Bits acceptDocs()
+    {
+        return acceptDocs;
+    }
+    
+    public Document document() throws IOException
+    {
+        return reader==null?null:reader.document(doc);
+    }
+    
+    public Fields termVector() throws IOException
+    {
+        return reader==null?null:reader.getTermVectors(doc);
     }
     
     @Override

@@ -12,6 +12,7 @@ import org.apache.lucene.util.Bits;
 
 import java.io.IOException;
 import java.util.Map;
+import org.apache.lucene.index.AtomicReader;
 
 /**
  *
@@ -40,9 +41,9 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
    * @param term
    * @return 
    */
-  protected MultiPayloadTermSpans makeTermSpans(DocsAndPositionsEnum postings,Term term)
+  protected MultiPayloadTermSpans makeTermSpans(DocsAndPositionsEnum postings,Term term, AtomicReader reader, Bits acceptDocs)
   {
-      return new MultiPayloadTermSpans(postings, term, termCountPayloadFactor);
+      return new MultiPayloadTermSpans(postings, term, termCountPayloadFactor, reader, acceptDocs );
   }
   
   @Override
@@ -82,7 +83,7 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
     final DocsAndPositionsEnum postings = termsEnum.docsAndPositions(acceptDocs, null, DocsAndPositionsEnum.FLAG_PAYLOADS);
     
     if (postings != null) {
-      return makeTermSpans(postings, term);
+      return makeTermSpans(postings, term, context.reader(), acceptDocs);
     } else {
       // term does exist, but has no positions
       throw new IllegalStateException("field \"" + term.field() + "\" was indexed without position data; cannot run SpanTermQuery (term=" + term.text() + ")");

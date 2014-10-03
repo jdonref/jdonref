@@ -4,25 +4,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
-import org.apache.lucene.analysis.util.CharacterUtils;
-import org.apache.lucene.search.spans.TermVectorMultiPayloadSpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.common.lucene.Lucene;
 import org.elasticsearch.common.xcontent.XContentFactory;
 //import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
 //import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
-import org.elasticsearch.index.query.GroupedPayloadSpanQueryBuilder;
 import org.elasticsearch.index.query.MultiPayloadSpanTermQueryBuilder;
 import org.elasticsearch.index.query.PayloadVersusTypeSpanQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.SpanQueryBuilder;
-import org.elasticsearch.index.query.SpanTermQueryBuilder;
-import org.elasticsearch.index.query.TermVectorMultiPayloadSpanTermQueryBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -72,8 +65,6 @@ public class PayloadVersusTypeSpanQueryTests extends QueryTests
         BulkResponse br = brb.execute().actionGet();
         if (br.hasFailures()) System.out.println(br.buildFailureMessage());
         Assert.assertFalse(br.hasFailures());
-        
-        refresh();
     }
     
     @Test
@@ -84,19 +75,20 @@ public class PayloadVersusTypeSpanQueryTests extends QueryTests
         
         // NB: no search analyzer !
         searchExactAdresse("aa bb","AA BB","CC",1); // match 1 only
+        searchExactAdresse("aa bb dd","AA BB","CC",1); // match 1 only
         searchExactAdresse("aa","AA","CC",1); // match 2 only
         searchExactAdresse("cc","AA","CC",0); // no match
     }
 
     @Override
-    QueryBuilder getQueryBuilder(String voie) {
-        
+    QueryBuilder getQueryBuilder(String voie)
+    {
         String[] tokens = voie.split(" ");
         
         PayloadVersusTypeSpanQueryBuilder qb = new PayloadVersusTypeSpanQueryBuilder();
         for(int i=0;i<tokens.length;i++)
         {
-            TermVectorMultiPayloadSpanTermQueryBuilder sqb = new TermVectorMultiPayloadSpanTermQueryBuilder("fullName",tokens[i]);
+            MultiPayloadSpanTermQueryBuilder sqb = new MultiPayloadSpanTermQueryBuilder("fullName",tokens[i]);
             qb.clause(sqb);
         }
         

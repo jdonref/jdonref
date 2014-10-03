@@ -38,7 +38,7 @@ public class PayloadVersusTypeSpanQueryBuilder extends BaseQueryBuilder implemen
         return this;
     }
 
-    public PayloadVersusTypeSpanQueryBuilder clause(TermVectorMultiPayloadSpanTermQueryBuilder clause) {
+    public PayloadVersusTypeSpanQueryBuilder clause(MultiPayloadSpanTermQueryBuilder clause) {
         clauses.add(clause);
         return this;
     }

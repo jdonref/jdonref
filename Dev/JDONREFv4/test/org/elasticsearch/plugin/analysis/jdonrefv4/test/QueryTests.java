@@ -108,6 +108,7 @@ public abstract class QueryTests
             stopRefresh();
             index();
             startRefresh();
+            refresh();
     }
     
     public String readFile(String file) throws FileNotFoundException, IOException
@@ -166,14 +167,14 @@ public abstract class QueryTests
     {
         System.out.println("---------------------");
         System.out.println("Test Number "+testNumber++);
-        System.out.println("Searching "+voie);
+        System.out.println("Searching "+voie+" in ["+INDEX_NAME+"]");
         
         QueryBuilder qb = getQueryBuilder(voie);
         
         //QueryStringQueryBuilder qb = new QueryStringQueryBuilder(voie);
         
         long start = Calendar.getInstance().getTimeInMillis();
-        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        SearchResponse search = client().prepareSearch(INDEX_NAME).setQuery(qb).setExplain(true).execute().actionGet();
         long end = Calendar.getInstance().getTimeInMillis();
         System.out.println("Took "+(end-start)+" ms");
         SearchHit[] hits = search.getHits().getHits();

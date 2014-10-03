@@ -9,13 +9,9 @@ import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.common.xcontent.XContentFactory;
-//import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
-//import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
 import org.elasticsearch.index.query.GroupedPayloadSpanQueryBuilder;
 import org.elasticsearch.index.query.MultiPayloadSpanTermQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.SpanQueryBuilder;
-import org.elasticsearch.index.query.SpanTermQueryBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -111,7 +107,7 @@ public class GroupedPayloadSpanQueryTests extends QueryTests
         searchExactAdresse("rue pari gagnant","RUE DU PARIS GAGNANT","59500 DOUAI",1); // match 1 not 2
         searchExactAdresse("aa bb cc dd","AA BB CC","75007 AA BB DD",1); // match 3 not 4
         searchExactAdresse("aa bb cc aa","AA BB CC","75007 AA BB DD",1); // match 3 not 4
-        searchExactAdresse("aa bb dd cc","AA BB DD","75007 CC",1); // match 3 not 4
+        searchExactAdresse("aa bb dd cc","AA BB DD","75007 CC",2); // match 3 and 4
     }
 
     @Override

@@ -29,7 +29,7 @@ public class SpansPayloadVersusType extends Spans
   protected boolean more = false;
 
   /** The spans in the same order as the SpanNearQuery */
-  protected final TermVectorMultiPayloadTermSpans[] subSpans;
+  protected final MultiPayloadTermSpans[] subSpans;
 
   /** Indicates that all subSpans have same doc() */
   protected boolean inSameDoc = false;
@@ -39,7 +39,7 @@ public class SpansPayloadVersusType extends Spans
   protected int matchEnd = -1;
   protected List<byte[]> matchPayload;
 
-  protected final TermVectorMultiPayloadTermSpans[] subSpansByDoc;
+  protected final MultiPayloadTermSpans[] subSpansByDoc;
   
   protected Hashtable<String,BytesRef[]> requiredPayloads;
   
@@ -59,14 +59,13 @@ public class SpansPayloadVersusType extends Spans
   protected PayloadVersusTypeSpanQuery query;
   
   public SpansPayloadVersusType(PayloadVersusTypeSpanQuery gpsQuery, AtomicReaderContext context, Bits acceptDocs, Map<Term,TermContext> termContexts,Hashtable<String,BytesRef[]> requiredPayloads) throws IOException {
-    if (gpsQuery.getClauses().length < 1) {
-      throw new IllegalArgumentException("Less than 1 clauses: "
+    MultiPayloadSpanTermQuery[] clauses = gpsQuery.getClauses();
+    if (clauses.length<1)
+        throw new IllegalArgumentException("Less than 1 clauses: "
                                          + gpsQuery);
-    }
-    TermVectorMultiPayloadSpanTermQuery[] clauses = gpsQuery.getClauses();
-    subSpans = new TermVectorMultiPayloadTermSpans[clauses.length];
+    subSpans = new MultiPayloadTermSpans[clauses.length];
     matchPayload = new LinkedList<>();
-    subSpansByDoc = new TermVectorMultiPayloadTermSpans[clauses.length];
+    subSpansByDoc = new MultiPayloadTermSpans[clauses.length];
     for (int i = 0; i < clauses.length; i++) {
       subSpans[i] = clauses[i].getSpans(context, acceptDocs, termContexts);
       subSpansByDoc[i] = subSpans[i]; // used in toSameDoc()
