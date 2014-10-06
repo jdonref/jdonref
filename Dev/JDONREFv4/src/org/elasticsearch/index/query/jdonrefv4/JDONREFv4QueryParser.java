@@ -3,12 +3,13 @@ package org.elasticsearch.index.query.jdonrefv4;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery;
 import java.io.IOException;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 import org.elasticsearch.common.lucene.search.jdonrefv4.MyLimitFilter;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CachingTokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.index.Term;
@@ -21,8 +22,11 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.GroupedPayloadSpanQuery;
+import org.apache.lucene.search.spans.checkers.AndPayloadChecker;
+import org.apache.lucene.search.spans.checkers.GroupedPayloadChecker;
 import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
+import org.apache.lucene.search.spans.checkers.PayloadChecker;
+import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 import org.elasticsearch.cluster.ClusterService;
@@ -52,7 +56,7 @@ public class JDONREFv4QueryParser implements QueryParser
     @Nullable
     private final ClusterService clusterService;
     
-    protected Hashtable<String,Integer> termIndex = new Hashtable();
+    protected ConcurrentHashMap<String,Integer> termIndex = new ConcurrentHashMap<>();
     
      public JDONREFv4QueryParser()
      {
@@ -113,7 +117,7 @@ public class JDONREFv4QueryParser implements QueryParser
                 } else if ("mode".equals(currentFieldName)) {
                     String modeStr = parser.text();
                     if (modeStr.equals("bulk")) mode = JDONREFv4Query.BULK;
-                    else if (modeStr.equals("bulk")) mode = JDONREFv4Query.AUTOCOMPLETE;
+                    else if (modeStr.equals("autocomplete")) mode = JDONREFv4Query.AUTOCOMPLETE;
                     else throw new QueryParsingException(parseContext.index(), "[jdonrefv3es] query does not support "+modeStr+" for [" + currentFieldName + "]");
                 } else if ("boost".equals(currentFieldName)) {
                     boost = parser.floatValue();
@@ -172,6 +176,52 @@ public class JDONREFv4QueryParser implements QueryParser
         booleanQuery.add(new BooleanClause(query,BooleanClause.Occur.SHOULD));
     }
     
+    /**
+     * adresse
+     * commune
+     * departement
+     * pays
+     * poizon
+     * troncon
+     * voie
+     * 
+     * code_pays = 10
+     * fullName = 9
+     * code_departement = 8
+     * code_insee = 7
+     * code_insee_commune = 6
+     * commune = 5
+     * code_arrondissement = 4
+     * code_postal = 3
+     * numero = 11
+     * repetition = 11
+     * type_de_voie = 2
+     * article = 2
+     * libelle = 2
+     * ligne1 = 1
+     * @return 
+     */
+    protected PayloadChecker getChecker()
+    {
+        IntegerEncoder encoder = new IntegerEncoder();
+        
+        GroupedPayloadChecker gpChecker = new GroupedPayloadChecker();
+        /*
+        OnePayloadVersusFieldChecker poizonLigne1Checker = new OnePayloadVersusFieldChecker("poizon",encoder.encode("1".toCharArray()).bytes);
+        OnePayloadVersusFieldChecker poizonLigne4Checker = new OnePayloadVersusFieldChecker("poizon",encoder.encode("2".toCharArray()).bytes);
+        OrPayloadChecker poizonChecker = new OrPayloadChecker(poizonLigne1Checker,poizonLigne4Checker);
+        
+        OnePayloadVersusFieldChecker voieLigne4Checker = new OnePayloadVersusFieldChecker("voie",encoder.encode("2".toCharArray()).bytes);
+        OnePayloadVersusFieldChecker voieCodesChecker  = new OnePayloadVersusFieldChecker("voie",encoder.encode("2".toCharArray()).bytes);
+        
+        
+        
+        OrPayloadChecker orChecker = new OrPayloadChecker(poizonChecker);
+        */
+        AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker); //, orChecker);
+        return andChecker;
+    }
+    
     private Query getQueryStringQuery(String find, QueryParseContext parseContext,int mode,int debugDoc,int maxSizePerType) throws IOException
     {
         Analyzer analyser = parseContext.mapperService().analysisService().analyzer(SEARCH_ANALYZER);
@@ -227,8 +277,10 @@ public class JDONREFv4QueryParser implements QueryParser
         booleanQuery.setTermIndex(termIndex);
         booleanQuery.setMaxSizePerType(maxSizePerType);
         
-        //BooleanFilter boolFilters = new BooleanFilter();
-        GroupedPayloadSpanQuery spanQuery = new GroupedPayloadSpanQuery();
+        // JDONREFv4 Work rules
+        PayloadCheckerSpanQuery spanQuery = new PayloadCheckerSpanQuery();
+        spanQuery.setTermCountPayloadFactor(1000);
+        spanQuery.setChecker(getChecker());
         
         MatchQuery mq = new MatchQuery(parseContext);
         

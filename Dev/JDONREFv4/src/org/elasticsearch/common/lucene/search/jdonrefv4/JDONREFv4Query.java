@@ -2,10 +2,9 @@ package org.elasticsearch.common.lucene.search.jdonrefv4;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryParser;
+import java.util.concurrent.ConcurrentHashMap;
 import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryParser;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.AtomicReader;
@@ -39,7 +38,7 @@ public class JDONREFv4Query extends BooleanQuery
     public static final int AUTOCOMPLETE = 1;
     public static final int BULK = 2;
 
-    protected Hashtable<String, Integer> termIndex;
+    protected ConcurrentHashMap<String, Integer> termIndex;
     
     protected int numTokens;
     
@@ -74,12 +73,12 @@ public class JDONREFv4Query extends BooleanQuery
             this.numTokens = numTokens;
         }
 
-    public Hashtable<String, Integer> getTermIndex()
+    public ConcurrentHashMap<String, Integer> getTermIndex()
     {
         return termIndex;
     }
         
-    public void setTermIndex(Hashtable<String, Integer> termIndex) {
+    public void setTermIndex(ConcurrentHashMap<String, Integer> termIndex) {
         this.termIndex = termIndex;
     }
 

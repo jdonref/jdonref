@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
@@ -40,7 +40,7 @@ public class JDONREFv4Scorer extends Scorer {
   
   protected AtomicReaderContext context;
   
-  protected Hashtable<String, Integer> termIndex;
+  protected ConcurrentHashMap<String, Integer> termIndex;
   protected int maxSizePerType;
   
   /**
@@ -896,7 +896,7 @@ public class JDONREFv4Scorer extends Scorer {
   
   public JDONREFv4Scorer(JDONREFv4Weight weight,
       List<JDONREFv4TermScorer> optionalScorers,
-      int maxCoord, AtomicReaderContext context, Hashtable<String, Integer> termIndex,
+      int maxCoord, AtomicReaderContext context, ConcurrentHashMap<String, Integer> termIndex,
       int mode, int debugDoc, int maxSizePerType) throws IOException {
     super(weight);
     
@@ -934,7 +934,6 @@ public class JDONREFv4Scorer extends Scorer {
            scorer.setParentScorer(this);
            subScorers[i] = scorer;
        }
-       
        
        heapify(); // NB: un nextDoc a été appliqué à chaque scorer
     }
@@ -1263,6 +1262,8 @@ public class JDONREFv4Scorer extends Scorer {
   
   @Override
   public int advance(int target) throws IOException {
+    if (subScorers==null) return NO_MORE_DOCS;
+      
     assert doc != NO_MORE_DOCS;
     boolean debug = false;
     if (debugDoc!=-1 && debugDoc==target)
@@ -1272,6 +1273,7 @@ public class JDONREFv4Scorer extends Scorer {
     if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" advance to "+target);
     while(true) {
+      // NB: don't know why subScorers[0] may be null
       if (subScorers[0].advance(target) != NO_MORE_DOCS) {
         if (debug)
           Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" document "+subScorers[0].docID()+" trouvé dans "+((JDONREFv4TermQuery)subScorers[0].weight().getQuery()).getTerm().field());
@@ -1311,7 +1313,7 @@ public class JDONREFv4Scorer extends Scorer {
           b.doc = doc;
           b.d = this.context.reader().document(doc);
           
-          String type = getType(b); // they have already been check by TermScorer nextDoc
+          String type = getType(b); // they have already been checked by TermScorer nextDoc
           increaseCountByType(type); // 0n Top Scorers only, this is the key
 
           if (debug)
@@ -1388,16 +1390,16 @@ public class JDONREFv4Scorer extends Scorer {
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Plus de documents dans root");
         heapRemoveRoot();
         if (numScorers == 0) {
-          return doc = NO_MORE_DOCS;
+          return this.doc = NO_MORE_DOCS;
         }
       }
-      if (subScorers[0].docID() != doc) {
+      if (subScorers[0].docID() != this.doc) {
         if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Nouveau document trouvé, préparation.");
         afterNext();
         
         //if (score!=0.0f || doc == NO_MORE_DOCS)
-            return doc;
+        return doc;
       }
     }
   }

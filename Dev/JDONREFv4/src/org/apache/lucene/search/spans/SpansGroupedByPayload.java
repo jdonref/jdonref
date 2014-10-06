@@ -190,9 +190,6 @@ public class SpansGroupedByPayload extends Spans
     return true;
   }
   
-  // TODO : make it paramaterable
-  final int MAX_PAYLOADS = 50;
-  
   protected boolean checkPayloads(int index)
   {
       if (index==0) return true;

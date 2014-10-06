@@ -1,4 +1,4 @@
-package org.apache.lucene.analysis.ngram;
+package org.apache.lucene.analysis;
 
 import java.util.Map;
 import org.apache.lucene.analysis.TokenStream;

@@ -1,5 +1,10 @@
 package org.elasticsearch.plugin.analysis.jdonrefv4.test;
 
+import org.apache.lucene.index.DocsAndPositionsEnum;
+import java.util.Iterator;
+import org.apache.lucene.index.Fields;
+import org.elasticsearch.action.termvector.TermVectorResponse;
+import org.elasticsearch.action.get.GetResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,6 +13,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
+import org.apache.lucene.index.TermsEnum;
 import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryBuilder;
 import org.apache.lucene.search.Explanation;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
@@ -42,10 +48,9 @@ import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilde
  *
  * @author Julien
  */
-//@ClusterScope(scope=Scope.SUITE, numNodes=1)
-public class JDONREFv4QueryTests// extends ElasticsearchIntegrationTest
+public class JDONREFv4QueryTests
 {
-    final static String INDEX_NAME = "jdonrefTest";
+    final static String INDEX_NAME = "jdonref";
     final static String DOC_TYPE_NAME = "test";
     
     public void publicIndex(BulkRequestBuilder brb,String type,String id, XContentBuilder data)
@@ -104,7 +109,7 @@ public class JDONREFv4QueryTests// extends ElasticsearchIntegrationTest
             } catch (ElasticsearchException e) {
             }
             
-            String settings = readFile("./test/resources/index/jdonrefv3es-settings_Query.json");
+            String settings = readFile("./test/resources/index/jdonrefv4-settings_Query.json");
             client().admin().indices().prepareCreate(INDEX_NAME).setSettings(settings).execute().actionGet();
             client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
             
@@ -177,7 +182,8 @@ public class JDONREFv4QueryTests// extends ElasticsearchIntegrationTest
         System.out.println("Test Number "+testNumber++);
         System.out.println("Searching "+voie);
         QueryBuilder qb = (QueryBuilder) new JDONREFv4QueryBuilder(voie);
-        ((JDONREFv4QueryBuilder)qb).mode(JDONREFv4Query.AUTOCOMPLETE);
+        ((JDONREFv4QueryBuilder)qb).mode(JDONREFv4Query.BULK);
+        ((JDONREFv4QueryBuilder)qb).debugDoc(1);
         //QueryBuilder qb = new QueryStringQueryBuilder(voie);
         long start = Calendar.getInstance().getTimeInMillis();
         SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
@@ -200,8 +206,8 @@ public class JDONREFv4QueryTests// extends ElasticsearchIntegrationTest
             hitPrinted = false;
             explanationPrinted = false;
             SearchHit hit = hits[i];
-            Explanation ex = hits[i].explanation();
-            match = assertion.equals(hit.getSource().get("fullName"));
+            Explanation ex = hit.explanation();
+            match = assertion.equals(hit.getId());
             if (ex!=null && Math.abs(hits[i].getScore()-ex.getValue())>0.05)
             {
                 printExplanation(ex);
@@ -218,7 +224,7 @@ public class JDONREFv4QueryTests// extends ElasticsearchIntegrationTest
         Assert.assertTrue(positionMatch<=indice);
         if (note_minimum>-1)
         {
-            if (hits[positionMatch].getScore()<note_minimum)
+            if (positionMatch>-1 && hits[positionMatch].getScore()<note_minimum)
             {
                 if (!hitPrinted)
                 {
@@ -238,117 +244,97 @@ public class JDONREFv4QueryTests// extends ElasticsearchIntegrationTest
     {
         BulkRequestBuilder brb = client().prepareBulk();
         
-        publicIndex(brb,"pays","FR",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne7","FRANCE")
-                .field("fullName","FRANCE")
-                .field("type","pays")
-                .endObject());
-        publicIndex(brb,"pays","DE",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","DE")
-                .field("ligne7","ALLEMAGNE")
-                .field("fullName","ALLEMAGNE")
-                .field("type","pays")
-                .endObject());
-        publicIndex(brb,"commune","75056",XContentFactory.jsonBuilder().startObject()
-                .field("code_postal","75000")
-                .field("code_insee","75056")
-                .field("commune","PARIS")
-                .field("ligne6","PARIS")
-                .field("code_pays","FR")
-                .field("ligne7","FRANCE")
-                .field("fullName","PARIS FRANCE")
-                .field("code_departement","75")
-                .field("type","commune")
-                .endObject());
-        publicIndex(brb,"commune","59500",XContentFactory.jsonBuilder().startObject()
-                .field("code_postal","59500")
-                .field("code_insee","59500")
-                .field("commune","DOUAI")
-                .field("ligne6","DOUAI")
-                .field("code_pays","FR")
-                .field("ligne7","FRANCE")
-                .field("fullName","59500 DOUAI FRANCE")
-                .field("code_departement","59")
-                .field("type","commune")
-                .endObject());
-        publicIndex(brb,"voie","1",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","BOULEVARD DE L HOPITAL")
-                .field("ligne6","75005 PARIS")
-                .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("code_departement","75")
-                .field("code_postal","75005")
-                .field("code_insee","75105")
-                .field("type","voie")
-                .endObject());
-        publicIndex(brb,"voie","2",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","RUE REMY DUHEM")
-                .field("ligne6","59500 DOUAI")
-                .field("ligne7","FRANCE")
-                .field("commune","DOUAI")
-                .field("fullName","RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("code_departement","59")
-                .field("code_postal","59500")
-                .field("code_insee","59500")
-                .field("type","voie")
-                .endObject());
-        publicIndex(brb,"voie","3",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","RUE DE LA FRANCE")
-                .field("ligne6","75013 PARIS")
-                .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","RUE DE LA FRANCE 75013 PARIS FRANCE")
-                .field("code_departement","75")
-                .field("code_postal","75005")
-                .field("code_insee","75113")
-                .field("type","voie")
-                .endObject());
-        publicIndex(brb,"adresse","1",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","24 BOULEVARD DE L HOPITAL")
-                .field("ligne6","75005 PARIS")
-                .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","24 BOULEVARD DE L HOPITAL 75013 PARIS FRANCE")
-                .field("numero",24)
-                .field("code_departement","75")
-                .field("code_postal","75013")
-                .field("code_insee","75013")
-                .field("type","adresse")
-                .endObject());
-        publicIndex(brb,"adresse","2",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","24 RUE DE LA FRANCE")
-                .field("ligne6","75013 PARIS")
-                .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","24 RUE DE LA FRANCE 75013 PARIS FRANCE")
-                .field("numero",24)
-                .field("code_departement","75")
-                .field("code_postal","75005")
-                .field("code_insee","75113")
-                .field("type","adresse")
-                .endObject());
-        publicIndex(brb,"adresse","3",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","75 BOULEVARD DE L HOPITAL")
-                .field("ligne6","75005 PARIS")
-                .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","75 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("numero",75)
-                .field("code_departement","75")
-                .field("code_postal","75005")
-                .field("code_insee","75105")
-                .field("type","adresse")
-                .endObject());
+//        publicIndex(brb,"pays","FR",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne7","FRANCE")
+//                .endObject());
+//        publicIndex(brb,"pays","DE",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","DE")
+//                .field("ligne7","ALLEMAGNE")
+//                .endObject());
+//        publicIndex(brb,"commune","75056",XContentFactory.jsonBuilder().startObject()
+//                .field("code_postal","75000")
+//                .field("code_insee","75056")
+//                .field("commune","PARIS")
+//                .field("ligne6","PARIS")
+//                .field("code_pays","FR")
+//                .field("ligne7","FRANCE")
+//                .field("code_departement","75")
+//                .endObject());
+//        publicIndex(brb,"commune","59500",XContentFactory.jsonBuilder().startObject()
+//                .field("code_postal","59500")
+//                .field("code_insee","59500")
+//                .field("commune","DOUAI")
+//                .field("ligne6","DOUAI")
+//                .field("code_pays","FR")
+//                .field("ligne7","FRANCE")
+//                .field("code_departement","59")
+//                .endObject());
+//        publicIndex(brb,"voie","1",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","BOULEVARD DE L HOPITAL")
+//                .field("ligne6","75005 PARIS")
+//                .field("ligne7","FRANCE")
+//                .field("commune","PARIS")
+//                .field("code_departement","75")
+//                .field("code_postal","75005")
+//                .field("code_insee","75105")
+//                .endObject());
+//        publicIndex(brb,"voie","2",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","RUE REMY DUHEM")
+//                .field("ligne6","59500 DOUAI")
+//                .field("ligne7","FRANCE")
+//                .field("commune","DOUAI")
+//                .field("code_departement","59")
+//                .field("code_postal","59500")
+//                .field("code_insee","59500")
+//                .endObject());
+//        publicIndex(brb,"voie","3",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","RUE DE LA FRANCE")
+//                .field("ligne6","75013 PARIS")
+//                .field("ligne7","FRANCE")
+//                .field("commune","PARIS")
+//                .field("code_departement","75")
+//                .field("code_postal","75005")
+//                .field("code_insee","75113")
+//                .endObject());
+//        publicIndex(brb,"adresse","1",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","24 BOULEVARD DE L HOPITAL")
+//                .field("ligne6","75005 PARIS")
+//                .field("ligne7","FRANCE")
+//                .field("commune","PARIS")
+//                .field("numero",24)
+//                .field("code_departement","75")
+//                .field("code_postal","75013")
+//                .field("code_insee","75013")
+//                .endObject());
+//        publicIndex(brb,"adresse","2",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","24 RUE DE LA FRANCE")
+//                .field("ligne6","75013 PARIS")
+//                .field("ligne7","FRANCE")
+//                .field("commune","PARIS")
+//                .field("numero",24)
+//                .field("code_departement","75")
+//                .field("code_postal","75005")
+//                .field("code_insee","75113")
+//                .endObject());
+//        publicIndex(brb,"adresse","3",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","75 BOULEVARD DE L HOPITAL")
+//                .field("ligne6","75005 PARIS")
+//                .field("ligne7","FRANCE")
+//                .field("commune","PARIS")
+//                .field("numero",75)
+//                .field("code_departement","75")
+//                .field("code_postal","75005")
+//                .field("code_insee","75105")
+//                .endObject());
         
-        for(int i=130;i<135;i++) // inclus donc le numéro 130
+        for(int i=130;i<131;i++) // inclus donc le numéro 130
         {
             publicIndex(brb,"adresse","4"+i,XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
@@ -356,184 +342,160 @@ public class JDONREFv4QueryTests// extends ElasticsearchIntegrationTest
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
-                .field("fullName",i+" RUE REMY DUHEM 59500 DOUAI FRANCE")
                 .field("numero",i)
+                .field("type_de_voie","RUE")
+                .field("libelle", "REMY DUHEM")
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
-                .field("type","adresse")
                 .endObject());
         }
-        
-        publicIndex(brb,"adresse","5",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","131 RUE REMY DUHEM")
-                .field("ligne6","59500 DOUAI")
-                .field("ligne7","FRANCE")
-                .field("commune","DOUAI")
-                .field("fullName","131 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("numero",131)
-                .field("code_departement","59")
-                .field("code_postal","59500")
-                .field("code_insee","59500")
-                .field("type","adresse")
-                .endObject());
-        
-        publicIndex(brb,"adresse","6",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","59 RUE REMY DUHEM")
-                .field("ligne6","59500 DOUAI")
-                .field("ligne7","FRANCE")
-                .field("commune","DOUAI")
-                .field("fullName","59 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("numero",59)
-                .field("code_departement","59")
-                .field("code_postal","59500")
-                .field("code_insee","59500")
-                .field("type","adresse")
-                .endObject());
-        publicIndex(brb,"adresse","7",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","75 RUE REMY DUHEM")
-                .field("ligne6","59500 DOUAI")
-                .field("ligne7","FRANCE")
-                .field("commune","DOUAI")
-                .field("fullName","75 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("numero",75)
-                .field("code_departement","59")
-                .field("code_postal","59500")
-                .field("code_insee","59500")
-                .field("type","adresse")
-                .endObject());
-        publicIndex(brb,"adresse","8",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","130 BOULEVARD DE L HOPITAL")
-                .field("ligne6","75005 PARIS")
-                .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","130 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("numero",130)
-                .field("code_departement","75")
-                .field("code_postal","75005")
-                .field("code_insee","75105")
-                .field("type","adresse")
-                .endObject());
-        publicIndex(brb,"adresse","9",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","59 BOULEVARD DE L HOPITAL")
-                .field("ligne6","75005 PARIS")
-                .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","59 BOULEVARD DE L HOPITAL 75005 PARIS FRANCE")
-                .field("numero",59)
-                .field("code_departement","75")
-                .field("code_postal","75005")
-                .field("code_insee","75105")
-                .field("type","adresse")
-                .endObject());
-        publicIndex(brb,"adresse","10",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne4","59 BOULEVARD DE LA FRANCE")
-                .field("ligne6","02000 HOPITAL")
-                .field("ligne7","FRANCE")
-                .field("commune","HOPITAL")
-                .field("fullName","59 BOULEVARD DE LA FRANCE 02000 HOPITAL FRANCE")
-                .field("numero",59)
-                .field("code_departement","02")
-                .field("code_postal","02000")
-                .field("code_insee","02000")
-                .field("type","adresse")
-                .endObject());
-        publicIndex(brb,"poizon","4",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("poizon_id","KEBAB1")
-                .field("poizon_service",1)
-                .field("ligne1","KEBAB LA P'TITE FRITE")
-                .field("ligne4","130 RUE REMY DUHEM")
-                .field("ligne6","59500 DOUAI")
-                .field("ligne7","FRANCE")
-                .field("commune","DOUAI")
-                .field("fullName","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("numero",130)
-                .field("code_departement","59")
-                .field("code_postal","59500")
-                .field("code_insee","59500")
-                .field("type","poizon")
-                .endObject());
-        publicIndex(brb,"poizon","5",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("poizon_id","KEBAB1")
-                .field("poizon_service",1)
-                .field("ligne1","KEBAB DU COIN")
-                .field("ligne4","131 RUE REMY DUHEM")
-                .field("ligne6","59500 DOUAI")
-                .field("ligne7","FRANCE")
-                .field("commune","DOUAI")
-                .field("fullName","KEBAB DU COIN 131 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("numero",131)
-                .field("code_departement","59")
-                .field("code_postal","59500")
-                .field("code_insee","59500")
-                .field("type","poizon")
-                .endObject());
-        publicIndex(brb,"poizon","6",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("poizon_id","KEBAB2")
-                .field("poizon_service",1)
-                .field("ligne1","KEBAB LA GROSSE FRITE")
-                .field("ligne4","59 RUE REMY DUHEM")
-                .field("ligne6","59500 DOUAI")
-                .field("ligne7","FRANCE")
-                .field("commune","DOUAI")
-                .field("fullName","KEBAB LA GROSSE FRITE 59 RUE REMY DUHEM 59500 DOUAI FRANCE")
-                .field("numero",59)
-                .field("code_departement","59")
-                .field("code_postal","59500")
-                .field("code_insee","59500")
-                .field("type","poizon")
-                .endObject());
-        publicIndex(brb,"poizon","7",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("poizon_id","KEBAB3")
-                .field("poizon_service",1)
-                .field("ligne1","KEBAB DU COIN")
-                .field("ligne4","75 RUE REMY DUHEM")
-                .field("ligne6","75015 PARIS")
-                .field("ligne7","FRANCE")
-                .field("commune","PARIS")
-                .field("fullName","KEBAB DU COIN 75 RUE REMY DUHEM 75015 PARIS FRANCE")
-                .field("numero",75)
-                .field("code_departement","75")
-                .field("code_postal","75015")
-                .field("code_insee","75115")
-                .field("type","poizon")
-                .endObject());
-        publicIndex(brb,"departement","75",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne6","75")
-                .field("ligne7","FRANCE")
-                .field("fullName","75 FRANCE")
-                .field("code_departement","75")
-                .field("type","departement")
-                .endObject());
-        publicIndex(brb,"departement","59",XContentFactory.jsonBuilder().startObject()
-                .field("code_pays","FR")
-                .field("ligne6","59")
-                .field("ligne7","FRANCE")
-                .field("fullName","59 FRANCE")
-                .field("code_departement","59")
-                .field("type","departement")
-                .endObject());
-        
-        for(int i=0;i<10;i++)
-        {
-            String randomCode = "RANDOM"+i;
-            String randomLigne7 = "RANDOM RANDOM "+i+""+i;
-            publicIndex(brb,"pays",randomCode,XContentFactory.jsonBuilder().startObject()
-                  .field("code_pays",randomCode)
-                  .field("ligne7",randomLigne7)
-                  .endObject());
-        }
+//        
+//        publicIndex(brb,"adresse","5",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","131 RUE REMY DUHEM")
+//                .field("ligne6","59500 DOUAI")
+//                .field("ligne7","FRANCE")
+//                .field("commune","DOUAI")
+//                .field("numero",131)
+//                .field("code_departement","59")
+//                .field("code_postal","59500")
+//                .field("code_insee","59500")
+//                .endObject());
+//        
+//        publicIndex(brb,"adresse","6",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","59 RUE REMY DUHEM")
+//                .field("ligne6","59500 DOUAI")
+//                .field("ligne7","FRANCE")
+//                .field("commune","DOUAI")
+//                .field("numero",59)
+//                .field("code_departement","59")
+//                .field("code_postal","59500")
+//                .field("code_insee","59500")
+//                .endObject());
+//        publicIndex(brb,"adresse","7",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","75 RUE REMY DUHEM")
+//                .field("ligne6","59500 DOUAI")
+//                .field("ligne7","FRANCE")
+//                .field("commune","DOUAI")
+//                .field("numero",75)
+//                .field("code_departement","59")
+//                .field("code_postal","59500")
+//                .field("code_insee","59500")
+//                .endObject());
+//        publicIndex(brb,"adresse","8",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","130 BOULEVARD DE L HOPITAL")
+//                .field("ligne6","75005 PARIS")
+//                .field("ligne7","FRANCE")
+//                .field("commune","PARIS")
+//                .field("numero",130)
+//                .field("code_departement","75")
+//                .field("code_postal","75005")
+//                .field("code_insee","75105")
+//                .endObject());
+//        publicIndex(brb,"adresse","9",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","59 BOULEVARD DE L HOPITAL")
+//                .field("ligne6","75005 PARIS")
+//                .field("ligne7","FRANCE")
+//                .field("commune","PARIS")
+//                .field("numero",59)
+//                .field("code_departement","75")
+//                .field("code_postal","75005")
+//                .field("code_insee","75105")
+//                .endObject());
+//        publicIndex(brb,"adresse","10",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne4","59 BOULEVARD DE LA FRANCE")
+//                .field("ligne6","02000 HOPITAL")
+//                .field("ligne7","FRANCE")
+//                .field("commune","HOPITAL")
+//                .field("numero",59)
+//                .field("code_departement","02")
+//                .field("code_postal","02000")
+//                .field("code_insee","02000")
+//                .endObject());
+//        publicIndex(brb,"poizon","4",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("poizon_id","KEBAB1")
+//                .field("poizon_service",1)
+//                .field("ligne1","KEBAB LA P'TITE FRITE")
+//                .field("ligne4","130 RUE REMY DUHEM")
+//                .field("ligne6","59500 DOUAI")
+//                .field("ligne7","FRANCE")
+//                .field("commune","DOUAI")
+//                .field("numero",130)
+//                .field("code_departement","59")
+//                .field("code_postal","59500")
+//                .field("code_insee","59500")
+//                .endObject());
+//        publicIndex(brb,"poizon","5",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("poizon_id","KEBAB1")
+//                .field("poizon_service",1)
+//                .field("ligne1","KEBAB DU COIN")
+//                .field("ligne4","131 RUE REMY DUHEM")
+//                .field("ligne6","59500 DOUAI")
+//                .field("ligne7","FRANCE")
+//                .field("commune","DOUAI")
+//                .field("numero",131)
+//                .field("code_departement","59")
+//                .field("code_postal","59500")
+//                .field("code_insee","59500")
+//                .endObject());
+//        publicIndex(brb,"poizon","6",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("poizon_id","KEBAB2")
+//                .field("poizon_service",1)
+//                .field("ligne1","KEBAB LA GROSSE FRITE")
+//                .field("ligne4","59 RUE REMY DUHEM")
+//                .field("ligne6","59500 DOUAI")
+//                .field("ligne7","FRANCE")
+//                .field("commune","DOUAI")
+//                .field("numero",59)
+//                .field("code_departement","59")
+//                .field("code_postal","59500")
+//                .field("code_insee","59500")
+//                .endObject());
+//        publicIndex(brb,"poizon","7",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("poizon_id","KEBAB3")
+//                .field("poizon_service",1)
+//                .field("ligne1","KEBAB DU COIN")
+//                .field("ligne4","75 RUE REMY DUHEM")
+//                .field("ligne6","75015 PARIS")
+//                .field("ligne7","FRANCE")
+//                .field("commune","PARIS")
+//                .field("numero",75)
+//                .field("code_departement","75")
+//                .field("code_postal","75015")
+//                .field("code_insee","75115")
+//                .endObject());
+//        publicIndex(brb,"departement","75",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne6","75")
+//                .field("ligne7","FRANCE")
+//                .field("code_departement","75")
+//                .endObject());
+//        publicIndex(brb,"departement","59",XContentFactory.jsonBuilder().startObject()
+//                .field("code_pays","FR")
+//                .field("ligne6","59")
+//                .field("ligne7","FRANCE")
+//                .field("code_departement","59")
+//                .endObject());
+//        
+//        for(int i=0;i<10;i++)
+//        {
+//            String randomCode = "RANDOM"+i;
+//            String randomLigne7 = "RANDOM RANDOM "+i+""+i;
+//            publicIndex(brb,"pays",randomCode,XContentFactory.jsonBuilder().startObject()
+//                  .field("code_pays",randomCode)
+//                  .field("ligne7",randomLigne7)
+//                  .endObject());
+//        }
         
         BulkResponse br = brb.execute().actionGet();
         if (br.hasFailures()) System.out.println(br.buildFailureMessage());
@@ -568,225 +530,229 @@ public class JDONREFv4QueryTests// extends ElasticsearchIntegrationTest
     {
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
-
+        
         // 183 tests au total
         
-        searchExactAdresse("130 RUE REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 RUE REMY DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        refresh();
-        searchExactAdresse("130 RUE REMY DUHEM 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("130 RUE REMY 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DUHEM 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DUHEM DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 DUHEM 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,135.0f);
-        searchExactAdresse("130 DUHEM DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f); // .. 
-        searchExactAdresse("130 DUHEM 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 REMY 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 REMY DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 REMY 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+        GetResponse resp = client().prepareGet().setFields("fullName").setId("4130").setFetchSource(true).setIndex(INDEX_NAME).setType("adresse").execute().actionGet();
+        System.out.println("Doc 1 source:" +resp.getSourceAsString());
+        System.out.println("Doc 1 fullName:" +resp.getField("fullName").getValue());
         
-        // 59505 non pris en charge. dirty results
-        /*refresh();
-        searchExactAdresse("130 RUE REMY DUHEM 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,180.0f);
-        searchExactAdresse("130 RUE REMY 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DUHEM 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 RUE REMY 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 RUE DUHEM 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 REMY DUHEM 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 DUHEM 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 DUHEM 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 REMY 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        refresh();
-        searchExactAdresse("130 RUE REMY DUHEM 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,180.0f);
-        searchExactAdresse("130 RUE REMY 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DUHEM 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 RUE REMY 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 RUE DUHEM 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 REMY DUHEM 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 DUHEM 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 DUHEM 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 REMY 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);*/
-        
-        refresh();
-        searchExactAdresse("130 RUE REMY DUHEM 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("130 RUE REMY 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DUHEM 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 RUE REMY 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 RUE DUHEM 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY DUHEM 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 DUHEM 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 DUHEM 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 REMY 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 RUE REMY DUHEM 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,200.0f);
-        searchExactAdresse("130 RUE REMY 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE DUHEM 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 REMY DUHEM 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("130 RUE REMY DUHEM 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 RUE REMY 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 RUE DUHEM 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY DUHEM 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 DUHEM 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("130 DUHEM 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("130 REMY 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("130 REMY 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        
-        refresh();
-        searchExactAdresse("RUE REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("RUE REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("REMY DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY DUHEM DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,200.0f);
-        searchExactAdresse("RUE REMY DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE DUHEM DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("REMY DUHEM DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("DUHEM DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("REMY DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("REMY 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        refresh();
-        searchExactAdresse("RUE REMY DUHEM 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("RUE REMY 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE DUHEM 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("REMY DUHEM 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY DUHEM 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("RUE DUHEM 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("REMY DUHEM 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("RUE REMY DUHEM DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,200.0f);
-        searchExactAdresse("RUE REMY DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("RUE DUHEM DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("REMY DUHEM DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("DUHEM 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("DUHEM DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("DUHEM 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("REMY 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("REMY DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("REMY 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f); 
-        refresh();
-        searchExactAdresse("RUE REMY DUHEM 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("RUE REMY 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE DUHEM 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("REMY DUHEM 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY DUHEM 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE DUHEM 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("REMY DUHEM 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("DUHEM 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("DUHEM 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("REMY 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("REMY 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("RUE REMY DUHEM 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,200.0f);
-        searchExactAdresse("RUE REMY 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE DUHEM 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("REMY DUHEM 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
-        searchExactAdresse("RUE REMY 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("RUE DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("REMY DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("DUHEM 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("REMY 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("REMY 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        
-        /*refresh();
-        searchExactAdresse("RUE REMY DUHEM 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,180.0f);
-        searchExactAdresse("RUE REMY 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("RUE DUHEM 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("REMY DUHEM 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("RUE REMY DUHEM 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("RUE REMY 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("RUE DUHEM 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("REMY DUHEM 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("DUHEM 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("DUHEM 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
-        searchExactAdresse("REMY 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("REMY 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
-        searchExactAdresse("RUE REMY DUHEM 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
-        searchExactAdresse("RUE REMY 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("RUE DUHEM 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("REMY DUHEM 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
-        searchExactAdresse("RUE REMY DUHEM 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
-        searchExactAdresse("RUE REMY 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
-        searchExactAdresse("RUE DUHEM 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
-        searchExactAdresse("REMY DUHEM 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
-        searchExactAdresse("DUHEM 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
-        searchExactAdresse("DUHEM 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
-        searchExactAdresse("REMY 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,30.0f);
-        searchExactAdresse("REMY 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);*/
-        
-        refresh();
-        searchExactAdresse("59500 DOUAI FRANCE","59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("59500 FRANCE","59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("59500 DOUAI","59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("59500","59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("DOUAI FRANCE","59500 DOUAI FRANCE",0,199.99f);
-        searchExactAdresse("DOUAI","59500 DOUAI FRANCE",0,199.99f);
-        refresh();
-        searchExactAdresse("59505 DOUAI FRANCE","59500 DOUAI FRANCE",0,50.0f); // réduction du score : 59505 n'est pas pris en charge
-        //searchExactAdresse("59505 FRANCE","59500 DOUAI FRANCE"); // 59505 n'est pas encore pris en charge
-        searchExactAdresse("59505 DOUAI","59500 DOUAI FRANCE",0,20.0f); // réduction du score : 59505 n'est pas pris en charge
-        //searchExactAdresse("59505","59500 DOUAI FRANCE"); // 59505 n'est pas encore pris en charge
-        
-        searchExactAdresse("59 59500 DOUAI","59500 DOUAI FRANCE",0,200.0f);
-        
-        refresh();
-        searchExactAdresse("59 DOUAI FRANCE","59500 DOUAI FRANCE",0,180.0f);
-        searchExactAdresse("59 DOUAI","59500 DOUAI FRANCE",0,170.0f); // mark
-        //searchExactAdresse("59 FRANCE","59 FRANCE"); // DOUAI n'est pas le meilleur résultat dans ce cas !
-
-        refresh();
-        searchExactAdresse("59 FRANCE","59 FRANCE",0,199.99f);
-        searchExactAdresse("59","59 FRANCE",0,199.99f);
-        //searchExactAdresse("59 FR","59 FRANCE",0,199.99f); // not supported for now
-        //searchExactAdresse("59 FR FRANCE","59 FRANCE",0,199.99f);
-        
-        refresh();
-        searchExactAdresse("FRANCE","FRANCE",0,199.99f);
-        searchExactAdresse("FR FRANCE","FRANCE",0,199.99f);
-        
-        refresh();
-        searchExactAdresse("KEBAB FRITE DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",1,100.0f);
-        searchExactAdresse("KEBAB DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
-        searchExactAdresse("KEBAB RUE REMY DUHEM","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
+        searchExactAdresse("130 rue remy duhem 59500 douai france","4130",0,199.99f);
+//        searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 DUHEM 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY 59500 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        refresh();
+//        searchExactAdresse("130 RUE REMY DUHEM 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("130 RUE REMY 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 DUHEM 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,135.0f);
+//        searchExactAdresse("130 DUHEM DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f); // .. 
+//        searchExactAdresse("130 DUHEM 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 REMY 59500 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 REMY DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 REMY 59500","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        
+//        // 59505 non pris en charge. dirty results
+//        /*refresh();
+//        searchExactAdresse("130 RUE REMY DUHEM 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,180.0f);
+//        searchExactAdresse("130 RUE REMY 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 RUE REMY 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 RUE DUHEM 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 REMY DUHEM 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 DUHEM 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 DUHEM 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 REMY 59505 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY 59505 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        refresh();
+//        searchExactAdresse("130 RUE REMY DUHEM 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,180.0f);
+//        searchExactAdresse("130 RUE REMY 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 RUE REMY 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 RUE DUHEM 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 REMY DUHEM 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 DUHEM 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 DUHEM 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 REMY 59505 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY 59505","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);*/
+//        
+//        refresh();
+//        searchExactAdresse("130 RUE REMY DUHEM 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("130 RUE REMY 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 RUE REMY 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 RUE DUHEM 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY DUHEM 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 DUHEM 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 DUHEM DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 DUHEM 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 REMY 59 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY 59 FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,200.0f);
+//        searchExactAdresse("130 RUE REMY 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE DUHEM 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 REMY DUHEM 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("130 RUE REMY DUHEM 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 RUE REMY 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 RUE DUHEM 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY DUHEM 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 DUHEM 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("130 DUHEM 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("130 REMY 59 DOUAI","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("130 REMY 59","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        
+//        refresh();
+//        searchExactAdresse("RUE REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("RUE REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("REMY DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("REMY DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY DUHEM DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,200.0f);
+//        searchExactAdresse("RUE REMY DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE DUHEM DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("REMY DUHEM DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("DUHEM 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("DUHEM DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("DUHEM 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("REMY 59500 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("REMY DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("REMY 59500 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        refresh();
+//        searchExactAdresse("RUE REMY DUHEM 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("RUE REMY 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE DUHEM 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("REMY DUHEM 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY DUHEM 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("RUE DUHEM 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("REMY DUHEM 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("RUE REMY DUHEM DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,200.0f);
+//        searchExactAdresse("RUE REMY DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("RUE DUHEM DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("REMY DUHEM DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("DUHEM 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("DUHEM DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("DUHEM 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("REMY 59500 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("REMY DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("REMY 59500","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f); 
+//        refresh();
+//        searchExactAdresse("RUE REMY DUHEM 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("RUE REMY 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE DUHEM 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("REMY DUHEM 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY DUHEM 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE DUHEM 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("REMY DUHEM 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("DUHEM 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("DUHEM 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("REMY 59 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("REMY 59 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("RUE REMY DUHEM 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,200.0f);
+//        searchExactAdresse("RUE REMY 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE DUHEM 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("REMY DUHEM 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
+//        searchExactAdresse("RUE REMY 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("RUE DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("REMY DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("DUHEM 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("DUHEM 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("REMY 59 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("REMY 59","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        
+//        /*refresh();
+//        searchExactAdresse("RUE REMY DUHEM 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,180.0f);
+//        searchExactAdresse("RUE REMY 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("RUE DUHEM 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("REMY DUHEM 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("RUE REMY DUHEM 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("RUE REMY 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("RUE DUHEM 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("REMY DUHEM 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("DUHEM 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("DUHEM 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
+//        searchExactAdresse("REMY 59505 DOUAI FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("REMY 59505 FRANCE","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
+//        searchExactAdresse("RUE REMY DUHEM 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
+//        searchExactAdresse("RUE REMY 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("RUE DUHEM 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("REMY DUHEM 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,120.0f);
+//        searchExactAdresse("RUE REMY DUHEM 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,100.0f);
+//        searchExactAdresse("RUE REMY 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
+//        searchExactAdresse("RUE DUHEM 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
+//        searchExactAdresse("REMY DUHEM 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
+//        searchExactAdresse("DUHEM 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
+//        searchExactAdresse("DUHEM 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);
+//        searchExactAdresse("REMY 59505 DOUAI","RUE REMY DUHEM 59500 DOUAI FRANCE",0,30.0f);
+//        searchExactAdresse("REMY 59505","RUE REMY DUHEM 59500 DOUAI FRANCE",0,60.0f);*/
+//        
+//        refresh();
+//        searchExactAdresse("59500 DOUAI FRANCE","59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("59500 FRANCE","59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("59500 DOUAI","59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("59500","59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("DOUAI FRANCE","59500 DOUAI FRANCE",0,199.99f);
+//        searchExactAdresse("DOUAI","59500 DOUAI FRANCE",0,199.99f);
+//        refresh();
+//        searchExactAdresse("59505 DOUAI FRANCE","59500 DOUAI FRANCE",0,50.0f); // réduction du score : 59505 n'est pas pris en charge
+//        //searchExactAdresse("59505 FRANCE","59500 DOUAI FRANCE"); // 59505 n'est pas encore pris en charge
+//        searchExactAdresse("59505 DOUAI","59500 DOUAI FRANCE",0,20.0f); // réduction du score : 59505 n'est pas pris en charge
+//        //searchExactAdresse("59505","59500 DOUAI FRANCE"); // 59505 n'est pas encore pris en charge
+//        
+//        searchExactAdresse("59 59500 DOUAI","59500 DOUAI FRANCE",0,200.0f);
+//        
+//        refresh();
+//        searchExactAdresse("59 DOUAI FRANCE","59500 DOUAI FRANCE",0,180.0f);
+//        searchExactAdresse("59 DOUAI","59500 DOUAI FRANCE",0,170.0f); // mark
+//        //searchExactAdresse("59 FRANCE","59 FRANCE"); // DOUAI n'est pas le meilleur résultat dans ce cas !
+//
+//        refresh();
+//        searchExactAdresse("59 FRANCE","59 FRANCE",0,199.99f);
+//        searchExactAdresse("59","59 FRANCE",0,199.99f);
+//        //searchExactAdresse("59 FR","59 FRANCE",0,199.99f); // not supported for now
+//        //searchExactAdresse("59 FR FRANCE","59 FRANCE",0,199.99f);
+//        
+//        refresh();
+//        searchExactAdresse("FRANCE","FRANCE",0,199.99f);
+//        searchExactAdresse("FR FRANCE","FRANCE",0,199.99f);
+//        
+//        refresh();
+//        searchExactAdresse("KEBAB FRITE DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",1,100.0f);
+//        searchExactAdresse("KEBAB DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
+//        searchExactAdresse("KEBAB RUE REMY DUHEM","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
     }
 }

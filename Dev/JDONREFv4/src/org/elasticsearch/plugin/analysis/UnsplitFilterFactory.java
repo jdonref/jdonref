@@ -1,7 +1,7 @@
 package org.elasticsearch.plugin.analysis;
 
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.ngram.UnsplitFilter;
+import org.apache.lucene.analysis.UnsplitFilter;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
 import org.elasticsearch.common.settings.Settings;

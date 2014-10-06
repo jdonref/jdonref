@@ -1,4 +1,4 @@
-package org.apache.lucene.analysis.ngram;
+package org.apache.lucene.analysis;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
@@ -11,8 +11,7 @@ import org.apache.lucene.util.Version;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import org.apache.lucene.analysis.payloads.IdentityEncoder;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
@@ -33,7 +32,7 @@ public class TokenCountPayloadsFilter extends TokenFilter {
     
     IntegerEncoder encoder = new IntegerEncoder();
     
-    protected Hashtable<BytesRef,Integer> payloadsCounts = new Hashtable<>();
+    protected ConcurrentHashMap<BytesRef,Integer> payloadsCounts = new ConcurrentHashMap<>();
     protected ArrayList<Token> tokens = new ArrayList<>();
     
     protected boolean updateOffsets; // never if the length changed before this filter
@@ -90,15 +89,18 @@ public class TokenCountPayloadsFilter extends TokenFilter {
     
     public void addToken(char[] curTermBuffer, int curTermLength, int curCodePointCount, int positionIncrement, int positionLength, int tokStart, int tokEnd, BytesRef payload)
     {
-        Token t = new Token(curTermBuffer, curTermLength, curCodePointCount, positionIncrement, positionLength, tokStart, tokEnd, payload);
+        if (payload!=null)
+        {
+            Token t = new Token(curTermBuffer, curTermLength, curCodePointCount, positionIncrement, positionLength, tokStart, tokEnd, payload);
         
-        Integer count = payloadsCounts.get(payload);
-        if (count==null)
-            payloadsCounts.put(payload,1);
-        else
-            payloadsCounts.put(payload,count+1);
+            Integer count = payloadsCounts.get(payload);
+            if (count==null)
+                payloadsCounts.put(payload,1);
+            else
+                payloadsCounts.put(payload,count+1);
         
-        tokens.add(t);
+            tokens.add(t);
+        }
     }
     
     public BytesRef getNewPayload(BytesRef payload,int count)

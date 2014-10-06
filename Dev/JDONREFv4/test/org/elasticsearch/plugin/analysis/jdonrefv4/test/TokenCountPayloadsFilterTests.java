@@ -14,8 +14,6 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.termvector.TermVectorResponse;
 import org.elasticsearch.common.xcontent.XContentFactory;
-//import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
-//import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.junit.Assert;
 import org.junit.Test;

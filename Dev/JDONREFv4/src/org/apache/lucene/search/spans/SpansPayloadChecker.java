@@ -1,6 +1,6 @@
 package org.apache.lucene.search.spans;
 
-import java.util.Arrays;
+import org.apache.lucene.search.spans.checkers.PayloadChecker;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermContext;
@@ -12,11 +12,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.util.BytesRef;
 
 /**
  * A Spans that is formed from the subspans of a GroupedPayloadSpanQuery
@@ -24,7 +20,7 @@ import org.apache.lucene.util.BytesRef;
  * 
  * @author Julien
  */
-public class SpansPayloadVersusType extends Spans
+public class SpansPayloadChecker extends Spans
 {
   protected boolean firstTime = true;
   protected boolean more = false;
@@ -41,18 +37,9 @@ public class SpansPayloadVersusType extends Spans
   protected List<byte[]> matchPayload;
 
   protected final MultiPayloadTermSpans[] subSpansByDoc;
-  protected ConcurrentHashMap<String,BytesRef[]> requiredPayloads;
-  protected String field = "_type";
   
-  public void setField(String field)
-  {
-      this.field = field;
-  }
-
-  public void setRequiredPayloads(ConcurrentHashMap<String, BytesRef[]> requiredPayloads) {
-        this.requiredPayloads = requiredPayloads;
-  }
-
+  protected PayloadChecker checker;
+  
   // Even though the array is probably almost sorted, InPlaceMergeSorter will likely
   // perform better since it has a lower overhead than TimSorter for small arrays
   private final InPlaceMergeSorter sorter = new InPlaceMergeSorter() {
@@ -66,9 +53,9 @@ public class SpansPayloadVersusType extends Spans
     }
   };
 
-  protected PayloadVersusTypeSpanQuery query;
+  protected PayloadCheckerSpanQuery query;
   
-  public SpansPayloadVersusType(PayloadVersusTypeSpanQuery gpsQuery, AtomicReaderContext context, Bits acceptDocs, Map<Term,TermContext> termContexts) throws IOException {
+  public SpansPayloadChecker(PayloadCheckerSpanQuery gpsQuery, AtomicReaderContext context, Bits acceptDocs, Map<Term,TermContext> termContexts, PayloadChecker checker) throws IOException {
     MultiPayloadSpanTermQuery[] clauses = gpsQuery.getClauses();
     if (clauses.length<1)
         throw new IllegalArgumentException("Less than 1 clauses: "
@@ -81,6 +68,8 @@ public class SpansPayloadVersusType extends Spans
       subSpansByDoc[i] = subSpans[i]; // used in toSameDoc()
     }
     query = gpsQuery; // kept for toString() only.
+    this.checker = checker;
+    this.checker.setQuery(query);
   }
 
   // inherit javadocs
@@ -202,132 +191,21 @@ public class SpansPayloadVersusType extends Spans
     return true;
   }
   
-  ConcurrentHashMap<byte[],Integer> countPayload = new ConcurrentHashMap<>();
-  ConcurrentHashMap<byte[],Integer> totalCountPayload = new ConcurrentHashMap<>();
-  
-  protected boolean checkNumTokenByPayloads(BytesRef[] payloads) throws IOException
+  public boolean checkPayloads() throws IOException
   {
-      countPayload.clear();
-      totalCountPayload.clear();
+      checker.clear();
       
       for(int i=0;i<subSpans.length;i++)
       {
-          Collection<byte[]> payloads_i = subSpans[i].getPayload();
-          Collection<Integer> termCountsByPayload = subSpans[i].termCountsByPayload();
-          Iterator<byte[]> iterator = payloads_i.iterator();
-          Iterator<Integer> termCountsIterator = termCountsByPayload.iterator();
-          
-          int j=0;
-          while(iterator.hasNext())
+          do
           {
-              byte[] payload_j = iterator.next();
-              for(int k=0;k<payloads.length;k++)
-              {
-                byte[] payload_k = payloads[k].bytes;
-                if (Arrays.equals(payload_k, payload_j))
-                {
-                    Integer count = countPayload.get(payload_k);
-                    if (count==null) count=1;
-                    else count++;
-                    countPayload.put(payload_k,count);
-                    totalCountPayload.put(payload_k,termCountsIterator.next());
-                }
-              }
-              j++;
-          }
-      }
-      
-      for(int k=0;k<payloads.length;k++)
-      {
-          int count = countPayload.get(payloads[k].bytes);
-          int total = totalCountPayload.get(payloads[k].bytes);
-          if (count==0 || count!=total)
+            if (!checker.checkNextPayload(subSpans[i]))
               return false;
-      }
-      return true;
-  }
-
-  protected boolean checkNumTokenByOnePayload(BytesRef payload) throws IOException
-  {
-      int count = 0;
-      int total = 0;
-      byte[] payload_k = payload.bytes;
-      for(int i=0;i<subSpans.length;i++)
-      {
-          Collection<byte[]> payloads_i = subSpans[i].getPayload();
-          Collection<Integer> termCountsByPayload = subSpans[i].termCountsByPayload();
-          Iterator<byte[]> iterator = payloads_i.iterator();
-          Iterator<Integer> termCountsIterator = termCountsByPayload.iterator();
-          
-          int j=0;
-          while(iterator.hasNext())
-          {
-              byte[] payload_j = iterator.next();
-              if (Arrays.equals(payload_k, payload_j))
-              {
-                  count++;
-                  total = termCountsIterator.next();
-              }
-              j++;
           }
-      }
-
-      return count>0 && total==count;
-  }
-  
-  /**
-   * Check subSpans for payload by type
-   * @param lastpayloads
-   * @param index
-   * @return 
-   */
-  protected boolean checkPayloads(BytesRef[] payloads) throws IOException
-  {
-      if (payloads.length==0)
-          return true;
-      if (payloads.length==1)
-          return checkNumTokenByOnePayload(payloads[0]);
-      
-      return checkNumTokenByPayloads(payloads);
-  }
-  
-  /**
-   * Check subSpans for payload by one field
-   * @param lastpayloads
-   * @param index
-   * @return 
-   */
-  protected boolean checkPayloadsByOneField(String field) throws IOException
-  {
-      Document d = subSpans[0].document();
-      
-      String[] types = d.getValues(field);
-      boolean checked = true;
-      
-      for(int i=0;i<types.length;i++)
-      {
-          String type = types[i];
-          if (requiredPayloads.get(type)!=null)
-          {
-              // TODO : improve check
-              checked &= checkPayloads(requiredPayloads.get(type));
-          }
+          while (subSpans[i].nextPayload());
       }
       
-      return checked;
-  }
-  
-  /**
-   * Check subSpans for payload by one field
-   * @param lastpayloads
-   * @param index
-   * @return 
-   */
-  protected boolean checkPayloads() throws IOException
-  {
-      if (requiredPayloads!=null)
-          return checkPayloadsByOneField(field);
-      return true;
+      return checker.check();
   }
   
   /** Order the subSpans within the same document by advancing all later spans

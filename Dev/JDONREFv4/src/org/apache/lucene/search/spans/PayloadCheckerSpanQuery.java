@@ -28,26 +28,25 @@
  */
 package org.apache.lucene.search.spans;
 
+import org.apache.lucene.search.spans.checkers.PayloadChecker;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermContext;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Bits;
-import org.apache.lucene.util.BytesRef;
 
 /**
- * Matches span where payload for a given type.
+ * Matches span where payload checks the given rules.
  * @author Julien
  */
-public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
+public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
 {
     protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
   
@@ -55,8 +54,7 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
     
     protected String field;
     
-    protected ConcurrentHashMap<String,BytesRef[]> requiredPayloads = new ConcurrentHashMap<>();
-    protected String requiredField;
+    protected PayloadChecker checker;
     
     public int termCountPayloadFactor() {
         return termCountPayloadFactor();
@@ -82,16 +80,13 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
             clause.extractTerms(terms);
         }
     }
-    
-    public void addRequiredPayloads(ConcurrentHashMap<String,BytesRef[]> requiredPayloads)
-    {
-        this.requiredPayloads.putAll(requiredPayloads);
+
+    public PayloadChecker getChecker() {
+        return checker;
     }
-   
-    public void addRequiredPayloads(String requiredField,ConcurrentHashMap<String,BytesRef[]> requiredPayloads)
-    {
-        this.requiredField = requiredField;
-        this.requiredPayloads.putAll(requiredPayloads);
+
+    public void setChecker(PayloadChecker checker) {
+        this.checker = checker;
     }
     
     /** Construct a GroupedPayloadSpanQuery.  Matches spans matching a span from each
@@ -99,7 +94,7 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
      * Term without payloads must be grouped together.
      * @param clauses the clauses to find near each other
      * */
-    public PayloadVersusTypeSpanQuery(MultiPayloadSpanTermQuery... clauses) {
+    public PayloadCheckerSpanQuery(MultiPayloadSpanTermQuery... clauses) {
         // copy clauses array into an ArrayList
         this.clauses = new ArrayList<>(clauses.length);
         for (int i = 0; i < clauses.length; i++) {
@@ -123,14 +118,7 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
         if (clauses.isEmpty())                      // optimize 0-clause case
           return new SpanOrQuery(getClauses()).getSpans(context, acceptDocs, termContexts);
         
-        SpansPayloadVersusType spans = new SpansPayloadVersusType(this, context, acceptDocs, termContexts);
-        
-        if (requiredPayloads!=null)
-        {
-            spans.setRequiredPayloads(this.requiredPayloads);
-            if (requiredField!=null)
-                spans.setField(requiredField);
-        }
+        SpansPayloadChecker spans = new SpansPayloadChecker(this, context, acceptDocs, termContexts, checker);
         
         return spans;
     }
@@ -141,17 +129,17 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final PayloadVersusTypeSpanQuery gpsQuery = (PayloadVersusTypeSpanQuery) o;
+        final PayloadCheckerSpanQuery gpsQuery = (PayloadCheckerSpanQuery) o;
 
         return clauses.equals(gpsQuery.clauses) && 
-                requiredPayloads.equals(gpsQuery.requiredPayloads) &&
+                checker.equals(gpsQuery.checker) &&
                   termCountPayloadFactor == gpsQuery.termCountPayloadFactor;
     }
     
     @Override
     public String toString(String field) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("GroupedPayloadSpan([");
+        buffer.append("PayloadCheckerSpan([");
         Iterator<MultiPayloadSpanTermQuery> i = clauses.iterator();
         while (i.hasNext()) {
             SpanQuery clause = i.next();
@@ -160,7 +148,9 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
                 buffer.append(", ");
             }
         }
-        buffer.append("])");
+        buffer.append("]");
+        buffer.append(checker.toString());
+        buffer.append(")");
         return buffer.toString();
     }
    
@@ -169,13 +159,13 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
         int h = clauses.hashCode();
         h ^= (h << 10) | (h >>> 23);
         h ^= Float.floatToRawIntBits(getBoost());
-        h ^= requiredPayloads.hashCode();
+        h ^= checker.hashCode();
         h ^= termCountPayloadFactor;
         return h;
     }
     
     @Override
-    public PayloadVersusTypeSpanQuery clone() {
+    public PayloadCheckerSpanQuery clone() {
         int sz = clauses.size();
         MultiPayloadSpanTermQuery[] newClauses = new MultiPayloadSpanTermQuery[sz];
 
@@ -183,9 +173,9 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
             newClauses[i] = (MultiPayloadSpanTermQuery) clauses.get(i).clone();
         }
         
-        PayloadVersusTypeSpanQuery soq = new PayloadVersusTypeSpanQuery(newClauses);
+        PayloadCheckerSpanQuery soq = new PayloadCheckerSpanQuery(newClauses);
         
-        soq.addRequiredPayloads(requiredField,new ConcurrentHashMap<>(requiredPayloads));
+        soq.setChecker(checker);
         
         soq.setTermCountPayloadFactor(termCountPayloadFactor);
         
@@ -194,7 +184,7 @@ public class PayloadVersusTypeSpanQuery extends SpanQuery implements Cloneable
     
     @Override
     public Query rewrite(IndexReader reader) throws IOException {
-        PayloadVersusTypeSpanQuery clone = null;
+        PayloadCheckerSpanQuery clone = null;
         for (int i = 0; i < clauses.size(); i++) {
             MultiPayloadSpanTermQuery c = clauses.get(i);
             MultiPayloadSpanTermQuery query = (MultiPayloadSpanTermQuery) c.rewrite(reader);

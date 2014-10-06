@@ -8,6 +8,7 @@ import org.apache.lucene.util.BytesRef;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.document.Document;
@@ -30,11 +31,49 @@ public class MultiPayloadTermSpans extends TermSpans
     public static IntegerEncoder encoder = new IntegerEncoder();
     
     protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
-  
+    
     Collection<byte[]> payloads = new ArrayList<>();
     Collection<Integer> termCountsByPayload = new ArrayList<>();
     protected Bits acceptDocs;
     protected AtomicReader reader;
+    
+    Iterator<byte[]> currentPayloads;
+    Iterator<Integer> currentCountsByPayload;
+    byte[] currentPayload;
+    int currentCountByPayload;
+    
+    public byte[] getCurrentPayload()
+    {
+        return currentPayload;
+    }
+    
+    public int getCurrentCountByPayload()
+    {
+        return currentCountByPayload;
+    }
+    
+    public boolean nextPayload()
+    {
+        if (currentPayloads.hasNext())
+        {
+            assert(currentCountsByPayload.hasNext());
+            currentPayload = currentPayloads.next();
+            currentCountByPayload = currentCountsByPayload.next();
+            return true;
+        }
+        else
+        {
+            currentPayload = null;
+            currentCountByPayload = -1;
+        }
+        return false;
+    }
+    
+    public void resetPayloads()
+    {
+        currentPayloads = payloads.iterator();
+        currentCountsByPayload = termCountsByPayload.iterator();
+    }
     
     public int termCountPayloadFactor()
     {
@@ -117,14 +156,28 @@ public class MultiPayloadTermSpans extends TermSpans
         return acceptDocs;
     }
     
+    protected Document document;
+    protected int documentDoc;
+    
     public Document document() throws IOException
     {
-        return reader==null?null:reader.document(doc);
+        if (document==null || doc!=documentDoc)
+        {
+            document = reader==null?null:reader.document(doc);
+        }
+        return document;
     }
+    
+    protected Fields fields;
+    protected int fieldsDoc;
     
     public Fields termVector() throws IOException
     {
-        return reader==null?null:reader.getTermVectors(doc);
+        if (fields==null || doc!=fieldsDoc)
+        {
+            fields = reader==null?null:reader.getTermVectors(doc);
+        }
+        return fields;
     }
     
     @Override
@@ -139,6 +192,8 @@ public class MultiPayloadTermSpans extends TermSpans
         position = postings.nextPosition();
         count++;
         readPayloads();
+        resetPayloads();
+        nextPayload();
         readPayload = true;
         return true;
     }
@@ -156,6 +211,8 @@ public class MultiPayloadTermSpans extends TermSpans
         position = postings.nextPosition();
         count++;
         readPayloads();
+        resetPayloads();
+        nextPayload();
         readPayload = true;
         return true;
     }
@@ -166,9 +223,13 @@ public class MultiPayloadTermSpans extends TermSpans
         do {
             BytesRef payload = postings.getPayload();
             
-            payloads.add(convertPayload(extractPayload(payload)));
-            termCountsByPayload.add(extractCountTermByPayload(payload));
-            
+            if (payload!=null) // TODO : understand how it can be null
+            {
+                byte[] newpayload = convertPayload(extractPayload(payload));
+                payloads.add(newpayload);
+                int totalCount = extractCountTermByPayload(payload);
+                termCountsByPayload.add(totalCount);
+            }
             position = postings.nextPosition();
         } while (count++ < freq);
     }

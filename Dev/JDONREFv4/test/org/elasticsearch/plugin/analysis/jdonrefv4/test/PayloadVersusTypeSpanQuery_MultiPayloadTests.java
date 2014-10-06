@@ -24,9 +24,9 @@ import org.junit.Test;
  *
  * @author Julien
  */
-public class PayloadVersusTypeSpanQueryTests extends QueryTests
+public class PayloadVersusTypeSpanQuery_MultiPayloadTests extends QueryTests
 {
-    public PayloadVersusTypeSpanQueryTests()
+    public PayloadVersusTypeSpanQuery_MultiPayloadTests()
     {
         settingsFileName = "./test/resources/index/PayloadVersusTypeSpanQuery-settings.json";
         INDEX_NAME = "test";
@@ -74,10 +74,14 @@ public class PayloadVersusTypeSpanQueryTests extends QueryTests
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
         // NB: no search analyzer !
-        searchExactAdresse("aa bb","AA BB","CC",1); // match 1 only
-        searchExactAdresse("aa bb dd","AA BB","CC",1); // match 1 only
-        searchExactAdresse("aa","AA","CC",1); // match 2 only
+        searchExactAdresse("aa bb","AA BB","CC",0); // no match
+        searchExactAdresse("aa bb dd","AA BB","CC",0); // no match
+        searchExactAdresse("aa","AA","CC",0); // no match
         searchExactAdresse("cc","AA","CC",0); // no match
+        
+        searchExactAdresse("aa cc","AA","CC",1); // match 2
+        searchExactAdresse("cc aa bb","AA BB","CC",1); // match 1
+        searchExactAdresse("cc aa bb dd","AA BB","CC",1); // match 1
     }
 
     @Override
@@ -93,8 +97,9 @@ public class PayloadVersusTypeSpanQueryTests extends QueryTests
         }
         
         IntegerEncoder encoder = new IntegerEncoder();
-        BytesRef bytes = encoder.encode("1".toCharArray());
-        qb.requiredPayloads("payloadversustypespanquery", new BytesRef[]{bytes});
+        BytesRef bytes1 = encoder.encode("1".toCharArray());
+        BytesRef bytes2 = encoder.encode("2".toCharArray());
+        qb.requiredPayloads("payloadversustypespanquery", new BytesRef[]{bytes1,bytes2});
         qb.termCountPayloadFactor(1000);
         
         return qb;

@@ -1,5 +1,6 @@
 package org.elasticsearch.index.query;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 import org.apache.lucene.analysis.payloads.IdentityEncoder;
 import org.apache.lucene.analysis.payloads.FloatEncoder;
@@ -45,7 +46,7 @@ public class PayloadVersusTypeSpanQueryParser implements QueryParser {
         ArrayList<BytesRef> payloads = new ArrayList<>();
         
         List<MultiPayloadSpanTermQuery> clauses = newArrayList();
-        Hashtable<String,BytesRef[]> requiredPayloads = new Hashtable<>();
+        ConcurrentHashMap<String,BytesRef[]> requiredPayloads = new ConcurrentHashMap<>();
         int termCountPayloadFactor = NOTERMCOUNTPAYLOADFACTOR;
         
         IntegerEncoder intEncoder = new IntegerEncoder();

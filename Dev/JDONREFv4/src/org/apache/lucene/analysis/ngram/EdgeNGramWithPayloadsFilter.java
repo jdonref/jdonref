@@ -200,8 +200,6 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
           termAtt.copyBuffer(curTermBuffer, start, end - start);
           payloadAtt.setPayload(curPayload);
           
-          Logger.getLogger("edgengram").info("payload :"+payloadAtt);
-          
           curGramSize++;
           return true;
         }
