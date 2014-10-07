@@ -4,7 +4,6 @@ import com.sun.jersey.api.client.Client;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Commune;
@@ -19,7 +18,7 @@ public class JDONREFIndex
 {
     boolean verbose = false;
     boolean withGeometry = true;
-    boolean withAlias = false;
+    boolean withSwitchAlias = false;
     ElasticSearchUtil util;
     String index = "jdonref";
     String alias = "jdonref";
@@ -27,9 +26,9 @@ public class JDONREFIndex
     
     HashSet<FLAGS> flags = new HashSet<>();
 
-    public void setWithAlias(boolean withAlias)
+    public void setWithSwitchAlias(boolean withSwitchAlias)
     {
-        this.withAlias = withAlias;
+        this.withSwitchAlias = withSwitchAlias;
     }
 
     public static enum FLAGS
@@ -191,15 +190,15 @@ public class JDONREFIndex
     
     public void reindex() throws IOException, SQLException
     {
-        if (!withAlias)
-            setIndex(this.alias);
-        
         if (isVerbose())
             System.out.println("Démarrage de l'indexation");
         long start = Calendar.getInstance().getTimeInMillis();
         
-        if (!withAlias)
-            util.showDeleteIndex(); // useless : random index
+        if (!withSwitchAlias)
+        {
+            this.setIndex(this.alias);
+            util.showDeleteIndex();
+        }
         
 //        util.showDeleteType("departement");
 //        util.showDeleteType("voie");
@@ -217,6 +216,8 @@ public class JDONREFIndex
         util.showPutMapping("commune", "./src/resources/mapping/mapping-commune.json");
         util.showPutMapping("troncon", "./src/resources/mapping/mapping-troncon.json");
         util.showPutMapping("poizon", "./src/resources/mapping/mapping-poizon.json");
+        
+        util.showSetRefreshInterval("-1");
         
         if (bouchon)
         {
@@ -253,11 +254,11 @@ public class JDONREFIndex
             
             DepartementIndex dptIndex = new DepartementIndex();
             dptIndex.setFlags(flags);
+            dptIndex.setConnection(connection);
+            dptIndex.setUtil(util);
             if (isFlag(FLAGS.DEPARTEMENT))
             {
                 dptIndex.setVerbose(isVerbose());
-                dptIndex.setConnection(connection);
-                dptIndex.setUtil(util);
                 dptIndex.setWithGeometry(withGeometry);
                 dptIndex.indexJDONREFDepartements();
             }
@@ -284,8 +285,10 @@ public class JDONREFIndex
             }
         }
         
-        if (withAlias)
+        if (withSwitchAlias)
             util.showSetNewAlias(index, alias);
+        
+        util.showSetRefreshInterval("1s");
         
         long end = Calendar.getInstance().getTimeInMillis();
         

@@ -86,7 +86,7 @@ public class Valide
     }
 //"geometrie":{"type":"point","coordinates":[2.3292484283447266,48.84809494018555]}}}}
     
-    public JDONREFIndex getJDONREFIndex(boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,boolean withAlias,String url,String connectionString,String user,String passwd) throws SQLException, IOException
+    public JDONREFIndex getJDONREFIndex(boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,boolean withSwitchAlias,String url,String connectionString,String user,String passwd) throws SQLException, IOException
     {
         JDONREFIndex jdonrefIndex = new JDONREFIndex(url);
         jdonrefIndex.setVerbose(verboseIndexation);
@@ -107,14 +107,14 @@ public class Valide
                 Connection connection = DriverManager.getConnection(connectionString,user,passwd);
                 jdonrefIndex.setConnection(connection);
                 jdonrefIndex.setWithGeometry(withGeometry);
-                jdonrefIndex.setWithAlias(withAlias);
+                jdonrefIndex.setWithSwitchAlias(withSwitchAlias);
                 jdonrefIndex.setCodesDepartements(new String[]{"01"});
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
                 jdonrefIndex.reindex();
@@ -133,7 +133,7 @@ public class Valide
         boolean reindex = true;
         boolean verboseIndexation = true;
         boolean withGeometry = false;
-        boolean withAlias = false;
+        boolean withSwitchAlias = false;
 
         // connection à la base de JDONREF
         String connectionString = "jdbc:postgresql://192.168.135.129:5433/JDONREF_IGN";
@@ -142,7 +142,7 @@ public class Valide
         
         try {
             
-            JDONREFIndex index = getJDONREFIndex(bouchon,reindex,verboseIndexation,withGeometry,withAlias,url,connectionString,user,passwd);
+            JDONREFIndex index = getJDONREFIndex(bouchon,reindex,verboseIndexation,withGeometry,withSwitchAlias,url,connectionString,user,passwd);
             
 //            AdresseBusiness adresseBO = new AdresseBusiness(index);
 //            adresseBO.setHitsPerPage(5);

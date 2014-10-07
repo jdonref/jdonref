@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -77,6 +76,29 @@ public class ElasticSearchUtil
         System.out.println("health : "+output);
     }
     
+    public String setRefreshInterval(String interval)
+    {
+        WebResource webResource = client.resource("http://"+url+"/"+index+"/_settings");
+        
+        JsonObjectBuilder refresh_interval = Json.createObjectBuilder();
+        refresh_interval.add("refresh_interval",interval);
+        
+        JsonObjectBuilder setting = Json.createObjectBuilder();
+        setting.add("index", refresh_interval);
+        
+        ClientResponse response = webResource.accept("application/json").put(ClientResponse.class,setting.build().toString());
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    public void showSetRefreshInterval(String interval)
+    {
+        String output = setRefreshInterval(interval);
+        
+        System.out.println("setRefreshInterval : "+output);
+    }
+    
     public Iterator<String> getLastAliasIndices(String alias)
     {
         WebResource webResource = client.resource("http://"+url+"/_alias/"+alias);
@@ -94,8 +116,17 @@ public class ElasticSearchUtil
         return keys.iterator();
     }
     
+    protected void removeLastIndices(Iterator<String> lastindices_to_remove)
+    {
+        while(lastindices_to_remove.hasNext())
+        {
+            deleteIndex(lastindices_to_remove.next());
+        }
+    }
+    
     public String setNewAlias(String index,String alias)
     {
+        Iterator<String> lastindices_to_remove = getLastAliasIndices(alias);
         Iterator<String> lastindices = getLastAliasIndices(alias);
         
         WebResource webResource = client.resource("http://"+url+"/_aliases");
@@ -130,6 +161,8 @@ public class ElasticSearchUtil
         
         ClientResponse response = webResource.accept("application/json").post(ClientResponse.class,data);
         String output = response.getEntity(String.class);
+        
+        removeLastIndices(lastindices_to_remove);
         
         return output;
     }
@@ -187,6 +220,11 @@ public class ElasticSearchUtil
     }
     
     public String deleteIndex()
+    {
+        return deleteIndex(index);
+    }
+    
+    public String deleteIndex(String index)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/");
         
