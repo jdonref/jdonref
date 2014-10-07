@@ -1,5 +1,6 @@
 package org.elasticsearch.index.query;
 
+import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.search.spans.checkers.PayloadChecker;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
@@ -38,7 +39,7 @@ public class PayloadCheckerSpanQueryParser implements QueryParser {
         
         String queryName = null;
         List<MultiPayloadSpanTermQuery> clauses = newArrayList();
-        PayloadChecker checker = null;
+        IPayloadChecker checker = null;
         int termCountPayloadFactor = NOTERMCOUNTPAYLOADFACTOR;
         
         XContentParser.Token token;

@@ -8,15 +8,15 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  *
  * @author Julien
  */
-public class NotPayloadChecker extends PayloadChecker
+public class NotPayloadChecker extends AbstractPayloadChecker
 {
-    PayloadChecker checker;
+    IPayloadChecker checker;
     
-    public PayloadChecker getChecker() {
+    public IPayloadChecker getChecker() {
         return checker;
     }
     
-    public NotPayloadChecker(PayloadChecker checker)
+    public NotPayloadChecker(IPayloadChecker checker)
     {
         this.checker = checker;
     }

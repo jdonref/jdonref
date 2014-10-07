@@ -125,7 +125,7 @@ public class JDONREFv4Scorer extends Scorer {
         
         NumericDocValues numdocvalues = atomicreader.getNormValues(field);
         long normvalues = numdocvalues.get(doc);
-        float normvalue = ((DefaultSimilarity)searcher.getDefaultSimilarity()).decodeNormValue(normvalues);
+        float normvalue = ((DefaultSimilarity)IndexSearcher.getDefaultSimilarity()).decodeNormValue(normvalues);
         float newscore = (float)Math.sqrt(freq) * normvalue        // propre au document
                          * queryBoost * weight.getQueryNorm() * topLevelBoost  // propre à la requête
 	                 * value * value
@@ -497,22 +497,22 @@ public class JDONREFv4Scorer extends Scorer {
      * @param bucket
      * @param term
      */
-    public void analyzeAdressNumber(Bucket bucket, Term term)
-    {
-        if (term.field().equals("ligne4"))
-        {
-            String[] numbers = bucket.d.getValues("numero");
-            if (debugDoc!=-1 && debugDoc==bucket.doc)
-            {
-                if (numbers.length>0)
-                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" check doc "+bucket.doc+" for adress number "+numbers[0]+"=="+term.text()+"?");
-                else
-                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" check doc "+bucket.doc+" no adress number");
-            }
-            if (numbers.length>0 && numbers[0].equals(term.text()))
-                bucket.adressNumberPresent = true;
-        }
-    }
+//    public void analyzeAdressNumber(Bucket bucket, Term term)
+//    {
+//        if (term.field().equals("ligne4"))
+//        {
+//            String[] numbers = bucket.d.getValues("numero");
+//            if (debugDoc!=-1 && debugDoc==bucket.doc)
+//            {
+//                if (numbers.length>0)
+//                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" check doc "+bucket.doc+" for adress number "+numbers[0]+"=="+term.text()+"?");
+//                else
+//                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" check doc "+bucket.doc+" no adress number");
+//            }
+//            if (numbers.length>0 && numbers[0].equals(term.text()))
+//                bucket.adressNumberPresent = true;
+//        }
+//    }
     
    /**
      * Check whether a code is present before an adress or not.
@@ -520,75 +520,76 @@ public class JDONREFv4Scorer extends Scorer {
      * @param bucket
      * @param term
      */
-    public void analyzeCodeBeforeAdress(Bucket bucket, Term term)
-    {
-        if (bucket.lastAnalyzedFields[termIndex.get("codes")])
-        {
-            if (term.field().equals("ligne4"))
-                bucket.isThereCodeBeforeAdress = true;
-        }
-    }
+//    public void analyzeCodeBeforeAdress(Bucket bucket, Term term)
+//    {
+//        if (bucket.lastAnalyzedFields[termIndex.get("codes")])
+//        {
+//            if (term.field().equals("ligne4"))
+//                bucket.isThereCodeBeforeAdress = true;
+//        }
+//    }
+    
     
     /**
      * Check whether the term is analyzed in good order or not
      * @param bucket
      * @param term
      */
-    public void analyzeOrder(Bucket bucket, Term term, JDONREFv4TermQuery query)
-    {
-        if (bucket.wrongOrder) return;
-        
-        int index = termIndex.get(term.field());
-        
-        if (bucket.currentToken==-1)
-        {
-            bucket.currentAnalyzedFields[index] = true;
-            bucket.currentToken = query.token;
-        }
-        else
-        {
-            if (bucket.currentToken == query.token)
-            {
-                bucket.currentAnalyzedFields[index] = true;
-                
-                if ((!bucket.analyzedFields[index] || bucket.lastAnalyzedFields[index]) // TODO : condition nécessaire mais non suffisante (mais performante)
-                  && bucket.mayBeWrongOrder)
-                {
-                    if (debugDoc == bucket.doc)
-                        Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" correct Wrong Order");
-                    bucket.mayBeWrongOrder = false;
-                }
-            }
-            else
-            {
-                if (bucket.mayBeWrongOrder)
-                {
-                    bucket.wrongOrder = true;
-                    if (debugDoc == bucket.doc)
-                        Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" Wrong Order for sure!");
-                }
-                else
-                {
-                    for(int i=0;i<bucket.lastAnalyzedFields.length;i++)
-                    {
-                        bucket.analyzedFields[i] |= bucket.lastAnalyzedFields[i];
-                    }
-                    bucket.lastAnalyzedFields = bucket.currentAnalyzedFields;
-                    bucket.currentAnalyzedFields = new boolean[bucket.currentAnalyzedFields.length];
-                    
-                    bucket.currentAnalyzedFields[index] = true;
-                    bucket.currentToken = query.token;
-                    
-                    if (bucket.analyzedFields[index] && !bucket.lastAnalyzedFields[index])
-                    {
-                        if (debugDoc == bucket.doc)
-                            Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" may Be Wrong Order");
-                        bucket.mayBeWrongOrder = true;
-                    }
-                }
-            }
-        }
-    }
+//    public void analyzeOrder(Bucket bucket, Term term, JDONREFv4TermQuery query)
+//    {
+//        if (bucket.wrongOrder) return;
+//        
+//        int index = termIndex.get(term.field());
+//        
+//        if (bucket.currentToken==-1)
+//        {
+//            bucket.currentAnalyzedFields[index] = true;
+//            bucket.currentToken = query.token;
+//        }
+//        else
+//        {
+//            if (bucket.currentToken == query.token)
+//            {
+//                bucket.currentAnalyzedFields[index] = true;
+//                
+//                if ((!bucket.analyzedFields[index] || bucket.lastAnalyzedFields[index]) // TODO : condition nécessaire mais non suffisante (mais performante)
+//                  && bucket.mayBeWrongOrder)
+//                {
+//                    if (debugDoc == bucket.doc)
+//                        Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" correct Wrong Order");
+//                    bucket.mayBeWrongOrder = false;
+//                }
+//            }
+//            else
+//            {
+//                if (bucket.mayBeWrongOrder)
+//                {
+//                    bucket.wrongOrder = true;
+//                    if (debugDoc == bucket.doc)
+//                        Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" Wrong Order for sure!");
+//                }
+//                else
+//                {
+//                    for(int i=0;i<bucket.lastAnalyzedFields.length;i++)
+//                    {
+//                        bucket.analyzedFields[i] |= bucket.lastAnalyzedFields[i];
+//                    }
+//                    bucket.lastAnalyzedFields = bucket.currentAnalyzedFields;
+//                    bucket.currentAnalyzedFields = new boolean[bucket.currentAnalyzedFields.length];
+//                    
+//                    bucket.currentAnalyzedFields[index] = true;
+//                    bucket.currentToken = query.token;
+//                    
+//                    if (bucket.analyzedFields[index] && !bucket.lastAnalyzedFields[index])
+//                    {
+//                        if (debugDoc == bucket.doc)
+//                            Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" may Be Wrong Order");
+//                        bucket.mayBeWrongOrder = true;
+//                    }
+//                }
+//            }
+//        }
+//    }
     
   protected void collectBucket(Bucket bucket, JDONREFv4TermScorer scorer) throws IOException
   {
@@ -612,9 +613,9 @@ public class JDONREFv4Scorer extends Scorer {
         //float score = scorer.score();
         }
         float score = score(scorer, bucket,term);
-        analyzeOrder(bucket, term,query);
-        analyzeCodeBeforeAdress(bucket, term);
-        analyzeAdressNumber(bucket, term);
+        //analyzeOrder(bucket, term,query);
+        //analyzeCodeBeforeAdress(bucket, term);
+        //analyzeAdressNumber(bucket, term);
 
         //bucket.score_by_term.put(term.field(),score);
         bucket.score_by_subquery[termQueryIndex] = score;
@@ -755,17 +756,19 @@ public class JDONREFv4Scorer extends Scorer {
     float score;             // incremental score
     float malus;             // malus final à appliquer
     
-    boolean isOfTypeAdress;          // le document est une adresse
-    boolean adressNumberPresent;     // présence du numéro d'adresse ...
-    boolean isThereCodeBeforeAdress; // présence d'un code devant la ligne 4 de l'adresse
+    //boolean isOfTypeAdress;          // le document est une adresse
+    //boolean adressNumberPresent;     // présence du numéro d'adresse ...
+    //boolean isThereCodeBeforeAdress; // présence d'un code devant la ligne 4 de l'adresse
     
-    boolean[] currentAnalyzedFields;            // current Type beeing analyzed
-    boolean[] lastAnalyzedFields;               // last Types beeing analyzed
-    int currentToken; // index of the current type beeing analyzed
+    //boolean[] currentAnalyzedFields;            // current Type beeing analyzed
+    //boolean[] lastAnalyzedFields;               // last Types beeing analyzed
+    //int currentToken; // index of the current type beeing analyzed
     //HashMap<String,Boolean> analyzedTypes; // all types already been analyzed in order
-    boolean[] analyzedFields; // all types already been analyzed in order
-    boolean mayBeWrongOrder;
-    boolean wrongOrder;
+    //boolean[] analyzedFields; // all types already been analyzed in order
+
+    // reported to PayloadChecker :
+    //boolean mayBeWrongOrder;
+    //boolean wrongOrder;
     
     int[] requestTokenFrequencies; // Combien de fois chaque terme de la requête a-t-elle de correspondance ?
                                   // nous (je !) ne le savons qu'au moment de la collecte, terme par terme ...
@@ -796,10 +799,10 @@ public class JDONREFv4Scorer extends Scorer {
         //analyzedTypes = new HashMap<String,Boolean>();
         score_by_term = new float[termIndex.size()];
         total_score_by_term = new float[termIndex.size()];
-        analyzedFields = new boolean[termIndex.size()];
-        lastAnalyzedFields = new boolean[termIndex.size()];
-        currentAnalyzedFields = new boolean[termIndex.size()];
-        currentToken = -1;
+        //analyzedFields = new boolean[termIndex.size()];
+        //lastAnalyzedFields = new boolean[termIndex.size()];
+        //currentAnalyzedFields = new boolean[termIndex.size()];
+        //currentToken = -1;
         
         requestTokenFrequencies = new int[maxTokens];
         score_by_subquery = new float[maxTokens*termIndex.size()];
@@ -872,7 +875,7 @@ public class JDONREFv4Scorer extends Scorer {
   
   protected JDONREFv4Weight protectedWeight;
   
-  protected HashMap<String,Integer> countByType;
+  protected ConcurrentHashMap<String,Integer> countByType;
   
   protected JDONREFv4TermScorer[] subScorers = null; // for nextDoc & advance mode
   protected int numScorers;
@@ -907,7 +910,7 @@ public class JDONREFv4Scorer extends Scorer {
     this.mode = mode;
     this.debugDoc = debugDoc;
     this.maxSizePerType = maxSizePerType;
-    this.countByType = new HashMap<String,Integer>();
+    this.countByType = new ConcurrentHashMap<>();
     
     bucketTable = new BucketTable(context, weight.weights().size());
 
@@ -1073,24 +1076,24 @@ public class JDONREFv4Scorer extends Scorer {
               return;
           }
       }
-      bucket.isOfTypeAdress = isOfTypeAdresse(bucket);
+//      bucket.isOfTypeAdress = isOfTypeAdresse(bucket);
       float malus = 1.0f;
-      if (bucket.wrongOrder || bucket.mayBeWrongOrder) {
-          malus *= ORDERMALUS;
-      }
-      if (bucket.isOfTypeAdress) {
-          if (!bucket.adressNumberPresent) {
-             if (debug)
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : adresse but number is not present");
-
-              malus *= NUMBERMALUS;
-          }
-      }
-      if (!bucket.adressNumberPresent) {
-          if (bucket.isThereCodeBeforeAdress) {
-              malus *= ORDERMALUS;
-          }
-      }
+//      if (bucket.wrongOrder || bucket.mayBeWrongOrder) {
+//          malus *= ORDERMALUS;
+//      }
+//      if (bucket.isOfTypeAdress) {
+//          if (!bucket.adressNumberPresent) {
+//             if (debug)
+//                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : adresse but number is not present");
+//
+//              malus *= NUMBERMALUS;
+//          }
+//      }
+//      if (!bucket.adressNumberPresent) {
+//          if (bucket.isThereCodeBeforeAdress) {
+//              malus *= ORDERMALUS;
+//          }
+//      }
       
       bucket.malus = malus;
   }

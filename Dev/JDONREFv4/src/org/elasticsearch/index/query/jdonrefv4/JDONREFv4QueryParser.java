@@ -25,8 +25,11 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.spans.checkers.AndPayloadChecker;
 import org.apache.lucene.search.spans.checkers.GroupedPayloadChecker;
 import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
-import org.apache.lucene.search.spans.checkers.PayloadChecker;
+import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.checkers.AllPayloadChecker;
+import org.apache.lucene.search.spans.checkers.FieldChecker;
+import org.apache.lucene.search.spans.checkers.IfPayloadChecker;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 import org.elasticsearch.cluster.ClusterService;
@@ -201,7 +204,7 @@ public class JDONREFv4QueryParser implements QueryParser
      * ligne1 = 1
      * @return 
      */
-    protected PayloadChecker getChecker()
+    protected IPayloadChecker getChecker()
     {
         IntegerEncoder encoder = new IntegerEncoder();
         
@@ -214,11 +217,15 @@ public class JDONREFv4QueryParser implements QueryParser
         OnePayloadVersusFieldChecker voieLigne4Checker = new OnePayloadVersusFieldChecker("voie",encoder.encode("2".toCharArray()).bytes);
         OnePayloadVersusFieldChecker voieCodesChecker  = new OnePayloadVersusFieldChecker("voie",encoder.encode("2".toCharArray()).bytes);
         
-        
-        
         OrPayloadChecker orChecker = new OrPayloadChecker(poizonChecker);
         */
-        AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker); //, orChecker);
+        
+        FieldChecker adresseChecker = new FieldChecker("adresse");
+        AllPayloadChecker allNumeroChecker = new AllPayloadChecker(encoder.encode("11".toCharArray()).bytes);
+        
+        IfPayloadChecker ifChecker = new IfPayloadChecker(adresseChecker,allNumeroChecker);
+        
+        AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, ifChecker); //, orChecker);
         return andChecker;
     }
     

@@ -9,7 +9,7 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  * Check every token with given payload in a document are present in the query.
  * @author Julien
  */
-public class AllPayloadChecker extends PayloadChecker
+public class AllPayloadChecker extends AbstractPayloadChecker
 {
     protected byte[] payload;
 

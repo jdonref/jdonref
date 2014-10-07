@@ -10,9 +10,11 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  *
  * @author Julien
  */
-public class GroupedPayloadChecker extends PayloadChecker
+public class GroupedPayloadChecker extends AbstractPayloadChecker
 {
     protected PayloadCheckerSpanQuery query = null;
+    
+    
     
     public GroupedPayloadChecker()
     {

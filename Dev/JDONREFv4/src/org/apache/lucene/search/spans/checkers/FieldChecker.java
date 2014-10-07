@@ -1,7 +1,6 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
-import java.util.Arrays;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.spans.MultiPayloadTermSpans;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
@@ -10,7 +9,7 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  *
  * @author Julien
  */
-public class FieldChecker extends PayloadChecker
+public class FieldChecker extends AbstractPayloadChecker
 {
     protected String field;
     protected String value;

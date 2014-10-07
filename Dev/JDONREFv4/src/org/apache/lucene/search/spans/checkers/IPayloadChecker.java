@@ -5,12 +5,12 @@ import org.apache.lucene.search.spans.MultiPayloadTermSpans;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 
 /**
- * Abstract class to check document subspans for payload rules.
+ * Public interface to check document subspans for payload rules.
  * @author Julien
  */
-public abstract class PayloadChecker
+public interface IPayloadChecker
 {
-    public abstract void setQuery(PayloadCheckerSpanQuery query);
+    void setQuery(PayloadCheckerSpanQuery query);
     
     /**
      * Check one of the payload from one of the spans.
@@ -18,16 +18,16 @@ public abstract class PayloadChecker
      * 
      * @return false means check() will return false. true means nothing.
      */
-    public abstract boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException;
+    boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException;
     
     /**
      * Return whether current document is checked or not
      * @return 
      */
-    public abstract boolean check();
+    boolean check();
     
     /**
      * Prepare to start a new check
      */
-    public abstract void clear();
+    void clear();
 }

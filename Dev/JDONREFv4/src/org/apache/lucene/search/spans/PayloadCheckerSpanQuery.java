@@ -40,6 +40,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermContext;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.util.Bits;
 
 /**
@@ -54,7 +55,7 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
     
     protected String field;
     
-    protected PayloadChecker checker;
+    protected IPayloadChecker checker;
     
     public int termCountPayloadFactor() {
         return termCountPayloadFactor();
@@ -81,11 +82,11 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
         }
     }
 
-    public PayloadChecker getChecker() {
+    public IPayloadChecker getChecker() {
         return checker;
     }
 
-    public void setChecker(PayloadChecker checker) {
+    public void setChecker(IPayloadChecker checker) {
         this.checker = checker;
     }
     

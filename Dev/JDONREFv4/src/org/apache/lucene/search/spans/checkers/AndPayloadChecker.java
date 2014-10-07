@@ -1,6 +1,7 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import org.apache.lucene.search.spans.MultiPayloadTermSpans;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 
@@ -8,15 +9,15 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  *
  * @author Julien
  */
-public class AndPayloadChecker extends PayloadChecker
+public class AndPayloadChecker extends AbstractPayloadChecker
 {
-    PayloadChecker[] checkers;
+    IPayloadChecker[] checkers;
 
-    public PayloadChecker[] getCheckers() {
+    public IPayloadChecker[] getCheckers() {
         return checkers;
     }
     
-    public AndPayloadChecker(PayloadChecker... checkers)
+    public AndPayloadChecker(IPayloadChecker... checkers)
     {
         this.checkers = checkers;
     }

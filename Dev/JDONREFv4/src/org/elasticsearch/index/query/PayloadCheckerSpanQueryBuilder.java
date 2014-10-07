@@ -4,11 +4,8 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import org.apache.lucene.search.spans.checkers.PayloadChecker;
-import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.search.spans.checkers.AbstractPayloadChecker;
 import org.elasticsearch.ElasticsearchIllegalArgumentException;
-import org.elasticsearch.common.bytes.BytesArray;
 
 /**
  * Construct a filter that only match the document within tokens are grouped by payload
@@ -19,7 +16,7 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
 {
     protected ArrayList<SpanQueryBuilder> clauses = new ArrayList<>();
     
-    protected PayloadChecker checker = null;
+    protected AbstractPayloadChecker checker = null;
     
     protected String queryName;
     
@@ -49,7 +46,7 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
         return this;
     }
     
-    public PayloadCheckerSpanQueryBuilder checker(PayloadChecker checker) {
+    public PayloadCheckerSpanQueryBuilder checker(AbstractPayloadChecker checker) {
         this.checker = checker;
         return this;
     }

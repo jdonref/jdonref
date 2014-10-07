@@ -8,15 +8,15 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  * 
  * @author Julien
  */
-public class XorPayloadChecker extends PayloadChecker
+public class XorPayloadChecker extends AbstractPayloadChecker
 {
-    PayloadChecker[] checkers;
+    IPayloadChecker[] checkers;
     
-    public PayloadChecker[] getCheckers() {
+    public IPayloadChecker[] getCheckers() {
         return checkers;
     }
     
-    public XorPayloadChecker(PayloadChecker... checkers)
+    public XorPayloadChecker(IPayloadChecker... checkers)
     {
         this.checkers = checkers;
     }
@@ -35,7 +35,7 @@ public class XorPayloadChecker extends PayloadChecker
     public boolean check()
     {
         int count = 0;
-        for(int i=0;i<checkers.length;i++)
+        for(int i=0;count<=1 && i<checkers.length;i++)
         {
             if (checkers[i].check())
             {

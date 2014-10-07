@@ -1,6 +1,5 @@
 package org.apache.lucene.search.spans;
 
-import org.apache.lucene.search.spans.checkers.PayloadChecker;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermContext;
@@ -13,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Collection;
 import java.util.Map;
+import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 
 /**
  * A Spans that is formed from the subspans of a GroupedPayloadSpanQuery
@@ -38,7 +38,7 @@ public class SpansPayloadChecker extends Spans
 
   protected final MultiPayloadTermSpans[] subSpansByDoc;
   
-  protected PayloadChecker checker;
+  protected IPayloadChecker checker;
   
   // Even though the array is probably almost sorted, InPlaceMergeSorter will likely
   // perform better since it has a lower overhead than TimSorter for small arrays
@@ -55,7 +55,7 @@ public class SpansPayloadChecker extends Spans
 
   protected PayloadCheckerSpanQuery query;
   
-  public SpansPayloadChecker(PayloadCheckerSpanQuery gpsQuery, AtomicReaderContext context, Bits acceptDocs, Map<Term,TermContext> termContexts, PayloadChecker checker) throws IOException {
+  public SpansPayloadChecker(PayloadCheckerSpanQuery gpsQuery, AtomicReaderContext context, Bits acceptDocs, Map<Term,TermContext> termContexts, IPayloadChecker checker) throws IOException {
     MultiPayloadSpanTermQuery[] clauses = gpsQuery.getClauses();
     if (clauses.length<1)
         throw new IllegalArgumentException("Less than 1 clauses: "
@@ -201,8 +201,7 @@ public class SpansPayloadChecker extends Spans
           {
             if (!checker.checkNextPayload(subSpans[i]))
               return false;
-          }
-          while (subSpans[i].nextPayload());
+          } while (subSpans[i].nextPayload());
       }
       
       return checker.check();
