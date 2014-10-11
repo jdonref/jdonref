@@ -6,7 +6,7 @@ import org.apache.lucene.search.spans.MultiPayloadTermSpans;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 
 /**
- *
+ * 
  * @author Julien
  */
 public class FieldChecker extends AbstractPayloadChecker
@@ -35,11 +35,19 @@ public class FieldChecker extends AbstractPayloadChecker
     }
     
     protected boolean check;
-    
+    protected boolean checked;
+
+    /**
+     * Expert : variable check must be initialized on first call to checkNextPayload
+     * 
+     * @param subspan
+     * @return
+     * @throws IOException 
+     */
     @Override
     public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
     {
-        if (!check)
+        if (!checked)
         {
             Document d = subspan.document();
             String[] types = d.getValues(field);
@@ -50,8 +58,9 @@ public class FieldChecker extends AbstractPayloadChecker
                     check = true;
                 }
             }
+            checked = true;
         }
-        return true;
+        return check;
     }
 
     @Override
@@ -62,6 +71,7 @@ public class FieldChecker extends AbstractPayloadChecker
     @Override
     public void clear() {
         check = false;
+        checked = false;
     }
     
     public String toString()

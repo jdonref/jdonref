@@ -189,7 +189,14 @@ public class MultiPayloadTermSpans extends TermSpans
         
         freq = postings.freq();
         count = 0;
-        position = postings.nextPosition();
+        try
+        {
+            position = postings.nextPosition();
+        }
+        catch(Exception e)
+        {
+            throw(new IOException("There might be a problem in one tokenfilter !",e));
+        }
         count++;
         readPayloads();
         resetPayloads();
@@ -208,7 +215,14 @@ public class MultiPayloadTermSpans extends TermSpans
 
         freq = postings.freq();
         count = 0;
-        position = postings.nextPosition();
+        try
+        {
+            position = postings.nextPosition();
+        }
+        catch(Exception e)
+        {
+            throw(new IOException("There might be a problem in one tokenfilter !",e));
+        }
         count++;
         readPayloads();
         resetPayloads();

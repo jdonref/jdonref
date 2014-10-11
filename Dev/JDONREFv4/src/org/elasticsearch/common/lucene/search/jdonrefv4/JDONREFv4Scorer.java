@@ -2,33 +2,16 @@ package org.elasticsearch.common.lucene.search.jdonrefv4;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.index.JDONREFv4TermContext;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.CollectionStatistics;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.IndexSearcher;
-import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query.JDONREFv4Weight;
-import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery.TermWeight;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.TermStatistics;
-import org.apache.lucene.search.Weight;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.util.BytesRef;
+import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query.JDONREFv4Weight;
+import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery.TermWeight;
 
 /**
  *
@@ -444,16 +427,6 @@ public class JDONREFv4Scorer extends Scorer {
           // Score relatif
           bucket.score = getSumScore(bucket);
           
-          // Malus
-          calculateMalus(bucket);
-          if (debug)
-          {
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+" Score avant malus :"+bucket.score);
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+" malus :"+bucket.malus);
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+bucket.doc+" Score après malus :"+bucket.score*bucket.malus);
-          }
-          bucket.score *= bucket.malus;
-          
           if (bucket.score>0)
           {
               if (mode==JDONREFv4Query.BULK)
@@ -491,105 +464,6 @@ public class JDONREFv4Scorer extends Scorer {
             return false;
         }
     }
-    
-    /**
-     * Check whether there is an adress number (or potentially) in the request
-     * @param bucket
-     * @param term
-     */
-//    public void analyzeAdressNumber(Bucket bucket, Term term)
-//    {
-//        if (term.field().equals("ligne4"))
-//        {
-//            String[] numbers = bucket.d.getValues("numero");
-//            if (debugDoc!=-1 && debugDoc==bucket.doc)
-//            {
-//                if (numbers.length>0)
-//                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" check doc "+bucket.doc+" for adress number "+numbers[0]+"=="+term.text()+"?");
-//                else
-//                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" check doc "+bucket.doc+" no adress number");
-//            }
-//            if (numbers.length>0 && numbers[0].equals(term.text()))
-//                bucket.adressNumberPresent = true;
-//        }
-//    }
-    
-   /**
-     * Check whether a code is present before an adress or not.
-     * Need analyzeOrder execution before.
-     * @param bucket
-     * @param term
-     */
-//    public void analyzeCodeBeforeAdress(Bucket bucket, Term term)
-//    {
-//        if (bucket.lastAnalyzedFields[termIndex.get("codes")])
-//        {
-//            if (term.field().equals("ligne4"))
-//                bucket.isThereCodeBeforeAdress = true;
-//        }
-//    }
-    
-    
-    /**
-     * Check whether the term is analyzed in good order or not
-     * @param bucket
-     * @param term
-     */
-//    public void analyzeOrder(Bucket bucket, Term term, JDONREFv4TermQuery query)
-//    {
-//        if (bucket.wrongOrder) return;
-//        
-//        int index = termIndex.get(term.field());
-//        
-//        if (bucket.currentToken==-1)
-//        {
-//            bucket.currentAnalyzedFields[index] = true;
-//            bucket.currentToken = query.token;
-//        }
-//        else
-//        {
-//            if (bucket.currentToken == query.token)
-//            {
-//                bucket.currentAnalyzedFields[index] = true;
-//                
-//                if ((!bucket.analyzedFields[index] || bucket.lastAnalyzedFields[index]) // TODO : condition nécessaire mais non suffisante (mais performante)
-//                  && bucket.mayBeWrongOrder)
-//                {
-//                    if (debugDoc == bucket.doc)
-//                        Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" correct Wrong Order");
-//                    bucket.mayBeWrongOrder = false;
-//                }
-//            }
-//            else
-//            {
-//                if (bucket.mayBeWrongOrder)
-//                {
-//                    bucket.wrongOrder = true;
-//                    if (debugDoc == bucket.doc)
-//                        Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" Wrong Order for sure!");
-//                }
-//                else
-//                {
-//                    for(int i=0;i<bucket.lastAnalyzedFields.length;i++)
-//                    {
-//                        bucket.analyzedFields[i] |= bucket.lastAnalyzedFields[i];
-//                    }
-//                    bucket.lastAnalyzedFields = bucket.currentAnalyzedFields;
-//                    bucket.currentAnalyzedFields = new boolean[bucket.currentAnalyzedFields.length];
-//                    
-//                    bucket.currentAnalyzedFields[index] = true;
-//                    bucket.currentToken = query.token;
-//                    
-//                    if (bucket.analyzedFields[index] && !bucket.lastAnalyzedFields[index])
-//                    {
-//                        if (debugDoc == bucket.doc)
-//                            Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName()+ " doc "+bucket.doc+" with "+term.field()+"="+term.text()+" may Be Wrong Order");
-//                        bucket.mayBeWrongOrder = true;
-//                    }
-//                }
-//            }
-//        }
-//    }
     
   protected void collectBucket(Bucket bucket, JDONREFv4TermScorer scorer) throws IOException
   {
@@ -1005,124 +879,6 @@ public class JDONREFv4Scorer extends Scorer {
       --numScorers;
       heapAdjust(0);
     }
-  }
-  
-  /**
-   * Prérequis : analyzeOrder(bucket, term);
-   *             analyzeCodeBeforeAdress(bucket,term);
-   *             analyzeAdressNumber(bucket, term);
-   * @param bucket
-   */
-  public void calculateMalus(Bucket bucket)
-  {
-      String type = getType(bucket);
-
-      boolean debug = false;
-      if (debugDoc!=-1 && debugDoc==bucket.doc)
-      {
-          debug = true;
-      }
-      
-      if (type.equals("poizon"))
-      {
-          if (!(bucket.score_by_term[termIndex.get("ligne1")]>0 || bucket.score_by_term[termIndex.get("ligne4")]>0))
-          {
-              if (debug)
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : poizon but ligne1 & 4 is not present");
-              bucket.malus = 0.0f;
-              return;
-          }
-      }
-      else if (type.equals("voie") || type.equals("adresse"))
-      {
-          if (!(bucket.score_by_term[termIndex.get("ligne4")]>0 && 
-                (bucket.score_by_term[termIndex.get("codes")]>0 || bucket.score_by_term[termIndex.get("commune")]>0) ))
-          {
-              if (debug)
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : voie or adress but ligne4 & (commune || codes) is not present");
-              bucket.malus = 0.0f;
-              return;
-          }
-      }
-      else if (type.equals("commune"))
-      {
-          if (!(bucket.score_by_term[termIndex.get("codes")]>0 || bucket.score_by_term[termIndex.get("commune")]>0))
-          {
-              if (debug)
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : commune but codes || commune is not present");
-              bucket.malus = 0.0f;
-              return;
-          }
-      }
-      else if (type.equals("departement"))
-      {
-          if (!(bucket.score_by_term[termIndex.get("codes")]>0))
-          {
-              if (debug)
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : departement but codes is not present");
-
-              bucket.malus = 0.0f;
-              return;
-          }
-      }
-      else if (type.equals("pays"))
-      {
-          if (!(bucket.score_by_term[termIndex.get("ligne7")]>0)) // TODO : || bucket.score_by_term[termIndex.get("code_pays")]>0 lorsqu'il sera supporté
-          {
-              if (debug)
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : pays but ligne7 is not present");
-
-              bucket.malus = 0.0f;
-              return;
-          }
-      }
-//      bucket.isOfTypeAdress = isOfTypeAdresse(bucket);
-      float malus = 1.0f;
-//      if (bucket.wrongOrder || bucket.mayBeWrongOrder) {
-//          malus *= ORDERMALUS;
-//      }
-//      if (bucket.isOfTypeAdress) {
-//          if (!bucket.adressNumberPresent) {
-//             if (debug)
-//                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calculate malus for doc "+bucket.doc+" : adresse but number is not present");
-//
-//              malus *= NUMBERMALUS;
-//          }
-//      }
-//      if (!bucket.adressNumberPresent) {
-//          if (bucket.isThereCodeBeforeAdress) {
-//              malus *= ORDERMALUS;
-//          }
-//      }
-      
-      bucket.malus = malus;
-  }
-  
-  public float malus(ArrayList<JDONREFv4TermScorer> subscorers,Bucket bucket) throws IOException
-  {
-      JDONREFv4TermScorer scorer = null;
-      for(int i=0;i<subscorers.size();i++)
-      {
-          scorer = subscorers.get(i);
-          
-          collectBucket(bucket, scorer);
-      }
-      
-      getSumScore(bucket); // prérequis pour calculateMalus
-      calculateMalus(bucket);
-      
-      return bucket.malus;
-  }
-  
-  public float malus(ArrayList<JDONREFv4TermScorer> subscorers,int doc) throws IOException
-  {
-      Document d = this.context.reader().document(doc);
-      
-      Bucket bucket = new Bucket(this.maxCoord);
-      bucket.d = d;
-      bucket.doc = doc;
-      
-      return malus(subscorers,bucket);
   }
   
   public float totalScore(ArrayList<JDONREFv4TermScorer> subscorers,Bucket bucket) throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException

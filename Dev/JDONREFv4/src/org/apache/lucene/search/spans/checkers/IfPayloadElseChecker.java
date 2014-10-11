@@ -8,41 +8,38 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  * Be aware of performances
  * @author Julien
  */
-public class IfPayloadChecker extends AbstractPayloadChecker
+public class IfPayloadElseChecker extends IfPayloadChecker
 {
-    IPayloadChecker condition;
-    IPayloadChecker then;
+    IPayloadChecker elseChecker;
 
-    public IPayloadChecker getCondition() {
-        return condition;
-    }
-
-    public IPayloadChecker getThen() {
-        return then;
+    public IPayloadChecker getElse() {
+        return elseChecker;
     }
     
-    public IfPayloadChecker(IPayloadChecker condition, IPayloadChecker then)
+    public IfPayloadElseChecker(IPayloadChecker condition, IPayloadChecker then, IPayloadChecker elseChecker)
     {
-        this.condition = condition;
-        this.then = then;
+        super(condition,then);
+        this.elseChecker = elseChecker;
     }
     
     boolean keepTrying = true;
-    boolean res = true;
     
     @Override
     public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
     {
+        boolean res = true;
         if (res==false) return false;
         if (keepTrying && condition.checkNextPayload(subspan))
         {
-            res = then.checkNextPayload(subspan);
+            res  = then.checkNextPayload(subspan);
+            res &= elseChecker.checkNextPayload(subspan); // they need to advance simultanneously
             return res;
         }
         else
         {
             keepTrying = false;
-            return true;
+            res = elseChecker.checkNextPayload(subspan);
+            return res;
         }
     }
 
@@ -52,7 +49,7 @@ public class IfPayloadChecker extends AbstractPayloadChecker
         if (condition.check())
             return then.check();
         else
-            return true;
+            return elseChecker.check();
     }
 
     @Override
@@ -65,7 +62,7 @@ public class IfPayloadChecker extends AbstractPayloadChecker
     
     public Object clone()
     {
-        IfPayloadChecker checker = new IfPayloadChecker(condition,then);
+        IfPayloadElseChecker checker = new IfPayloadElseChecker(condition,then,elseChecker);
         return checker;
     }
     
@@ -75,6 +72,8 @@ public class IfPayloadChecker extends AbstractPayloadChecker
         res += condition.toString();
         res += ") then (";
         res += then.toString();
+        res += ") else (";
+        res += elseChecker.toString();
         res += ")";
         return res;
     }
@@ -83,5 +82,6 @@ public class IfPayloadChecker extends AbstractPayloadChecker
     public void setQuery(PayloadCheckerSpanQuery query) {
         condition.setQuery(query);
         then.setQuery(query);
+        elseChecker.setQuery(query);
     }
 }

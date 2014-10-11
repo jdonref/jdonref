@@ -2,20 +2,13 @@ package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
 import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 
 /**
  * 
  * @author Julien
  */
-public class XorPayloadChecker extends AbstractPayloadChecker
+public class XorPayloadChecker extends AbstractIPayloadCheckerCollectionChecker
 {
-    IPayloadChecker[] checkers;
-    
-    public IPayloadChecker[] getCheckers() {
-        return checkers;
-    }
-    
     public XorPayloadChecker(IPayloadChecker... checkers)
     {
         this.checkers = checkers;
@@ -44,12 +37,6 @@ public class XorPayloadChecker extends AbstractPayloadChecker
         }
         return count==1;
     }
-
-    @Override
-    public void clear() {
-        for(int i=0;i<checkers.length;i++)
-            checkers[i].clear();
-    }
     
     public String toString()
     {
@@ -62,12 +49,11 @@ public class XorPayloadChecker extends AbstractPayloadChecker
         res += "]";
         return res;
     }
-
+    
     @Override
-    public void setQuery(PayloadCheckerSpanQuery query) {
-        for(int i=0;i<checkers.length;i++)
-        {
-            checkers[i].setQuery(query);
-        }
+    public XorPayloadChecker clone()
+    {
+        XorPayloadChecker checker = new XorPayloadChecker(checkers.clone());
+        return checker;
     }
 }

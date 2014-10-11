@@ -442,18 +442,6 @@ public class JDONREFv4Query extends BooleanQuery
       JDONREFv4Scorer scorer = (JDONREFv4Scorer) scorer(context, context.reader().getLiveDocs());
       ArrayList<JDONREFv4TermScorer> subscorers = getSubScorers(context,doc);
       
-      // Malus
-      float malus = scorer.malus(subscorers,doc);
-      if (malus!=1.0f)
-      {
-        Explanation malusExpl = new Explanation(malus,"adress malus (order,adresse number, codes)");
-        dotExpl.addDetail(malusExpl);
-      }
-      value *= malus;
-      
-      if (debug)
-      Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc "+doc+" and malus "+malus);
-      
       if (value>0)
       {
           if (mode==JDONREFv4Query.BULK)

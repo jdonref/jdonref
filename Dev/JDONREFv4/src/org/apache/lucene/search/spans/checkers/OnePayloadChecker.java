@@ -58,4 +58,10 @@ public class OnePayloadChecker extends AbstractPayloadChecker
     @Override
     public void setQuery(PayloadCheckerSpanQuery query) {
     }
+    
+    @Override
+    public OnePayloadChecker clone()
+    {
+        return new OnePayloadChecker(payload);
+    }
 }

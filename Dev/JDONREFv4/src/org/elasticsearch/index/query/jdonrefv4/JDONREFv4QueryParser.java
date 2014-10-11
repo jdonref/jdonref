@@ -27,9 +27,7 @@ import org.apache.lucene.search.spans.checkers.GroupedPayloadChecker;
 import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
-import org.apache.lucene.search.spans.checkers.AllPayloadChecker;
-import org.apache.lucene.search.spans.checkers.FieldChecker;
-import org.apache.lucene.search.spans.checkers.IfPayloadChecker;
+import org.apache.lucene.search.spans.checkers.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 import org.elasticsearch.cluster.ClusterService;
@@ -189,7 +187,7 @@ public class JDONREFv4QueryParser implements QueryParser
      * voie
      * 
      * code_pays = 10
-     * fullName = 9
+     * ligne7 = 9
      * code_departement = 8
      * code_insee = 7
      * code_insee_commune = 6
@@ -220,12 +218,33 @@ public class JDONREFv4QueryParser implements QueryParser
         OrPayloadChecker orChecker = new OrPayloadChecker(poizonChecker);
         */
         
-        FieldChecker adresseChecker = new FieldChecker("adresse");
+        OnePayloadChecker ligne1Present = new OnePayloadChecker(encoder.encode("1".toCharArray()).bytes);
+        OnePayloadChecker ligne4Present = new OnePayloadChecker(encoder.encode("2".toCharArray()).bytes);
+        OnePayloadChecker ligne7Present = new OnePayloadChecker(encoder.encode("9".toCharArray()).bytes);
         AllPayloadChecker allNumeroChecker = new AllPayloadChecker(encoder.encode("11".toCharArray()).bytes);
+        OnePayloadChecker communePresent = new OnePayloadChecker(encoder.encode("5".toCharArray()).bytes);
+        OnePayloadChecker codeDepartementPresent = new OnePayloadChecker(encoder.encode("8".toCharArray()).bytes);
+        OnePayloadChecker codeInseePresent = new OnePayloadChecker(encoder.encode("7".toCharArray()).bytes);
+        OnePayloadChecker codeInseeCommunePresent = new OnePayloadChecker(encoder.encode("6".toCharArray()).bytes);
+        OnePayloadChecker codeArrondissementPresent = new OnePayloadChecker(encoder.encode("4".toCharArray()).bytes);
+        OnePayloadChecker codePostalPresent = new OnePayloadChecker(encoder.encode("3".toCharArray()).bytes);
+        OrPayloadChecker codesPresent = new OrPayloadChecker(codeDepartementPresent,
+                                                             codeArrondissementPresent,
+                                                             codeInseePresent,
+                                                             codeInseeCommunePresent,
+                                                             codePostalPresent);
         
-        IfPayloadChecker ifChecker = new IfPayloadChecker(adresseChecker,allNumeroChecker);
+        OrPayloadChecker codesOrCommunePresent = new OrPayloadChecker(codesPresent,communePresent);
         
-        AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, ifChecker); //, orChecker);
+        SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new OrPayloadChecker(ligne1Present,ligne4Present));
+        SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),codesOrCommunePresent));
+        SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone(),codesOrCommunePresent.clone()));
+        SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", codesOrCommunePresent.clone());
+        SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", codeDepartementPresent.clone());
+        SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", ligne7Present.clone());
+        SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1,clause2,clause3,clause4,clause5,clause6);
+        
+        AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker); //, orChecker);
         return andChecker;
     }
     
