@@ -28,7 +28,6 @@
  */
 package org.apache.lucene.search.spans;
 
-import org.apache.lucene.search.spans.checkers.PayloadChecker;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;

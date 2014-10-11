@@ -4,11 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
-import org.apache.lucene.search.spans.checkers.AndPayloadChecker;
-import org.apache.lucene.search.spans.checkers.GroupedPayloadChecker;
-import org.apache.lucene.search.spans.checkers.FieldChecker;
-import org.apache.lucene.search.spans.checkers.IfPayloadChecker;
-import org.apache.lucene.search.spans.checkers.OnePayloadChecker;
 import org.apache.lucene.search.spans.checkers.PayloadBeforeAnotherChecker;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
@@ -60,11 +55,11 @@ public class PayloadCheckerSpanQuery_BeforeAnotherPayloadTests extends QueryTest
                 .field("ligne6","DD EE")
                 .field("fullName","AA|3001 BB|3001 CC|3001 DD|2002 EE|2002 FF|1003")
                 .endObject());
-        publicIndex(brb,"anothertype","2",XContentFactory.jsonBuilder().startObject()
-                .field("ligne4","AA BB EE")
-                .field("ligne6","DD EE")
-                .field("fullName","AA|3001 BB|3001 EE|3001 DD|2002 EE|2002 FF|1003")
-                .endObject());
+//        publicIndex(brb,"anothertype","2",XContentFactory.jsonBuilder().startObject()
+//                .field("ligne4","AA BB EE")
+//                .field("ligne6","DD EE")
+//                .field("fullName","AA|3001 BB|3001 EE|3001 DD|2002 EE|2002 FF|1003")
+//                .endObject());
         
         BulkResponse br = brb.execute().actionGet();
         if (br.hasFailures()) System.out.println(br.buildFailureMessage());
@@ -78,9 +73,10 @@ public class PayloadCheckerSpanQuery_BeforeAnotherPayloadTests extends QueryTest
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
         // NB: no search analyzer !
-        searchExactAdresse("aa bb dd ee","AA BB EE","DD EE",2); // match 1 & 2
-        searchExactAdresse("dd bb cc","AA BB CC","DD EE",0); // no match
-        searchExactAdresse("aa bb","AA BB CC","DD EE",0); // no match
+        searchExactAdresse("bb dd ee","AA BB EE","DD EE",2); // match 1 & 2
+//        searchExactAdresse("aa bb dd ee","AA BB EE","DD EE",2); // match 1 & 2
+//        searchExactAdresse("dd bb cc","AA BB CC","DD EE",0); // no match
+//        searchExactAdresse("aa bb ff ee","AA BB CC","DD EE",0); // no match
     }
 
     @Override
@@ -97,8 +93,8 @@ public class PayloadCheckerSpanQuery_BeforeAnotherPayloadTests extends QueryTest
         qb.termCountPayloadFactor(1000);
         
         IntegerEncoder encoder = new IntegerEncoder();
-        BytesRef bytes1 = encoder.encode("3001".toCharArray());
-        BytesRef bytes2 = encoder.encode("2002".toCharArray());
+        BytesRef bytes1 = encoder.encode("0001".toCharArray());
+        BytesRef bytes2 = encoder.encode("0002".toCharArray());
         
         PayloadBeforeAnotherChecker checker = new PayloadBeforeAnotherChecker(bytes1, bytes2);
         qb.checker(checker);

@@ -29,10 +29,67 @@ public class PayloadBeforeAnotherChecker extends AbstractPayloadChecker
         this.another = another;
     }
     
-    boolean maybegood = false;
-    boolean isThereBeforePayload = false;
-    boolean wasThereBeforePayload = false;
     MultiPayloadTermSpans lastSubSpan = null;
+    
+    // 0: initial state
+    // 1: before
+    // 2: another after before
+    // 3: fail
+    // 4: good . but 2 is suffisant
+    // 5: just another. 2 is suffisant
+    // 6: both
+    // 7: both after before. 6 is suffisant
+    int state = 0;
+    
+    // 0 : no before nor another
+    // 1 : before
+    // 2 : another
+    // 3 : both
+    int substate = 0;
+    
+    public boolean checkState()
+    {
+        switch(state)
+                {
+                    default:
+                        break;
+                    case 0:
+                        // substate==0 => state = 0;
+                        if (substate==1) state = 1;
+                        else if (substate==2) state = 2;
+                        else if (substate==3) state = 6;
+                        break;
+                    case 1:
+                        if (substate==0) { state = 3; return false; }
+                        //else if (substate==1) state = 1;
+                        else if (substate==2) state = 2;
+                        else if (substate==3) state = 6;
+                        break;
+                    case 2:
+                        // if (substate==0) state=2;
+                        // if (substate==2 or substate==3) state=2;
+                        if (substate==1) { state=3; return false;}
+                        break;
+                    case 3:
+                        return false;
+                    case 4: 
+                        assert(false); // NB: not possible state
+                        break;
+                    case 5:
+                        assert(false); // NB: not possible state
+                        break;
+                    case 6:
+                        if (substate==0) state = 2;
+                        else if (substate==1) state = 1;
+                        else if (substate==2) state = 2;
+                        //else if (substate==3) state = 6;
+                        break;
+                    case 7:
+                        assert(false); // NB: not possible state
+                        break;
+                }
+        return true;
+    }
     
     @Override
     public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
@@ -41,8 +98,10 @@ public class PayloadBeforeAnotherChecker extends AbstractPayloadChecker
         {
             if (lastSubSpan!=null)
             {
-                wasThereBeforePayload = isThereBeforePayload;
-                isThereBeforePayload = false;
+                if (!checkState())
+                    return false;
+                
+                substate = 0;
             }
             
             lastSubSpan = subspan;
@@ -50,14 +109,13 @@ public class PayloadBeforeAnotherChecker extends AbstractPayloadChecker
         
         if (Arrays.equals(subspan.getCurrentPayload(),payloadbefore.bytes))
         {
-            isThereBeforePayload = true;
+            if (substate!=1 && substate !=3)
+                substate += 1;
         }
         if (Arrays.equals(subspan.getCurrentPayload(), another.bytes))
         {
-            if (wasThereBeforePayload)
-            {
-                maybegood = true;
-            }
+            if (substate!=2 && substate !=3)
+                substate += 2;
         }
         
         return true;
@@ -66,14 +124,14 @@ public class PayloadBeforeAnotherChecker extends AbstractPayloadChecker
     @Override
     public boolean check()
     {
-        return maybegood;
+        if (!checkState()) return false;
+        return state == 2 || state == 0;
     }
 
     @Override
     public void clear() {
-        maybegood = false;
-        isThereBeforePayload = false;
-        wasThereBeforePayload = false;
+        state = 0;
+        substate = 0;
         lastSubSpan = null;
     }
     

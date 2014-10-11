@@ -1,7 +1,6 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.search.spans.checkers.IPayloadChecker;
-import org.apache.lucene.search.spans.checkers.PayloadChecker;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 import org.apache.lucene.search.Query;
