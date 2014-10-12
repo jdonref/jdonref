@@ -21,6 +21,15 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
     
     boolean branch = false;
     
+    public String getField()
+    {
+        return field;
+    }
+
+    public ConcurrentHashMap<String, IPayloadChecker> getClauses() {
+        return clauses;
+    }
+    
     AbstractIPayloadCheckerCollectionChecker currentChecker = null;
     
     public SwitchPayloadChecker(AbstractIPayloadCheckerCollectionChecker collectionChecker,SwitchPayloadConditionClause... checkers)

@@ -2,18 +2,9 @@ package org.elasticsearch.index.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
-import org.apache.lucene.search.spans.checkers.AllPayloadChecker;
-import org.apache.lucene.search.spans.checkers.AndPayloadChecker;
-import org.apache.lucene.search.spans.checkers.GroupedPayloadChecker;
-import org.apache.lucene.search.spans.checkers.NotPayloadChecker;
-import org.apache.lucene.search.spans.checkers.OrPayloadChecker;
-import org.apache.lucene.search.spans.checkers.FieldChecker;
-import org.apache.lucene.search.spans.checkers.OnePayloadChecker;
-import org.apache.lucene.search.spans.checkers.XorPayloadChecker;
-import org.apache.lucene.search.spans.checkers.IPayloadChecker;
-import org.apache.lucene.search.spans.checkers.IfPayloadChecker;
-import org.apache.lucene.search.spans.checkers.PayloadBeforeAnotherChecker;
+import org.apache.lucene.search.spans.checkers.*;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.xcontent.ToXContent.Params;
@@ -75,9 +66,17 @@ public class PayloadCheckerFactory {
                     {
                         return parseNotPayloadChecker(parseContext);
                     }
+                    else if (type.equals("Switch"))
+                    {
+                        return parseSwitchPayloadChecker(parseContext);
+                    }
                     else if (type.equals("Grouped"))
                     {
                         return parseGroupedPayloadChecker(parseContext);
+                    }
+                    else if (type.equals("Null"))
+                    {
+                        return parseNullPayloadChecker(parseContext);
                     }
                     else if (type.equals("All"))
                     {
@@ -94,6 +93,10 @@ public class PayloadCheckerFactory {
                     else if (type.equals("If"))
                     {
                         return parseIfChecker(parseContext);
+                    }
+                    else if (type.equals("IfElse"))
+                    {
+                        return parseIfElseChecker(parseContext);
                     }
                     else if (type.equals("BeforeAnother"))
                     {
@@ -138,7 +141,6 @@ public class PayloadCheckerFactory {
         XContentParser parser = parseContext.parser();
         
         ArrayList<IPayloadChecker> checkers = null;
-        String type = null;
         
         XContentParser.Token token;
         String currentFieldName = null;
@@ -163,7 +165,6 @@ public class PayloadCheckerFactory {
         XContentParser parser = parseContext.parser();
         
         ArrayList<IPayloadChecker> checkers = null;
-        String type = null;
         
         XContentParser.Token token;
         String currentFieldName = null;
@@ -212,7 +213,6 @@ public class PayloadCheckerFactory {
         XContentParser parser = parseContext.parser();
         
         ArrayList<IPayloadChecker> checkers = null;
-        String type = null;
         
         XContentParser.Token token;
         String currentFieldName = null;
@@ -232,6 +232,63 @@ public class PayloadCheckerFactory {
         return checker;
     }
     
+    public ArrayList<SwitchPayloadConditionClause> parseArrayClauses(QueryParseContext parseContext) throws IOException
+    {
+        XContentParser parser = parseContext.parser();
+        
+        ArrayList<SwitchPayloadConditionClause> clauses = new ArrayList<>();
+        
+        XContentParser.Token token;
+        String currentFieldName = null;
+        while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY)
+        {
+            if (token == XContentParser.Token.FIELD_NAME)
+            {
+                currentFieldName = parser.currentName();
+            }
+            else if (token == XContentParser.Token.START_OBJECT)
+            {
+                IPayloadChecker checker = parseInnerQuery(parseContext);
+                SwitchPayloadConditionClause clause = new SwitchPayloadConditionClause(currentFieldName, checker);
+                clauses.add(clause);
+            }
+        }
+        
+        return clauses;
+    }
+    
+    public SwitchPayloadChecker parseSwitchPayloadChecker(QueryParseContext parseContext) throws IOException
+    {
+        XContentParser parser = parseContext.parser();
+        
+        ArrayList<SwitchPayloadConditionClause> clauses = null;
+        String field = null;
+        
+        XContentParser.Token token;
+        String currentFieldName = null;
+        while ((token = parser.nextToken()) != XContentParser.Token.END_OBJECT)
+        {
+            if (token == XContentParser.Token.FIELD_NAME) {
+                currentFieldName = parser.currentName();
+            }
+            else if (token == XContentParser.Token.START_ARRAY)
+            {
+                if ("clauses".equals(currentFieldName))
+                    clauses = parseArrayClauses(parseContext);
+            }
+            else if (token.isValue())
+            {
+                if (currentFieldName.equals("field"))
+                {
+                    field = currentFieldName;
+                }
+            }
+        }
+        
+        SwitchPayloadChecker checker = new SwitchPayloadChecker(field,clauses.toArray(new SwitchPayloadConditionClause[clauses.size()]));
+        return checker;
+    }
+    
     public GroupedPayloadChecker parseGroupedPayloadChecker(QueryParseContext parseContext) throws IOException
     {
         XContentParser parser = parseContext.parser();
@@ -244,6 +301,17 @@ public class PayloadCheckerFactory {
         return new GroupedPayloadChecker();
     }
     
+    public NullPayloadChecker parseNullPayloadChecker(QueryParseContext parseContext) throws IOException
+    {
+        XContentParser parser = parseContext.parser();
+        
+        XContentParser.Token token;
+        String currentFieldName = null;
+        while ((token = parser.nextToken()) != XContentParser.Token.END_OBJECT)
+        {
+        }
+        return new NullPayloadChecker();
+    }
     
     public FieldChecker parseFieldChecker(QueryParseContext parseContext) throws IOException
     {
@@ -395,6 +463,40 @@ public class PayloadCheckerFactory {
         return checker;
     }
     
+    protected IPayloadChecker parseIfElseChecker(QueryParseContext parseContext) throws IOException {
+        XContentParser parser = parseContext.parser();
+        
+        IPayloadChecker condition = null;
+        IPayloadChecker then = null;
+        IPayloadChecker elseChecker = null; 
+        
+        XContentParser.Token token;
+        String currentFieldName = null;
+        while ((token = parser.nextToken()) != XContentParser.Token.END_OBJECT)
+        {
+            if (token == XContentParser.Token.FIELD_NAME) {
+                currentFieldName = parser.currentName();
+            }
+            else if (token == XContentParser.Token.START_OBJECT)
+            {
+                if ("condition".equals(currentFieldName))
+                    condition = parseInnerQuery(parseContext);
+                else if ("then".equals(currentFieldName))
+                    then = parseInnerQuery(parseContext);
+                else if ("else".equals(currentFieldName))
+                    elseChecker = parseInnerQuery(parseContext);
+                else
+                    throw new QueryParsingException(parseContext.index(), "[" + NAME + "] [payload] does not support "+currentFieldName);
+            }
+        }
+        
+        if (condition==null | then==null)
+            throw new QueryParsingException(parseContext.index(), "[" + NAME + "] [payload] need condition and action");
+        
+        IfPayloadElseChecker checker = new IfPayloadElseChecker(condition, then, elseChecker);
+        return checker;
+    }
+    
     protected IPayloadChecker parseBeforeAnotherChecker(QueryParseContext parseContext) throws IOException {
         XContentParser parser = parseContext.parser();
         
@@ -466,6 +568,8 @@ public class PayloadCheckerFactory {
             doXorPayloadCheckerXContent((XorPayloadChecker)checker,builder,params);
         else if (checker instanceof NotPayloadChecker)
             doNotPayloadCheckerXContent((NotPayloadChecker)checker,builder,params);
+        else if (checker instanceof SwitchPayloadChecker)
+            doSwitchPayloadCheckerXContent((SwitchPayloadChecker)checker,builder,params);
         else if (checker instanceof GroupedPayloadChecker)
             doGroupedPayloadCheckerXContent((GroupedPayloadChecker)checker,builder,params);
         else if (checker instanceof AllPayloadChecker)
@@ -476,8 +580,12 @@ public class PayloadCheckerFactory {
             doFieldCheckerXContent((FieldChecker)checker,builder,params);
         else if (checker instanceof IfPayloadChecker)
             doIfPayloadCheckerXContent((IfPayloadChecker)checker,builder,params);
+        else if (checker instanceof IfPayloadElseChecker)
+            doIfPayloadElseCheckerXContent((IfPayloadElseChecker)checker,builder,params);
         else if (checker instanceof PayloadBeforeAnotherChecker)
             doPayloadBeforeAnotherCheckerXContent((PayloadBeforeAnotherChecker)checker,builder,params);
+        else if (checker instanceof NullPayloadChecker)
+            doNullPayloadCheckerXContent((NullPayloadChecker)checker,builder,params);
     }
 
     protected void doAndPayloadCheckerXContent(AndPayloadChecker checker, XContentBuilder builder, Params params) throws IOException {
@@ -522,6 +630,25 @@ public class PayloadCheckerFactory {
         builder.endArray();
     }
 
+    protected void doSwitchPayloadCheckerXContent(SwitchPayloadChecker checker, XContentBuilder builder, Params params) throws IOException
+    {
+        SwitchPayloadChecker a = (SwitchPayloadChecker)checker;
+        
+        builder.field("type", "Switch");
+        builder.field("field",a.getField());
+        builder.startArray("clauses");
+        Enumeration<String> eKeys = a.getClauses().keys();
+        while(eKeys.hasMoreElements())
+        {
+            String key = eKeys.nextElement();
+            
+            builder.startObject(key);
+            doXContent(a.getClauses().get(key), builder, params);
+            builder.endObject();
+        }
+        builder.endArray();
+    }
+    
     protected void doNotPayloadCheckerXContent(NotPayloadChecker checker, XContentBuilder builder, Params params) throws IOException {
         NotPayloadChecker a = (NotPayloadChecker)checker;
         
@@ -535,6 +662,12 @@ public class PayloadCheckerFactory {
         GroupedPayloadChecker a = (GroupedPayloadChecker)checker;
         
         builder.field("type", "Grouped");
+    }
+    
+    protected void doNullPayloadCheckerXContent(NullPayloadChecker checker, XContentBuilder builder, Params params) throws IOException {
+        NullPayloadChecker a = (NullPayloadChecker)checker;
+        
+        builder.field("type", "Null");
     }
 
     protected void doFieldCheckerXContent(FieldChecker checker, XContentBuilder builder, Params params) throws IOException {
@@ -573,6 +706,24 @@ public class PayloadCheckerFactory {
         
         builder.startObject("then");
         doXContent(a.getThen(), builder, params);
+        builder.endObject();
+    }
+
+    protected void doIfPayloadElseCheckerXContent(IfPayloadElseChecker checker, XContentBuilder builder, Params params) throws IOException {
+        IfPayloadElseChecker a = (IfPayloadElseChecker)checker;
+        
+        builder.field("type", "If");
+        
+        builder.startObject("condition");
+        doXContent(a.getCondition(), builder, params);
+        builder.endObject();
+        
+        builder.startObject("then");
+        doXContent(a.getThen(), builder, params);
+        builder.endObject();
+        
+        builder.startObject("else");
+        doXContent(a.getElse(), builder, params);
         builder.endObject();
     }
     
