@@ -79,7 +79,7 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
             if (clause!=null && !checkers.contains(clause))
                 checkers.add(clause);
         }
-        currentChecker.setCheckers(checkers.toArray(new IPayloadChecker[checkers.size()]));
+        currentChecker.setCheckers(checkers);
         branch = true;
     }
     
@@ -134,5 +134,22 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
             String key = eKeys.nextElement();
             clauses.get(key).setQuery(query);
         }
+    }
+
+    @Override
+    public SwitchPayloadChecker clone()
+    {
+        ArrayList<SwitchPayloadConditionClause> clausesClone = new ArrayList<>();
+        
+        Enumeration<String> eKeys = clauses.keys();
+        while(eKeys.hasMoreElements())
+        {
+            String key = eKeys.nextElement();
+            SwitchPayloadConditionClause clause = new SwitchPayloadConditionClause(key, clauses.get(key).clone());
+            clausesClone.add(clause);
+        }
+        
+        SwitchPayloadChecker clone = new SwitchPayloadChecker(this.field,clausesClone.toArray(new SwitchPayloadConditionClause[clausesClone.size()]));
+        return clone;
     }
 }

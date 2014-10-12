@@ -3,12 +3,7 @@ package org.elasticsearch.plugin.analysis.jdonrefv4.test;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import org.apache.lucene.analysis.payloads.IntegerEncoder;
-import org.apache.lucene.search.spans.checkers.FieldChecker;
-import org.apache.lucene.search.spans.checkers.GroupedPayloadChecker;
-import org.apache.lucene.search.spans.checkers.IfPayloadElseChecker;
-import org.apache.lucene.search.spans.checkers.OnePayloadChecker;
-import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.search.spans.checkers.LimitChecker;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
@@ -26,9 +21,9 @@ import org.junit.Test;
  *
  * @author Julien
  */
-public class PayloadCheckerSpanQuery_IfPayloadElseTests extends QueryTests
+public class PayloadCheckerSpanQuery_LimitPayloadTests extends QueryTests
 {
-    public PayloadCheckerSpanQuery_IfPayloadElseTests()
+    public PayloadCheckerSpanQuery_LimitPayloadTests()
     {
         settingsFileName = "./test/resources/index/PayloadVersusTypeSpanQuery-settings.json";
         INDEX_NAME = "test";
@@ -38,7 +33,7 @@ public class PayloadCheckerSpanQuery_IfPayloadElseTests extends QueryTests
     @Override
     void importMapping() throws FileNotFoundException, IOException
     {
-        String[] mappings = new String[]{"payloadversustypespanquery","anothertype"};
+        String[] mappings = new String[]{"payloadversustypespanquery"};
         
         for(int i=0;i<mappings.length;i++)
         {
@@ -53,15 +48,11 @@ public class PayloadCheckerSpanQuery_IfPayloadElseTests extends QueryTests
     {
         BulkRequestBuilder brb = client().prepareBulk();
         
-        publicIndex(brb,"payloadversustypespanquery","1",XContentFactory.jsonBuilder().startObject()
+        for(int i=0;i<100;i++)
+            publicIndex(brb,"payloadversustypespanquery",Integer.toString(i),XContentFactory.jsonBuilder().startObject()
                 .field("ligne4","AA BB CC")
                 .field("ligne6","DD EE")
                 .field("fullName","AA|3001 BB|3001 CC|3001 DD|2002 EE|2002 FF|1003")
-                .endObject());
-        publicIndex(brb,"anothertype","2",XContentFactory.jsonBuilder().startObject()
-                .field("ligne4","AA BB EE")
-                .field("ligne6","DD EE")
-                .field("fullName","AA|3001 BB|3001 EE|3001 DD|2002 EE|2002 FF|1003")
                 .endObject());
         
         BulkResponse br = brb.execute().actionGet();
@@ -75,12 +66,12 @@ public class PayloadCheckerSpanQuery_IfPayloadElseTests extends QueryTests
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
+        noexplaintest = true;
+        
         // NB: no search analyzer !
-        searchExactAdresse("aa dd cc","AA BB EE","DD EE",0); // no match
-        searchExactAdresse("aa dd bb ff","AA BB EE","DD EE",1); // match 2
-        searchExactAdresse("aa bb cc ee","AA BB CC","DD EE",1); // match 1
+        searchExactAdresse("aa","AA BB CC","DD EE",5); // only 5 matches (5 shards)
     }
-
+    
     @Override
     QueryBuilder getQueryBuilder(String voie)
     {
@@ -94,14 +85,7 @@ public class PayloadCheckerSpanQuery_IfPayloadElseTests extends QueryTests
         }
         qb.termCountPayloadFactor(1000);
         
-        IntegerEncoder encoder = new IntegerEncoder();
-        BytesRef bytes1 = encoder.encode("3".toCharArray());
-        
-        FieldChecker condition = new FieldChecker("payloadversustypespanquery");
-        GroupedPayloadChecker then = new GroupedPayloadChecker();
-        OnePayloadChecker elseChecker = new OnePayloadChecker(bytes1.bytes);
-        
-        IfPayloadElseChecker checker = new IfPayloadElseChecker(condition, then, elseChecker);
+        LimitChecker checker = new LimitChecker(1);
         qb.checker(checker);
         
         return qb;

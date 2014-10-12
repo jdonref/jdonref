@@ -49,6 +49,8 @@ public abstract class QueryTests
     protected String DOC_TYPE_NAME;
     protected String settingsFileName;
     
+    protected boolean noexplaintest = false;
+    
     public void publicIndex(BulkRequestBuilder brb,String type,String id, XContentBuilder data)
     {
         IndexRequestBuilder irb = client().prepareIndex(INDEX_NAME,type,id);
@@ -148,12 +150,12 @@ public abstract class QueryTests
     
     void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6)
     {
-        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,0,-1.0f,-1);
+        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,-1,-1.0f,-1);
     }
     
     void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6,int size)
     {
-        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,0,-1.0f,size);
+        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,-1,-1.0f,size);
     }
     
     void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6,int indice,float note_minimum)
@@ -182,6 +184,7 @@ public abstract class QueryTests
         if (hits.length==0)
         {
             System.out.println("No results");
+            if (size!=-1) Assert.assertTrue(size==hits.length);
             if (size==0) return;
         }
         if (size==-1)
@@ -204,20 +207,20 @@ public abstract class QueryTests
             Explanation ex = hits[i].explanation();
             match_ligne4 = assertion_ligne4.equals(hit.getSource().get("ligne4"));
             match_ligne6 = assertion_ligne6.equals(hit.getSource().get("ligne6"));
-            if (ex!=null && Math.abs(hits[i].getScore()-ex.getValue())>0.05)
+            if (ex!=null && !noexplaintest && Math.abs(hits[i].getScore()-ex.getValue())>0.05)
             {
                 printExplanation(ex);
                 Assert.assertTrue(Math.abs(hits[i].getScore()-ex.getValue())<=0.05); // 0.05 tolerance : no more time to dev.
             }
             if (match_ligne4 && match_ligne6) positionMatch = i;
         }
-        if (positionMatch>indice || positionMatch==-1)
+        if (indice!=-1 && (positionMatch>indice || positionMatch==-1))
         {
             System.out.println("hit "+0+" "+hits[0].getSourceAsString());
             System.out.println("score : "+hits[0].getScore());
             printExplanation(hits[0].explanation());
         }
-        Assert.assertTrue(positionMatch<=indice);
+        if (indice!=-1) Assert.assertTrue(positionMatch<=indice);
         if (note_minimum>-1)
         {
             if (hits[positionMatch].getScore()<note_minimum)

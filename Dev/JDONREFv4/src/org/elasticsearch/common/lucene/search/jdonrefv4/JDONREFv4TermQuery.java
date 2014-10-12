@@ -2,24 +2,10 @@ package org.elasticsearch.common.lucene.search.jdonrefv4;
 
 import java.io.IOException;
 import java.util.Set;
-
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.IndexReaderContext;
-import org.apache.lucene.index.JDONREFv4TermContext;
-import org.apache.lucene.index.ReaderUtil;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermState;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.ComplexExplanation;
-import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Weight;
-import org.apache.lucene.search.similarities.Similarity.SimScorer;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.search.similarities.Similarity.SimScorer;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.ToStringUtils;
 
@@ -32,7 +18,6 @@ public class JDONREFv4TermQuery extends Query {
     private final int docFreq;
     private final JDONREFv4TermContext perReaderTermState;
     protected boolean last = false;
-    protected int maxSizePerType;
     protected int token;
     protected int queryIndex;
 
@@ -54,14 +39,6 @@ public class JDONREFv4TermQuery extends Query {
 
     public void setQueryIndex(int queryIndex) {
         this.queryIndex = queryIndex;
-    }
-
-    public int getMaxSizePerType() {
-        return maxSizePerType;
-    }
-
-    public void setMaxSizePerType(int maxSizePerType) {
-        this.maxSizePerType = maxSizePerType;
     }
     
     public final class TermWeight extends Weight {
@@ -140,7 +117,7 @@ public class JDONREFv4TermQuery extends Query {
             DocsEnum docs = termsEnum.docs(acceptDocs, null);
             assert docs != null;
             //return new TermScorer(this, docs, similarity.simScorer(stats, context));
-            return new JDONREFv4TermScorer(this, docs, similarity.simScorer(stats, context), this.index, this.searcher, maxSizePerType);
+            return new JDONREFv4TermScorer(this, docs, similarity.simScorer(stats, context), this.index, this.searcher);
         }
 
         /**

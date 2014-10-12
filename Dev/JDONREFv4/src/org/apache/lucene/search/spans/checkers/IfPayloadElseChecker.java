@@ -22,24 +22,22 @@ public class IfPayloadElseChecker extends IfPayloadChecker
         this.elseChecker = elseChecker;
     }
     
-    boolean keepTrying = true;
-    
     @Override
     public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
     {
-        boolean res = true;
-        if (res==false) return false;
+        boolean check = true;
+        if (check==false) return false;
         if (keepTrying && condition.checkNextPayload(subspan))
         {
-            res  = then.checkNextPayload(subspan);
-            res &= elseChecker.checkNextPayload(subspan); // they need to advance simultanneously
-            return res;
+            check  = then.checkNextPayload(subspan);
+            check &= elseChecker.checkNextPayload(subspan); // they need to advance simultanneously
+            return check;
         }
         else
         {
             keepTrying = false;
-            res = elseChecker.checkNextPayload(subspan);
-            return res;
+            check = elseChecker.checkNextPayload(subspan);
+            return check;
         }
     }
 
@@ -60,12 +58,14 @@ public class IfPayloadElseChecker extends IfPayloadChecker
         res = true;
     }
     
-    public Object clone()
+    @Override
+    public IfPayloadElseChecker clone()
     {
         IfPayloadElseChecker checker = new IfPayloadElseChecker(condition,then,elseChecker);
         return checker;
     }
     
+    @Override
     public String toString()
     {
         String res = "IF (";

@@ -1,10 +1,7 @@
 package org.elasticsearch.index.query.jdonrefv4;
 
-import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
-import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
-import org.elasticsearch.common.lucene.search.jdonrefv4.MyLimitFilter;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CachingTokenFilter;
@@ -15,17 +12,9 @@ import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.checkers.AndPayloadChecker;
-import org.apache.lucene.search.spans.checkers.GroupedPayloadChecker;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
-import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 import org.apache.lucene.search.spans.checkers.*;
 import org.apache.lucene.util.BytesRef;
@@ -33,13 +22,15 @@ import org.apache.lucene.util.IOUtils;
 import org.elasticsearch.cluster.ClusterService;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
+import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery;
+import org.elasticsearch.common.lucene.search.jdonrefv4.MyLimitFilter;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.index.mapper.DocumentMapper;
 import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.index.query.QueryParser;
 import org.elasticsearch.index.query.QueryParsingException;
-
 import org.elasticsearch.index.search.MatchQuery;
 
 /**
@@ -50,7 +41,7 @@ public class JDONREFv4QueryParser implements QueryParser
 {
     public static final String NAME = "jdonrefv4";
     public static final String SEARCH_ANALYZER = "jdonrefv4_search";
-    public static final int DEFAULTMAXSIZE = 300;
+    public static final int DEFAULTMAXSIZE = Integer.MAX_VALUE;
     
     private Settings settings;
     
@@ -167,13 +158,12 @@ public class JDONREFv4QueryParser implements QueryParser
         }
     }
     
-    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost, int token,int queryIndex,int maxSizePerType) throws IOException
+    public void addMatchQueryClause(BooleanQuery booleanQuery,MatchQuery mq,Term t,float boost, int token,int queryIndex) throws IOException
     {
         JDONREFv4TermQuery query = new JDONREFv4TermQuery(t);
         query.setToken(token);
         query.setBoost(boost);
         query.setQueryIndex(queryIndex);
-        query.setMaxSizePerType(maxSizePerType);
         booleanQuery.add(new BooleanClause(query,BooleanClause.Occur.SHOULD));
     }
     
@@ -202,49 +192,55 @@ public class JDONREFv4QueryParser implements QueryParser
      * ligne1 = 1
      * @return 
      */
-    protected IPayloadChecker getChecker()
+    protected IPayloadChecker getChecker(int maxSizePerType)
     {
         IntegerEncoder encoder = new IntegerEncoder();
         
         GroupedPayloadChecker gpChecker = new GroupedPayloadChecker();
-        /*
-        OnePayloadVersusFieldChecker poizonLigne1Checker = new OnePayloadVersusFieldChecker("poizon",encoder.encode("1".toCharArray()).bytes);
-        OnePayloadVersusFieldChecker poizonLigne4Checker = new OnePayloadVersusFieldChecker("poizon",encoder.encode("2".toCharArray()).bytes);
-        OrPayloadChecker poizonChecker = new OrPayloadChecker(poizonLigne1Checker,poizonLigne4Checker);
         
-        OnePayloadVersusFieldChecker voieLigne4Checker = new OnePayloadVersusFieldChecker("voie",encoder.encode("2".toCharArray()).bytes);
-        OnePayloadVersusFieldChecker voieCodesChecker  = new OnePayloadVersusFieldChecker("voie",encoder.encode("2".toCharArray()).bytes);
+        byte[] ligne1 = encoder.encode("1".toCharArray()).bytes;
+        byte[] ligne4 = encoder.encode("2".toCharArray()).bytes;
+        byte[] ligne7 = encoder.encode("9".toCharArray()).bytes;
+        byte[] numero = encoder.encode("11".toCharArray()).bytes;
+        byte[] commune = encoder.encode("5".toCharArray()).bytes;
+        byte[] code_departement = encoder.encode("8".toCharArray()).bytes;
+        byte[] code_insee = encoder.encode("7".toCharArray()).bytes;
+        byte[] code_insee_commune = encoder.encode("6".toCharArray()).bytes;
+        byte[] code_arrondissement = encoder.encode("4".toCharArray()).bytes;
+        byte[] code_postal = encoder.encode("3".toCharArray()).bytes;
         
-        OrPayloadChecker orChecker = new OrPayloadChecker(poizonChecker);
-        */
-        
-        OnePayloadChecker ligne1Present = new OnePayloadChecker(encoder.encode("1".toCharArray()).bytes);
-        OnePayloadChecker ligne4Present = new OnePayloadChecker(encoder.encode("2".toCharArray()).bytes);
-        OnePayloadChecker ligne7Present = new OnePayloadChecker(encoder.encode("9".toCharArray()).bytes);
-        AllPayloadChecker allNumeroChecker = new AllPayloadChecker(encoder.encode("11".toCharArray()).bytes);
-        OnePayloadChecker communePresent = new OnePayloadChecker(encoder.encode("5".toCharArray()).bytes);
-        OnePayloadChecker codeDepartementPresent = new OnePayloadChecker(encoder.encode("8".toCharArray()).bytes);
-        OnePayloadChecker codeInseePresent = new OnePayloadChecker(encoder.encode("7".toCharArray()).bytes);
-        OnePayloadChecker codeInseeCommunePresent = new OnePayloadChecker(encoder.encode("6".toCharArray()).bytes);
-        OnePayloadChecker codeArrondissementPresent = new OnePayloadChecker(encoder.encode("4".toCharArray()).bytes);
-        OnePayloadChecker codePostalPresent = new OnePayloadChecker(encoder.encode("3".toCharArray()).bytes);
+        OnePayloadChecker ligne1Present = new OnePayloadChecker(ligne1);
+        OnePayloadChecker ligne4Present = new OnePayloadChecker(ligne4);
+        OnePayloadChecker ligne7Present = new OnePayloadChecker(ligne7);
+        AllPayloadChecker allNumeroChecker = new AllPayloadChecker(numero);
+        OnePayloadChecker communePresent = new OnePayloadChecker(commune);
+        OnePayloadChecker codeDepartementPresent = new OnePayloadChecker(code_departement);
+        OnePayloadChecker codeInseePresent = new OnePayloadChecker(code_insee);
+        OnePayloadChecker codeInseeCommunePresent = new OnePayloadChecker(code_insee_commune);
+        OnePayloadChecker codeArrondissementPresent = new OnePayloadChecker(code_arrondissement);
+        OnePayloadChecker codePostalPresent = new OnePayloadChecker(code_postal);
         OrPayloadChecker codesPresent = new OrPayloadChecker(codeDepartementPresent,
                                                              codeArrondissementPresent,
                                                              codeInseePresent,
                                                              codeInseeCommunePresent,
                                                              codePostalPresent);
-        
         OrPayloadChecker codesOrCommunePresent = new OrPayloadChecker(codesPresent,communePresent);
+        PayloadBeforeAnotherChecker numeroAvantLigne4 = new PayloadBeforeAnotherChecker(numero, ligne4);
+        LimitChecker limit = new LimitChecker(maxSizePerType);
         
-        SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new OrPayloadChecker(ligne1Present,ligne4Present));
-        SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),codesOrCommunePresent));
-        SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone(),codesOrCommunePresent.clone()));
-        SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", codesOrCommunePresent.clone());
-        SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", codeDepartementPresent.clone());
-        SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", ligne7Present.clone());
+        SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present,ligne4Present),numeroAvantLigne4,limit));
+        SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),codesOrCommunePresent,/*numeroAvantLigne4,*/limit.clone()));
+        SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone(),codesOrCommunePresent.clone(),limit.clone()));
+        SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone(),limit.clone()));
+        SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone(),limit.clone()));
+        SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone(),limit.clone()));
         SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1,clause2,clause3,clause4,clause5,clause6);
         
         AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker); //, orChecker);
+        
+        //NullPayloadChecker nullChecker = new NullPayloadChecker();
+        //return nullChecker;
+        
         return andChecker;
     }
     
@@ -306,7 +302,9 @@ public class JDONREFv4QueryParser implements QueryParser
         // JDONREFv4 Work rules
         PayloadCheckerSpanQuery spanQuery = new PayloadCheckerSpanQuery();
         spanQuery.setTermCountPayloadFactor(1000);
-        spanQuery.setChecker(getChecker());
+        spanQuery.setChecker(getChecker(maxSizePerType));
+        
+        BooleanFilter boolFilter = new BooleanFilter();
         
         MatchQuery mq = new MatchQuery(parseContext);
         
@@ -323,23 +321,33 @@ public class JDONREFv4QueryParser implements QueryParser
 
             if (bytes.length>0)
             {
-                addMatchQueryClause(booleanQuery, mq, new Term("ligne4", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
-                addMatchQueryClause(booleanQuery, mq, new Term("commune", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
-                addMatchQueryClause(booleanQuery, mq, new Term("codes", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
-                addMatchQueryClause(booleanQuery, mq, new Term("ligne7", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
+                addMatchQueryClause(booleanQuery, mq, new Term("ligne4", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
+                addMatchQueryClause(booleanQuery, mq, new Term("commune", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
+                addMatchQueryClause(booleanQuery, mq, new Term("codes", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
+                addMatchQueryClause(booleanQuery, mq, new Term("ligne7", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
                 //addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-                addMatchQueryClause(booleanQuery, mq, new Term("ligne1", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++,maxSizePerType);
+                addMatchQueryClause(booleanQuery, mq, new Term("ligne1", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
             
                 //TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
                 //boolFilters.add(filter, Occur.MUST);
-                MultiPayloadSpanTermQuery filter = new MultiPayloadSpanTermQuery(new Term("fullName",BytesRef.deepCopyOf(bytes)));
-                spanQuery.addClause(filter);
+                MultiPayloadSpanTermQuery spanTermQuery = new MultiPayloadSpanTermQuery(new Term("fullName",BytesRef.deepCopyOf(bytes)));
+                spanQuery.addClause(spanTermQuery);
+                
+                TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
+                boolFilter.add(filter,Occur.MUST);
             }
         }
         
-        Filter boolFilters = org.elasticsearch.common.lucene.search.Queries.wrap(spanQuery); 
+        BooleanQuery andQuery = new BooleanQuery();
         
-        FilteredQuery filteredQuery = new FilteredQuery(booleanQuery,boolFilters,FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
+        BooleanClause clause1 = new BooleanClause(spanQuery,Occur.MUST);
+        BooleanClause clause2 = new BooleanClause(booleanQuery,Occur.MUST);
+        andQuery.add(clause1);
+        andQuery.add(clause2);
+        
+        //Filter spanQueryFilter = org.elasticsearch.common.lucene.search.Queries.wrap(spanQuery);
+                
+        FilteredQuery filteredQuery = new FilteredQuery(andQuery,boolFilter,FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
         
         if (debugDoc>0)
         {

@@ -87,4 +87,10 @@ public class FieldChecker extends AbstractPayloadChecker
     @Override
     public void setQuery(PayloadCheckerSpanQuery query) {
     }
+
+    @Override
+    public FieldChecker clone()
+    {
+        return new FieldChecker(field,value);
+    }
 }

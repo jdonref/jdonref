@@ -30,11 +30,6 @@ public class NullPayloadChecker extends AbstractPayloadChecker
     public void clear() {
     }
     
-    public Object clone()
-    {
-        return this;
-    }
-    
     public String toString()
     {
         String res = "TRUE";
@@ -43,5 +38,10 @@ public class NullPayloadChecker extends AbstractPayloadChecker
 
     @Override
     public void setQuery(PayloadCheckerSpanQuery query) {
+    }
+
+    @Override
+    public NullPayloadChecker clone() {
+        return this;
     }
 }

@@ -90,6 +90,10 @@ public class PayloadCheckerFactory {
                     {
                         return parseFieldChecker(parseContext);
                     }
+                    else if (type.equals("Limit"))
+                    {
+                        return parseLimitChecker(parseContext);
+                    }
                     else if (type.equals("If"))
                     {
                         return parseIfChecker(parseContext);
@@ -232,7 +236,7 @@ public class PayloadCheckerFactory {
         return checker;
     }
     
-    public ArrayList<SwitchPayloadConditionClause> parseArrayClauses(QueryParseContext parseContext) throws IOException
+    public ArrayList<SwitchPayloadConditionClause> parseClauses(QueryParseContext parseContext) throws IOException
     {
         XContentParser parser = parseContext.parser();
         
@@ -240,7 +244,7 @@ public class PayloadCheckerFactory {
         
         XContentParser.Token token;
         String currentFieldName = null;
-        while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY)
+        while ((token = parser.nextToken()) != XContentParser.Token.END_OBJECT)
         {
             if (token == XContentParser.Token.FIELD_NAME)
             {
@@ -271,16 +275,16 @@ public class PayloadCheckerFactory {
             if (token == XContentParser.Token.FIELD_NAME) {
                 currentFieldName = parser.currentName();
             }
-            else if (token == XContentParser.Token.START_ARRAY)
+            else if (token == XContentParser.Token.START_OBJECT)
             {
                 if ("clauses".equals(currentFieldName))
-                    clauses = parseArrayClauses(parseContext);
+                    clauses = parseClauses(parseContext);
             }
             else if (token.isValue())
             {
                 if (currentFieldName.equals("field"))
                 {
-                    field = currentFieldName;
+                    field = parser.text();
                 }
             }
         }
@@ -346,6 +350,38 @@ public class PayloadCheckerFactory {
             checker = new FieldChecker(value);
         else
             checker = new FieldChecker(field,value);
+        
+        return checker;
+    }
+    
+    public LimitChecker parseLimitChecker(QueryParseContext parseContext) throws IOException
+    {
+        XContentParser parser = parseContext.parser();
+        
+        int limit = Integer.MAX_VALUE;
+        
+        XContentParser.Token token;
+        String currentFieldName = null;
+        while ((token = parser.nextToken()) != XContentParser.Token.END_OBJECT)
+        {
+            if (token == XContentParser.Token.FIELD_NAME) {
+                currentFieldName = parser.currentName();
+            } else if (token.isValue()) {
+                switch (currentFieldName) {
+                    default:
+                        throw new QueryParsingException(parseContext.index(), "[" + NAME + "] [requiredPayloads] does not support [" + currentFieldName + "]");
+                    case "limit":
+                        limit = parser.intValue();
+                        break;
+                }
+            }
+        }
+        
+        LimitChecker checker;
+        if (limit==Integer.MAX_VALUE)
+            checker = new LimitChecker();
+        else
+            checker = new LimitChecker(limit);
         
         return checker;
     }
@@ -554,7 +590,7 @@ public class PayloadCheckerFactory {
         if (payloadbefore==null || another==null)
             throw new QueryParsingException(parseContext.index(), "[" + NAME + "] [payload] need 2 payloads");
         
-        PayloadBeforeAnotherChecker checker = new PayloadBeforeAnotherChecker(payloadbefore, another);
+        PayloadBeforeAnotherChecker checker = new PayloadBeforeAnotherChecker(payloadbefore.bytes, another.bytes);
         return checker;
     }
     
@@ -578,6 +614,8 @@ public class PayloadCheckerFactory {
             doOnePayloadCheckerXContent((OnePayloadChecker)checker,builder,params);
         else if (checker instanceof FieldChecker)
             doFieldCheckerXContent((FieldChecker)checker,builder,params);
+        else if (checker instanceof LimitChecker)
+            doLimitCheckerXContent((LimitChecker)checker,builder,params);
         else if (checker instanceof IfPayloadChecker)
             doIfPayloadCheckerXContent((IfPayloadChecker)checker,builder,params);
         else if (checker instanceof IfPayloadElseChecker)
@@ -593,10 +631,10 @@ public class PayloadCheckerFactory {
         
         builder.field("type", "And");
         builder.startArray("checkers");
-        for(int i=0;i<a.getCheckers().length;i++)
+        for(int i=0;i<a.getCheckers().size();i++)
         {
             builder.startObject();
-            doXContent(a.getCheckers()[i],builder,params);
+            doXContent(a.getCheckers().get(i),builder,params);
             builder.endObject();
         }
         builder.endArray();
@@ -607,10 +645,10 @@ public class PayloadCheckerFactory {
         
         builder.field("type", "Or");
         builder.startArray("checkers");
-        for(int i=0;i<a.getCheckers().length;i++)
+        for(int i=0;i<a.getCheckers().size();i++)
         {
             builder.startObject();
-            doXContent(a.getCheckers()[i],builder,params);
+            doXContent(a.getCheckers().get(i),builder,params);
             builder.endObject();
         }
         builder.endArray();
@@ -621,10 +659,10 @@ public class PayloadCheckerFactory {
         
         builder.field("type", "Xor");
         builder.startArray("checkers");
-        for(int i=0;i<a.getCheckers().length;i++)
+        for(int i=0;i<a.getCheckers().size();i++)
         {
             builder.startObject();
-            doXContent(a.getCheckers()[i],builder,params);
+            doXContent(a.getCheckers().get(i),builder,params);
             builder.endObject();
         }
         builder.endArray();
@@ -636,7 +674,7 @@ public class PayloadCheckerFactory {
         
         builder.field("type", "Switch");
         builder.field("field",a.getField());
-        builder.startArray("clauses");
+        builder.startObject("clauses");
         Enumeration<String> eKeys = a.getClauses().keys();
         while(eKeys.hasMoreElements())
         {
@@ -646,7 +684,7 @@ public class PayloadCheckerFactory {
             doXContent(a.getClauses().get(key), builder, params);
             builder.endObject();
         }
-        builder.endArray();
+        builder.endObject();
     }
     
     protected void doNotPayloadCheckerXContent(NotPayloadChecker checker, XContentBuilder builder, Params params) throws IOException {
@@ -677,6 +715,14 @@ public class PayloadCheckerFactory {
         
         builder.field("field",a.getField());
         builder.field("value",a.getValue());
+    }
+    
+    protected void doLimitCheckerXContent(LimitChecker checker, XContentBuilder builder, Params params) throws IOException {
+        LimitChecker a = (LimitChecker)checker;
+        
+        builder.field("type", "Limit");
+        
+        builder.field("limit",a.getLimit());
     }
     
     protected void doAllPayloadCheckerXContent(AllPayloadChecker checker, XContentBuilder builder, Params params) throws IOException {

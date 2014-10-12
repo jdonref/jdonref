@@ -63,20 +63,22 @@ public class IfPayloadChecker extends AbstractPayloadChecker
         res = true;
     }
     
-    public Object clone()
+    @Override
+    public IfPayloadChecker clone()
     {
         IfPayloadChecker checker = new IfPayloadChecker(condition,then);
         return checker;
     }
     
+    @Override
     public String toString()
     {
-        String res = "IF (";
-        res += condition.toString();
-        res += ") then (";
-        res += then.toString();
-        res += ")";
-        return res;
+        String string = "IF (";
+        string += condition.toString();
+        string += ") then (";
+        string += then.toString();
+        string += ")";
+        return string;
     }
 
     @Override

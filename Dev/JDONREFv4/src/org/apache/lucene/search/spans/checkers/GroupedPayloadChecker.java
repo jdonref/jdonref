@@ -143,4 +143,10 @@ public class GroupedPayloadChecker extends AbstractPayloadChecker
     {
         return "GROUPED";
     }
+
+    @Override
+    public GroupedPayloadChecker clone()
+    {
+        return new GroupedPayloadChecker();
+    }
 }

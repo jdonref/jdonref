@@ -52,4 +52,9 @@ public class NotPayloadChecker extends AbstractPayloadChecker
     public void setQuery(PayloadCheckerSpanQuery query) {
         checker.setQuery(query);
     }
+
+    @Override
+    public NotPayloadChecker clone() {
+        return new NotPayloadChecker(this.checker.clone());
+    }
 }

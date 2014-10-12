@@ -8,7 +8,7 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  * Public interface to check document subspans for payload rules.
  * @author Julien
  */
-public interface IPayloadChecker
+public interface IPayloadChecker extends Cloneable
 {
     void setQuery(PayloadCheckerSpanQuery query);
     
@@ -30,4 +30,6 @@ public interface IPayloadChecker
      * Prepare to start a new check
      */
     void clear();
+    
+    public IPayloadChecker clone();
 }

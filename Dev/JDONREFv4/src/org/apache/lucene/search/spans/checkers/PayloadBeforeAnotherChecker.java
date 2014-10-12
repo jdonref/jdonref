@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.apache.lucene.search.spans.MultiPayloadTermSpans;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
-import org.apache.lucene.util.BytesRef;
 
 /**
  *
@@ -12,18 +11,18 @@ import org.apache.lucene.util.BytesRef;
  */
 public class PayloadBeforeAnotherChecker extends AbstractPayloadChecker
 {
-    BytesRef payloadbefore;
-    BytesRef another;
+    byte[] payloadbefore;
+    byte[] another;
 
-    public BytesRef getAnother() {
+    public byte[] getAnother() {
         return another;
     }
 
-    public BytesRef getPayloadbefore() {
+    public byte[] getPayloadbefore() {
         return payloadbefore;
     }
     
-    public PayloadBeforeAnotherChecker(BytesRef payloadbefore, BytesRef another)
+    public PayloadBeforeAnotherChecker(byte[] payloadbefore, byte[] another)
     {
         this.payloadbefore = payloadbefore;
         this.another = another;
@@ -107,12 +106,12 @@ public class PayloadBeforeAnotherChecker extends AbstractPayloadChecker
             lastSubSpan = subspan;
         }
         
-        if (Arrays.equals(subspan.getCurrentPayload(),payloadbefore.bytes))
+        if (Arrays.equals(subspan.getCurrentPayload(),payloadbefore))
         {
             if (substate!=1 && substate !=3)
                 substate += 1;
         }
-        if (Arrays.equals(subspan.getCurrentPayload(), another.bytes))
+        if (Arrays.equals(subspan.getCurrentPayload(), another))
         {
             if (substate!=2 && substate !=3)
                 substate += 2;
@@ -135,12 +134,7 @@ public class PayloadBeforeAnotherChecker extends AbstractPayloadChecker
         lastSubSpan = null;
     }
     
-    public Object clone()
-    {
-        PayloadBeforeAnotherChecker checker = new PayloadBeforeAnotherChecker(payloadbefore,another);
-        return checker;
-    }
-    
+    @Override
     public String toString()
     {
         String res = "";
@@ -152,5 +146,11 @@ public class PayloadBeforeAnotherChecker extends AbstractPayloadChecker
 
     @Override
     public void setQuery(PayloadCheckerSpanQuery query) {
+    }
+
+    @Override
+    public PayloadBeforeAnotherChecker clone()
+    {
+        return new PayloadBeforeAnotherChecker(payloadbefore, another);
     }
 }

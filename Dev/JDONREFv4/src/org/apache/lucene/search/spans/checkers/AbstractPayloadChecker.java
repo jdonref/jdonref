@@ -10,6 +10,7 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  */
 public abstract class AbstractPayloadChecker implements IPayloadChecker
 {
+    @Override
     public abstract void setQuery(PayloadCheckerSpanQuery query);
     
     /**
@@ -18,16 +19,22 @@ public abstract class AbstractPayloadChecker implements IPayloadChecker
      * 
      * @return false means check() will return false. true means nothing.
      */
+    @Override
     public abstract boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException;
     
     /**
      * Return whether current document is checked or not
      * @return 
      */
+    @Override
     public abstract boolean check();
     
     /**
      * Prepare to start a new check
      */
+    @Override
     public abstract void clear();
+    
+    @Override
+    public abstract AbstractPayloadChecker clone();
 }

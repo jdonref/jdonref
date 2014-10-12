@@ -35,7 +35,7 @@ public class PayloadCheckerSpanQuery_SwitchPayloadTests extends QueryTests
     @Override
     void importMapping() throws FileNotFoundException, IOException
     {
-        String[] mappings = new String[]{"payloadversustypespanquery"};
+        String[] mappings = new String[]{"payloadversustypespanquery","anothertype"};
         
         for(int i=0;i<mappings.length;i++)
         {
@@ -74,7 +74,7 @@ public class PayloadCheckerSpanQuery_SwitchPayloadTests extends QueryTests
         
         // NB: no search analyzer !
         searchExactAdresse("aa dd cc","AA BB EE","DD EE",0); // no match
-        searchExactAdresse("aa dd bb ff","AA BB EE","DD EE",0); // match 2
+        searchExactAdresse("aa dd bb ff","AA BB EE","DD EE",1); // match 2
         searchExactAdresse("aa bb cc ee","AA BB CC","DD EE",1); // match 1
     }
 

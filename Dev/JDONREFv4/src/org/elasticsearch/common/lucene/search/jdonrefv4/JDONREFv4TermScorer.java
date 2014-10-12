@@ -1,9 +1,7 @@
 package org.elasticsearch.common.lucene.search.jdonrefv4;
 
 import java.io.IOException;
-
 import org.apache.log4j.Logger;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
@@ -20,7 +18,6 @@ public class JDONREFv4TermScorer extends Scorer {
     protected boolean last;
     protected int index;
     protected IndexSearcher searcher;
-    protected int maxSizePerType;
     
     protected JDONREFv4Scorer parentScorer;
     
@@ -52,14 +49,6 @@ public class JDONREFv4TermScorer extends Scorer {
         last = true;
     }
 
-    public int getMaxSizePerType() {
-        return maxSizePerType;
-    }
-
-    public void setMaxSizePerType(int maxSizePerType) {
-        this.maxSizePerType = maxSizePerType;
-    }
-
     public JDONREFv4Scorer getParentScorer() {
         return parentScorer;
     }
@@ -79,13 +68,12 @@ public class JDONREFv4TermScorer extends Scorer {
      *          The </code>Similarity.SimScorer</code> implementation 
      *          to be used for score computations.
      */
-    public JDONREFv4TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer, int index, IndexSearcher searcher, int maxSizePerType) {
+    public JDONREFv4TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer, int index, IndexSearcher searcher) {
         super(weight);
         this.docScorer = docScorer;
         this.docsEnum = td;
         this.index = index;
         this.searcher = searcher;
-        this.maxSizePerType = maxSizePerType;
     }
 
     @Override
@@ -98,22 +86,22 @@ public class JDONREFv4TermScorer extends Scorer {
         return docsEnum.freq();
     }
     
-    public int nextReachLimitDoc() throws IOException
-    {
-        int doc;
-        Document d;
-        String type;
-        
-        do
-        {
-            doc = docsEnum.nextDoc();
-            if (doc == NO_MORE_DOCS) break;
-            d = this.searcher.doc(doc);
-            type = this.parentScorer.getType(d);
-        } while(this.parentScorer.typeReachLimit(type));
-        
-        return doc;
-    }
+//    public int nextReachLimitDoc() throws IOException
+//    {
+//        int doc;
+//        Document d;
+//        String type;
+//        
+//        do
+//        {
+//            doc = docsEnum.nextDoc();
+//            if (doc == NO_MORE_DOCS) break;
+//            d = this.searcher.doc(doc);
+//            type = this.parentScorer.getType(d);
+//        } while(this.parentScorer.typeReachLimit(type));
+//        
+//        return doc;
+//    }
     
     /**
      * Advances to the next document matching the query. <br>
@@ -123,10 +111,10 @@ public class JDONREFv4TermScorer extends Scorer {
     @Override
     public int nextDoc() throws IOException
     {
-        if (this.parentScorer==null)
+//        if (this.parentScorer==null)
             return docsEnum.nextDoc();
-        else
-            return nextReachLimitDoc();
+//        else
+//            return nextReachLimitDoc();
     }
         
     
@@ -178,25 +166,25 @@ public class JDONREFv4TermScorer extends Scorer {
         return score;
     }
 
-    public int advanceReachLimit(int target) throws IOException {
-        int doc = docsEnum.advance(target);
-        
-        if (doc!=NO_MORE_DOCS)
-        {
-            if (target==this.parentScorer.debugDoc && doc!=target )
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" miss "+target);
-            Document d = this.searcher.doc(doc);
-            String type = this.parentScorer.getType(d);
-            if (this.parentScorer.typeReachLimit(type))
-            {
-                if (target==this.parentScorer.debugDoc && doc!=target )
-                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" "+target+" reach "+((JDONREFv4TermQuery)weight.getQuery()).getTerm().field()+" limit");
-                return nextDoc();
-            }
-        }
-        
-        return doc;
-    }
+//    public int advanceReachLimit(int target) throws IOException {
+//        int doc = docsEnum.advance(target);
+//        
+//        if (doc!=NO_MORE_DOCS)
+//        {
+//            if (target==this.parentScorer.debugDoc && doc!=target )
+//                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" miss "+target);
+//            Document d = this.searcher.doc(doc);
+//            String type = this.parentScorer.getType(d);
+//            if (this.parentScorer.typeReachLimit(type))
+//            {
+//                if (target==this.parentScorer.debugDoc && doc!=target )
+//                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" "+target+" reach "+((JDONREFv4TermQuery)weight.getQuery()).getTerm().field()+" limit");
+//                return nextDoc();
+//            }
+//        }
+//        
+//        return doc;
+//    }
     
     /**
      * Advances to the first match beyond the current whose document number is
@@ -209,10 +197,10 @@ public class JDONREFv4TermScorer extends Scorer {
      */
     @Override
     public int advance(int target) throws IOException {
-        if (this.parentScorer==null)
+        //if (this.parentScorer==null)
             return docsEnum.advance(target);
-        else
-            return advanceReachLimit(target);
+        //else
+//            return advanceReachLimit(target);
     }
 
     @Override

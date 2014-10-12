@@ -24,7 +24,6 @@ public class JDONREFv4Scorer extends Scorer {
   protected AtomicReaderContext context;
   
   protected ConcurrentHashMap<String, Integer> termIndex;
-  protected int maxSizePerType;
   
   /**
    * For debug purposes only
@@ -530,15 +529,6 @@ public class JDONREFv4Scorer extends Scorer {
         {
             debug = true;
         }
-        String type = getType(bucket);
-        if (!typeReachLimit(type))
-            increaseCountByType(type);
-        else
-        {
-            if (debug)
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc :"+bucket.doc+" de type "+type+" a atteint la limite");
-            return;
-        }
         
         if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" new doc :"+bucket.doc+" fullName:"+getFullName(bucket));
@@ -552,13 +542,6 @@ public class JDONREFv4Scorer extends Scorer {
         if (debugDoc!=-1 && debugDoc==bucket.doc)
         {
             debug = true;
-        }
-        String type = getType(bucket);
-        if (typeReachLimit(type))
-        {
-            if (debug)
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc :"+bucket.doc+" de type "+type+" a atteint la limite");
-            return;
         }
         
         if (debug)
@@ -668,15 +651,8 @@ public class JDONREFv4Scorer extends Scorer {
     
     public Bucket(int maxTokens)
     {
-        //score_by_term = new HashMap<String,Float>();
-        //total_score_by_term = new HashMap<String,Float>();
-        //analyzedTypes = new HashMap<String,Boolean>();
         score_by_term = new float[termIndex.size()];
         total_score_by_term = new float[termIndex.size()];
-        //analyzedFields = new boolean[termIndex.size()];
-        //lastAnalyzedFields = new boolean[termIndex.size()];
-        //currentAnalyzedFields = new boolean[termIndex.size()];
-        //currentToken = -1;
         
         requestTokenFrequencies = new int[maxTokens];
         score_by_subquery = new float[maxTokens*termIndex.size()];
@@ -735,8 +711,7 @@ public class JDONREFv4Scorer extends Scorer {
   
   private SubScorer scorers = null; // for collect mode
   private BucketTable bucketTable;
-  private int end;
-  private Bucket current;
+  
   // Any time a prohibited clause matches we set bit 0:
   private static final int PROHIBITED_MASK = 1;
   
@@ -749,27 +724,10 @@ public class JDONREFv4Scorer extends Scorer {
   
   protected JDONREFv4Weight protectedWeight;
   
-  protected ConcurrentHashMap<String,Integer> countByType;
-  
   protected JDONREFv4TermScorer[] subScorers = null; // for nextDoc & advance mode
   protected int numScorers;
   protected int nrMatchers = -1;
   protected double score = Float.NaN;
-  
-  public void increaseCountByType(String type)
-  {
-      Integer i = countByType.get(type);
-      if (i==null) i = 1;
-      else i++;
-      countByType.put(type,i);
-  }
-  
-  public boolean typeReachLimit(String type)
-  {
-      Integer i = countByType.get(type);
-      boolean reached = i!=null && i>maxSizePerType;
-      return reached;
-  }
   
   public JDONREFv4Scorer(JDONREFv4Weight weight,
       List<JDONREFv4TermScorer> optionalScorers,
@@ -783,8 +741,6 @@ public class JDONREFv4Scorer extends Scorer {
     this.termIndex = termIndex;
     this.mode = mode;
     this.debugDoc = debugDoc;
-    this.maxSizePerType = maxSizePerType;
-    this.countByType = new ConcurrentHashMap<>();
     
     bucketTable = new BucketTable(context, weight.weights().size());
 
@@ -1071,9 +1027,6 @@ public class JDONREFv4Scorer extends Scorer {
           Bucket b = new Bucket(this.maxCoord);
           b.doc = doc;
           b.d = this.context.reader().document(doc);
-          
-          String type = getType(b); // they have already been checked by TermScorer nextDoc
-          increaseCountByType(type); // 0n Top Scorers only, this is the key
 
           if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Calcul du score pour le document "+doc+" scorer "+0);

@@ -1,9 +1,5 @@
 package org.elasticsearch.plugin.analysis.jdonrefv4.test;
 
-import org.apache.lucene.index.DocsAndPositionsEnum;
-import java.util.Iterator;
-import org.apache.lucene.index.Fields;
-import org.elasticsearch.action.termvector.TermVectorResponse;
 import org.elasticsearch.action.get.GetResponse;
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,7 +9,6 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import org.apache.lucene.index.TermsEnum;
 import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryBuilder;
 import org.apache.lucene.search.Explanation;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
@@ -182,8 +177,9 @@ public class JDONREFv4QueryTests
         System.out.println("Test Number "+testNumber++);
         System.out.println("Searching "+voie);
         QueryBuilder qb = (QueryBuilder) new JDONREFv4QueryBuilder(voie);
-        ((JDONREFv4QueryBuilder)qb).mode(JDONREFv4Query.BULK);
-        ((JDONREFv4QueryBuilder)qb).debugDoc(1);
+        ((JDONREFv4QueryBuilder)qb).mode(JDONREFv4Query.AUTOCOMPLETE);
+        ((JDONREFv4QueryBuilder)qb).maxSize(1);
+        //((JDONREFv4QueryBuilder)qb).debugDoc(1);
         //QueryBuilder qb = new QueryStringQueryBuilder(voie);
         long start = Calendar.getInstance().getTimeInMillis();
         SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
@@ -200,7 +196,7 @@ public class JDONREFv4QueryTests
         boolean explanationPrinted = false;
         int positionMatch = -1;
             
-        System.out.println(hits.length+" hit(s). Best is "+hits[0].getScore());
+        System.out.println(search.getHits().getTotalHits()+" hit(s). Best is "+hits[0].getScore());
         for(int i=0;(i<hits.length)&&!match;i++) // on n'affiche l'explication qu'en cas d'erreur et pour le premier et le résultat attendu.
         {
             hitPrinted = false;
@@ -244,97 +240,97 @@ public class JDONREFv4QueryTests
     {
         BulkRequestBuilder brb = client().prepareBulk();
         
-//        publicIndex(brb,"pays","FR",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne7","FRANCE")
-//                .endObject());
-//        publicIndex(brb,"pays","DE",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","DE")
-//                .field("ligne7","ALLEMAGNE")
-//                .endObject());
-//        publicIndex(brb,"commune","75056",XContentFactory.jsonBuilder().startObject()
-//                .field("code_postal","75000")
-//                .field("code_insee","75056")
-//                .field("commune","PARIS")
-//                .field("ligne6","PARIS")
-//                .field("code_pays","FR")
-//                .field("ligne7","FRANCE")
-//                .field("code_departement","75")
-//                .endObject());
-//        publicIndex(brb,"commune","59500",XContentFactory.jsonBuilder().startObject()
-//                .field("code_postal","59500")
-//                .field("code_insee","59500")
-//                .field("commune","DOUAI")
-//                .field("ligne6","DOUAI")
-//                .field("code_pays","FR")
-//                .field("ligne7","FRANCE")
-//                .field("code_departement","59")
-//                .endObject());
-//        publicIndex(brb,"voie","1",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","BOULEVARD DE L HOPITAL")
-//                .field("ligne6","75005 PARIS")
-//                .field("ligne7","FRANCE")
-//                .field("commune","PARIS")
-//                .field("code_departement","75")
-//                .field("code_postal","75005")
-//                .field("code_insee","75105")
-//                .endObject());
-//        publicIndex(brb,"voie","2",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","RUE REMY DUHEM")
-//                .field("ligne6","59500 DOUAI")
-//                .field("ligne7","FRANCE")
-//                .field("commune","DOUAI")
-//                .field("code_departement","59")
-//                .field("code_postal","59500")
-//                .field("code_insee","59500")
-//                .endObject());
-//        publicIndex(brb,"voie","3",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","RUE DE LA FRANCE")
-//                .field("ligne6","75013 PARIS")
-//                .field("ligne7","FRANCE")
-//                .field("commune","PARIS")
-//                .field("code_departement","75")
-//                .field("code_postal","75005")
-//                .field("code_insee","75113")
-//                .endObject());
-//        publicIndex(brb,"adresse","1",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","24 BOULEVARD DE L HOPITAL")
-//                .field("ligne6","75005 PARIS")
-//                .field("ligne7","FRANCE")
-//                .field("commune","PARIS")
-//                .field("numero",24)
-//                .field("code_departement","75")
-//                .field("code_postal","75013")
-//                .field("code_insee","75013")
-//                .endObject());
-//        publicIndex(brb,"adresse","2",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","24 RUE DE LA FRANCE")
-//                .field("ligne6","75013 PARIS")
-//                .field("ligne7","FRANCE")
-//                .field("commune","PARIS")
-//                .field("numero",24)
-//                .field("code_departement","75")
-//                .field("code_postal","75005")
-//                .field("code_insee","75113")
-//                .endObject());
-//        publicIndex(brb,"adresse","3",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","75 BOULEVARD DE L HOPITAL")
-//                .field("ligne6","75005 PARIS")
-//                .field("ligne7","FRANCE")
-//                .field("commune","PARIS")
-//                .field("numero",75)
-//                .field("code_departement","75")
-//                .field("code_postal","75005")
-//                .field("code_insee","75105")
-//                .endObject());
+        publicIndex(brb,"pays","FR",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne7","FRANCE")
+                .endObject());
+        publicIndex(brb,"pays","DE",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","DE")
+                .field("ligne7","ALLEMAGNE")
+                .endObject());
+        publicIndex(brb,"commune","75056",XContentFactory.jsonBuilder().startObject()
+                .field("code_postal","75000")
+                .field("code_insee","75056")
+                .field("commune","PARIS")
+                .field("ligne6","PARIS")
+                .field("code_pays","FR")
+                .field("ligne7","FRANCE")
+                .field("code_departement","75")
+                .endObject());
+        publicIndex(brb,"commune","59500",XContentFactory.jsonBuilder().startObject()
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .field("commune","DOUAI")
+                .field("ligne6","DOUAI")
+                .field("code_pays","FR")
+                .field("ligne7","FRANCE")
+                .field("code_departement","59")
+                .endObject());
+        publicIndex(brb,"voie","1",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","BOULEVARD DE L HOPITAL")
+                .field("ligne6","75005 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75105")
+                .endObject());
+        publicIndex(brb,"voie","2",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .endObject());
+        publicIndex(brb,"voie","3",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","RUE DE LA FRANCE")
+                .field("ligne6","75013 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75113")
+                .endObject());
+        publicIndex(brb,"adresse","1",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","24 BOULEVARD DE L HOPITAL")
+                .field("ligne6","75005 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("numero",24)
+                .field("code_departement","75")
+                .field("code_postal","75013")
+                .field("code_insee","75013")
+                .endObject());
+        publicIndex(brb,"adresse","2",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","24 RUE DE LA FRANCE")
+                .field("ligne6","75013 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("numero",24)
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75113")
+                .endObject());
+        publicIndex(brb,"adresse","3",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","75 BOULEVARD DE L HOPITAL")
+                .field("ligne6","75005 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("numero",75)
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75105")
+                .endObject());
         
-        for(int i=130;i<131;i++) // inclus donc le numéro 130
+        for(int i=130;i<500;i++) // inclus donc le numéro 130
         {
             publicIndex(brb,"adresse","4"+i,XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
@@ -350,152 +346,152 @@ public class JDONREFv4QueryTests
                 .field("code_insee","59500")
                 .endObject());
         }
-//        
-//        publicIndex(brb,"adresse","5",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","131 RUE REMY DUHEM")
-//                .field("ligne6","59500 DOUAI")
-//                .field("ligne7","FRANCE")
-//                .field("commune","DOUAI")
-//                .field("numero",131)
-//                .field("code_departement","59")
-//                .field("code_postal","59500")
-//                .field("code_insee","59500")
-//                .endObject());
-//        
-//        publicIndex(brb,"adresse","6",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","59 RUE REMY DUHEM")
-//                .field("ligne6","59500 DOUAI")
-//                .field("ligne7","FRANCE")
-//                .field("commune","DOUAI")
-//                .field("numero",59)
-//                .field("code_departement","59")
-//                .field("code_postal","59500")
-//                .field("code_insee","59500")
-//                .endObject());
-//        publicIndex(brb,"adresse","7",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","75 RUE REMY DUHEM")
-//                .field("ligne6","59500 DOUAI")
-//                .field("ligne7","FRANCE")
-//                .field("commune","DOUAI")
-//                .field("numero",75)
-//                .field("code_departement","59")
-//                .field("code_postal","59500")
-//                .field("code_insee","59500")
-//                .endObject());
-//        publicIndex(brb,"adresse","8",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","130 BOULEVARD DE L HOPITAL")
-//                .field("ligne6","75005 PARIS")
-//                .field("ligne7","FRANCE")
-//                .field("commune","PARIS")
-//                .field("numero",130)
-//                .field("code_departement","75")
-//                .field("code_postal","75005")
-//                .field("code_insee","75105")
-//                .endObject());
-//        publicIndex(brb,"adresse","9",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","59 BOULEVARD DE L HOPITAL")
-//                .field("ligne6","75005 PARIS")
-//                .field("ligne7","FRANCE")
-//                .field("commune","PARIS")
-//                .field("numero",59)
-//                .field("code_departement","75")
-//                .field("code_postal","75005")
-//                .field("code_insee","75105")
-//                .endObject());
-//        publicIndex(brb,"adresse","10",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne4","59 BOULEVARD DE LA FRANCE")
-//                .field("ligne6","02000 HOPITAL")
-//                .field("ligne7","FRANCE")
-//                .field("commune","HOPITAL")
-//                .field("numero",59)
-//                .field("code_departement","02")
-//                .field("code_postal","02000")
-//                .field("code_insee","02000")
-//                .endObject());
-//        publicIndex(brb,"poizon","4",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("poizon_id","KEBAB1")
-//                .field("poizon_service",1)
-//                .field("ligne1","KEBAB LA P'TITE FRITE")
-//                .field("ligne4","130 RUE REMY DUHEM")
-//                .field("ligne6","59500 DOUAI")
-//                .field("ligne7","FRANCE")
-//                .field("commune","DOUAI")
-//                .field("numero",130)
-//                .field("code_departement","59")
-//                .field("code_postal","59500")
-//                .field("code_insee","59500")
-//                .endObject());
-//        publicIndex(brb,"poizon","5",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("poizon_id","KEBAB1")
-//                .field("poizon_service",1)
-//                .field("ligne1","KEBAB DU COIN")
-//                .field("ligne4","131 RUE REMY DUHEM")
-//                .field("ligne6","59500 DOUAI")
-//                .field("ligne7","FRANCE")
-//                .field("commune","DOUAI")
-//                .field("numero",131)
-//                .field("code_departement","59")
-//                .field("code_postal","59500")
-//                .field("code_insee","59500")
-//                .endObject());
-//        publicIndex(brb,"poizon","6",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("poizon_id","KEBAB2")
-//                .field("poizon_service",1)
-//                .field("ligne1","KEBAB LA GROSSE FRITE")
-//                .field("ligne4","59 RUE REMY DUHEM")
-//                .field("ligne6","59500 DOUAI")
-//                .field("ligne7","FRANCE")
-//                .field("commune","DOUAI")
-//                .field("numero",59)
-//                .field("code_departement","59")
-//                .field("code_postal","59500")
-//                .field("code_insee","59500")
-//                .endObject());
-//        publicIndex(brb,"poizon","7",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("poizon_id","KEBAB3")
-//                .field("poizon_service",1)
-//                .field("ligne1","KEBAB DU COIN")
-//                .field("ligne4","75 RUE REMY DUHEM")
-//                .field("ligne6","75015 PARIS")
-//                .field("ligne7","FRANCE")
-//                .field("commune","PARIS")
-//                .field("numero",75)
-//                .field("code_departement","75")
-//                .field("code_postal","75015")
-//                .field("code_insee","75115")
-//                .endObject());
-//        publicIndex(brb,"departement","75",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne6","75")
-//                .field("ligne7","FRANCE")
-//                .field("code_departement","75")
-//                .endObject());
-//        publicIndex(brb,"departement","59",XContentFactory.jsonBuilder().startObject()
-//                .field("code_pays","FR")
-//                .field("ligne6","59")
-//                .field("ligne7","FRANCE")
-//                .field("code_departement","59")
-//                .endObject());
-//        
-//        for(int i=0;i<10;i++)
-//        {
-//            String randomCode = "RANDOM"+i;
-//            String randomLigne7 = "RANDOM RANDOM "+i+""+i;
-//            publicIndex(brb,"pays",randomCode,XContentFactory.jsonBuilder().startObject()
-//                  .field("code_pays",randomCode)
-//                  .field("ligne7",randomLigne7)
-//                  .endObject());
-//        }
+        
+        publicIndex(brb,"adresse","5",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","131 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("numero",131)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .endObject());
+        
+        publicIndex(brb,"adresse","6",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","59 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("numero",59)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .endObject());
+        publicIndex(brb,"adresse","7",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","75 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("numero",75)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .endObject());
+        publicIndex(brb,"adresse","8",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","130 BOULEVARD DE L HOPITAL")
+                .field("ligne6","75005 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("numero",130)
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75105")
+                .endObject());
+        publicIndex(brb,"adresse","9",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","59 BOULEVARD DE L HOPITAL")
+                .field("ligne6","75005 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("numero",59)
+                .field("code_departement","75")
+                .field("code_postal","75005")
+                .field("code_insee","75105")
+                .endObject());
+        publicIndex(brb,"adresse","10",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne4","59 BOULEVARD DE LA FRANCE")
+                .field("ligne6","02000 HOPITAL")
+                .field("ligne7","FRANCE")
+                .field("commune","HOPITAL")
+                .field("numero",59)
+                .field("code_departement","02")
+                .field("code_postal","02000")
+                .field("code_insee","02000")
+                .endObject());
+        publicIndex(brb,"poizon","4",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_id","KEBAB1")
+                .field("poizon_service",1)
+                .field("ligne1","KEBAB LA P'TITE FRITE")
+                .field("ligne4","130 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("numero",130)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .endObject());
+        publicIndex(brb,"poizon","5",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_id","KEBAB1")
+                .field("poizon_service",1)
+                .field("ligne1","KEBAB DU COIN")
+                .field("ligne4","131 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("numero",131)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .endObject());
+        publicIndex(brb,"poizon","6",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_id","KEBAB2")
+                .field("poizon_service",1)
+                .field("ligne1","KEBAB LA GROSSE FRITE")
+                .field("ligne4","59 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
+                .field("numero",59)
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .endObject());
+        publicIndex(brb,"poizon","7",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_id","KEBAB3")
+                .field("poizon_service",1)
+                .field("ligne1","KEBAB DU COIN")
+                .field("ligne4","75 RUE REMY DUHEM")
+                .field("ligne6","75015 PARIS")
+                .field("ligne7","FRANCE")
+                .field("commune","PARIS")
+                .field("numero",75)
+                .field("code_departement","75")
+                .field("code_postal","75015")
+                .field("code_insee","75115")
+                .endObject());
+        publicIndex(brb,"departement","75",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne6","75")
+                .field("ligne7","FRANCE")
+                .field("code_departement","75")
+                .endObject());
+        publicIndex(brb,"departement","59",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("ligne6","59")
+                .field("ligne7","FRANCE")
+                .field("code_departement","59")
+                .endObject());
+        
+        for(int i=0;i<10;i++)
+        {
+            String randomCode = "RANDOM"+i;
+            String randomLigne7 = "RANDOM RANDOM "+i+""+i;
+            publicIndex(brb,"pays",randomCode,XContentFactory.jsonBuilder().startObject()
+                  .field("code_pays",randomCode)
+                  .field("ligne7",randomLigne7)
+                  .endObject());
+        }
         
         BulkResponse br = brb.execute().actionGet();
         if (br.hasFailures()) System.out.println(br.buildFailureMessage());
@@ -537,7 +533,7 @@ public class JDONREFv4QueryTests
         System.out.println("Doc 1 source:" +resp.getSourceAsString());
         System.out.println("Doc 1 fullName:" +resp.getField("fullName").getValue());
         
-        searchExactAdresse("130 rue remy duhem 59500 douai france","4130",0,199.99f);
+        searchExactAdresse("rue remy duhem 59500 douai france","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,0);
 //        searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
 //        searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
 //        searchExactAdresse("130 REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
