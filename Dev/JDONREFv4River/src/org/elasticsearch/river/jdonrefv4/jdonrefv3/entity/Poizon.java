@@ -150,6 +150,8 @@ public class Poizon {
          }
          if(poizon_id7!=null)
             poizon.add("code_pays", poizon_id7);
+         else
+            poizon.add("code_pays", "FR");
 //         poizon.add("codes","");
 //         poizon.add("numero","..");
 //        poizon.add("repetition","..");
@@ -160,24 +162,31 @@ public class Poizon {
          
          if(poizon_donnee6!=null)
             poizon.add("code_postal",poizon_donnee6);
-        poizon.add("pays","FRANCE");
         poizon.add("t0" , getDatForm(t0));
         poizon.add("t1" , getDatForm(t1));
         poizon.add("poizon_service", poizon_service); 
-        if(poizon_donnee1!=null)
+        if(poizon_donnee1!=null && poizon_donnee1.length()>0)
             poizon.add("ligne1", poizon_donnee1);
-        if(poizon_donnee2!=null)
+        if(poizon_donnee2!=null && poizon_donnee2.length()>0)
             poizon.add("ligne2", poizon_donnee2);
-        if(poizon_donnee3!=null)
+        if(poizon_donnee3!=null && poizon_donnee3.length()>0)
             poizon.add("ligne3", poizon_donnee3);
-        if(poizon_donnee4!=null)
+        if(poizon_donnee4!=null && poizon_donnee4.length()>0)
             poizon.add("ligne4", poizon_donnee4);
-        if(poizon_donnee5!=null)
+        if(poizon_donnee5!=null && poizon_donnee5.length()>0)
             poizon.add("ligne5", poizon_donnee5);
-        if(poizon_donnee6!=null)
+        if(poizon_donnee6!=null && poizon_donnee5.length()>0)
             poizon.add("ligne6", poizon_donnee6);
-        if(poizon_donnee7!=null)
+        if(poizon_donnee7!=null && poizon_donnee7.length()>0)
+        {
             poizon.add("ligne7", poizon_donnee7);
+            poizon.add("pays", poizon_donnee7);
+        }
+        else
+        {
+            poizon.add("ligne7", "FRANCE");
+            poizon.add("pays","FRANCE");
+        }
         poizon.add("type","poizon");
 //        poizon.add("poizon_referentiel", poizon_referentiel);
         if (withGeometry)

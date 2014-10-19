@@ -108,15 +108,26 @@ public class Valide
                 jdonrefIndex.setConnection(connection);
                 jdonrefIndex.setWithGeometry(withGeometry);
                 jdonrefIndex.setWithSwitchAlias(withSwitchAlias);
-                jdonrefIndex.setCodesDepartements(new String[]{"01"});
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON);
+                
+                int numDepartements = 30; // max = 96. 20 do not work
+                String[] departements = new String[numDepartements+numDepartements>=20?-1:0];
+                for(int i=1;i<=numDepartements;i++)
+                {
+                    if (i!=20)
+                    {
+                        String departement = Integer.toString(i);
+                        if (departement.length()==1) departement = "0"+departement;
+                        departements[i-1+i>=20?-1:0] = departement;
+                    }
+                }
+                jdonrefIndex.setCodesDepartements(departements);
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON);
                 //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
                 //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
                 jdonrefIndex.reindex();
             }
         }
@@ -128,7 +139,7 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "192.168.0.11:9200";
+        String url = "10.213.93.74:9200";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
@@ -136,7 +147,7 @@ public class Valide
         boolean withSwitchAlias = false;
 
         // connection à la base de JDONREF
-        String connectionString = "jdbc:postgresql://192.168.135.129:5433/JDONREF_IGN";
+        String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN2";
         String user = "postgres";
         String passwd = "postgres";
         

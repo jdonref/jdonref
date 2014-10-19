@@ -1,6 +1,5 @@
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.index;
 
-import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -201,7 +200,7 @@ public class ElasticSearchUtil
     
     public String indexResourceBulk(String bulk)
     {
-        WebResource webResource = client.resource("http://"+url+"/_bulk");
+        WebResource webResource = client.resource("http://"+url+"/_bulk?pretty=true");
         
         ClientResponse response = webResource.accept("application/json").post(ClientResponse.class,bulk);
         
