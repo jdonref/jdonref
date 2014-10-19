@@ -59,6 +59,17 @@ public class SynonymWithPayloadsFilterTests extends QueryTests
         publicIndex(brb,"synonymwithpayloadsfilter","10",XContentFactory.jsonBuilder().startObject()
                 .field("fullName","59|1 boulevard|1 de|1 la|1 france|1 02000|1 hopital|1 france|1")
                 .endObject());
+        
+        // Simple Indexation test ! MultiPart synonym
+        publicIndex(brb,"synonymwithpayloadsfilter","11",XContentFactory.jsonBuilder().startObject()
+                .field("fullName","zone industrielle")
+                .endObject());
+        
+        // Simple Indexation test ! MultiPart synonym with payloads
+        publicIndex(brb,"synonymwithpayloadsfilter","12",XContentFactory.jsonBuilder().startObject()
+                .field("fullName","zone|2 industrielle|2")
+                .endObject());
+        
         publicIndex(brb,"adresse","11",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",59)
@@ -161,6 +172,46 @@ public class SynonymWithPayloadsFilterTests extends QueryTests
                 }
             }
         }
+        
+        TermVectorResponse response5 = client().prepareTermVector(INDEX_NAME, "synonymwithpayloadsfilter", "11").get();
+        TermsEnum terms5 = response5.getFields().terms("fullName").iterator(null);
+        String toFind5 = "zi";
+        boolean found5 = false;
+        while((terms5.next())!=null)
+        {
+            if (terms5.term().utf8ToString().equals(toFind5))
+                found5 = true;
+        }
+        assert(found5);
+        
+        TermVectorResponse response6 = client().prepareTermVector(INDEX_NAME, "synonymwithpayloadsfilter", "12").get();
+        TermsEnum terms6 = response6.getFields().terms("fullName").iterator(null);
+        String toFind6 = "zi";
+        boolean found6 = false;
+        while((terms6.next())!=null)
+        {
+            if (terms6.term().utf8ToString().equals(toFind6))
+            {
+                DocsAndPositionsEnum docsEnum = terms6.docsAndPositions(null, null);
+                while(docsEnum.nextDoc()!=DocsAndPositionsEnum.NO_MORE_DOCS) // no need for nextPosition for these samples
+                {
+                    int freq = docsEnum.freq();
+                    int count = 0;
+                    while(count++<freq)
+                    {
+                        docsEnum.nextPosition();
+                        BytesRef payload = docsEnum.getPayload();
+                        if (payload!=null)
+                        {
+                            int payloadValue = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+                            if (payloadValue==2)
+                                found6 = true;
+                        }
+                    }
+                }
+            }
+        }
+        assert(found6);
     }
     
     @Override

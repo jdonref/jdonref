@@ -115,6 +115,7 @@ public class SpansPayloadChecker extends Spans
   public boolean next() throws IOException {
 
       firstTime = false;
+      inSameDoc = false;
       for (int i = 0; i < subSpans.length; i++) {
         if (! subSpans[i].next()) {
           more = false;
@@ -130,6 +131,7 @@ public class SpansPayloadChecker extends Spans
   // inherit javadocs
   @Override
   public boolean skipTo(int target) throws IOException {
+    inSameDoc = false;
     if (firstTime) {
       firstTime = false;
       for (int i = 0; i < subSpans.length; i++) {

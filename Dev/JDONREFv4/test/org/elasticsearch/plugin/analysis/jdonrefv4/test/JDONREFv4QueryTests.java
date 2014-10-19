@@ -3,16 +3,11 @@ package org.elasticsearch.plugin.analysis.jdonrefv4.test;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import org.apache.lucene.analysis.payloads.PayloadHelper;
-import org.apache.lucene.index.DocsAndPositionsEnum;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.termvector.TermVectorResponse;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryBuilder;
@@ -344,6 +339,17 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","75015")
                 .field("code_insee","75115")
                 .endObject());
+         //"pin":{"centroide":[2.31373310272827,48.926365812723]}}]}
+        publicIndex(brb,"poizon","139",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
+                .field("poizon_service",105)
+                .field("ligne1","MCI 92 GENNEVILLIERS ZONE INDUSTRIELLE")
+                .field("ligne6","92230")
+                .field("ligne7","FRANCE")
+                .field("pays","FRANCE")
+                .field("t0","2014-05-19 00:00:00")
+                .field("t1","2064-05-19 00:00:00")
+                .endObject());        
         publicIndex(brb,"departement","75",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne6","75")
