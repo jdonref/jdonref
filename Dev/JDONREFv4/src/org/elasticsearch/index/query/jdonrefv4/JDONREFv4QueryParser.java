@@ -10,10 +10,9 @@ import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 import org.apache.lucene.search.spans.checkers.*;
@@ -24,10 +23,8 @@ import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery;
-import org.elasticsearch.common.lucene.search.jdonrefv4.MyLimitFilter;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.index.mapper.DocumentMapper;
 import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.index.query.QueryParser;
 import org.elasticsearch.index.query.QueryParsingException;
@@ -42,6 +39,7 @@ public class JDONREFv4QueryParser implements QueryParser
     public static final String NAME = "jdonrefv4";
     public static final String SEARCH_ANALYZER = "jdonrefv4_search";
     public static final int DEFAULTMAXSIZE = Integer.MAX_VALUE;
+    public static final int TERMCOUNTDEFAULTFACTOR = 1000;
     
     private Settings settings;
     
@@ -77,6 +75,7 @@ public class JDONREFv4QueryParser implements QueryParser
         XContentParser parser = parseContext.parser();
 
         Object value = null;
+        String field = "fullName";
         float boost = 1.0f;
         int debugDoc = -1;
         int maxSizePerType = DEFAULTMAXSIZE;
@@ -93,36 +92,59 @@ public class JDONREFv4QueryParser implements QueryParser
             }
             else if (token == XContentParser.Token.START_OBJECT)
             {
-                if ("value".equals(currentFieldName)) {
-                } else if ("mode".equals(currentFieldName)) {
-                } else if ("_name".equals(currentFieldName)) {
-                } else if ("debugDoc".equals(currentFieldName)) {
-                } else if ("boost".equals(currentFieldName)) {
-                } else {
-                    throw new QueryParsingException(parseContext.index(), "[jdonrefv3es] query does not support [" + currentFieldName + "]");
+                switch (currentFieldName) {
+                    default:
+                        throw new QueryParsingException(parseContext.index(), "[jdonrefv3es] query does not support [" + currentFieldName + "]");
+                    case "default_field":
+                        break;
+                    case "value":
+                        break;
+                    case "mode":
+                        break;
+                    case "_name":
+                        break;
+                    case "debugDoc":
+                        break;
+                    case "boost":
+                        break;
                 }
             }
             else if (token.isValue())
             {
-                if ("_name".equals(currentFieldName)) {
-                    filterName = parser.text();
-                } else if ("mode".equals(currentFieldName)) {
-                    String modeStr = parser.text();
-                    if (modeStr.equals("bulk")) mode = JDONREFv4Query.BULK;
-                    else if (modeStr.equals("autocomplete")) mode = JDONREFv4Query.AUTOCOMPLETE;
-                    else throw new QueryParsingException(parseContext.index(), "[jdonrefv3es] query does not support "+modeStr+" for [" + currentFieldName + "]");
-                } else if ("boost".equals(currentFieldName)) {
-                    boost = parser.floatValue();
-                } else if ("maxSizePerType".equals(currentFieldName)) {
-                    maxSizePerType = parser.intValue();
-                } else if ("debugDoc".equals(currentFieldName)) {
-                    debugDoc = parser.intValue();
-                } else if ("value".equals(currentFieldName)) {
-                    value = parser.text();
-                } else if ("query".equals(currentFieldName)) {
-                } else if ("default_field".equals(currentFieldName)) {
-                } else {
-                    throw new QueryParsingException(parseContext.index(), "[jdonrefv3es] query does not support [" + currentFieldName + "]");
+                switch (currentFieldName) {
+                    default:
+                        throw new QueryParsingException(parseContext.index(), "[jdonrefv3es] query does not support [" + currentFieldName + "]");
+                    case "_name":
+                        filterName = parser.text();
+                        break;
+                    case "mode":
+                        String modeStr = parser.text();
+                        switch (modeStr) {
+                            default:
+                                throw new QueryParsingException(parseContext.index(), "[jdonrefv3es] query does not support "+modeStr+" for [" + currentFieldName + "]");
+                            case "bulk":
+                                mode = JDONREFv4Query.BULK;
+                                break;
+                            case "autocomplete":
+                                mode = JDONREFv4Query.AUTOCOMPLETE;
+                                break;
+                        }
+                        break;
+                    case "boost":
+                        boost = parser.floatValue();
+                        break;
+                    case "maxSizePerType":
+                        maxSizePerType = parser.intValue();
+                        break;
+                    case "debugDoc":
+                        debugDoc = parser.intValue();
+                        break;
+                    case "value":
+                        value = parser.text(); // default field Name
+                        break;
+                    case "default_field":
+                        field = parser.text();
+                        break;
                 }
             }
         }
@@ -134,7 +156,7 @@ public class JDONREFv4QueryParser implements QueryParser
         Query query = null;
         
         if (query == null) {
-            query = getQueryStringQuery((String)value,parseContext,mode,debugDoc,maxSizePerType);
+            query = getJDONREFv4Query(field,(String)value,parseContext,mode,debugDoc,maxSizePerType);
             query.setBoost(boost);
             
             if (filterName != null) {
@@ -228,23 +250,37 @@ public class JDONREFv4QueryParser implements QueryParser
         PayloadBeforeAnotherChecker numeroAvantLigne4 = new PayloadBeforeAnotherChecker(numero, ligne4);
         LimitChecker limit = new LimitChecker(maxSizePerType);
         
-        SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present,ligne4Present),numeroAvantLigne4,limit));
-        SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),codesOrCommunePresent,/*numeroAvantLigne4,*/limit.clone()));
-        SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone(),codesOrCommunePresent.clone(),limit.clone()));
-        SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone(),limit.clone()));
-        SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone(),limit.clone()));
-        SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone(),limit.clone()));
-        SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1,clause2,clause3,clause4,clause5,clause6);
-        
-        AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker); //, orChecker);
-        
+        if (maxSizePerType==Integer.MAX_VALUE)
+        {
+            SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present,ligne4Present),numeroAvantLigne4));
+            SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),codesOrCommunePresent,numeroAvantLigne4));
+            SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone(),codesOrCommunePresent.clone()));
+            SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone()));
+            SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone()));
+            SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone()));
+            SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1,clause2,clause3,clause4,clause5,clause6);
+            AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker);
+
+            return andChecker;
+        }
+        else
+        {
+            SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present,ligne4Present),numeroAvantLigne4,limit));
+            SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),codesOrCommunePresent,numeroAvantLigne4,limit.clone()));
+            SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone(),codesOrCommunePresent.clone(),limit.clone()));
+            SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone(),limit.clone()));
+            SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone(),limit.clone()));
+            SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone(),limit.clone()));
+            SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1,clause2,clause3,clause4,clause5,clause6);
+            AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker);
+
+            return andChecker;
+        }
         //NullPayloadChecker nullChecker = new NullPayloadChecker();
         //return nullChecker;
-        
-        return andChecker;
     }
     
-    private Query getQueryStringQuery(String find, QueryParseContext parseContext,int mode,int debugDoc,int maxSizePerType) throws IOException
+    private Query getJDONREFv4Query(String term, String find, QueryParseContext parseContext,int mode,int debugDoc,int maxSizePerType) throws IOException
     {
         Analyzer analyser = parseContext.mapperService().analysisService().analyzer(SEARCH_ANALYZER);
         
@@ -257,7 +293,7 @@ public class JDONREFv4QueryParser implements QueryParser
     
         try
         {
-            source = analyser.tokenStream("fullName", find.toString());
+            source = analyser.tokenStream(term, find.toString());
             source.reset();
             buffer = new CachingTokenFilter(source);
             buffer.reset();
@@ -291,25 +327,13 @@ public class JDONREFv4QueryParser implements QueryParser
         buffer.reset();
         
         BytesRef bytes = termAtt == null ? null : termAtt.getBytesRef();
-
-        JDONREFv4Query booleanQuery = new JDONREFv4Query();
-        booleanQuery.setMode(mode);
-        booleanQuery.setDebugDoc(debugDoc);
-        booleanQuery.setNumTokens(numTokens);
-        booleanQuery.setTermIndex(termIndex);
-        booleanQuery.setMaxSizePerType(maxSizePerType);
         
         // JDONREFv4 Work rules
         PayloadCheckerSpanQuery spanQuery = new PayloadCheckerSpanQuery();
-        spanQuery.setTermCountPayloadFactor(1000);
+        spanQuery.setTermCountPayloadFactor(TERMCOUNTDEFAULTFACTOR);
         spanQuery.setChecker(getChecker(maxSizePerType));
         
-        BooleanFilter boolFilter = new BooleanFilter();
-        
-        MatchQuery mq = new MatchQuery(parseContext);
-        
         // phrase query:
-        int queryIndex = 0;
         for (int i = 0; i < numTokens; i++) {
             try {
                 boolean hasNext = buffer.incrementToken();
@@ -321,64 +345,16 @@ public class JDONREFv4QueryParser implements QueryParser
 
             if (bytes.length>0)
             {
-                addMatchQueryClause(booleanQuery, mq, new Term("ligne4", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-                addMatchQueryClause(booleanQuery, mq, new Term("commune", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-                addMatchQueryClause(booleanQuery, mq, new Term("codes", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-                addMatchQueryClause(booleanQuery, mq, new Term("ligne7", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-                //addMatchQueryClause(booleanQuery,mq,new Term("code_pays", BytesRef.deepCopyOf(bytes)),1.0f,BooleanClause.Occur.SHOULD,i,queryIndex++);
-                addMatchQueryClause(booleanQuery, mq, new Term("ligne1", BytesRef.deepCopyOf(bytes)), 1.0f, i, queryIndex++);
-            
-                //TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
-                //boolFilters.add(filter, Occur.MUST);
-                MultiPayloadSpanTermQuery spanTermQuery = new MultiPayloadSpanTermQuery(new Term("fullName",BytesRef.deepCopyOf(bytes)));
+                MultiPayloadSpanTermQuery spanTermQuery = new MultiPayloadSpanTermQuery(new Term(term,BytesRef.deepCopyOf(bytes)));
                 spanQuery.addClause(spanTermQuery);
-                
-                TermFilter filter = new TermFilter(new Term("fullName",BytesRef.deepCopyOf(bytes)));
-                boolFilter.add(filter,Occur.MUST);
             }
         }
         
-        BooleanQuery andQuery = new BooleanQuery();
-        
-        BooleanClause clause1 = new BooleanClause(spanQuery,Occur.MUST);
-        BooleanClause clause2 = new BooleanClause(booleanQuery,Occur.MUST);
-        andQuery.add(clause1);
-        andQuery.add(clause2);
-        
-        //Filter spanQueryFilter = org.elasticsearch.common.lucene.search.Queries.wrap(spanQuery);
-                
-        FilteredQuery filteredQuery = new FilteredQuery(andQuery,boolFilter,FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
-        
         if (debugDoc>0)
         {
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" query :"+filteredQuery.toString());   
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" query :"+spanQuery.toString());   
         }
-        
-        return filteredQuery;
-    }
-    
-    protected Query getAndTypeQuery(QueryParseContext parseContext,String type,int size)
-    {
-        Filter adresseTypeFilter = getTypeFilter(parseContext,type);
-        Filter limitFilter = new MyLimitFilter(size);
-        BooleanFilter typeAndFilter = new BooleanFilter();
-        typeAndFilter.add(adresseTypeFilter, Occur.MUST);
-        typeAndFilter.add(limitFilter, Occur.MUST);
-        
-        FilteredQuery filteredQuery = new FilteredQuery(new MatchAllDocsQuery(),typeAndFilter);
-        
-        return filteredQuery;
-    }
-    
-    protected Filter getTypeFilter(QueryParseContext parseContext,String value)
-    {
-        Filter typeFilter;
-        DocumentMapper documentMapper = parseContext.mapperService().documentMapper(value);
-        if (documentMapper == null) {
-            typeFilter = new TermFilter(new Term("type", value));
-        } else {
-            typeFilter = documentMapper.typeFilter();
-        }
-        return typeFilter;
+                
+        return spanQuery;
     }
 }

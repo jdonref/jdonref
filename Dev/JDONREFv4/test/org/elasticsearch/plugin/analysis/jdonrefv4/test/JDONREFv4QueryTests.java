@@ -1,140 +1,39 @@
 package org.elasticsearch.plugin.analysis.jdonrefv4.test;
 
-import org.elasticsearch.action.get.GetResponse;
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryBuilder;
-import org.apache.lucene.search.Explanation;
-import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
-import org.elasticsearch.ElasticsearchException;
+import org.apache.lucene.analysis.payloads.PayloadHelper;
+import org.apache.lucene.index.DocsAndPositionsEnum;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
-import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.action.termvector.TermVectorResponse;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
-//import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
-//import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
-import org.junit.After;
+import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryBuilder;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder;
 
 /**
  *
  * @author Julien
  */
-public class JDONREFv4QueryTests
+public class JDONREFv4QueryTests extends QueryTests
 {
-    final static String INDEX_NAME = "jdonref";
-    final static String DOC_TYPE_NAME = "test";
-    
-    public void publicIndex(BulkRequestBuilder brb,String type,String id, XContentBuilder data)
+    public JDONREFv4QueryTests()
     {
-        //System.out.println("Start indexing "+type+" "+id);
-        //super.index(INDEX_NAME, type, id, data);
-        
-        IndexRequestBuilder irb = client().prepareIndex(INDEX_NAME,type,id);
-        irb.setSource(data);
-        irb.setRefresh(false);
-        
-        brb.add(irb);
-        
-        //System.out.println("End indexing");
+        settingsFileName = "./test/resources/index/jdonrefv4-settings_Query.json";
+        INDEX_NAME = "test";
+        DOC_TYPE_NAME = "test";
     }
     
-    public Settings indexSettings() {
-        return settingsBuilder()
-                .put("index.number_of_replicas", 0)
-                .put("index.number_of_shards", 1)
-                .put("index.image.use_thread_pool", this.randomBoolean())
-            .build();
-    }
-    
-    public boolean randomBoolean()
-    {
-        return (new Random()).nextBoolean();
-    }
-    
-    protected static Node node;
-    
-    public static Client client()
-    {
-        if (node==null)
-            node = NodeBuilder.nodeBuilder().node();
-        return node.client();
-    }
-    
-    @After
-    public void clean()
-    {
-        try {
-            client().admin().indices().prepareDelete(INDEX_NAME).execute().actionGet();
-            client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
-        } catch (ElasticsearchException e) {
-        }
-    }
-    
-    @Before
-    public void setUp() throws Exception {
-            System.out.println("creating index ["+INDEX_NAME+"]");
-            
-            try {
-                client().admin().indices().prepareDelete(INDEX_NAME).execute().actionGet();
-                client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
-            } catch (ElasticsearchException e) {
-            }
-            
-            String settings = readFile("./test/resources/index/jdonrefv4-settings_Query.json");
-            client().admin().indices().prepareCreate(INDEX_NAME).setSettings(settings).execute().actionGet();
-            client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
-            
-            importMapping();
-            stopRefresh();
-            index();
-            // startRefresh();
-    }
-    /*
     @Override
-    protected Settings nodeSettings(int nodeOrdinal) {
-        return ImmutableSettings.settingsBuilder()
-           .put("plugin.types", AnalysisPhoneticPlugin.class.getName())
-           .put(super.nodeSettings(nodeOrdinal)).build();
-    }*/
-    
-    public String readFile(String file) throws FileNotFoundException, IOException
-    {
-        BufferedReader reader = (new BufferedReader(new FileReader(new File(file))));
-        String line = reader.readLine();
-        String res = "";
-        while(line!=null)
-        {
-            res += line+System.getProperty("line.separator");
-            line = reader.readLine();
-        }
-        reader.close();
-        return res;
-    }
-    
     void importMapping() throws FileNotFoundException, IOException
     {
         String[] mappings = new String[]{"pays","departement","commune","voie","troncon","adresse","poizon"};
@@ -147,95 +46,7 @@ public class JDONREFv4QueryTests
         }
     }
     
-    void printExplanation(Explanation ex)
-    {
-        System.out.println("Explanation:");
-        printExplanation(ex,"");
-    }
-    
-    void printExplanation(Explanation ex,String tab)
-    {
-        System.out.println(tab+"value:"+ex.getValue());
-        System.out.println(tab+"description:"+ex.getDescription());
-        if (ex.getDetails()!=null)
-        {
-            for(int j=0;j<ex.getDetails().length;j++)
-                printExplanation(ex.getDetails()[j],tab+"  ");
-        }
-    }
-    
-    int testNumber = 1;
-    
-    void searchExactAdresse(String voie,String assertion)
-    {
-        searchExactAdresse( voie, assertion,0,-1.0f);
-    }
-    
-    void searchExactAdresse(String voie,String assertion,int indice,float note_minimum)
-    {
-        System.out.println("---------------------");
-        System.out.println("Test Number "+testNumber++);
-        System.out.println("Searching "+voie);
-        QueryBuilder qb = (QueryBuilder) new JDONREFv4QueryBuilder(voie);
-        ((JDONREFv4QueryBuilder)qb).mode(JDONREFv4Query.AUTOCOMPLETE);
-        ((JDONREFv4QueryBuilder)qb).maxSize(1);
-        //((JDONREFv4QueryBuilder)qb).debugDoc(1);
-        //QueryBuilder qb = new QueryStringQueryBuilder(voie);
-        long start = Calendar.getInstance().getTimeInMillis();
-        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
-        long end = Calendar.getInstance().getTimeInMillis();
-        System.out.println("Took "+(end-start)+" ms");
-        SearchHit[] hits = search.getHits().getHits();
-        
-        if (hits.length==0)
-            System.out.println("No results");
-        Assert.assertTrue(hits.length>0);
-        
-        boolean match = false;
-        boolean hitPrinted = false;
-        boolean explanationPrinted = false;
-        int positionMatch = -1;
-            
-        System.out.println(search.getHits().getTotalHits()+" hit(s). Best is "+hits[0].getScore());
-        for(int i=0;(i<hits.length)&&!match;i++) // on n'affiche l'explication qu'en cas d'erreur et pour le premier et le résultat attendu.
-        {
-            hitPrinted = false;
-            explanationPrinted = false;
-            SearchHit hit = hits[i];
-            Explanation ex = hit.explanation();
-            match = assertion.equals(hit.getId());
-            if (ex!=null && Math.abs(hits[i].getScore()-ex.getValue())>0.05)
-            {
-                printExplanation(ex);
-                Assert.assertTrue(Math.abs(hits[i].getScore()-ex.getValue())<=0.05); // 0.05 tolerance : no more time to dev.
-            }
-            if (match) positionMatch = i;
-        }
-        if (positionMatch>indice || positionMatch==-1)
-        {
-            System.out.println("hit "+0+" "+hits[0].getSourceAsString());
-            System.out.println("score : "+hits[0].getScore());
-            printExplanation(hits[0].explanation());
-        }
-        Assert.assertTrue(positionMatch<=indice);
-        if (note_minimum>-1)
-        {
-            if (positionMatch>-1 && hits[positionMatch].getScore()<note_minimum)
-            {
-                if (!hitPrinted)
-                {
-                    System.out.println("hit "+positionMatch+" "+hits[positionMatch].getSourceAsString());
-                    System.out.println("score : "+hits[positionMatch].getScore());
-                }
-                if (!explanationPrinted)
-                {
-                    printExplanation(hits[positionMatch].explanation());
-                }
-                Assert.assertTrue(hits[positionMatch].getScore()>=note_minimum);
-            }
-        }
-    }
-    
+    @Override
     void index() throws IOException, InterruptedException, ExecutionException
     {
         BulkRequestBuilder brb = client().prepareBulk();
@@ -268,6 +79,9 @@ public class JDONREFv4QueryTests
                 .endObject());
         publicIndex(brb,"voie","1",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("type_de_voie","BOULEVARD")
+                .field("article","DE L")
+                .field("libelle","HOPITAL")
                 .field("ligne4","BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
@@ -278,6 +92,9 @@ public class JDONREFv4QueryTests
                 .endObject());
         publicIndex(brb,"voie","2",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("type_de_voie","RUE")
+                //.field("article","DE LA")
+                .field("libelle","REMY DUHEM")
                 .field("ligne4","RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
@@ -288,27 +105,37 @@ public class JDONREFv4QueryTests
                 .endObject());
         publicIndex(brb,"voie","3",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("type_de_voie","RUE")
+                .field("article","DE LA")
+                .field("libelle","FRANCE")
                 .field("ligne4","RUE DE LA FRANCE")
-                .field("ligne6","75013 PARIS")
+                .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("commune","PARIS")
                 .field("code_departement","75")
                 .field("code_postal","75005")
-                .field("code_insee","75113")
+                .field("code_insee","75105")
                 .endObject());
         publicIndex(brb,"adresse","1",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",24)
+                .field("type_de_voie","BOULEVARD")
+                .field("article","DE L")
+                .field("libelle","HOPITAL")
                 .field("ligne4","24 BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("commune","PARIS")
-                .field("numero",24)
                 .field("code_departement","75")
                 .field("code_postal","75013")
                 .field("code_insee","75013")
                 .endObject());
         publicIndex(brb,"adresse","2",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",24)
+                .field("type_de_voie","RUE")
+                .field("article","DE LA")
+                .field("libelle","FRANCE")
                 .field("ligne4","24 RUE DE LA FRANCE")
                 .field("ligne6","75013 PARIS")
                 .field("ligne7","FRANCE")
@@ -320,6 +147,10 @@ public class JDONREFv4QueryTests
                 .endObject());
         publicIndex(brb,"adresse","3",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",75)
+                .field("type_de_voie","BOULEVARD")
+                .field("article","DE L")
+                .field("libelle","HOPITAL")
                 .field("ligne4","75 BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
@@ -334,13 +165,14 @@ public class JDONREFv4QueryTests
         {
             publicIndex(brb,"adresse","4"+i,XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",i)
+                .field("type_de_voie","RUE")
+                //.field("article","")
+                .field("libelle","REMY DUHEM")
                 .field("ligne4",i+" RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
-                .field("numero",i)
-                .field("type_de_voie","RUE")
-                .field("libelle", "REMY DUHEM")
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
@@ -349,11 +181,14 @@ public class JDONREFv4QueryTests
         
         publicIndex(brb,"adresse","5",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",131)
+                .field("type_de_voie","RUE")
+                //.field("article","")
+                .field("libelle","REMY DUHEM")
                 .field("ligne4","131 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
-                .field("numero",131)
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
@@ -361,69 +196,99 @@ public class JDONREFv4QueryTests
         
         publicIndex(brb,"adresse","6",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",59)
+                .field("type_de_voie","RUE")
+                //.field("article","")
+                .field("libelle","REMY DUHEM")
                 .field("ligne4","59 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
-                .field("numero",59)
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
         publicIndex(brb,"adresse","7",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",75)
+                .field("type_de_voie","RUE")
+                .field("libelle","REMY DUHEM")
                 .field("ligne4","75 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
+                .field("code_departement","59")
+                .field("code_postal","59500")
+                .field("code_insee","59500")
+                .endObject());
+        publicIndex(brb,"adresse","7",XContentFactory.jsonBuilder().startObject()
+                .field("code_pays","FR")
                 .field("numero",75)
+                .field("type_de_voie","RUE")
+                .field("libelle","REMY DUHEM")
+                .field("ligne4","75 RUE REMY DUHEM")
+                .field("ligne6","59500 DOUAI")
+                .field("ligne7","FRANCE")
+                .field("commune","DOUAI")
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
         publicIndex(brb,"adresse","8",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",130)
+                .field("type_de_voie","BOULEVARD")
+                .field("article","DE L")
+                .field("libelle","HOPITAL")
                 .field("ligne4","130 BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("commune","PARIS")
-                .field("numero",130)
                 .field("code_departement","75")
                 .field("code_postal","75005")
                 .field("code_insee","75105")
                 .endObject());
         publicIndex(brb,"adresse","9",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",59)
+                .field("type_de_voie","BOULEVARD")
+                .field("article","DE L")
+                .field("libelle","HOPITAL")
                 .field("ligne4","59 BOULEVARD DE L HOPITAL")
                 .field("ligne6","75005 PARIS")
                 .field("ligne7","FRANCE")
                 .field("commune","PARIS")
-                .field("numero",59)
                 .field("code_departement","75")
                 .field("code_postal","75005")
                 .field("code_insee","75105")
                 .endObject());
         publicIndex(brb,"adresse","10",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
+                .field("numero",59)
+                .field("type_de_voie","BOULEVARD")
+                .field("article","DE LA")
+                .field("libelle","FRANCE")
                 .field("ligne4","59 BOULEVARD DE LA FRANCE")
                 .field("ligne6","02000 HOPITAL")
                 .field("ligne7","FRANCE")
                 .field("commune","HOPITAL")
-                .field("numero",59)
                 .field("code_departement","02")
                 .field("code_postal","02000")
-                .field("code_insee","02000")
+                .field("code_insee","02001")
                 .endObject());
         publicIndex(brb,"poizon","4",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("poizon_id","KEBAB1")
                 .field("poizon_service",1)
+                .field("numero",130)
+                .field("type_de_voie","RUE")
+                //.field("article","")
+                .field("libelle","REMY DUHEM")
                 .field("ligne1","KEBAB LA P'TITE FRITE")
                 .field("ligne4","130 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
-                .field("numero",130)
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
@@ -433,11 +298,14 @@ public class JDONREFv4QueryTests
                 .field("poizon_id","KEBAB1")
                 .field("poizon_service",1)
                 .field("ligne1","KEBAB DU COIN")
+                .field("numero",131)
+                .field("type_de_voie","RUE")
+                //.field("article","")
+                .field("libelle","REMY DUHEM")
                 .field("ligne4","131 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
-                .field("numero",131)
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
@@ -446,12 +314,15 @@ public class JDONREFv4QueryTests
                 .field("code_pays","FR")
                 .field("poizon_id","KEBAB2")
                 .field("poizon_service",1)
+                .field("numero",59)
+                .field("type_de_voie","RUE")
+                //.field("article","")
+                .field("libelle","REMY DUHEM")
                 .field("ligne1","KEBAB LA GROSSE FRITE")
                 .field("ligne4","59 RUE REMY DUHEM")
                 .field("ligne6","59500 DOUAI")
                 .field("ligne7","FRANCE")
                 .field("commune","DOUAI")
-                .field("numero",59)
                 .field("code_departement","59")
                 .field("code_postal","59500")
                 .field("code_insee","59500")
@@ -460,12 +331,15 @@ public class JDONREFv4QueryTests
                 .field("code_pays","FR")
                 .field("poizon_id","KEBAB3")
                 .field("poizon_service",1)
+                .field("numero",75)
+                .field("type_de_voie","RUE")
+                //.field("article","")
+                .field("libelle","REMY DUHEM")
                 .field("ligne1","KEBAB DU COIN")
                 .field("ligne4","75 RUE REMY DUHEM")
                 .field("ligne6","75015 PARIS")
                 .field("ligne7","FRANCE")
                 .field("commune","PARIS")
-                .field("numero",75)
                 .field("code_departement","75")
                 .field("code_postal","75015")
                 .field("code_insee","75115")
@@ -499,41 +373,73 @@ public class JDONREFv4QueryTests
         
         refresh();
     }
-    
-    public void refresh()
-    {
-        RefreshResponse rr = client().admin().indices().prepareRefresh().execute().actionGet();
-        Assert.assertFalse(rr.getFailedShards()>0);
-    }
-    
-    public void stopRefresh()
-    {
-        UpdateSettingsRequestBuilder reqb = client().admin().indices().prepareUpdateSettings();
-        reqb.setIndices(INDEX_NAME);
-        reqb.setSettings("{\"index\":{\"refresh_interval\":-1}}");
-        reqb.get();
-    }
-    public void startRefresh()
-    {
-        UpdateSettingsRequestBuilder reqb = client().admin().indices().prepareUpdateSettings();
-        reqb.setIndices(INDEX_NAME);
-        reqb.setSettings("{\"index\":{\"refresh_interval\":\"1s\"}}");
-        reqb.get();
-    }
-    
+
     @Test
     public void testSearch() throws IOException, InterruptedException, ExecutionException
     {
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
-        // 183 tests au total
+        ////////////
+        /// VOIE
+        // voie avec uniquement commune
+        searchExactAdresse("RUE DE LA FRANCE PARIS","RUE DE LA FRANCE","75005 PARIS"); // match
         
-        GetResponse resp = client().prepareGet().setFields("fullName").setId("4130").setFetchSource(true).setIndex(INDEX_NAME).setType("adresse").execute().actionGet();
-        System.out.println("Doc 1 source:" +resp.getSourceAsString());
-        System.out.println("Doc 1 fullName:" +resp.getField("fullName").getValue());
+        // voie avec uniquement le code département
+        searchExactAdresse("RUE DE LA FRANCE 75","RUE DE LA FRANCE","75005 PARIS"); // match
         
-        searchExactAdresse("rue remy duhem 59500 douai france","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,0);
+        // voie partielle avec uniquement le code département
+        searchExactAdresse("FRANCE 75","RUE DE LA FRANCE","75005 PARIS"); // match
+        
+        // voie partielle avec uniquement le code postal
+        searchExactAdresse("FRANCE 75005","RUE DE LA FRANCE","75005 PARIS"); // match
+        
+        ////////////
+        /// ADRESSES
+        
+        // adresse avec uniquement commune
+        searchExactAdresse("59 BOULEVARD DE LA FRANCE HOPITAL","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+        
+        // adresse avec uniquement code département
+        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+        
+        // adresse avec uniquement code postal
+        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02000","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+        
+        // adresse avec uniquement code insee
+        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02001","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+        
+        // adresse sans son numéro d'adresse => fail
+        searchExactAdresse("BOULEVARD DE LA FRANCE 02001","59 BOULEVARD DE LA FRANCE","02000 HOPITAL",0); // no match
+        
+        // adresse avec code postal intercalé, mais FRANCE correspond au pays
+        searchExactAdresse("59 BOULEVARD DE LA 02001 FRANCE","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+        
+        // adresse avec code postal intercalé => fail
+        searchExactAdresse("59 02001 BOULEVARD DE LA FRANCE","59 BOULEVARD DE LA FRANCE","02000 HOPITAL",0); // match
+    }
+
+    @Override
+    QueryBuilder getQueryBuilder(String voie)
+    {
+        JDONREFv4QueryBuilder qb = new JDONREFv4QueryBuilder(voie);
+        
+        return qb;
+    }
+
+//    @Test
+//    public void testSearch() throws IOException, InterruptedException, ExecutionException
+//    {
+//        IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
+//        System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
+//        
+//        // 183 tests au total
+//        
+//        GetResponse resp = client().prepareGet().setFields("fullName").setId("4130").setFetchSource(true).setIndex(INDEX_NAME).setType("adresse").execute().actionGet();
+//        System.out.println("Doc 1 source:" +resp.getSourceAsString());
+//        System.out.println("Doc 1 fullName:" +resp.getField("fullName").getValue());
+//        
+//        searchExactAdresse("rue remy duhem 59500 douai france","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,0);
 //        searchExactAdresse("130 RUE REMY 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
 //        searchExactAdresse("130 RUE DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,160.0f);
 //        searchExactAdresse("130 REMY DUHEM 59500 DOUAI FRANCE","130 RUE REMY DUHEM 59500 DOUAI FRANCE",0,140.0f);
@@ -750,5 +656,5 @@ public class JDONREFv4QueryTests
 //        searchExactAdresse("KEBAB FRITE DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",1,100.0f);
 //        searchExactAdresse("KEBAB DOUAI","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
 //        searchExactAdresse("KEBAB RUE REMY DUHEM","KEBAB LA P'TITE FRITE 130 RUE REMY DUHEM 59500 DOUAI FRANCE",2,50.0f);
-    }
+//    }
 }

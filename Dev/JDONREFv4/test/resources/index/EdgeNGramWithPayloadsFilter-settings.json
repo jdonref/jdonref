@@ -2,15 +2,15 @@
     "index" : {
         "analysis" : {
             "analyzer": {
-                "jdonrefv4_index_token_count" : {
-                    "type" : "custom",
-                    "tokenizer" : "whitespace",
-                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop" /*,"french_keywords"*/, "french_stemmer","jdonrefv4_tokenCount","jdonrefv4_synonyme", "jdonrefv4_nGram"]
-                },
                 "jdonrefv4_index" : {
                     "type" : "custom",
                     "tokenizer" : "whitespace",
-                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop" /*,"french_keywords"*/ , "french_stemmer" ,"jdonrefv4_synonyme", "jdonrefv4_nGram" ]
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer", "jdonrefv4_nGram"]
+                },
+                "jdonrefv4_index2" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer", "jdonrefv4_synonyme", "jdonrefv4_nGram"]
                 },
                 "jdonrefv4_codes_index" : {
                     "type" : "custom",
@@ -20,7 +20,7 @@
                 "jdonrefv4_search" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["lowercase", "french_elision", "french_stop"/*,"french_keywords"*/,"french_stemmer"]
+                    "filter" : ["lowercase", "french_elision", "french_stop",/*/"french_keywords",*/ "french_stemmer"]
                 }
             },
             "filter" : {
@@ -40,7 +40,7 @@
                   "type":       "stop",
                   "stopwords":  "_french_" 
                 },
-//                "french_keywords": {
+  //                "french_keywords": {
 //                  "type":       "keyword_marker",
 //                  "keywords":   [] 
 //                },

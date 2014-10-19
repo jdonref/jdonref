@@ -3,7 +3,7 @@
         "_type": {"store": true},
        "_source": {"excludes": ["geometrie"]},
        "properties" : { 
-                            "code_pays" : { "type" : "string" , "store" : true, "term_vector" : "with_positions_offsets", "index":"not_analyzed", "similarity":"jdonrefv4"},
+                            "code_pays" : { "type" : "string" , "store" : true, "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv4_codes_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
                             "pays" : { "type" : "string" , "index": "no"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},

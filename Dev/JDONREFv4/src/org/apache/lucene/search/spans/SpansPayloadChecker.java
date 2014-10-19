@@ -15,8 +15,7 @@ import java.util.Map;
 import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 
 /**
- * A Spans that is formed from the subspans of a GroupedPayloadSpanQuery
- * where the subspans are grouped by payload values.
+ * A Spans that is formed by subspans which target to check payload values.
  * 
  * @author Julien
  */
@@ -123,7 +122,7 @@ public class SpansPayloadChecker extends Spans
         }
       }
       more = true;
-      
+    
     matchPayload.clear();
     return advanceAfterOrdered();
   }

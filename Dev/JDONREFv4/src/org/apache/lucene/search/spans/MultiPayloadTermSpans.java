@@ -164,6 +164,7 @@ public class MultiPayloadTermSpans extends TermSpans
         if (document==null || doc!=documentDoc)
         {
             document = reader==null?null:reader.document(doc);
+            documentDoc = doc;
         }
         return document;
     }
@@ -189,15 +190,6 @@ public class MultiPayloadTermSpans extends TermSpans
         
         freq = postings.freq();
         count = 0;
-        try
-        {
-            position = postings.nextPosition();
-        }
-        catch(Exception e)
-        {
-            throw(new IOException("There might be a problem in one tokenfilter !",e));
-        }
-        count++;
         readPayloads();
         resetPayloads();
         nextPayload();
@@ -215,15 +207,6 @@ public class MultiPayloadTermSpans extends TermSpans
 
         freq = postings.freq();
         count = 0;
-        try
-        {
-            position = postings.nextPosition();
-        }
-        catch(Exception e)
-        {
-            throw(new IOException("There might be a problem in one tokenfilter !",e));
-        }
-        count++;
         readPayloads();
         resetPayloads();
         nextPayload();
@@ -234,7 +217,9 @@ public class MultiPayloadTermSpans extends TermSpans
     protected void readPayloads() throws IOException {
         payloads.clear();
         termCountsByPayload.clear();
-        do {
+        while (count++ < freq)
+        {
+            position = postings.nextPosition();
             BytesRef payload = postings.getPayload();
             
             if (payload!=null) // TODO : understand how it can be null
@@ -244,8 +229,7 @@ public class MultiPayloadTermSpans extends TermSpans
                 int totalCount = extractCountTermByPayload(payload);
                 termCountsByPayload.add(totalCount);
             }
-            position = postings.nextPosition();
-        } while (count++ < freq);
+        } 
     }
     
     protected BytesRef extractPayload(BytesRef payload)

@@ -15,12 +15,12 @@
             },
             "filter" : {
                 "jdonrefv4_synonyme" : {
-                    "type" : "synonym",
+                    "type" : "payloadsynonym",
                     "synonyms_path": "./src/resources/analysis/jdonrefv4_synonym.fr_FR.txt"
                 },
                 "jdonrefv4_nGram" : {
-                    "type" : "edgeNGram",
-                    "min_gram": 2,
+                    "type" : "payloadedgengram",
+                    "min_gram": 1,
                     "max_gram": 15,
                     "token_chars": ["digit"]
                 }

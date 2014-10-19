@@ -66,9 +66,11 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
         this(field,new AndPayloadChecker(),checkers);
     }
     
+    ArrayList<IPayloadChecker> checkers = new ArrayList<>();
+    
     public void getBranch(MultiPayloadTermSpans subspan) throws IOException
     {
-        ArrayList<IPayloadChecker> checkers = new ArrayList<>();
+        checkers.clear();
         Document d = subspan.document();
         String[] types = d.getValues(field);
         for(int i=0;i<types.length;i++)

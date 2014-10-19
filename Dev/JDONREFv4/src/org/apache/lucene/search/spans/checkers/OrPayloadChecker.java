@@ -22,10 +22,7 @@ public class OrPayloadChecker extends AbstractIPayloadCheckerCollectionChecker
     {
         for(int i=0;i<checkers.size();i++)
         {
-            if (!checkers.get(i).checkNextPayload(subspan))
-            {
-                return false;
-            }
+            checkers.get(i).checkNextPayload(subspan);
         }
         return true;
     }
@@ -33,10 +30,11 @@ public class OrPayloadChecker extends AbstractIPayloadCheckerCollectionChecker
     @Override
     public boolean check()
     {
+        if (checkers.isEmpty()) return true;
         for(int i=0;i<checkers.size();i++)
             if (checkers.get(i).check())
-                return false;
-        return true;
+                return true;
+        return false;
     }
     
     @Override

@@ -20,6 +20,7 @@ import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.indices.query.IndicesQueriesModule;
 
 import static org.elasticsearch.common.collect.Lists.newArrayList;
+import org.elasticsearch.index.analysis.SynonymWithPayloadsTokenFilterFactory;
 
 /**
  * 
@@ -46,6 +47,7 @@ public class JDONREFv4Plugin extends AbstractPlugin
     public void onModule(AnalysisModule module)
     {
         module.addTokenFilter("payloadedgengram",EdgeNGramWithPayloadsFilterFactory.class);
+        module.addTokenFilter("payloadsynonym",SynonymWithPayloadsTokenFilterFactory.class);
         module.addTokenFilter("unsplit",UnsplitFilterFactory.class);
         module.addTokenFilter("tokencountpayloads",TokenCountPayloadsFilterFactory.class);
     }
