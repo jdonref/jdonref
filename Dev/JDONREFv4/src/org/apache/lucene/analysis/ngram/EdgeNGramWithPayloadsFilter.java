@@ -54,6 +54,11 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
   protected final CharacterUtils charUtils;
   protected final int minGram;
   protected final int maxGram;
+  
+  protected boolean keepUnderMin;
+  protected boolean keepNumbers;
+  protected boolean withPayloads;
+  
   protected Side side;
   protected char[] curTermBuffer;
   protected int curTermLength;
@@ -65,6 +70,8 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
   protected int savePosIncr;
   protected int savePosLen;
   protected BytesRef curPayload;
+  
+  protected boolean keepit; // it means no ngram on it
   
   protected final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
   protected final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
@@ -82,9 +89,11 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
    * @param minGram the smallest n-gram to generate
    * @param maxGram the largest n-gram to generate
    * @param withPayloads true to keep payloads
+   * @param keepUnderMin true to keep token under minGram length
+   * @param keepNumbers false to generare n-grams for numbers (integer, float, double)
    */
   @Deprecated
-  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, Side side, int minGram, int maxGram, boolean withPayloads) {
+  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, Side side, int minGram, int maxGram, boolean withPayloads, boolean keepUnderMin, boolean keepNumbers) {
     super(input);
 
     if (version == null) {
@@ -114,6 +123,10 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
     this.minGram = minGram;
     this.maxGram = maxGram;
     this.side = side;
+    
+    this.withPayloads = withPayloads;
+    this.keepUnderMin = keepUnderMin;
+    this.keepNumbers = keepNumbers;
   }
 
   /**
@@ -126,10 +139,12 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
    * @param minGram the smallest n-gram to generate
    * @param maxGram the largest n-gram to generate
    * @param withPayloads true to keep payloads
+   * @param keepUnderMin true to keep token under minGram length
+   * @param keepNumbers false to generare n-grams for numbers (integer, float, double)
    */
   @Deprecated
-  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, String sideLabel, int minGram, int maxGram, boolean withPayloads) {
-    this(version, input, Side.getSide(sideLabel), minGram, maxGram,withPayloads);
+  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, String sideLabel, int minGram, int maxGram, boolean withPayloads, boolean keepUnderMin, boolean keepNumbers) {
+    this(version, input, Side.getSide(sideLabel), minGram, maxGram,withPayloads, keepUnderMin, keepNumbers);
   }
 
   /**
@@ -142,8 +157,25 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
    * @param maxGram the largest n-gram to generate
    * @param withPayloads true to keep payloads
    */
-  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, int minGram, int maxGram, boolean withPayloads) {
-    this(version, input, Side.FRONT, minGram, maxGram,withPayloads);
+  public EdgeNGramWithPayloadsFilter(Version version, TokenStream input, int minGram, int maxGram, boolean withPayloads, boolean keepUnderMin, boolean keepNumbers) {
+    this(version, input, Side.FRONT, minGram, maxGram,withPayloads, keepUnderMin, keepNumbers);
+  }
+  
+  /**
+   * Check wether chaine is a number (integer, float, double).
+   * @param chaine
+   * @return 
+   */
+  public boolean isNumber(char[] charArrayToCheck,int curTermLength)
+  {
+      String stringToCheck = new String(charArrayToCheck,0,curTermLength);
+      try { Integer.parseInt(stringToCheck); return true; }
+      catch(NumberFormatException nfe){ }
+      try { Float.parseFloat(stringToCheck); return true;  }
+      catch(NumberFormatException nfe){ }
+      try { Double.parseDouble(stringToCheck); return true;  }
+      catch(NumberFormatException nfe){ }
+      return false;
   }
 
   @Override
@@ -157,7 +189,7 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
           curTermLength = termAtt.length();
           curPayload = payloadAtt.getPayload();
           curCodePointCount = charUtils.codePointCount(termAtt);
-          curGramSize = minGram;
+          //curGramSize = minGram; // see keepit 
           tokStart = offsetAtt.startOffset();
           tokEnd = offsetAtt.endOffset();
           if (version.onOrAfter(Version.LUCENE_44)) {
@@ -170,6 +202,17 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
           }
           savePosIncr += posIncrAtt.getPositionIncrement();
           savePosLen = posLenAtt.getPositionLength();
+          
+          keepit = false;
+          if (keepUnderMin && curCodePointCount<minGram)
+            keepit = true;
+          if (keepNumbers && isNumber(curTermBuffer,curTermLength))
+            keepit = true;
+          
+          if (keepit)
+              curGramSize = curCodePointCount;
+          else
+              curGramSize = minGram;
         }
       }
       if (curGramSize <= maxGram) {         // if we have hit the end of our n-gram size range, quit
@@ -184,7 +227,7 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
             offsetAtt.setOffset(tokStart, tokEnd);
           }
           // first ngram gets increment, others don't
-          if (curGramSize == minGram) {
+          if (curGramSize == minGram || keepit) {
             posIncrAtt.setPositionIncrement(savePosIncr);
             savePosIncr = 0;
           } else {
@@ -192,9 +235,13 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
           }
           posLenAtt.setPositionLength(savePosLen);
           termAtt.copyBuffer(curTermBuffer, start, end - start);
-          payloadAtt.setPayload(curPayload);
+          if (withPayloads)
+            payloadAtt.setPayload(curPayload);
           
-          curGramSize++;
+          if (keepit)
+            curTermBuffer = null;
+          else
+            curGramSize++;
           return true;
         }
       }

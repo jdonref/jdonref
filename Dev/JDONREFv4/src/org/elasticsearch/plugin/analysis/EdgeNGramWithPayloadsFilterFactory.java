@@ -1,7 +1,7 @@
 package org.elasticsearch.plugin.analysis;
 
-import org.apache.lucene.analysis.ngram.EdgeNGramWithPayloadsFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.ngram.EdgeNGramWithPayloadsFilter;
 import org.apache.lucene.analysis.ngram.Lucene43EdgeNGramTokenizer;
 import org.apache.lucene.analysis.ngram.NGramTokenFilter;
 import org.apache.lucene.analysis.reverse.ReverseStringFilter;
@@ -20,11 +20,14 @@ import org.elasticsearch.index.settings.IndexSettings;
  */
 public class EdgeNGramWithPayloadsFilterFactory extends EdgeNGramTokenFilterFactory
 {
-  protected boolean withPayloads = false;
   protected int nonPrivateMinGramSize;
   protected int nonPrivateMaxGramSize;
   protected EdgeNGramWithPayloadsFilter.Side nonPrivateSide;
   protected org.elasticsearch.Version nonPrivateEsVersion;
+  
+  protected boolean withPayloads = false;
+  protected boolean keepUnderMin = false;
+  protected boolean keepNumbers  = false;
   
   /** Creates a new JDONREFv3EdgeNGramWithPayloadsFilterFactory */
   @Inject
@@ -34,8 +37,12 @@ public class EdgeNGramWithPayloadsFilterFactory extends EdgeNGramTokenFilterFact
     nonPrivateMinGramSize = settings.getAsInt("min_gram", NGramTokenFilter.DEFAULT_MIN_NGRAM_SIZE);
     nonPrivateMaxGramSize = settings.getAsInt("max_gram", NGramTokenFilter.DEFAULT_MAX_NGRAM_SIZE);
     nonPrivateSide = EdgeNGramWithPayloadsFilter.Side.getSide(settings.get("side", Lucene43EdgeNGramTokenizer.DEFAULT_SIDE.getLabel()));
-    withPayloads = settings.getAsBoolean("withPayloads", false);
     nonPrivateEsVersion = indexSettings.getAsVersion(IndexMetaData.SETTING_VERSION_CREATED, org.elasticsearch.Version.CURRENT);
+    
+    // addins
+    withPayloads = settings.getAsBoolean("with_payloads", false);
+    keepUnderMin = settings.getAsBoolean("keep_under_min", false);
+    keepNumbers  = settings.getAsBoolean("keep_numbers",false);
   }
 
   @Override
@@ -54,12 +61,12 @@ public class EdgeNGramWithPayloadsFilterFactory extends EdgeNGramTokenFilterFact
             if (nonPrivateSide == EdgeNGramWithPayloadsFilter.Side.BACK) {
                 result = new ReverseStringFilter(version, result);
             }
-            result = new EdgeNGramWithPayloadsFilter(version, result, nonPrivateMinGramSize, nonPrivateMaxGramSize, withPayloads);
+            result = new EdgeNGramWithPayloadsFilter(version, result, nonPrivateMinGramSize, nonPrivateMaxGramSize, withPayloads,keepUnderMin,keepNumbers);
             if (nonPrivateSide == EdgeNGramWithPayloadsFilter.Side.BACK) {
                 result = new ReverseStringFilter(version, result);
             }
             return result;
       }
-      return new EdgeNGramWithPayloadsFilter(version, tokenStream, nonPrivateSide, nonPrivateMinGramSize, nonPrivateMaxGramSize, withPayloads);
+      return new EdgeNGramWithPayloadsFilter(version, tokenStream, nonPrivateSide, nonPrivateMinGramSize, nonPrivateMaxGramSize, withPayloads, keepUnderMin,keepNumbers);
   }
 }

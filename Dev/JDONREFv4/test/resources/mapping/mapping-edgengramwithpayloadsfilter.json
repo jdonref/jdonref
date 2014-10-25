@@ -4,7 +4,9 @@
         "_source": {"excludes": ["geometrie"]},
         "properties" : {
                             "fullName" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
-                            "fullName2" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index2","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"}
+                            "fullName2" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index2","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName3" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index3","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName4" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index4","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"}
                         }
     }
   }

@@ -53,6 +53,8 @@ public class EdgeNGramWithPayloadsFilterTests extends QueryTests
         publicIndex(brb,"edgengramwithpayloadsfilter","1",XContentFactory.jsonBuilder().startObject()
                 .field("fullName","AA|1 BB|1 CC|1 DD|1")
                 .field("fullName2","passage|1 square|1 vlge|1 immeubles|1")
+                .field("fullName3","24|1 BOULEVARD|2 HOPITAL|2 75013|3 PARIS|4")
+                .field("fullName4","24|1 BOULEVARD|2 HOPITAL|2 75013|3 PARIS|4")
                 .endObject());
         publicIndex(brb,"edgengramwithpayloadsfilter","2",XContentFactory.jsonBuilder().startObject()
                 .field("fullName","AA|1 CC|1 DD|1")
@@ -114,7 +116,7 @@ public class EdgeNGramWithPayloadsFilterTests extends QueryTests
         TermsEnum terms2 = response2.getFields().terms("fullName2").iterator(null);
         while((terms2.next())!=null)
         {
-            DocsAndPositionsEnum docsEnum = terms1.docsAndPositions(null, null);
+            DocsAndPositionsEnum docsEnum = terms2.docsAndPositions(null, null);
             while(docsEnum.nextDoc()!=DocsAndPositionsEnum.NO_MORE_DOCS) // no need for nextPosition for these samples
             {
                 int freq = docsEnum.freq();
@@ -131,7 +133,7 @@ public class EdgeNGramWithPayloadsFilterTests extends QueryTests
         terms2 = response2.getFields().terms("fullName2").iterator(null);
         while((terms2.next())!=null)
         {
-            DocsAndPositionsEnum docsEnum = terms1.docsAndPositions(null, null);
+            DocsAndPositionsEnum docsEnum = terms2.docsAndPositions(null, null);
             while(docsEnum.nextDoc()!=DocsAndPositionsEnum.NO_MORE_DOCS) // no need for nextPosition for these samples
             {
                 int freq = docsEnum.freq();
@@ -145,6 +147,47 @@ public class EdgeNGramWithPayloadsFilterTests extends QueryTests
                 }
             }
         }
+        
+        // KeepNumber test
+        TermsEnum terms5 = response1.getFields().terms("fullName3").iterator(null);
+        int count5 = 0;
+        while((terms5.next())!=null)
+        {
+            DocsAndPositionsEnum docsEnum = terms5.docsAndPositions(null, null);
+            while(docsEnum.nextDoc()!=DocsAndPositionsEnum.NO_MORE_DOCS) // no need for nextPosition for these samples
+            {
+                int freq = docsEnum.freq();
+                int count = 0;
+                while(count++<freq)
+                {
+                    docsEnum.nextPosition();
+                    BytesRef payload = docsEnum.getPayload();
+                    int payloadValue = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+                    if (payloadValue == 1) count5++;
+                }
+            }
+        }
+        assert(count5==1); // assert 24 is not ngramed
+        
+        TermsEnum terms6 = response1.getFields().terms("fullName4").iterator(null);
+        int count6 = 0;
+        while((terms6.next())!=null)
+        {
+            DocsAndPositionsEnum docsEnum = terms6.docsAndPositions(null, null);
+            while(docsEnum.nextDoc()!=DocsAndPositionsEnum.NO_MORE_DOCS) // no need for nextPosition for these samples
+            {
+                int freq = docsEnum.freq();
+                int count = 0;
+                while(count++<freq)
+                {
+                    docsEnum.nextPosition();
+                    BytesRef payload = docsEnum.getPayload();
+                    int payloadValue = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+                    if (payloadValue == 1) count6++;
+                }
+            }
+        }
+        assert(count6==1); // assert 24 is present
     }
     
     @Override

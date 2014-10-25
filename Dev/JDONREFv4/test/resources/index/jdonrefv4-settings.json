@@ -22,7 +22,9 @@
                     "type" : "payloadedgengram",
                     "min_gram": 1,
                     "max_gram": 15,
-                    "token_chars": ["digit"]
+                    "with_payloads": true,
+                    "keep_numbers" : true,
+                    "keep_under_min" : true
                 }
             }
         }

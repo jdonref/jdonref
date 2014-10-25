@@ -12,6 +12,16 @@
                     "tokenizer" : "whitespace",
                     "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer", "jdonrefv4_synonyme", "jdonrefv4_nGram"]
                 },
+                "jdonrefv4_index3" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer", "jdonrefv4_synonyme", "jdonrefv4_nGram2"]
+                },
+                "jdonrefv4_index4" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer", "jdonrefv4_synonyme", "jdonrefv4_nGram3"]
+                },
                 "jdonrefv4_codes_index" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
@@ -61,8 +71,21 @@
                     "type" : "payloadedgengram",
                     "min_gram": 1,
                     "max_gram": 15,
-                    "token_chars": ["digit"],
-                    "withPayloads": true
+                    "with_payloads": true
+                },
+                "jdonrefv4_nGram2" : {
+                    "type" : "payloadedgengram",
+                    "min_gram": 1,
+                    "max_gram": 15,
+                    "keep_numbers" : true,
+                    "with_payloads": true
+                },
+                "jdonrefv4_nGram3" : {
+                    "type" : "payloadedgengram",
+                    "min_gram": 3,
+                    "max_gram": 15,
+                    "keep_under_min" : true,
+                    "with_payloads": true
                 },
                 "jdonrefv4_tokenCount": {
                     "type" : "tokencountpayloads",

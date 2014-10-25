@@ -253,8 +253,8 @@ public class JDONREFv4QueryParser implements QueryParser
         if (maxSizePerType==Integer.MAX_VALUE)
         {
             SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present,ligne4Present),numeroAvantLigne4));
-            SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),codesOrCommunePresent,numeroAvantLigne4));
-            SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone(),codesOrCommunePresent.clone()));
+            SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),/*codesOrCommunePresent,*/numeroAvantLigne4));
+            SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone()/*,codesOrCommunePresent.clone()*/));
             SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone()));
             SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone()));
             SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone()));
@@ -266,8 +266,8 @@ public class JDONREFv4QueryParser implements QueryParser
         else
         {
             SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present,ligne4Present),numeroAvantLigne4,limit));
-            SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),codesOrCommunePresent,numeroAvantLigne4,limit.clone()));
-            SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone(),codesOrCommunePresent.clone(),limit.clone()));
+            SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),/*codesOrCommunePresent,*/numeroAvantLigne4,limit.clone()));
+            SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone()/*,codesOrCommunePresent.clone()*/,limit.clone()));
             SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone(),limit.clone()));
             SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone(),limit.clone()));
             SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone(),limit.clone()));

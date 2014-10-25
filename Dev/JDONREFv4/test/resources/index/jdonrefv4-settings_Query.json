@@ -61,8 +61,9 @@
                     "type" : "payloadedgengram",
                     "min_gram": 1,
                     "max_gram": 15,
-                    "token_chars": ["digit"],
-                    "withPayloads": true
+                    "with_payloads": true,
+                    "keep_numbers" : true,
+                    "keep_under_min" : true
                 },
                 "jdonrefv4_tokenCount": {
                     "type" : "tokencountpayloads",
