@@ -109,19 +109,19 @@ public class Valide
                 jdonrefIndex.setWithGeometry(withGeometry);
                 jdonrefIndex.setWithSwitchAlias(withSwitchAlias);
                 
-                int numDepartements = 30; // max = 96. 20 do not work
-                String[] departements = new String[numDepartements+numDepartements>=20?-1:0];
+                int numDepartements = 1; // max = 96. 20 do not work skip setCodesDepartements to test it.
+                String[] departements = new String[numDepartements+(numDepartements>=20?-1:0)];
                 for(int i=1;i<=numDepartements;i++)
                 {
                     if (i!=20)
                     {
                         String departement = Integer.toString(i);
                         if (departement.length()==1) departement = "0"+departement;
-                        departements[i-1+i>=20?-1:0] = departement;
+                        departements[i-1+(i>=20?-1:0)] = departement;
                     }
                 }
                 jdonrefIndex.setCodesDepartements(departements);
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
                 //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON);
                 //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
                 //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
