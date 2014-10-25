@@ -15,6 +15,8 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
  */
 public class SwitchPayloadChecker extends AbstractPayloadChecker
 {
+    final static NullPayloadChecker nullChecker = new NullPayloadChecker();
+    
     String field;
     
     ConcurrentHashMap<String,IPayloadChecker> clauses = new ConcurrentHashMap<>();
@@ -81,6 +83,8 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
             if (clause!=null && !checkers.contains(clause))
                 checkers.add(clause);
         }
+        if (checkers.isEmpty())
+            checkers.add(nullChecker);
         currentChecker.setCheckers(checkers);
         branch = true;
     }
