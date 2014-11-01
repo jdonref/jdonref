@@ -23,6 +23,25 @@ public class AdresseIndex {
     static int idAdresseTmp=0;
     int paquetsBulk=500;
 
+    protected static AdresseIndex instance = null;
+    
+    String index;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+    
+    public static AdresseIndex getInstance()
+    {
+        if (instance==null)
+            instance = new AdresseIndex();
+        return instance;
+    }
+    
     public boolean isWithGeometry() {
         return withGeometry;
     }
@@ -60,7 +79,7 @@ public class AdresseIndex {
     {
         JsonObject data = adr.toJSONDocument(withGeometry);
         
-        util.indexResource("adresse", data.toString());
+        util.indexResource(index,"adresse", data.toString());
     }
 
 
@@ -73,7 +92,7 @@ public class AdresseIndex {
         ResultSet rs = dao.getAllAdressesOfDepartement(connection, dpt);
 //      creation de l'objet metaDataAdresse
         MetaData metaDataAdresse= new MetaData();
-        metaDataAdresse.setIndex(util.index);
+        metaDataAdresse.setIndex(index);
         metaDataAdresse.setType("adresse");
               
         String bulk ="";
@@ -124,7 +143,7 @@ public class AdresseIndex {
         //int c =0;
 //      creation de l'objet metaDataAdresse
         MetaData metaDataAdresse= new MetaData();
-        metaDataAdresse.setIndex(util.index);
+        metaDataAdresse.setIndex(index);
         metaDataAdresse.setType("adresse");
         
         String bulk ="";

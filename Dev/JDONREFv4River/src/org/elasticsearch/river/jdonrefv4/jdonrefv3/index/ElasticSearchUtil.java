@@ -3,19 +3,11 @@ package org.elasticsearch.river.jdonrefv4.jdonrefv3.index;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+import javax.json.*;
 
 
 /**
@@ -26,7 +18,6 @@ public class ElasticSearchUtil
 {
     String url;
     Client client;
-    String index;
 
     public Client getClient() {
         return client;
@@ -35,15 +26,7 @@ public class ElasticSearchUtil
     public void setClient(Client client) {
         this.client = client;
     }
-
-    public String getIndex() {
-        return index;
-    }
-
-    public void setIndex(String index) {
-        this.index = index;
-    }
-
+    
     public String getUrl() {
         return url;
     }
@@ -75,7 +58,7 @@ public class ElasticSearchUtil
         System.out.println("health : "+output);
     }
     
-    public String setRefreshInterval(String interval)
+    public String setRefreshInterval(String index,String interval)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/_settings");
         
@@ -91,9 +74,9 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showSetRefreshInterval(String interval)
+    public void showSetRefreshInterval(String index,String interval)
     {
-        String output = setRefreshInterval(interval);
+        String output = setRefreshInterval(index,interval);
         
         System.out.println("setRefreshInterval : "+output);
     }
@@ -115,12 +98,98 @@ public class ElasticSearchUtil
         return keys.iterator();
     }
     
+    public ArrayList<String> getLastAliasIndices(String alias,String start_with)
+    {
+        WebResource webResource = client.resource("http://"+url+"/_alias/"+alias);
+        
+        ClientResponse response = webResource.accept("application/json").get(ClientResponse.class);
+        String output = response.getEntity(String.class);
+        
+        JsonReader reader = Json.createReader(new StringReader(output));
+        JsonObject obj = reader.readObject();
+        
+        if (obj.containsKey("error")) return null;
+        
+        Set<String> keys = obj.keySet();
+        Iterator<String> lastindices = keys.iterator();
+        ArrayList<String> next = new ArrayList<>();
+        
+        while(lastindices.hasNext())
+        {
+            String indice = lastindices.next();
+            if (indice.startsWith(start_with))
+                next.add(indice);
+        }
+        
+        return next;
+    }
+    
+    protected void removeLastIndices(ArrayList<String> lastindices_to_remove)
+    {
+        if (lastindices_to_remove!=null)
+        for(int i=0;i<lastindices_to_remove.size();i++)
+        {
+            deleteIndex(lastindices_to_remove.get(i));
+        }
+    }
+    
     protected void removeLastIndices(Iterator<String> lastindices_to_remove)
     {
+        if (lastindices_to_remove!=null)
         while(lastindices_to_remove.hasNext())
         {
             deleteIndex(lastindices_to_remove.next());
         }
+    }
+    
+    public void showExchangeIndexInAlias(String alias,String index,String startWith)
+    {
+        String output = exchangeIndexInAlias(alias,index,startWith);
+        
+        System.out.println("exchangeIndexInAlias : "+output);
+    }
+    
+    public String exchangeIndexInAlias(String alias,String index,String startWith)
+    {
+        ArrayList<String> lastindices_to_remove = getLastAliasIndices(alias, startWith);
+        
+        WebResource webResource = client.resource("http://"+url+"/_aliases");
+        
+        JsonObjectBuilder newindex = Json.createObjectBuilder();
+        newindex.add("index", index);
+        newindex.add("alias", alias);
+        
+        JsonObjectBuilder addnewindex = Json.createObjectBuilder();
+        addnewindex.add("add", newindex);
+        
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        jab.add(addnewindex);
+        
+        if (lastindices_to_remove!=null)
+        for(int i=0;i<lastindices_to_remove.size();i++)
+        {
+            JsonObjectBuilder lastindex = Json.createObjectBuilder();
+            lastindex.add("index", lastindices_to_remove.get(i));
+            lastindex.add("alias", alias);
+        
+            JsonObjectBuilder removelastindex = Json.createObjectBuilder();
+            removelastindex.add("remove", lastindex);
+            
+            jab.add(removelastindex);
+        }
+        
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("actions", jab);
+        
+        String data = job.build().toString();
+        System.out.println(data);
+        
+        ClientResponse response = webResource.accept("application/json").post(ClientResponse.class,data);
+        String output = response.getEntity(String.class);
+        
+        removeLastIndices(lastindices_to_remove);
+        
+        return output;
     }
     
     public String setNewAlias(String index,String alias)
@@ -173,7 +242,7 @@ public class ElasticSearchUtil
         System.out.println("setNewAlias : "+output);
     }
     
-    public String indexResource(String object,String data)
+    public String indexResource(String index,String object,String data)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/");
         
@@ -211,16 +280,11 @@ public class ElasticSearchUtil
     
     
     
-    public void showIndexResource(String object, String data)
+    public void showIndexResource(String index,String object, String data)
     {
-        String output = indexResource(object, data);
+        String output = indexResource(index, object, data);
         
         System.out.println("index : "+output);
-    }
-    
-    public String deleteIndex()
-    {
-        return deleteIndex(index);
     }
     
     public String deleteIndex(String index)
@@ -234,16 +298,16 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showDeleteIndex()
+    public void showDeleteIndex(String index)
     {
         System.out.println("Delete index : "+index);
 
-        String output = deleteIndex();
+        String output = deleteIndex(index);
         
         System.out.println(output);
     }
     
-    public String deleteType(String type)
+    public String deleteType(String index,String type)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/"+type);
         
@@ -254,16 +318,16 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showDeleteType(String type)
+    public void showDeleteType(String index,String type)
     {
         System.out.println("Delete type : "+index+"/"+type);
 
-        String output = deleteType(type);
+        String output = deleteType(index,type);
         
         System.out.println(output);
     }
     
-    public String indexStats( )
+    public String indexStats(String index)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/_stats");
         
@@ -274,14 +338,14 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showIndexStats( )
+    public void showIndexStats(String index)
     {
-        String output = indexStats();
+        String output = indexStats(index);
         
         System.out.println("index : "+output);
     }
     
-    public String search(String query)
+    public String search(String index,String query)
     {
         String resource = "http://"+url+"/"+index+"/_search?q="+query;
         
@@ -302,15 +366,15 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showSearch(String object,String query)
+    public void showSearch(String index,String object,String query)
     {
-        String output = search(object,query);
+        String output = search(index,object,query);
         
         System.out.println("index : "+output);
     }
     
 
-    public String search(String object,String query)
+    public String search(String index,String object,String query)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/_search?q="+query);
         
@@ -321,14 +385,14 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showSearch(String query)
+    public void showSearch(String index,String query)
     {
-        String output = search(query);
+        String output = search(index,query);
         
         System.out.println("index : "+output);
     }
 
-    public String resource(String object, int i)
+    public String resource(String index,String object, int i)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/"+object+"/"+i);
         
@@ -339,22 +403,22 @@ public class ElasticSearchUtil
         return output;
     }
     
-    public void showResource( String object, int i)
+    public void showResource(String index,String object, int i)
     {
-        String output = resource( object,i);
+        String output = resource(index, object,i);
         
         System.out.println("index : "+output);
     }
 
-    void showCreateIndex() {
+    void showCreateIndex(String index) {
         System.out.println("creating index : "+index);
         
-        String res = createIndex();
+        String res = createIndex(index);
         
         System.out.println(res);
     }
 
-    String createIndex() {
+    String createIndex(String index) {
         WebResource webResource = client.resource("http://"+url+"/"+index);
         
         ClientResponse response = webResource.accept("application/json").put(ClientResponse.class);
@@ -364,15 +428,15 @@ public class ElasticSearchUtil
         return output;
     }
     
-    void showCreateIndex(String analysis) throws FileNotFoundException, IOException {
+    void showCreateIndex(String index,String analysis) throws FileNotFoundException, IOException {
         System.out.println("Creating index : "+index);
         
-        String res = createIndex(analysis);
+        String res = createIndex(index,analysis);
         
         System.out.println(res);
     }
 
-    String createIndex(String analysis) throws FileNotFoundException, IOException {
+    String createIndex(String index,String analysis) throws FileNotFoundException, IOException {
         String content = readFile(analysis);
         
         WebResource webResource = client.resource("http://"+url+"/"+index);
@@ -399,16 +463,16 @@ public class ElasticSearchUtil
         return res;
     }
     
-    public void showPutMapping(String type,String file) throws FileNotFoundException, IOException
+    public void showPutMapping(String index,String type,String file) throws FileNotFoundException, IOException
     {
         System.out.println("Défini le mapping pour "+type+" à partir du fichier "+file);
         
-        String res = putMapping(type,file);
+        String res = putMapping(index,type,file);
         
         System.out.println(res);
     }
     
-    public String putMapping(String type,String file) throws FileNotFoundException, IOException
+    public String putMapping(String index,String type,String file) throws FileNotFoundException, IOException
     {
         String content = readFile(file);
         

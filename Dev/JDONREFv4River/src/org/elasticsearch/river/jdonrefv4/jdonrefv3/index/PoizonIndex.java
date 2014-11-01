@@ -30,6 +30,25 @@ public class PoizonIndex {
     static int idPoizonTmp=0;
     int paquetsBulk=100;
 
+    String index;
+    
+    protected static PoizonIndex instance = null;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+    
+    public static PoizonIndex getInstance()
+    {
+        if (instance==null)
+            instance = new PoizonIndex();
+        return instance;
+    }
+    
     public boolean isWithGeometry() {
         return withGeometry;
     }
@@ -97,7 +116,7 @@ public class PoizonIndex {
         ResultSet rs = dao.getAllPoizon(connection,lastUpdate);
 //      creation de l'objet metaDataPoizon
         MetaData metaDataPoizon= new MetaData();
-        metaDataPoizon.setIndex(util.index);
+        metaDataPoizon.setIndex(index);
         metaDataPoizon.setType("poizon");
         
         int i =0;

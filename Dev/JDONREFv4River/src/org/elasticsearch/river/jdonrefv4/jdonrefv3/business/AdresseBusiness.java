@@ -86,13 +86,13 @@ public class AdresseBusiness
         return false;
     }
     
-    public JsonArray valide(String querystr) throws IOException, Exception
+    public JsonArray valide(String index,String querystr) throws IOException, Exception
     {
         System.out.println("-------------");
         System.out.println("Cherche "+querystr);
         //querystr = qp.escape(querystr); // warning : valideApprox ajoute ~ à la fin des mots. Les effets de bords n'ont pas été traités.
         
-        JsonObject obj = valideExact(querystr);
+        JsonObject obj = valideExact(index,querystr);
         if (obj.containsKey("status") && obj.getInt("status")!=200)
         {
             throw(new Exception(obj.getString("error")));
@@ -102,7 +102,7 @@ public class AdresseBusiness
         
         if (!isOk(hits, limit))
         {
-            obj = valideApprox(querystr);
+            obj = valideApprox(index,querystr);
             if (obj.containsKey("status") && obj.getInt("status")!=200)
             {
                 throw(new Exception(obj.getString("error")));
@@ -115,13 +115,13 @@ public class AdresseBusiness
         return hits;
     }
     
-    public JsonObject valideExact(String querystr) throws IOException
+    public JsonObject valideExact(String index,String querystr) throws IOException
     {
         //querystr = getQueryStrExact(querystr);
         System.out.println("Cherche exactement "+querystr);
 
         long start = Calendar.getInstance().getTimeInMillis();
-        String output = es.search(querystr);
+        String output = es.search(index,querystr);
         long end = Calendar.getInstance().getTimeInMillis();
         System.out.println((end-start)+" millis");
         
@@ -131,14 +131,14 @@ public class AdresseBusiness
         return obj;
     }
     
-    public JsonObject valideApprox(String querystr) throws IOException
+    public JsonObject valideApprox(String index,String querystr) throws IOException
     {
         querystr = addTilde(querystr);
         //querystr = getQueryStrExact(querystr);
         System.out.println("Cherche approximativement " + querystr);
         
         long start = Calendar.getInstance().getTimeInMillis();
-        String output = es.search(querystr);
+        String output = es.search(index,querystr);
         long end = Calendar.getInstance().getTimeInMillis();
         System.out.println((end-start)+" millis");
         

@@ -23,7 +23,26 @@ public class CommuneIndex
     static int idCommune=0;
     static int idCommuneTmp=0;
     int paquetsBulk=500;
+    
+    String index = null;
 
+    protected static CommuneIndex instance = null;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+    
+    public static CommuneIndex getInstance()
+    {
+        if (instance==null)
+            instance = new CommuneIndex();
+        return instance;
+    }
+    
     public boolean isWithGeometry() {
         return withGeometry;
     }
@@ -62,7 +81,7 @@ public class CommuneIndex
     {
         JsonObject data = commune.toJSONDocument(withGeometry);
         
-        util.indexResource("commune", data.toString());
+        util.indexResource(index,"commune", data.toString());
     }
     
     public void indexJDONREFCommune() throws IOException, SQLException
@@ -74,7 +93,7 @@ public class CommuneIndex
         ResultSet rs = dao.getAllCommunes(connection);
 //      creation de l'objet metaDataCommune
         MetaData metaDataCommune= new MetaData();
-        metaDataCommune.setIndex(util.index);
+        metaDataCommune.setIndex(index);
         metaDataCommune.setType("commune");
    
         String bulk ="";
@@ -120,7 +139,7 @@ public class CommuneIndex
         //int c =0;
 //      creation de l'objet metaDataCommune
         MetaData metaDataCommune= new MetaData();
-        metaDataCommune.setIndex(util.index);
+        metaDataCommune.setIndex(index);
         metaDataCommune.setType("commune");
 
         String bulk ="";

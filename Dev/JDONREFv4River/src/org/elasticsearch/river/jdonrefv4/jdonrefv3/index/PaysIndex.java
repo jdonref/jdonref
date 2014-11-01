@@ -23,7 +23,27 @@ public class PaysIndex
     static int idPaysTmp=0;
     int paquetsBulk=30;
     
+    String index = null;
+    
     boolean withGeometry = true;
+    
+    protected static PaysIndex instance = null;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+    
+    public static PaysIndex getInstance()
+    {
+        if (instance==null)
+            instance = new PaysIndex();
+        return instance;
+    }
+    
     
     public ElasticSearchUtil getUtil() {
         return util;
@@ -60,7 +80,7 @@ public class PaysIndex
     public void addPays(Pays pays) throws IOException
     {
         JsonObject data = pays.toJSONDocument(withGeometry);
-        util.indexResource("pays", data.toString());
+        util.indexResource(index,"pays", data.toString());
     }
     
     public void indexJDONREFPays() throws IOException, SQLException
@@ -72,7 +92,7 @@ public class PaysIndex
         ResultSet rs = dao.getAllPays(connection);
 //      creation de l'objet metaDataDep
         MetaData metaDataDep= new MetaData();
-        metaDataDep.setIndex(util.index);
+        metaDataDep.setIndex(index);
         metaDataDep.setType("pays");
         
         int i =0;
@@ -117,7 +137,7 @@ public class PaysIndex
         
 //      creation de l'objet metaDataDep
         MetaData metaDataDep= new MetaData();
-        metaDataDep.setIndex(util.index);
+        metaDataDep.setIndex(index);
         metaDataDep.setType("pays");
 
         String bulk ="";

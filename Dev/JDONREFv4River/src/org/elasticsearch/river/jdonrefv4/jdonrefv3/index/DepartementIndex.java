@@ -31,6 +31,25 @@ public class DepartementIndex
     
     HashSet<FLAGS> flags;
     
+    String index;
+    
+    protected static DepartementIndex instance = null;
+    
+    public static DepartementIndex getInstance()
+    {
+        if (instance==null)
+            instance = new DepartementIndex();
+        return instance;
+    }
+    
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+    
     public void setFlags(HashSet<FLAGS> flags)
     {
         this.flags = flags;
@@ -86,7 +105,7 @@ public class DepartementIndex
     public void addDepartment(Departement departement) throws IOException
     {
         JsonObject data = departement.toJSONDocument(withGeometry);
-        util.indexResource("departement", data.toString());
+        util.indexResource(index,"departement", data.toString());
     }
     
     public void indexJDONREFDepartements() throws IOException, SQLException
@@ -98,7 +117,7 @@ public class DepartementIndex
         ResultSet rs = dao.getAllDepartement(connection);
 //      creation de l'objet metaDataDep
         MetaData metaDataDep= new MetaData();
-        metaDataDep.setIndex(util.index);
+        metaDataDep.setIndex(index);
         metaDataDep.setType("departement");
         
         int i =0;
@@ -156,7 +175,7 @@ public class DepartementIndex
         
 //      creation de l'objet metaDataDep
         MetaData metaDataDep= new MetaData();
-        metaDataDep.setIndex(util.index);
+        metaDataDep.setIndex(index);
         metaDataDep.setType("departement");
 
         String bulk ="";
@@ -197,11 +216,7 @@ public class DepartementIndex
     {
         if (isFlag(FLAGS.VOIE))
         {
-            VoieIndex vIndex = new VoieIndex();
-            vIndex.setUtil(util);
-            vIndex.setConnection(connection);
-            vIndex.setVerbose(isVerbose());
-            vIndex.setWithGeometry(withGeometry);
+            VoieIndex vIndex = VoieIndex.getInstance();
             vIndex.indexJDONREFVoiesDepartement(voies, dpt);
         }
         
@@ -224,36 +239,25 @@ public class DepartementIndex
     {
         if (isFlag(FLAGS.VOIE))
         {
-            VoieIndex vIndex = new VoieIndex();
-            vIndex.setUtil(util);
-            vIndex.setConnection(connection);
-            vIndex.setVerbose(isVerbose());
-            vIndex.setWithGeometry(withGeometry);
+            VoieIndex vIndex = VoieIndex.getInstance();
             vIndex.indexJDONREFVoiesDepartement(dpt);
         }
         
         if (isFlag(FLAGS.ADRESSE))
         {
-            AdresseIndex adrIndex = new AdresseIndex();
-            adrIndex.setUtil(util);
-            adrIndex.setConnection(connection);
-            adrIndex.setVerbose(isVerbose());
-            adrIndex.setWithGeometry(withGeometry);
+            AdresseIndex adrIndex = AdresseIndex.getInstance();
             adrIndex.indexJDONREFAdressesDepartement(dpt);
         }
         
         if (isFlag(FLAGS.TRONCON))
         {
-            TronconIndex tIndex = new TronconIndex();
-            tIndex.setUtil(util);
-            tIndex.setConnection(connection);
-            tIndex.setVerbose(isVerbose());
-            tIndex.setWithGeometry(withGeometry);
+            TronconIndex tIndex = TronconIndex.getInstance();
             tIndex.indexJDONREFTronconsDepD(dpt);
             tIndex.indexJDONREFTronconsDepG(dpt);
 
-            tIndex.indexJDONREFTronconsDroitDepartement(dpt);
-            tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
+            // osbolete
+            //tIndex.indexJDONREFTronconsDroitDepartement(dpt); 
+            //tIndex.indexJDONREFTronconsGaucheDepartement(dpt);
         }
     }
 }

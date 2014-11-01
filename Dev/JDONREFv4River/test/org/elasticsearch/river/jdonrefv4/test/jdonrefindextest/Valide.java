@@ -86,10 +86,13 @@ public class Valide
     }
 //"geometrie":{"type":"point","coordinates":[2.3292484283447266,48.84809494018555]}}}}
     
-    public JDONREFIndex getJDONREFIndex(boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,boolean withSwitchAlias,String url,String connectionString,String user,String passwd) throws SQLException, IOException
+    public JDONREFIndex getJDONREFIndex(String index,String alias,boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,boolean withSwitchAlias,String url,String connectionString,String user,String passwd) throws SQLException, IOException
     {
-        JDONREFIndex jdonrefIndex = new JDONREFIndex(url);
+        JDONREFIndex jdonrefIndex = JDONREFIndex.getInstance();
+        jdonrefIndex.setUrl(url);
         jdonrefIndex.setVerbose(verboseIndexation);
+        jdonrefIndex.setIndex(index);
+        jdonrefIndex.setAlias(alias);
         if (reindex)
         {
             if (bouchon)
@@ -120,9 +123,9 @@ public class Valide
                         departements[i-1+(i>=20?-1:0)] = departement;
                     }
                 }
-                jdonrefIndex.setCodesDepartements(departements);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON);
+                //jdonrefIndex.setCodesDepartements(departements); // remove comments to select departements
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); // useless
                 //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
                 //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
                 //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
@@ -139,12 +142,15 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "10.213.93.74:9200";
+        //String url = "10.213.93.74:9200";
+        String url = "plf.jdonrefv4.ppol.minint.fr";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
         boolean withGeometry = false;
-        boolean withSwitchAlias = false;
+        boolean withSwitchAlias = true;
+        String indexName = "jdonref";
+        String aliasName = "jdonref";
 
         // connection à la base de JDONREF
         String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN2";
@@ -153,7 +159,7 @@ public class Valide
         
         try {
             
-            JDONREFIndex index = getJDONREFIndex(bouchon,reindex,verboseIndexation,withGeometry,withSwitchAlias,url,connectionString,user,passwd);
+            JDONREFIndex index = getJDONREFIndex(indexName,aliasName,bouchon,reindex,verboseIndexation,withGeometry,withSwitchAlias,url,connectionString,user,passwd);
             
 //            AdresseBusiness adresseBO = new AdresseBusiness(index);
 //            adresseBO.setHitsPerPage(5);

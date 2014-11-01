@@ -25,7 +25,26 @@ public class VoieIndex {
     static int idVoie=0;
     static int idVoieTmp=0;
     int paquetsBulk=500;
+    
+    String index = null;
 
+    protected static VoieIndex instance = null;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+    
+    public static VoieIndex getInstance()
+    {
+        if (instance==null)
+            instance = new VoieIndex();
+        return instance;
+    }
+    
     public ElasticSearchUtil getUtil() {
         return util;
     }
@@ -63,7 +82,7 @@ public class VoieIndex {
     {
         JsonObject data = v.toJSONDocument(withGeometry);
         
-        util.indexResource("voie", data.toString());
+        util.indexResource(index,"voie", data.toString());
     }
 
     public void indexJDONREFVoiesDepartement(String dpt) throws IOException, SQLException
@@ -83,7 +102,7 @@ public class VoieIndex {
 
 //      creation de l'objet metaDataVoie
         MetaData metaDataVoie= new MetaData();
-        metaDataVoie.setIndex(util.index);
+        metaDataVoie.setIndex(index);
         metaDataVoie.setType("voie");
               
         String bulk ="";
@@ -140,7 +159,7 @@ public class VoieIndex {
         //int c =0;
 //      creation de l'objet metaDataVoie
         MetaData metaDataVoie= new MetaData();
-        metaDataVoie.setIndex(util.index);
+        metaDataVoie.setIndex(index);
         metaDataVoie.setType("voie");
         
         String bulk ="";

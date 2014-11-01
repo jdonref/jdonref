@@ -25,20 +25,20 @@ public class Main
     @Test
     public void main()
     {
-        String url = "10.213.93.83:9200";
+        String url = "plf.jdonrefv4.ppol.minint.fr:80";
+        String index = "jdonrefsimpletest";
         int size = 100;
         boolean nowait = false;
         ElasticSearchUtil m = new ElasticSearchUtil();
         Client client = Client.create();
         m.setClient(client);
         m.setUrl(url);
-        m.setIndex("jdonrefsimpletest");
         m.showHealth();
-        m.showDeleteIndex();
+        m.showDeleteIndex(index);
         for(int i=0;i<size;i++)
         {
             if (i%1000==1) System.out.println((i-1)+" communes indexed");
-            m.indexResource("commune",getJSONCommune("PARIS "+i));
+            m.indexResource(index,"commune",getJSONCommune("PARIS "+i));
         }
         if ((size-1)%1000!=1)
             System.out.println(size+" communes indexed");
@@ -54,10 +54,10 @@ public class Main
             }
         }
         
-        m.showSearch("commune" , "nom:PARIS");
-        m.showSearch( "nom:PARIS");
+        m.showSearch(index,"commune" , "nom:PARIS");
+        m.showSearch(index, "nom:PARIS");
         
-        m.showIndexStats();
+        m.showIndexStats(index);
         
        // m.showDeleteIndex();
     }

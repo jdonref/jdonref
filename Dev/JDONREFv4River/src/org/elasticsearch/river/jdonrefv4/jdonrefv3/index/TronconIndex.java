@@ -27,7 +27,26 @@ ElasticSearchUtil util;
     static int idTroncon=0;
     static int idTronconTmp=0;
     int paquetsBulk=500;
+    
+    String index = null;
 
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+
+    protected static TronconIndex instance = null;
+    
+    public static TronconIndex getInstance()
+    {
+        if (instance==null)
+            instance = new TronconIndex();
+        return instance;
+    }
+    
     public boolean isWithGeometry() {
         return withGeometry;
     }
@@ -66,7 +85,7 @@ ElasticSearchUtil util;
     {
         JsonObject data = a.toJSONDocument(withGeometry);
         
-        util.indexResource("troncon", data.toString());
+        util.indexResource(index,"troncon", data.toString());
     }
     
     
@@ -231,7 +250,7 @@ ElasticSearchUtil util;
         ResultSet rs = dao.getAllTronconsByDepD(connection, dpt);    
 //      creation de l'objet metaDataTroncon
         MetaData metaDataTroncon= new MetaData();
-        metaDataTroncon.setIndex(util.index);
+        metaDataTroncon.setIndex(index);
         metaDataTroncon.setType("troncon");
               
         String bulk ="";
@@ -279,7 +298,7 @@ ElasticSearchUtil util;
         ResultSet rs = dao.getAllTronconsByDepG(connection, dpt);    
 //      creation de l'objet metaDataTroncon
         MetaData metaDataTroncon= new MetaData();
-        metaDataTroncon.setIndex(util.index);
+        metaDataTroncon.setIndex(index);
         metaDataTroncon.setType("troncon");
               
         String bulk ="";
