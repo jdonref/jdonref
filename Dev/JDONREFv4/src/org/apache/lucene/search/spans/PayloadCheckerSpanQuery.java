@@ -30,10 +30,7 @@ package org.apache.lucene.search.spans;
 
 import java.io.IOException;
 import java.util.*;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermContext;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.util.Bits;
@@ -85,9 +82,7 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
         this.checker = checker;
     }
     
-    /** Construct a GroupedPayloadSpanQuery.  Matches spans matching a span from each
-     * clause, the spans from each clause must be grouped by payload values.
-     * Term without payloads must be grouped together.
+    /** Construct a PayloadSpanQuery.
      * @param clauses the clauses to find near each other
      * */
     public PayloadCheckerSpanQuery(MultiPayloadSpanTermQuery... clauses) {
@@ -95,6 +90,7 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
         this.clauses = new ArrayList<>(clauses.length);
         for (int i = 0; i < clauses.length; i++) {
             addClause(clauses[i]);
+            clauses[i].setOrder(i); // here we set the original order
         }
     }
 
@@ -106,6 +102,7 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
             throw new IllegalArgumentException("Clauses must have same field.");
         }
         clause.termCountPayloadFactor = termCountPayloadFactor;
+        clause.setOrder(clauses.size());
         this.clauses.add(clause);
     }
 
@@ -178,8 +175,35 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
         return soq;
     }
     
+    public Term[] getQueryTerms()
+    {
+        ArrayList<Term> terms = new ArrayList<>();
+        for(int i=0;i<this.clauses.size();i++)
+        {
+            terms.add(this.clauses.get(i).getTerm());
+        }
+        return terms.toArray(new Term[0]);
+    }
+    
     @Override
-    public Query rewrite(IndexReader reader) throws IOException {
+    public Query rewrite(IndexReader reader) throws IOException
+    {
+        // get clause order by frequencies
+        final List<AtomicReaderContext> leaves = reader.leaves();
+        final TermContext[] contextArray = new TermContext[clauses.size()];
+        final Term[] queryTerms = getQueryTerms();
+        collectTermContext(reader, leaves, contextArray, queryTerms);
+        int[] indices = getTermInOrder(contextArray);
+        
+        // change clause order
+        ArrayList<MultiPayloadSpanTermQuery> newclauses = new ArrayList<>();
+        for(int i=0;i<clauses.size();i++)
+            newclauses.add(null);
+        for(int i=0;i<clauses.size();i++)
+            newclauses.set(indices[i], clauses.get(i)); // NB: original order kept
+        this.clauses = newclauses;
+        
+        // rewrite
         PayloadCheckerSpanQuery clone = null;
         for (int i = 0; i < clauses.size(); i++) {
             MultiPayloadSpanTermQuery c = clauses.get(i);
@@ -188,13 +212,91 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
                 if (clone == null) {
                     clone = this.clone();
                 }
-                clone.clauses.set(i, query);
+                clone.clauses.set(i, query); // write over existing clause
             }
         }
+        
         if (clone != null) {
             return clone;                        // some clauses rewrote
         } else {
             return this;                         // no clauses rewrote
         }
     }
+    
+    public class TermFrequency implements Comparable<TermFrequency>
+    {
+        public int i;
+        public int freq;
+        
+        @Override
+        public int compareTo(TermFrequency o)
+        {
+            return freq - o.freq;
+        }
+    }
+    
+    /**
+     * give the order by frequencies for term query from context
+     * @param contextArray
+     * @return 
+     */
+    public int[] getTermInOrder(TermContext[] contextArray)
+    {
+        TermFrequency[] frequencies = new TermFrequency[contextArray.length];
+        for(int i=0;i<contextArray.length;i++)
+        {
+            TermFrequency tf = new TermFrequency();
+            tf.i = i;
+            if (contextArray[i]!=null)
+                tf.freq = contextArray[i].docFreq();
+            else
+                tf.freq = 0;
+            frequencies[i] = tf;
+        }
+        Arrays.sort(frequencies);
+        
+        int[] res = new int[contextArray.length];
+        for(int i=0;i<contextArray.length;i++)
+            res[frequencies[i].i] = i;
+        
+        return res;
+    }
+    
+  public void collectTermContext(IndexReader reader,
+      List<AtomicReaderContext> leaves, TermContext[] contextArray,
+      Term[] queryTerms) throws IOException {
+    TermsEnum termsEnum = null;
+    for (AtomicReaderContext context : leaves) {
+      final Fields fields = context.reader().fields();
+      if (fields == null) {
+        // reader has no fields
+        continue;
+      }
+      for (int i = 0; i < queryTerms.length; i++) {
+        Term term = queryTerms[i];
+        TermContext termContext = contextArray[i];
+        final Terms terms = fields.terms(term.field());
+        if (terms == null) {
+          // field does not exist
+          continue;
+        }
+        termsEnum = terms.iterator(termsEnum);
+        assert termsEnum != null;
+        
+        if (termsEnum == TermsEnum.EMPTY) continue;
+        if (termsEnum.seekExact(term.bytes())) {
+          if (termContext == null) {
+            contextArray[i] = new TermContext(reader.getContext(),
+                termsEnum.termState(), context.ord, termsEnum.docFreq(),
+                termsEnum.totalTermFreq());
+          } else {
+            termContext.register(termsEnum.termState(), context.ord,
+                termsEnum.docFreq(), termsEnum.totalTermFreq());
+          }
+          
+        }
+        
+      }
+    }
+  }
 }

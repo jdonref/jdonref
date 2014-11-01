@@ -1,20 +1,16 @@
 package org.apache.lucene.search.spans;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.DocsAndPositionsEnum;
-import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.util.BytesRef;
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.Fields;
+import org.apache.lucene.index.DocsAndPositionsEnum;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.BytesRef;
 
 /**
  * TermSpans that returns all the available payload for each match.
@@ -32,15 +28,21 @@ public class MultiPayloadTermSpans extends TermSpans
     
     protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
     
-    Collection<byte[]> payloads = new ArrayList<>();
-    Collection<Integer> termCountsByPayload = new ArrayList<>();
     protected Bits acceptDocs;
     protected AtomicReader reader;
     
-    Iterator<byte[]> currentPayloads;
-    Iterator<Integer> currentCountsByPayload;
     byte[] currentPayload;
     int currentCountByPayload;
+    
+    int order = -1;
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
     
     public byte[] getCurrentPayload()
     {
@@ -52,27 +54,25 @@ public class MultiPayloadTermSpans extends TermSpans
         return currentCountByPayload;
     }
     
-    public boolean nextPayload()
+    public boolean nextPayload() throws IOException
     {
-        if (currentPayloads.hasNext())
+        if (count++ < freq)
         {
-            assert(currentCountsByPayload.hasNext());
-            currentPayload = currentPayloads.next();
-            currentCountByPayload = currentCountsByPayload.next();
+            position = postings.nextPosition();
+            BytesRef payload = postings.getPayload();
+            if (payload != null)
+            {
+                currentPayload = convertPayload(extractPayload(payload));
+                currentCountByPayload = extractCountTermByPayload(payload);
+            }
+            else
+            {
+                currentPayload = null;
+                currentCountByPayload = -1;
+            }
             return true;
         }
-        else
-        {
-            currentPayload = null;
-            currentCountByPayload = -1;
-        }
         return false;
-    }
-    
-    public void resetPayloads()
-    {
-        currentPayloads = payloads.iterator();
-        currentCountsByPayload = termCountsByPayload.iterator();
     }
     
     public int termCountPayloadFactor()
@@ -95,34 +95,42 @@ public class MultiPayloadTermSpans extends TermSpans
         public EmptyTermSpans() {
         }
 
+        @Override
         public boolean next() {
             return false;
         }
 
+        @Override
         public boolean skipTo(int target) {
             return false;
         }
 
+        @Override
         public int doc() {
             return DocIdSetIterator.NO_MORE_DOCS;
         }
 
+        @Override
         public int start() {
             return 0;
         }
 
+        @Override
         public int end() {
             return 0;
         }
 
+        @Override
         public Collection<byte[]> getPayload() {
             return null;
         }
 
+        @Override
         public boolean isPayloadAvailable() {
             return false;
         }
 
+        @Override
         public long cost() {
             return 0;
         }
@@ -169,18 +177,6 @@ public class MultiPayloadTermSpans extends TermSpans
         return document;
     }
     
-    protected Fields fields;
-    protected int fieldsDoc;
-    
-    public Fields termVector() throws IOException
-    {
-        if (fields==null || doc!=fieldsDoc)
-        {
-            fields = reader==null?null:reader.getTermVectors(doc);
-        }
-        return fields;
-    }
-    
     @Override
     public boolean next() throws IOException {
         doc = postings.nextDoc();
@@ -190,8 +186,8 @@ public class MultiPayloadTermSpans extends TermSpans
         
         freq = postings.freq();
         count = 0;
-        readPayloads();
-        resetPayloads();
+        //readPayloads();
+        //resetPayloads();
         nextPayload();
         readPayload = true;
         return true;
@@ -207,30 +203,30 @@ public class MultiPayloadTermSpans extends TermSpans
 
         freq = postings.freq();
         count = 0;
-        readPayloads();
-        resetPayloads();
+        //readPayloads();
+        //resetPayloads();
         nextPayload();
         readPayload = true;
         return true;
     }
     
-    protected void readPayloads() throws IOException {
-        payloads.clear();
-        termCountsByPayload.clear();
-        while (count++ < freq)
-        {
-            position = postings.nextPosition();
-            BytesRef payload = postings.getPayload();
-            
-            if (payload!=null) // TODO : understand how it can be null
-            {
-                byte[] newpayload = convertPayload(extractPayload(payload));
-                payloads.add(newpayload);
-                int totalCount = extractCountTermByPayload(payload);
-                termCountsByPayload.add(totalCount);
-            }
-        } 
-    }
+//    protected void readPayloads() throws IOException {
+//        payloads.clear();
+//        termCountsByPayload.clear();
+//        while (count++ < freq)
+//        {
+//            position = postings.nextPosition();
+//            BytesRef payload = postings.getPayload();
+//            
+//            if (payload!=null) // TODO : understand how it can be null
+//            {
+//                byte[] newpayload = convertPayload(extractPayload(payload));
+//                payloads.add(newpayload);
+//                int totalCount = extractCountTermByPayload(payload);
+//                termCountsByPayload.add(totalCount);
+//            }
+//        } 
+//    }
     
     protected BytesRef extractPayload(BytesRef payload)
     {
@@ -269,19 +265,5 @@ public class MultiPayloadTermSpans extends TermSpans
             bytes = null;
         }
         return bytes;
-    }
-    
-    @Override
-    public Collection<byte[]> getPayload() throws IOException {
-        return payloads;
-    }
-    
-    /**
-     * Get termCount corresponing to payloads from getPayload()
-     * @return 
-     */
-    public Collection<Integer> termCountsByPayload()
-    {
-        return termCountsByPayload;
     }
 }

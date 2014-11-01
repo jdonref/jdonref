@@ -21,6 +21,7 @@ import org.apache.lucene.index.AtomicReader;
 public class MultiPayloadSpanTermQuery extends SpanTermQuery
 {
   protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
+  protected int order;
     
   /** Construct a SpanTermQuery matching the named term's spans. */
   public MultiPayloadSpanTermQuery(Term term) { super(term); }
@@ -43,7 +44,9 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
    */
   protected MultiPayloadTermSpans makeTermSpans(DocsAndPositionsEnum postings,Term term, AtomicReader reader, Bits acceptDocs)
   {
-      return new MultiPayloadTermSpans(postings, term, termCountPayloadFactor, reader, acceptDocs );
+      MultiPayloadTermSpans span = new MultiPayloadTermSpans(postings, term, termCountPayloadFactor, reader, acceptDocs );
+      span.setOrder(order);
+      return span;
   }
   
   @Override
@@ -89,4 +92,13 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
       throw new IllegalStateException("field \"" + term.field() + "\" was indexed without position data; cannot run SpanTermQuery (term=" + term.text() + ")");
     }
   }
+
+  public int getOrder()
+  {
+      return this.order;
+  }
+  
+    void setOrder(int i) {
+        this.order = i;
+    }
 }

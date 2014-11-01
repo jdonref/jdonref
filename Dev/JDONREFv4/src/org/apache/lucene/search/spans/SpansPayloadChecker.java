@@ -1,18 +1,17 @@
 package org.apache.lucene.search.spans;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermContext;
+import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.InPlaceMergeSorter;
-
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Collection;
-import java.util.Map;
-import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 
 /**
  * A Spans that is formed by subspans which target to check payload values.
@@ -63,7 +62,8 @@ public class SpansPayloadChecker extends Spans
     matchPayload = new LinkedList<>();
     subSpansByDoc = new MultiPayloadTermSpans[clauses.length];
     for (int i = 0; i < clauses.length; i++) {
-      subSpans[i] = clauses[i].getSpans(context, acceptDocs, termContexts);
+      subSpans[i] = clauses[i].getSpans(context, acceptDocs, termContexts); 
+      subSpans[i].setOrder(clauses[i].getOrder()); // note original order are keeped
       subSpansByDoc[i] = subSpans[i]; // used in toSameDoc()
     }
     query = gpsQuery; // kept for toString() only.
@@ -109,7 +109,7 @@ public class SpansPayloadChecker extends Spans
     }
     return minCost;
   }
-
+  
   // inherit javadocs
   @Override
   public boolean next() throws IOException {
@@ -127,7 +127,7 @@ public class SpansPayloadChecker extends Spans
     matchPayload.clear();
     return advanceAfterOrdered();
   }
-
+  
   // inherit javadocs
   @Override
   public boolean skipTo(int target) throws IOException {

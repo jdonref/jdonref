@@ -422,7 +422,7 @@ public class JDONREFv4QueryTests extends QueryTests
         searchExactAdresse("59 BOULEVARD DE LA 02001 FRANCE","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
         
         // adresse avec code postal intercalé => fail
-        searchExactAdresse("59 02001 BOULEVARD DE LA FRANCE","59 BOULEVARD DE LA FRANCE","02000 HOPITAL",0); // match
+        searchExactAdresse("59 02001 BOULEVARD DE LA FRANCE","59 BOULEVARD DE LA FRANCE","02000 HOPITAL",0); // no match
     }
 
     @Override

@@ -4,23 +4,19 @@ package org.elasticsearch.plugin.analysis.jdonrefv4;
  *
  * @author Julien
  */
-import org.elasticsearch.index.query.PayloadCheckerSpanQueryParser;
-import org.elasticsearch.plugin.analysis.TokenCountPayloadsFilterFactory;
-import org.elasticsearch.index.query.PayloadVersusTypeSpanQueryParser;
-import org.elasticsearch.index.query.MultiPayloadSpanTermQueryParser;
-import org.elasticsearch.index.query.GroupedPayloadSpanQueryParser;
-import org.elasticsearch.plugin.analysis.UnsplitFilterFactory;
-import org.elasticsearch.plugin.analysis.EdgeNGramWithPayloadsFilterFactory;
 import java.util.Collection;
-import org.elasticsearch.plugins.AbstractPlugin;
-
-import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryParser;
+import static org.elasticsearch.common.collect.Lists.newArrayList;
 import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.index.analysis.AnalysisModule;
+import org.elasticsearch.index.query.MultiPayloadSpanTermQueryParser;
+import org.elasticsearch.index.query.PayloadCheckerSpanQueryParser;
+import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryParser;
 import org.elasticsearch.indices.query.IndicesQueriesModule;
-
-import static org.elasticsearch.common.collect.Lists.newArrayList;
-import org.elasticsearch.index.analysis.SynonymWithPayloadsTokenFilterFactory;
+import org.elasticsearch.plugin.analysis.EdgeNGramWithPayloadsFilterFactory;
+import org.elasticsearch.plugin.analysis.SynonymWithPayloadsTokenFilterFactory;
+import org.elasticsearch.plugin.analysis.TokenCountPayloadsFilterFactory;
+import org.elasticsearch.plugin.analysis.UnsplitFilterFactory;
+import org.elasticsearch.plugins.AbstractPlugin;
 
 /**
  * 
@@ -55,9 +51,7 @@ public class JDONREFv4Plugin extends AbstractPlugin
     public void onModule(IndicesQueriesModule module)
     {
         module.addQuery(new JDONREFv4QueryParser());
-        module.addQuery(new GroupedPayloadSpanQueryParser());
         module.addQuery(new MultiPayloadSpanTermQueryParser());
-        module.addQuery(new PayloadVersusTypeSpanQueryParser());
         module.addQuery(new PayloadCheckerSpanQueryParser());
     }
 }

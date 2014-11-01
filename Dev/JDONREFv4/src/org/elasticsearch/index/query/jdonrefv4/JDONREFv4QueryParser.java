@@ -10,6 +10,9 @@ import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.queries.FilterClause;
+import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -21,6 +24,7 @@ import org.apache.lucene.util.IOUtils;
 import org.elasticsearch.cluster.ClusterService;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.lucene.search.OrFilter;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery;
 import org.elasticsearch.common.settings.Settings;
@@ -250,32 +254,17 @@ public class JDONREFv4QueryParser implements QueryParser
         PayloadBeforeAnotherChecker numeroAvantLigne4 = new PayloadBeforeAnotherChecker(numero, ligne4);
         LimitChecker limit = new LimitChecker(maxSizePerType);
         
-        if (maxSizePerType==Integer.MAX_VALUE)
-        {
-            SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present,ligne4Present),numeroAvantLigne4));
-            SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),/*codesOrCommunePresent,*/numeroAvantLigne4));
-            SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone()/*,codesOrCommunePresent.clone()*/));
-            SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone()));
-            SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone()));
-            SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone()));
-            SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1,clause2,clause3,clause4,clause5,clause6);
-            AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker);
+        SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present, ligne4Present), numeroAvantLigne4));
+        SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker, ligne4Present.clone(),/* codesOrCommunePresent,*/ numeroAvantLigne4));
+        SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone()/* ,codesOrCommunePresent.clone()*/));
+        SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone()));
+        SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone()));
+        SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone()));
+        SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1, clause2, clause3, clause4, clause5, clause6);
+        AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker);
 
-            return andChecker;
-        }
-        else
-        {
-            SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present,ligne4Present),numeroAvantLigne4,limit));
-            SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker,ligne4Present.clone(),/*codesOrCommunePresent,*/numeroAvantLigne4,limit.clone()));
-            SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone()/*,codesOrCommunePresent.clone()*/,limit.clone()));
-            SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone(),limit.clone()));
-            SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone(),limit.clone()));
-            SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone(),limit.clone()));
-            SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1,clause2,clause3,clause4,clause5,clause6);
-            AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker);
+        return andChecker;
 
-            return andChecker;
-        }
         //NullPayloadChecker nullChecker = new NullPayloadChecker();
         //return nullChecker;
     }
@@ -333,6 +322,25 @@ public class JDONREFv4QueryParser implements QueryParser
         spanQuery.setTermCountPayloadFactor(TERMCOUNTDEFAULTFACTOR);
         spanQuery.setChecker(getChecker(maxSizePerType));
         
+        BooleanFilter filter = new BooleanFilter();
+
+        BooleanFilter switchFilter = new BooleanFilter();
+        filter.add(switchFilter, BooleanClause.Occur.MUST);
+        
+        BooleanFilter departementFilter = new BooleanFilter();
+        switchFilter.add(departementFilter,BooleanClause.Occur.SHOULD);
+        TermFilter departementTypeFilter = new TermFilter(new Term("_type","departement"));
+        departementFilter.add(departementTypeFilter,BooleanClause.Occur.MUST);
+        BooleanFilter departementClausesFilter = new BooleanFilter();
+        departementFilter.add(departementClausesFilter,BooleanClause.Occur.MUST);
+        
+        BooleanFilter communeFilter = new BooleanFilter();
+        switchFilter.add(communeFilter,BooleanClause.Occur.SHOULD);
+        TermFilter communeTypeFilter = new TermFilter(new Term("_type","commune"));
+        communeFilter.add(communeTypeFilter,BooleanClause.Occur.MUST);
+        BooleanFilter communeClausesFilter = new BooleanFilter();
+        communeFilter.add(communeClausesFilter,BooleanClause.Occur.MUST);
+        
         // phrase query:
         for (int i = 0; i < numTokens; i++) {
             try {
@@ -347,6 +355,12 @@ public class JDONREFv4QueryParser implements QueryParser
             {
                 MultiPayloadSpanTermQuery spanTermQuery = new MultiPayloadSpanTermQuery(new Term(term,BytesRef.deepCopyOf(bytes)));
                 spanQuery.addClause(spanTermQuery);
+                
+                TermFilter codeDepartementFilter = new TermFilter(new Term("code_departement",BytesRef.deepCopyOf(bytes)));
+                departementClausesFilter.add(codeDepartementFilter,BooleanClause.Occur.SHOULD);
+                
+                codeDepartementFilter = new TermFilter(new Term("code_departement",BytesRef.deepCopyOf(bytes)));
+                departementClausesFilter.add(codeDepartementFilter,BooleanClause.Occur.SHOULD);
             }
         }
         

@@ -1,43 +1,27 @@
 package org.elasticsearch.plugin.analysis.jdonrefv4.test;
 
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.SpanQueryBuilder;
-import org.elasticsearch.index.query.GroupedPayloadSpanQueryBuilder;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import org.apache.lucene.search.Explanation;
 import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
-import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.search.SearchHit;
+import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.index.query.SpanTermQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
-//import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
-//import org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
+import org.elasticsearch.search.SearchHit;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
-
-import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder;
 
 /**
  *
