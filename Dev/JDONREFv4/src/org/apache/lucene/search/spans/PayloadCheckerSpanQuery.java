@@ -34,6 +34,7 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.util.Bits;
+import org.elasticsearch.common.lucene.search.MatchNoDocsQuery;
 
 /**
  * Matches span where payload checks the given rules.
@@ -48,6 +49,8 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
     protected String field;
     
     protected IPayloadChecker checker;
+    
+    protected int limit = -1; 
     
     public int termCountPayloadFactor() {
         return termCountPayloadFactor();
@@ -193,7 +196,14 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
         final TermContext[] contextArray = new TermContext[clauses.size()];
         final Term[] queryTerms = getQueryTerms();
         collectTermContext(reader, leaves, contextArray, queryTerms);
-        int[] indices = getTermInOrder(contextArray);
+        TermFrequency[] freq = getTermInOrder(contextArray);
+        int[] indices = revertFrequencies(freq);
+        
+        // check limits
+        if (limit!=-1 && overLimits(freq))
+        {
+                return new MatchNoDocsQuery();
+        }
         
         // change clause order
         ArrayList<MultiPayloadSpanTermQuery> newclauses = new ArrayList<>();
@@ -222,6 +232,28 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
             return this;                         // no clauses rewrote
         }
     }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+    
+    public int getLimit()
+    {
+        return this.limit;
+    }
+
+    /**
+     * Return true if the less term frequencies is over the limit
+     * 
+     * @param contextArray assume frequencies are in order
+     * @return 
+     */
+    protected boolean overLimits(TermFrequency[] freq)
+    {
+        if (freq.length==0) return true; // empty indeed ! => NoMatch
+        
+        return freq[0].freq>limit;
+    }
     
     public class TermFrequency implements Comparable<TermFrequency>
     {
@@ -240,7 +272,7 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
      * @param contextArray
      * @return 
      */
-    public int[] getTermInOrder(TermContext[] contextArray)
+    public TermFrequency[] getTermInOrder(TermContext[] contextArray)
     {
         TermFrequency[] frequencies = new TermFrequency[contextArray.length];
         for(int i=0;i<contextArray.length;i++)
@@ -255,9 +287,14 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
         }
         Arrays.sort(frequencies);
         
-        int[] res = new int[contextArray.length];
-        for(int i=0;i<contextArray.length;i++)
-            res[frequencies[i].i] = i;
+        return frequencies;
+    }
+    
+    public int[] revertFrequencies(TermFrequency[] freq)
+    {
+        int[] res = new int[freq.length];
+        for(int i=0;i<freq.length;i++)
+            res[freq[i].i] = i;
         
         return res;
     }

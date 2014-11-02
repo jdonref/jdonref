@@ -1,16 +1,14 @@
 package org.elasticsearch.index.query;
 
+import java.io.IOException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanTermQuery;
+import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.index.mapper.MapperService;
-
-import java.io.IOException;
-import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
 
 /**
  *

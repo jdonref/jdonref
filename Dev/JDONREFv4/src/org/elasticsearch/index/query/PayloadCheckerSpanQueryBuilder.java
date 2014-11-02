@@ -1,11 +1,10 @@
 package org.elasticsearch.index.query;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import org.apache.lucene.search.spans.checkers.AbstractPayloadChecker;
 import org.elasticsearch.ElasticsearchIllegalArgumentException;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 
 /**
  * Construct a filter that only match the document within tokens are grouped by payload
@@ -20,7 +19,20 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
     
     protected String queryName;
     
+    protected int limit = -1;
+    
     protected int termCountPayloadFactor = PayloadCheckerSpanQueryParser.NOTERMCOUNTPAYLOADFACTOR;
+    
+    /**
+     * Do not return results if over limit documents should be scanned.
+     * @param limit -1 = no limit (default value)
+     * @return 
+     */
+    public PayloadCheckerSpanQueryBuilder limit(int limit)
+    {
+        this.limit = limit;
+        return this;
+    }
     
     /**
      * Define the factor applyed on payloads to get number of tokens by payloads.
@@ -55,10 +67,15 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
     @Override
     protected void doXContent(XContentBuilder builder, Params params) throws IOException {
         if (clauses.isEmpty()) {
-            throw new ElasticsearchIllegalArgumentException("Must have at least one clause when building a groupedPayloadSpan query");
+            throw new ElasticsearchIllegalArgumentException("Must have at least one clause when building a payloadcheckerSpanQuery query");
         }
         
         builder.startObject(PayloadCheckerSpanQueryParser.NAME);
+        
+        if (limit!=-1)
+        {
+            builder.field("limit",limit);
+        }
         
         builder.startArray("clauses");
         for (SpanQueryBuilder clause : clauses) {

@@ -321,6 +321,8 @@ public class JDONREFv4QueryParser implements QueryParser
         PayloadCheckerSpanQuery spanQuery = new PayloadCheckerSpanQuery();
         spanQuery.setTermCountPayloadFactor(TERMCOUNTDEFAULTFACTOR);
         spanQuery.setChecker(getChecker(maxSizePerType));
+        if (maxSizePerType!=-1 && maxSizePerType!=DEFAULTMAXSIZE)
+            spanQuery.setLimit(maxSizePerType);
         
         BooleanFilter filter = new BooleanFilter();
 

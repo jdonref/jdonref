@@ -37,6 +37,7 @@ public class PayloadCheckerSpanQueryParser implements QueryParser {
         XContentParser parser = parseContext.parser();
         
         String queryName = null;
+        int limit = -1;
         List<MultiPayloadSpanTermQuery> clauses = newArrayList();
         IPayloadChecker checker = null;
         int termCountPayloadFactor = NOTERMCOUNTPAYLOADFACTOR;
@@ -65,7 +66,9 @@ public class PayloadCheckerSpanQueryParser implements QueryParser {
             } else if (token.isValue()) {
                 if ("_name".equals(currentFieldName)) {
                     queryName = parser.text();
-                } else if ("termcountpayloadfactor".equals(currentFieldName)) {
+                } else if ("limit".equals(currentFieldName))
+                    limit = parser.intValue();
+                else if ("termcountpayloadfactor".equals(currentFieldName)) {
                         termCountPayloadFactor = parser.intValue();
                 } else {
                     throw new QueryParsingException(parseContext.index(), "["+NAME+"] filter does not support [" + currentFieldName + "]");
@@ -78,6 +81,8 @@ public class PayloadCheckerSpanQueryParser implements QueryParser {
         }
         
         PayloadCheckerSpanQuery gpsQuery = new PayloadCheckerSpanQuery(clauses.toArray(new MultiPayloadSpanTermQuery[clauses.size()]));
+        if (limit!=-1)
+            gpsQuery.setLimit(limit);
         
         gpsQuery.setChecker(checker);
         

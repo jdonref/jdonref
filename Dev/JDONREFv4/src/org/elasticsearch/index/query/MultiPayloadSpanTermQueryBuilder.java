@@ -1,8 +1,7 @@
 package org.elasticsearch.index.query;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-
 import java.io.IOException;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 
 /**
  *
