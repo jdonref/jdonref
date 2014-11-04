@@ -14,13 +14,13 @@
             <classpath path="${java.home}/../lib/tools.jar:${build.classes.dir}:${j2ee.platform.wsgen.classpath}:${javac.classpath}"/>
         </taskdef>
     </target>
-    <target name="wsgen-JDONREFv3v4" depends="wsgen-init">
-        <wsgen fork="true" xendorsed="true" sourcedestdir="${build.generated.dir}/wsgen/service" resourcedestdir="${build.generated.dir}/wsgen/service/resources/" destdir="${build.generated.dir}/wsgen/binaries" keep="true" genwsdl="true" sei="ppol.jdonrefv3v4.JDONREFv3v4">
+    <target name="wsgen-JDONREFv4v3" depends="wsgen-init">
+        <wsgen fork="true" xendorsed="true" sourcedestdir="${build.generated.dir}/wsgen/service" resourcedestdir="${build.generated.dir}/wsgen/service/resources/" destdir="${build.generated.dir}/wsgen/binaries" keep="true" genwsdl="true" sei="ppol.jdonrefv4v3.JDONREFv4v3">
             <classpath path="${java.home}/../lib/tools.jar:${build.classes.dir}:${j2ee.platform.wsgen.classpath}:${javac.classpath}"/>
             <jvmarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
         </wsgen>
     </target>
-    <target name="wsgen-service-compile" depends="wsgen-JDONREFv3v4">
+    <target name="wsgen-service-compile" depends="wsgen-JDONREFv4v3">
         <webproject2:javac srcdir="${build.generated.dir}/wsgen/service" classpath="${j2ee.platform.wsimport.classpath}:${javac.classpath}" destdir="${build.classes.dir}"/>
     </target>
 </project>

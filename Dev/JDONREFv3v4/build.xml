@@ -2,8 +2,8 @@
 <!-- You may freely edit this file. See commented blocks below for -->
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
-<project name="JDONREFv3v4" default="default" basedir=".">
-    <description>Builds, tests, and runs the project JDONREFv3v4.</description>
+<project name="JDONREFv4v3" default="default" basedir=".">
+    <description>Builds, tests, and runs the project JDONREFv4v3.</description>
     <import file="nbproject/build-impl.xml"/>
     <!--
 

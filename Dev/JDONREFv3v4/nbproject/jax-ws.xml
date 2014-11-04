@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jax-ws xmlns="http://www.netbeans.org/ns/jax-ws/1">
   <services>
-    <service name="JDONREFv3v4">
-      <implementation-class>ppol.jdonrefv3v4.JDONREFv3v4</implementation-class>
+    <service name="JDONREFv4v3">
+      <implementation-class>ppol.jdonrefv4v3.JDONREFv4v3</implementation-class>
     </service>
   </services>
   <clients/>
