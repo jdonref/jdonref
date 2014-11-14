@@ -1,0 +1,7 @@
+<connections>
+    <connection>
+        <server>10.213.92.202</server>
+        <port>9200</port>
+        <index>jdonref</index>
+    </connection>
+</connections>
