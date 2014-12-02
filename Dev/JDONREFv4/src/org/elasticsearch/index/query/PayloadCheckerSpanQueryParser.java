@@ -1,17 +1,15 @@
 package org.elasticsearch.index.query;
 
-import org.apache.lucene.search.spans.checkers.IPayloadChecker;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
-import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
-import org.apache.lucene.search.Query;
-import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.xcontent.XContentParser;
-
+import static com.google.common.collect.Lists.newArrayList;
 import java.io.IOException;
 import java.util.List;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
+import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.elasticsearch.common.Strings;
-
-import static com.google.common.collect.Lists.newArrayList;
+import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.xcontent.XContentParser;
 
 /**
  *

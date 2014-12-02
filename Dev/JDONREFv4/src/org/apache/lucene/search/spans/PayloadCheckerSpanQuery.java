@@ -30,10 +30,16 @@ package org.apache.lucene.search.spans;
 
 import java.io.IOException;
 import java.util.*;
+import org.apache.lucene.analysis.FrequentTermsUtil;
 import org.apache.lucene.index.*;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.queries.TermFilter;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.util.Bits;
+import org.elasticsearch.common.hppc.LongArrayList;
 import org.elasticsearch.common.lucene.search.MatchNoDocsQuery;
 
 /**
@@ -193,25 +199,61 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
     {
         // get clause order by frequencies
         final List<AtomicReaderContext> leaves = reader.leaves();
-        final TermContext[] contextArray = new TermContext[clauses.size()];
-        final Term[] queryTerms = getQueryTerms();
+        TermContext[] contextArray = new TermContext[clauses.size()];
+        Term[] queryTerms = getQueryTerms();
         collectTermContext(reader, leaves, contextArray, queryTerms);
         TermFrequency[] freq = getTermInOrder(contextArray);
-        int[] indices = revertFrequencies(freq);
+        
+        MultiPayloadSpanTermQuery mostFrequentQuery = null;
         
         // check limits
         if (limit!=-1 && overLimits(freq))
         {
-                return new MatchNoDocsQuery();
+            return new MatchNoDocsQuery();
+//            LongArrayList currentMostFrequentTerms = FrequentTermsUtil.getMostFrequentTerms(queryTerms);
+//            
+//            if (currentMostFrequentTerms.size()<2)
+//            {
+//                BooleanFilter boolFilter = new BooleanFilter();
+//                for(int i=0;i<queryTerms.length;i++)
+//                {
+//                    if (freq[i].freq<limit)
+//                        boolFilter.add(new TermFilter(queryTerms[i]),Occur.MUST);
+//                    else
+//                        boolFilter.add(new TermFilter(queryTerms[i]),Occur.SHOULD);
+//                }
+//                ConstantScoreQuery constantQuery = new ConstantScoreQuery(boolFilter);
+//                constantQuery.setBoost(1);
+//                return constantQuery;
+//            }
+//            
+//            String currentMostFrequentTerm = FrequentTermsUtil.generateMostFrequentTerms(currentMostFrequentTerms);
+//            Term term = new Term("mostFrequentTerms",currentMostFrequentTerm);
+//            
+//            TermContext mostFrequentContext = collectTermContext(reader,leaves,term);
+//            if (mostFrequentContext == null || mostFrequentContext.docFreq()>limit)
+//            {
+//                BooleanFilter boolFilter = new BooleanFilter();
+//                for(int i=0;i<queryTerms.length;i++)
+//                {
+//                    if (freq[i].freq<limit)
+//                        boolFilter.add(new TermFilter(queryTerms[i]),Occur.MUST);
+//                    else
+//                        boolFilter.add(new TermFilter(queryTerms[i]),Occur.SHOULD);
+//                }
+//                ConstantScoreQuery constantQuery = new ConstantScoreQuery(boolFilter);
+//                constantQuery.setBoost(1);
+//                return constantQuery;
+//            }
+//            
+//            mostFrequentQuery = new MultiPayloadSpanTermQuery(term);
+//            mostFrequentQuery.setChecked(false);
+//            
+//            contextArray = Arrays.copyOf(contextArray, contextArray.length+1);
+//            contextArray[contextArray.length-1] = mostFrequentContext;
+//            
+//            this.clauses.add(mostFrequentQuery);
         }
-        
-        // change clause order
-        ArrayList<MultiPayloadSpanTermQuery> newclauses = new ArrayList<>();
-        for(int i=0;i<clauses.size();i++)
-            newclauses.add(null);
-        for(int i=0;i<clauses.size();i++)
-            newclauses.set(indices[i], clauses.get(i)); // NB: original order kept
-        this.clauses = newclauses;
         
         // rewrite
         PayloadCheckerSpanQuery clone = null;
@@ -241,7 +283,7 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
     {
         return this.limit;
     }
-
+    
     /**
      * Return true if the less term frequencies is over the limit
      * 
@@ -298,7 +340,43 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
         
         return res;
     }
-    
+
+  public TermContext collectTermContext(IndexReader reader,
+      List<AtomicReaderContext> leaves, Term term) throws IOException
+  {
+    TermContext termContext = null;
+    TermsEnum termsEnum = null;
+    for (AtomicReaderContext context : leaves) {
+      final Fields fields = context.reader().fields();
+      if (fields == null) {
+        // reader has no fields
+        continue;
+      }
+        final Terms terms = fields.terms(term.field());
+        if (terms == null) {
+          // field does not exist
+          continue;
+        }
+        termsEnum = terms.iterator(termsEnum);
+        assert termsEnum != null;
+        
+        if (termsEnum == TermsEnum.EMPTY) continue;
+        if (termsEnum.seekExact(term.bytes()))
+        {
+            if (termContext == null)
+                termContext = new TermContext(reader.getContext(),
+                    termsEnum.termState(), context.ord, termsEnum.docFreq(),
+                    termsEnum.totalTermFreq());
+            else
+            {
+                termContext.register(termsEnum.termState(), context.ord,
+                termsEnum.docFreq(), termsEnum.totalTermFreq());
+            }
+        }
+    }
+    return termContext;
+  }
+
   public void collectTermContext(IndexReader reader,
       List<AtomicReaderContext> leaves, TermContext[] contextArray,
       Term[] queryTerms) throws IOException {

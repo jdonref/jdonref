@@ -15,6 +15,8 @@ public class MultiPayloadSpanTermQueryBuilder extends SpanTermQueryBuilder
     protected float protectedBoost;
     protected String protectedQueryName;
     
+    protected boolean checked = true;
+    
     public MultiPayloadSpanTermQueryBuilder(String name, String value) {
         super(name,value);
         this.protectedName = name;
@@ -51,6 +53,11 @@ public class MultiPayloadSpanTermQueryBuilder extends SpanTermQueryBuilder
         return this;
     }
     
+    public MultiPayloadSpanTermQueryBuilder checked(boolean value)
+    {
+        this.checked = value;
+        return this;
+    }
 
     /**
      * Sets the query name for the filter that can be used when searching for matched_filters per hit.
@@ -69,6 +76,8 @@ public class MultiPayloadSpanTermQueryBuilder extends SpanTermQueryBuilder
         } else {
             builder.startObject(protectedName);
             builder.field("value", protectedValue);
+            if (!checked)
+                builder.field("checked",false);
             if (protectedBoost != -1) {
                 builder.field("boost", protectedBoost);
             }

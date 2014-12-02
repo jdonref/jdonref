@@ -1,7 +1,7 @@
 package org.elasticsearch.index.query.jdonrefv4;
 
-import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
 import java.io.IOException;
+import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
 import org.elasticsearch.common.xcontent.ToXContent.Params;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BaseQueryBuilder;
@@ -24,6 +24,8 @@ public class JDONREFv4QueryBuilder extends BaseQueryBuilder implements Boostable
     protected int debugDoc = -1;
     
     protected int maxSizePerType = JDONREFv4QueryParser.DEFAULTMAXSIZE;
+    
+    protected String default_field = JDONREFv4QueryParser.DEFAULTFIELD;
     
     /**
      *  Construct a new JDONREFv3 Query.
@@ -90,6 +92,11 @@ public class JDONREFv4QueryBuilder extends BaseQueryBuilder implements Boostable
         return this;
     }
     
+    public JDONREFv4QueryBuilder field(String default_field) {
+        this.default_field = default_field;
+        return this;
+    }
+    
     static boolean iamhere = false;
     
     
@@ -100,6 +107,10 @@ public class JDONREFv4QueryBuilder extends BaseQueryBuilder implements Boostable
         builder.field("value", value);
         builder.field("maxSizePerType", maxSizePerType);
         builder.field("mode",mode==JDONREFv4Query.BULK?"bulk":"autocomplete");
+        if (!JDONREFv4QueryParser.DEFAULTFIELD.equals(default_field))
+        {
+            builder.field("default_field",default_field);
+        }
         if (debugDoc!=-1)
         {
             builder.field("debugDoc",debugDoc);

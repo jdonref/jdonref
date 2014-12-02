@@ -198,11 +198,14 @@ public class SpansPayloadChecker extends Spans
       
       for(int i=0;i<subSpans.length;i++)
       {
-          do
+          if (subSpans[i].isChecked())
           {
-            if (!checker.checkNextPayload(subSpans[i]))
-              return false;
-          } while (subSpans[i].nextPayload());
+            do
+            {
+                if (!checker.checkNextPayload(subSpans[i]))
+                    return false;
+            } while (subSpans[i].nextPayload());
+          }
       }
       
       return checker.check();

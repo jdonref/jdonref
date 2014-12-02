@@ -16,6 +16,8 @@ import org.apache.lucene.util.Version;
  */
 public class EdgeNGramWithPayloadsFilter extends TokenFilter
 {
+  public static final String TYPE_NGRAM = "NGRAM";
+    
   public static final Side DEFAULT_SIDE = Side.FRONT;
   public static final int DEFAULT_MAX_GRAM_SIZE = 1;
   public static final int DEFAULT_MIN_GRAM_SIZE = 1;
@@ -71,11 +73,14 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
   protected int savePosLen;
   protected BytesRef curPayload;
   
+  protected String saveType;
+  
   protected boolean keepit; // it means no ngram on it
   
   protected final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
   protected final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
   protected final PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
+  protected final TypeAttribute typeAtt = addAttribute(TypeAttribute.class);
   protected final PositionLengthAttribute posLenAtt = addAttribute(PositionLengthAttribute.class);
   protected final PayloadAttribute payloadAtt = addAttribute(PayloadAttribute.class);
 
@@ -192,6 +197,8 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
           //curGramSize = minGram; // see keepit 
           tokStart = offsetAtt.startOffset();
           tokEnd = offsetAtt.endOffset();
+          saveType = typeAtt.type();
+          
           if (version.onOrAfter(Version.LUCENE_44)) {
             // Never update offsets
             updateOffsets = false;
@@ -237,6 +244,11 @@ public class EdgeNGramWithPayloadsFilter extends TokenFilter
           termAtt.copyBuffer(curTermBuffer, start, end - start);
           if (withPayloads)
             payloadAtt.setPayload(curPayload);
+          
+          if (curGramSize==maxGram || curGramSize==curCodePointCount)
+              typeAtt.setType(saveType);
+          else
+              typeAtt.setType(TYPE_NGRAM);
           
           if (keepit)
             curTermBuffer = null;

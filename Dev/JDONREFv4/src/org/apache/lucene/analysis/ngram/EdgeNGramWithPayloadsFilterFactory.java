@@ -27,7 +27,7 @@ public class EdgeNGramWithPayloadsFilterFactory extends TokenFilterFactory
     
     // addins
     withPayloads = getBoolean(args, "withPayloads", false);
-    keepUnderMin = getBoolean(args,"keepUunderMin", false);
+    keepUnderMin = getBoolean(args,"keepUnderMin", false);
     keepNumbers  = getBoolean(args,"keepNumbers",false);
     
     if (!args.isEmpty()) {

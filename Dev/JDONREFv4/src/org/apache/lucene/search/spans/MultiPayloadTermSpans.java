@@ -27,6 +27,7 @@ public class MultiPayloadTermSpans extends TermSpans
     public static IntegerEncoder encoder = new IntegerEncoder();
     
     protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
+    protected boolean checked = true;
     
     protected Bits acceptDocs;
     protected AtomicReader reader;
@@ -36,6 +37,14 @@ public class MultiPayloadTermSpans extends TermSpans
     
     int order = -1;
 
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+    
     public int getOrder() {
         return order;
     }

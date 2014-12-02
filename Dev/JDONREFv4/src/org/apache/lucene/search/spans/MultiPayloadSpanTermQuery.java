@@ -1,18 +1,9 @@
 package org.apache.lucene.search.spans;
 
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.Fields;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.DocsAndPositionsEnum;
-import org.apache.lucene.index.TermContext;
-import org.apache.lucene.index.TermState;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.util.Bits;
-
 import java.io.IOException;
 import java.util.Map;
-import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.*;
+import org.apache.lucene.util.Bits;
 
 /**
  *
@@ -22,6 +13,15 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
 {
   protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
   protected int order;
+  protected boolean checked = true;
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
     
   /** Construct a SpanTermQuery matching the named term's spans. */
   public MultiPayloadSpanTermQuery(Term term) { super(term); }
@@ -46,6 +46,7 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
   {
       MultiPayloadTermSpans span = new MultiPayloadTermSpans(postings, term, termCountPayloadFactor, reader, acceptDocs );
       span.setOrder(order);
+      span.setChecked(checked);
       return span;
   }
   

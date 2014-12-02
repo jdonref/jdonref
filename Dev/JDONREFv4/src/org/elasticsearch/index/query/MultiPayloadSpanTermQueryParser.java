@@ -38,7 +38,7 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
         assert token == XContentParser.Token.FIELD_NAME;
         String fieldName = parser.currentName();
 
-
+        boolean checked = true;
         String value = null;
         float boost = 1.0f;
         String queryName = null;
@@ -55,6 +55,8 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
                         value = parser.text();
                     } else if ("boost".equals(currentFieldName)) {
                         boost = parser.floatValue();
+                    } else if ("checked".equals(currentFieldName)) {
+                        checked = parser.booleanValue();
                     } else if ("_name".equals(currentFieldName)) {
                         queryName = parser.text();
                     }
@@ -86,13 +88,14 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
             valueBytes = new BytesRef(value);
         }
 
-        return makeQuery(parseContext, fieldName, valueBytes, boost, queryName);
+        return makeQuery(parseContext, fieldName, valueBytes, boost, queryName, checked);
     }
     
-    public Query makeQuery(QueryParseContext parseContext,String fieldName, BytesRef valueBytes,float boost,String queryName)
+    public Query makeQuery(QueryParseContext parseContext,String fieldName, BytesRef valueBytes,float boost,String queryName, boolean checked)
     {
         MultiPayloadSpanTermQuery query = new MultiPayloadSpanTermQuery(new Term(fieldName, valueBytes));
         query.setBoost(boost);
+        query.setChecked(checked);
         if (queryName != null) {
             parseContext.addNamedQuery(queryName, query);
         }

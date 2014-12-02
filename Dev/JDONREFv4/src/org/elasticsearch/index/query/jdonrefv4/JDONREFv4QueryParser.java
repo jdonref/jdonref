@@ -6,12 +6,13 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CachingTokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.UnsplitFilter;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
+import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.FilterClause;
 import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -24,7 +25,6 @@ import org.apache.lucene.util.IOUtils;
 import org.elasticsearch.cluster.ClusterService;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.lucene.search.OrFilter;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery;
 import org.elasticsearch.common.settings.Settings;
@@ -44,6 +44,7 @@ public class JDONREFv4QueryParser implements QueryParser
     public static final String SEARCH_ANALYZER = "jdonrefv4_search";
     public static final int DEFAULTMAXSIZE = Integer.MAX_VALUE;
     public static final int TERMCOUNTDEFAULTFACTOR = 1000;
+    public static String DEFAULTFIELD = "fullName";
     
     private Settings settings;
     
@@ -79,7 +80,7 @@ public class JDONREFv4QueryParser implements QueryParser
         XContentParser parser = parseContext.parser();
 
         Object value = null;
-        String field = "fullName";
+        String field = DEFAULTFIELD;
         float boost = 1.0f;
         int debugDoc = -1;
         int maxSizePerType = DEFAULTMAXSIZE;
@@ -254,7 +255,7 @@ public class JDONREFv4QueryParser implements QueryParser
         PayloadBeforeAnotherChecker numeroAvantLigne4 = new PayloadBeforeAnotherChecker(numero, ligne4);
         LimitChecker limit = new LimitChecker(maxSizePerType);
         
-        SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new AndPayloadChecker(new OrPayloadChecker(ligne1Present, ligne4Present), numeroAvantLigne4));
+        SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new OrPayloadChecker(ligne1Present, new AndPayloadChecker(ligne4Present, numeroAvantLigne4)));
         SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker, ligne4Present.clone(),/* codesOrCommunePresent,*/ numeroAvantLigne4));
         SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone()/* ,codesOrCommunePresent.clone()*/));
         SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone()));
@@ -271,11 +272,12 @@ public class JDONREFv4QueryParser implements QueryParser
     
     private Query getJDONREFv4Query(String term, String find, QueryParseContext parseContext,int mode,int debugDoc,int maxSizePerType) throws IOException
     {
-        Analyzer analyser = parseContext.mapperService().analysisService().analyzer(SEARCH_ANALYZER);
+        Analyzer analyser = parseContext.mapperService().fieldSearchAnalyzer(term); //analysisService().analyzer(SEARCH_ANALYZER);
         
         CachingTokenFilter buffer = null;
         TermToBytesRefAttribute termAtt = null;
         PositionIncrementAttribute posIncrAtt = null;
+        TypeAttribute typeAtt = null;
         TokenStream source = null;
         int numTokens = 0;
         boolean hasMoreTokens = false;
@@ -288,23 +290,27 @@ public class JDONREFv4QueryParser implements QueryParser
             buffer.reset();
             
             if (buffer.hasAttribute(TermToBytesRefAttribute.class)) {
-             termAtt = buffer.getAttribute(TermToBytesRefAttribute.class);
+               termAtt = buffer.getAttribute(TermToBytesRefAttribute.class);
             }
             if (buffer.hasAttribute(PositionIncrementAttribute.class)) {
-             posIncrAtt = buffer.getAttribute(PositionIncrementAttribute.class);
+               posIncrAtt = buffer.getAttribute(PositionIncrementAttribute.class);
+            }
+            if (buffer.hasAttribute(TypeAttribute.class))
+            {
+               typeAtt = buffer.getAttribute(TypeAttribute.class);
             }
             
             if (termAtt != null) {
-        try {
-          hasMoreTokens = buffer.incrementToken();
-          while (hasMoreTokens) {
-            numTokens++;
-            hasMoreTokens = buffer.incrementToken();
-          }
-        } catch (IOException e) {
-          // ignore
-        }
-      }
+                try {
+                hasMoreTokens = buffer.incrementToken();
+                while (hasMoreTokens) {
+                    numTokens++;
+                    hasMoreTokens = buffer.incrementToken();
+                }
+                } catch (IOException e) {
+                // ignore
+                }
+            }
             
         }
         catch (IOException e) {
@@ -324,24 +330,24 @@ public class JDONREFv4QueryParser implements QueryParser
         if (maxSizePerType!=-1 && maxSizePerType!=DEFAULTMAXSIZE)
             spanQuery.setLimit(maxSizePerType);
         
-        BooleanFilter filter = new BooleanFilter();
+//        BooleanFilter filter = new BooleanFilter();
 
-        BooleanFilter switchFilter = new BooleanFilter();
-        filter.add(switchFilter, BooleanClause.Occur.MUST);
+//        BooleanFilter switchFilter = new BooleanFilter();
+//        filter.add(switchFilter, BooleanClause.Occur.MUST);
         
-        BooleanFilter departementFilter = new BooleanFilter();
-        switchFilter.add(departementFilter,BooleanClause.Occur.SHOULD);
-        TermFilter departementTypeFilter = new TermFilter(new Term("_type","departement"));
-        departementFilter.add(departementTypeFilter,BooleanClause.Occur.MUST);
-        BooleanFilter departementClausesFilter = new BooleanFilter();
-        departementFilter.add(departementClausesFilter,BooleanClause.Occur.MUST);
-        
-        BooleanFilter communeFilter = new BooleanFilter();
-        switchFilter.add(communeFilter,BooleanClause.Occur.SHOULD);
-        TermFilter communeTypeFilter = new TermFilter(new Term("_type","commune"));
-        communeFilter.add(communeTypeFilter,BooleanClause.Occur.MUST);
-        BooleanFilter communeClausesFilter = new BooleanFilter();
-        communeFilter.add(communeClausesFilter,BooleanClause.Occur.MUST);
+//        BooleanFilter departementFilter = new BooleanFilter();
+//        switchFilter.add(departementFilter,BooleanClause.Occur.SHOULD);
+//        TermFilter departementTypeFilter = new TermFilter(new Term("_type","departement"));
+//        departementFilter.add(departementTypeFilter,BooleanClause.Occur.MUST);
+//        BooleanFilter departementClausesFilter = new BooleanFilter();
+//        departementFilter.add(departementClausesFilter,BooleanClause.Occur.MUST);
+//        
+//        BooleanFilter communeFilter = new BooleanFilter();
+//        switchFilter.add(communeFilter,BooleanClause.Occur.SHOULD);
+//        TermFilter communeTypeFilter = new TermFilter(new Term("_type","commune"));
+//        communeFilter.add(communeTypeFilter,BooleanClause.Occur.MUST);
+//        BooleanFilter communeClausesFilter = new BooleanFilter();
+//        communeFilter.add(communeClausesFilter,BooleanClause.Occur.MUST);
         
         // phrase query:
         for (int i = 0; i < numTokens; i++) {
@@ -355,14 +361,15 @@ public class JDONREFv4QueryParser implements QueryParser
 
             if (bytes.length>0)
             {
+                String type = typeAtt.type();
+                
                 MultiPayloadSpanTermQuery spanTermQuery = new MultiPayloadSpanTermQuery(new Term(term,BytesRef.deepCopyOf(bytes)));
+                if (UnsplitFilter.UNSPLIT_TYPE.equals(type))
+                {
+                    //System.out.println("HITCH ! "+find+" span "+spanTermQuery.getTerm().text()+ " on "+parseContext.index());
+                    spanTermQuery.setChecked(false);
+                }
                 spanQuery.addClause(spanTermQuery);
-                
-                TermFilter codeDepartementFilter = new TermFilter(new Term("code_departement",BytesRef.deepCopyOf(bytes)));
-                departementClausesFilter.add(codeDepartementFilter,BooleanClause.Occur.SHOULD);
-                
-                codeDepartementFilter = new TermFilter(new Term("code_departement",BytesRef.deepCopyOf(bytes)));
-                departementClausesFilter.add(codeDepartementFilter,BooleanClause.Occur.SHOULD);
             }
         }
         
