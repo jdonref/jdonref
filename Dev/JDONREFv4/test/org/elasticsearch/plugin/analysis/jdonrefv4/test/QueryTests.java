@@ -35,13 +35,18 @@ public abstract class QueryTests
     
     protected boolean noexplaintest = false;
     
-    public void publicIndex(BulkRequestBuilder brb,String type,String id, XContentBuilder data)
+    public void publicIndex(BulkRequestBuilder brb,String index,String type,String id, XContentBuilder data)
     {
-        IndexRequestBuilder irb = client().prepareIndex(INDEX_NAME,type,id);
+        IndexRequestBuilder irb = client().prepareIndex(index,type,id);
         irb.setSource(data);
         irb.setRefresh(false);
         
         brb.add(irb);
+    }
+    
+    public void publicIndex(BulkRequestBuilder brb,String type,String id, XContentBuilder data)
+    {
+        publicIndex(brb,INDEX_NAME,type,id,data);
     }
     
     public Settings indexSettings() {
@@ -62,7 +67,7 @@ public abstract class QueryTests
     public static Client client()
     {
         if (node==null)
-            node = NodeBuilder.nodeBuilder().node();
+            node = NodeBuilder.nodeBuilder().clusterName("test"+Calendar.getInstance().getTimeInMillis()).node();
         return node.client();
     }
     
@@ -76,18 +81,28 @@ public abstract class QueryTests
         }
     }
     
+    public void deleteIndex()
+    {
+        client().admin().indices().prepareDelete(INDEX_NAME).execute().actionGet();
+    }
+    
+    public void createIndex() throws FileNotFoundException, IOException
+    {
+        String settings = readFile(settingsFileName);
+        client().admin().indices().prepareCreate(INDEX_NAME).setSettings(settings).execute().actionGet();
+    }
+    
     @Before
     public void setUp() throws Exception {
             System.out.println("creating index ["+INDEX_NAME+"]");
             
             try {
-                client().admin().indices().prepareDelete(INDEX_NAME).execute().actionGet();
+                deleteIndex();
                 client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
             } catch (ElasticsearchException e) {
             }
             
-            String settings = readFile(settingsFileName);
-            client().admin().indices().prepareCreate(INDEX_NAME).setSettings(settings).execute().actionGet();
+            createIndex();
             client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
             
             importMapping();
@@ -153,14 +168,14 @@ public abstract class QueryTests
     {
         System.out.println("---------------------");
         System.out.println("Test Number "+testNumber++);
-        System.out.println("Searching "+voie+" in ["+INDEX_NAME+"]");
+        System.out.println("Searching "+voie+"");
         
         QueryBuilder qb = getQueryBuilder(voie);
         
         //QueryStringQueryBuilder qb = new QueryStringQueryBuilder(voie);
         
         long start = Calendar.getInstance().getTimeInMillis();
-        SearchResponse search = client().prepareSearch(INDEX_NAME).setQuery(qb).setExplain(true).execute().actionGet();
+        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
         long end = Calendar.getInstance().getTimeInMillis();
         System.out.println("Took "+(end-start)+" ms");
         SearchHit[] hits = search.getHits().getHits();
@@ -171,6 +186,7 @@ public abstract class QueryTests
             if (size!=-1) Assert.assertTrue(size==hits.length);
             if (size==0) return;
         }
+        System.out.println(hits.length+" hit"+((hits.length>1)?"s":""));
         if (size==-1)
             Assert.assertTrue(hits.length>0);
         else
@@ -235,14 +251,14 @@ public abstract class QueryTests
     public void stopRefresh()
     {
         UpdateSettingsRequestBuilder reqb = client().admin().indices().prepareUpdateSettings();
-        reqb.setIndices(INDEX_NAME);
+        reqb.setIndices();
         reqb.setSettings("{\"index\":{\"refresh_interval\":-1}}");
         reqb.get();
     }
     public void startRefresh()
     {
         UpdateSettingsRequestBuilder reqb = client().admin().indices().prepareUpdateSettings();
-        reqb.setIndices(INDEX_NAME);
+        reqb.setIndices();
         reqb.setSettings("{\"index\":{\"refresh_interval\":\"1s\"}}");
         reqb.get();
     }

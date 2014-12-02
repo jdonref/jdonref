@@ -2,20 +2,21 @@ package org.elasticsearch.plugin.analysis.jdonrefv4.test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
-import org.apache.lucene.analysis.payloads.IntegerEncoder;
+import org.apache.lucene.analysis.FrequentTermsUtil;
 import org.apache.lucene.search.spans.checkers.NullPayloadChecker;
-import org.apache.lucene.search.spans.checkers.PayloadBeforeAnotherChecker;
-import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.MultiPayloadSpanTermQueryBuilder;
 import org.elasticsearch.index.query.PayloadCheckerSpanQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,9 +24,9 @@ import org.junit.Test;
  *
  * @author Julien
  */
-public class PayloadCheckerSpanQuery_OverLimitPayloadTests extends QueryTests
+public class PayloadCheckerSpanQuery_MostFrequentPayloadTests extends QueryTests
 {
-    public PayloadCheckerSpanQuery_OverLimitPayloadTests()
+    public PayloadCheckerSpanQuery_MostFrequentPayloadTests()
     {
         settingsFileName = "./test/resources/index/PayloadVersusTypeSpanQuery-settings.json";
         INDEX_NAME = "test";
@@ -56,11 +57,28 @@ public class PayloadCheckerSpanQuery_OverLimitPayloadTests extends QueryTests
                 .field("fullName","AA|3001 BB|3001 CC|3001 DD|2002 EE|2002 FF|1003")
                 .endObject());
         
-        for(int i=0;i<5000;i++) // increase AA and DD frequencies
-            publicIndex(brb,"payloadversustypespanquery","z"+i,XContentFactory.jsonBuilder().startObject()
+        for(int i=0;i<20;i++) // increase AA and DD frequencies
+            publicIndex(brb,"payloadversustypespanquery","a"+i,XContentFactory.jsonBuilder().startObject()
                 .field("ligne4","AA")
                 .field("ligne6","DD")
-                .field("fullName","AA|1001 DD|1002")
+                .field("fullName","albert|1001 rose|1002")
+                .field("mostFrequentTerms","albertrose")
+                .endObject());
+        
+        for(int i=0;i<5000;i++) // increase AA and DD frequencies
+            publicIndex(brb,"payloadversustypespanquery","b"+i,XContentFactory.jsonBuilder().startObject()
+                .field("ligne4","AA")
+                .field("ligne6","DD")
+                .field("fullName","albert|1001 toutou|1003")
+                .field("mostFrequentTerms","albert")
+                .endObject());
+        
+        for(int i=0;i<5000;i++) // increase AA and DD frequencies
+            publicIndex(brb,"payloadversustypespanquery","c"+i,XContentFactory.jsonBuilder().startObject()
+                .field("ligne4","AA")
+                .field("ligne6","DD")
+                .field("fullName","rose|1001 toutou|1003")
+                .field("mostFrequentTerms","rose")
                 .endObject());
         
         BulkResponse br = brb.setRefresh(true).execute().actionGet();
@@ -75,16 +93,25 @@ public class PayloadCheckerSpanQuery_OverLimitPayloadTests extends QueryTests
         System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
         
         // NB: no search analyzer !
-        searchExactAdresse("bb","AA BB CC","DD EE",1); // match 1
-        searchExactAdresse("aa","AA BB EE","DD EE",0); // no match : over limit
-        searchExactAdresse("aa bb","AA BB CC","DD EE",1); // match 1
-        searchExactAdresse("bb aa","AA BB CC","DD EE",1); // match 1
+        searchExactAdresse("rose albert","AA","DD"); // match 
+        
+        // over limit match
+        System.out.println("TEST 2 : searching 'toutou rose' in ["+INDEX_NAME+"]");
+        QueryBuilder qb = getQueryBuilder("toutou rose");
+        long start = Calendar.getInstance().getTimeInMillis();
+        SearchResponse search = client().prepareSearch(INDEX_NAME).setQuery(qb).setExplain(true).execute().actionGet();
+        long end = Calendar.getInstance().getTimeInMillis();
+        System.out.println("Took "+(end-start)+" ms");
+        SearchHit[] hits = search.getHits().getHits();
+        assert(hits[0].score()==1);
     }
 
     @Override
     QueryBuilder getQueryBuilder(String voie)
     {
         String[] tokens = voie.split(" ");
+        
+        FrequentTermsUtil.setFilePath("src/resources/analysis/word84.txt");
         
         PayloadCheckerSpanQueryBuilder qb = new PayloadCheckerSpanQueryBuilder();
         for(int i=0;i<tokens.length;i++)

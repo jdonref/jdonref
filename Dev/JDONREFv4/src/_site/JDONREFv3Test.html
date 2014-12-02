@@ -59,7 +59,7 @@
           function getResults(keywords,minlon,maxlon,minlat,maxlat)
           {
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', '../../jdonref/adresse,voie,commune,departement,pays/_search');//?q='+ encodeURIComponent(keywords));
+                xhr.open('POST', '../../jdonref/adresse,voie,commune,departement,pays,poizon/_search');//?q='+ encodeURIComponent(keywords));
                 xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     displayResults(xhr.responseText);
@@ -104,12 +104,14 @@
   
           function makeString(_source)
           {
+              var ligne1 = _source.ligne1;
               var ligne4 = _source.ligne4;
               var code_postal = _source.code_postal;
               var commune = _source.commune;
               var pays = _source.pays;
               var res = "";    
               
+              if (ligne1!=null) res = append(res,ligne1);
               if (ligne4!=null) res = append(res,ligne4);
               if (code_postal!=null) res = append(res,code_postal);
               if (commune!=null) res = append(res,commune);

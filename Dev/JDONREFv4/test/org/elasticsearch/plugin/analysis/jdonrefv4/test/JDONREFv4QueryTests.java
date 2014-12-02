@@ -21,6 +21,14 @@ import org.junit.Test;
  */
 public class JDONREFv4QueryTests extends QueryTests
 {
+    String PAYS_INDEX = "pays";
+    String DPT_INDEX = "departement";
+    String COMMUNE_INDEX = "commune";
+    String VOIE_INDEX = "voie";
+    String TRONCON_INDEX = "troncon";
+    String ADR_INDEX = "adresse";
+    String POIZON_INDEX = "poizon";
+    
     public JDONREFv4QueryTests()
     {
         settingsFileName = "./test/resources/index/jdonrefv4-settings_Query.json";
@@ -31,14 +39,40 @@ public class JDONREFv4QueryTests extends QueryTests
     @Override
     void importMapping() throws FileNotFoundException, IOException
     {
+        String[] indices = new String[]{PAYS_INDEX,DPT_INDEX,COMMUNE_INDEX,VOIE_INDEX,TRONCON_INDEX,ADR_INDEX,POIZON_INDEX};
         String[] mappings = new String[]{"pays","departement","commune","voie","troncon","adresse","poizon"};
         
         for(int i=0;i<mappings.length;i++)
         {
             String test = mappings[i];
-            String mapping = readFile("./src/resources/mapping/mapping-"+test+".json");
-            PutMappingResponse pmr = client().admin().indices().putMapping(new PutMappingRequest(INDEX_NAME).type(test).source(mapping)).actionGet();
+            String mapping = readFile("./test/resources/mapping/mapping-"+test+".json");
+            PutMappingResponse pmr = client().admin().indices().putMapping(new PutMappingRequest(indices[i]).type(test).source(mapping)).actionGet();
         }
+    }
+    
+    @Override
+    public void deleteIndex()
+    {
+        client().admin().indices().prepareDelete(PAYS_INDEX).execute().actionGet();
+        client().admin().indices().prepareDelete(DPT_INDEX).execute().actionGet();
+        client().admin().indices().prepareDelete(COMMUNE_INDEX).execute().actionGet();
+        client().admin().indices().prepareDelete(VOIE_INDEX).execute().actionGet();
+        client().admin().indices().prepareDelete(TRONCON_INDEX).execute().actionGet();
+        client().admin().indices().prepareDelete(ADR_INDEX).execute().actionGet();
+        client().admin().indices().prepareDelete(POIZON_INDEX).execute().actionGet();
+    }
+    
+    @Override
+    public void createIndex() throws FileNotFoundException, IOException
+    {
+        String settings = readFile(settingsFileName);
+        client().admin().indices().prepareCreate(PAYS_INDEX).setSettings(settings).execute().actionGet();
+        client().admin().indices().prepareCreate(DPT_INDEX).setSettings(settings).execute().actionGet();
+        client().admin().indices().prepareCreate(COMMUNE_INDEX).setSettings(settings).execute().actionGet();
+        client().admin().indices().prepareCreate(VOIE_INDEX).setSettings(settings).execute().actionGet();
+        client().admin().indices().prepareCreate(TRONCON_INDEX).setSettings(settings).execute().actionGet();
+        client().admin().indices().prepareCreate(ADR_INDEX).setSettings(settings).execute().actionGet();
+        client().admin().indices().prepareCreate(POIZON_INDEX).setSettings(settings).execute().actionGet();
     }
     
     @Override
@@ -46,15 +80,15 @@ public class JDONREFv4QueryTests extends QueryTests
     {
         BulkRequestBuilder brb = client().prepareBulk();
         
-        publicIndex(brb,"pays","FR",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,PAYS_INDEX,"pays","FR",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne7","FRANCE")
                 .endObject());
-        publicIndex(brb,"pays","DE",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,PAYS_INDEX,"pays","DE",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","DE")
                 .field("ligne7","ALLEMAGNE")
                 .endObject());
-        publicIndex(brb,"commune","75056",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,COMMUNE_INDEX,"commune","75056",XContentFactory.jsonBuilder().startObject()
                 .field("code_postal","75000")
                 .field("code_insee","75056")
                 .field("commune","PARIS")
@@ -63,7 +97,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("ligne7","FRANCE")
                 .field("code_departement","75")
                 .endObject());
-        publicIndex(brb,"commune","59500",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,COMMUNE_INDEX,"commune","59500",XContentFactory.jsonBuilder().startObject()
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .field("commune","DOUAI")
@@ -72,7 +106,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("ligne7","FRANCE")
                 .field("code_departement","59")
                 .endObject());
-        publicIndex(brb,"voie","1",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,VOIE_INDEX,"voie","1",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("type_de_voie","BOULEVARD")
                 .field("article","DE L")
@@ -85,7 +119,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","75005")
                 .field("code_insee","75105")
                 .endObject());
-        publicIndex(brb,"voie","2",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,VOIE_INDEX,"voie","2",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("type_de_voie","RUE")
                 //.field("article","DE LA")
@@ -98,7 +132,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
-        publicIndex(brb,"voie","3",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,VOIE_INDEX,"voie","3",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("type_de_voie","RUE")
                 .field("article","DE LA")
@@ -111,7 +145,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","75005")
                 .field("code_insee","75105")
                 .endObject());
-        publicIndex(brb,"adresse","1",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","1",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",24)
                 .field("type_de_voie","BOULEVARD")
@@ -125,7 +159,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","75013")
                 .field("code_insee","75013")
                 .endObject());
-        publicIndex(brb,"adresse","2",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","2",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",24)
                 .field("type_de_voie","RUE")
@@ -140,7 +174,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","75005")
                 .field("code_insee","75113")
                 .endObject());
-        publicIndex(brb,"adresse","3",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","3",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",75)
                 .field("type_de_voie","BOULEVARD")
@@ -158,7 +192,7 @@ public class JDONREFv4QueryTests extends QueryTests
         
         for(int i=130;i<500;i++) // inclus donc le numéro 130
         {
-            publicIndex(brb,"adresse","4"+i,XContentFactory.jsonBuilder().startObject()
+            publicIndex(brb,ADR_INDEX,"adresse","4"+i,XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",i)
                 .field("type_de_voie","RUE")
@@ -174,7 +208,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .endObject());
         }
         
-        publicIndex(brb,"adresse","5",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","5",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",131)
                 .field("type_de_voie","RUE")
@@ -189,7 +223,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_insee","59500")
                 .endObject());
         
-        publicIndex(brb,"adresse","6",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","6",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",59)
                 .field("type_de_voie","RUE")
@@ -203,7 +237,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
-        publicIndex(brb,"adresse","7",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","7",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",75)
                 .field("type_de_voie","RUE")
@@ -216,7 +250,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
-        publicIndex(brb,"adresse","7",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","7",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",75)
                 .field("type_de_voie","RUE")
@@ -229,7 +263,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
-        publicIndex(brb,"adresse","8",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","8",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",130)
                 .field("type_de_voie","BOULEVARD")
@@ -243,7 +277,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","75005")
                 .field("code_insee","75105")
                 .endObject());
-        publicIndex(brb,"adresse","9",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","9",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",59)
                 .field("type_de_voie","BOULEVARD")
@@ -257,7 +291,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","75005")
                 .field("code_insee","75105")
                 .endObject());
-        publicIndex(brb,"adresse","10",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,ADR_INDEX,"adresse","10",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("numero",59)
                 .field("type_de_voie","BOULEVARD")
@@ -271,7 +305,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","02000")
                 .field("code_insee","02001")
                 .endObject());
-        publicIndex(brb,"poizon","4",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,POIZON_INDEX,"poizon","4",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("poizon_id","KEBAB1")
                 .field("poizon_service",1)
@@ -288,7 +322,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
-        publicIndex(brb,"poizon","5",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,POIZON_INDEX,"poizon","5",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("poizon_id","KEBAB1")
                 .field("poizon_service",1)
@@ -305,7 +339,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
-        publicIndex(brb,"poizon","6",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,POIZON_INDEX,"poizon","6",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("poizon_id","KEBAB2")
                 .field("poizon_service",1)
@@ -322,7 +356,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_postal","59500")
                 .field("code_insee","59500")
                 .endObject());
-        publicIndex(brb,"poizon","7",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,POIZON_INDEX,"poizon","7",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("poizon_id","KEBAB3")
                 .field("poizon_service",1)
@@ -340,7 +374,7 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("code_insee","75115")
                 .endObject());
          //"pin":{"centroide":[2.31373310272827,48.926365812723]}}]}
-        publicIndex(brb,"poizon","139",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,POIZON_INDEX,"poizon","139",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("poizon_service",105)
                 .field("ligne1","MCI 92 GENNEVILLIERS ZONE INDUSTRIELLE")
@@ -350,13 +384,13 @@ public class JDONREFv4QueryTests extends QueryTests
                 .field("t0","2014-05-19 00:00:00")
                 .field("t1","2064-05-19 00:00:00")
                 .endObject());        
-        publicIndex(brb,"departement","75",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,DPT_INDEX,"departement","75",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne6","75")
                 .field("ligne7","FRANCE")
                 .field("code_departement","75")
                 .endObject());
-        publicIndex(brb,"departement","59",XContentFactory.jsonBuilder().startObject()
+        publicIndex(brb,DPT_INDEX,"departement","59",XContentFactory.jsonBuilder().startObject()
                 .field("code_pays","FR")
                 .field("ligne6","59")
                 .field("ligne7","FRANCE")
@@ -367,7 +401,7 @@ public class JDONREFv4QueryTests extends QueryTests
         {
             String randomCode = "RANDOM"+i;
             String randomLigne7 = "RANDOM RANDOM "+i+""+i;
-            publicIndex(brb,"pays",randomCode,XContentFactory.jsonBuilder().startObject()
+            publicIndex(brb,PAYS_INDEX,"pays",randomCode,XContentFactory.jsonBuilder().startObject()
                   .field("code_pays",randomCode)
                   .field("ligne7",randomLigne7)
                   .endObject());
@@ -384,7 +418,13 @@ public class JDONREFv4QueryTests extends QueryTests
     public void testSearch() throws IOException, InterruptedException, ExecutionException
     {
         IndicesStatusResponse indResponse = client().admin().indices().prepareStatus().execute().actionGet();
-        System.out.println(INDEX_NAME+" num docs : "+indResponse.getIndex(INDEX_NAME).getDocs().getNumDocs());
+        System.out.println(PAYS_INDEX+" num docs : "+indResponse.getIndex(PAYS_INDEX).getDocs().getNumDocs());
+        System.out.println(DPT_INDEX+" num docs : "+indResponse.getIndex(DPT_INDEX).getDocs().getNumDocs());
+        System.out.println(COMMUNE_INDEX+" num docs : "+indResponse.getIndex(COMMUNE_INDEX).getDocs().getNumDocs());
+        //System.out.println(TRONCON_INDEX+" num docs : "+indResponse.getIndex(TRONCON_INDEX).getDocs().getNumDocs());
+        System.out.println(VOIE_INDEX+" num docs : "+indResponse.getIndex(VOIE_INDEX).getDocs().getNumDocs());
+        System.out.println(ADR_INDEX+" num docs : "+indResponse.getIndex(ADR_INDEX).getDocs().getNumDocs());
+        System.out.println(POIZON_INDEX+" num docs : "+indResponse.getIndex(POIZON_INDEX).getDocs().getNumDocs());
         
         ////////////
         /// VOIE
