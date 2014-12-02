@@ -1,0 +1,125 @@
+{
+    "index" : {
+        "analysis" : {
+            "analyzer": {
+                "jdonrefv4_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : [ "lowercase", "unsplit_index"]
+                },
+                "jdonrefv4_index2" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : [ "lowercase", "unsplit_index2"]
+                },
+                "jdonrefv4_index3" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : [ "lowercase", "unsplit_index3"]
+                },
+                "jdonrefv4_index4" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : [ "lowercase", "unsplit_index4"]
+                },
+                "jdonrefv4_index5" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : [ "lowercase", "jdonrefv4_nGram1","unsplit_index3"]
+                },
+                "jdonrefv4_index6" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : [ "lowercase", "jdonrefv4_nGram1","unsplit_index4"]
+                },
+                "jdonrefv4_index7" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : [ "lowercase", "jdonrefv4_synonyme","jdonrefv4_nGram2","unsplit_index5"]
+                },
+                "jdonrefv4_index8" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : [ "lowercase", "jdonrefv4_synonyme","unsplit_index6"]
+                },
+                "jdonrefv4_codes_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase"]
+                },
+                "jdonrefv4_search" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["lowercase", "unsplit_index"]
+                }
+            },
+            "filter" : {
+                "unsplit_index" : {
+                  "type": "unsplit",
+                  "min_words_unsplitted" : 2,
+                  "frequent_terms_only": false,                  
+                  "keep_originals" : false
+                },
+                "unsplit_index2" : {
+                  "type": "unsplit",
+                  "frequent_terms_only": false,                  
+                  "min_words_unsplitted" : 2
+                },
+                "unsplit_index3" : {
+                  "type": "unsplit",
+                  "min_words_unsplitted" : 3,
+                  "keep_originals" : false,
+                  "frequent_terms_only": false,                  
+                  "max_subwords" : 1
+                },
+                "unsplit_index4" : {
+                  "type": "unsplit",
+                  "min_words_unsplitted" : 3,
+                  "frequent_terms_only": false,
+                  "max_subwords" : 1
+                },
+                "unsplit_index5" : {
+                  "type": "unsplit",
+                  "min_words_unsplitted" : 2,
+                  "keep_originals" : false,
+                  "max_subwords" : 1,
+                  "path": "./src/resources/analysis/word84.txt"
+                },
+                "unsplit_index6" : {
+                  "type": "unsplit",
+                  "min_words_unsplitted" : 0,
+                  "keep_originals" : false,
+                  "max_subwords" : 1,
+                  "path": "./src/resources/analysis/word84.txt"
+                },
+                "jdonrefv4_synonyme" : {
+                    "type" : "payloadsynonym",
+                    "synonyms_path": "./src/resources/analysis/jdonrefv4_synonym.fr_FR.txt"
+                },
+                "jdonrefv4_nGram1" : {
+                    "type" : "payloadedgengram",
+                    "keep_under_min" : true,
+                    "keep_numbers": true,
+                    "min_gram": 1,
+                    "max_gram": 15,
+                    "token_chars": ["digit"],
+                    "withPayloads": true
+                },
+                "jdonrefv4_nGram2" : {
+                    "type" : "payloadedgengram",
+                    "keep_under_min" : true,
+                    "keep_numbers": true,
+                    "min_gram": 3,
+                    "max_gram": 15,
+                    "token_chars": ["digit"],
+                    "withPayloads": true
+                }
+            },
+            "similarity": {
+                "jdonrefv4" : {
+                    "type": "org.apache.lucene.search.similarities.JDONREFv4TermSimilarity"
+                }
+            }
+        }
+    }
+}

@@ -1,11 +1,13 @@
 {
     "index" : {
+        "number_of_shards" : 1,
+        "number_of_replicas" : 0,
         "analysis" : {
             "analyzer": {
                 "jdonrefv4_index_token_count" : {
                     "type" : "custom",
                     "tokenizer" : "whitespace",
-                    "filter" : ["delimited_payload_filter", "lowercase", "jdonrefv4_synonyme", "french_elision", "french_stop" /*,"french_keywords"*/, "french_stemmer","jdonrefv4_tokenCount", "jdonrefv4_nGram"]
+                    "filter" : ["delimited_payload_filter", "lowercase", "jdonrefv4_synonyme", "french_elision", "french_stop" /*,"french_keywords"*/, "french_stemmer","jdonrefv4_tokenCount", "jdonrefv4_nGram", "jdonrefv4_unsplit_index"]
                 },
                 "jdonrefv4_index" : {
                     "type" : "custom",
@@ -16,6 +18,11 @@
                     "type" : "custom",
                     "tokenizer" : "standard",
                     "filter" : ["standard", "lowercase"]
+                },
+                "jdonrefv4_search_unsplit" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["lowercase", "french_elision", "french_stop"/*,"french_keywords"*/,"french_stemmer", "jdonrefv4_unsplit_search"]
                 },
                 "jdonrefv4_search" : {
                     "type" : "custom",
@@ -68,6 +75,20 @@
                 "jdonrefv4_tokenCount": {
                     "type" : "tokencountpayloads",
                     "factor": 1000
+                },
+                "jdonrefv4_unsplit_index" : {
+                  "type": "unsplit",
+                  "min_words_unsplitted" : 2,
+                  "keep_originals" : true,
+                  "max_subwords" : 1,
+                  "path": "./src/resources/analysis/word84.txt"
+                },
+                "jdonrefv4_unsplit_search" : {
+                  "type": "unsplit",
+                  "min_words_unsplitted" : 0,
+                  "keep_originals" : true,
+                  "max_subwords" : 1,
+                  "path": "./src/resources/analysis/word84.txt"
                 }
             },
             "similarity": {
