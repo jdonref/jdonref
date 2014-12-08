@@ -16,6 +16,7 @@ import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Voie;
  */
 public class JDONREFIndex
 {
+    boolean restart = true;
     boolean verbose = false;
     boolean withGeometry = true;
     boolean withSwitchAlias = false;
@@ -39,6 +40,14 @@ public class JDONREFIndex
     
     protected static JDONREFIndex instance = null;
 
+    public boolean isRestart() {
+        return restart;
+    }
+
+    public void setRestart(boolean restart) {
+        this.restart = restart;
+    }
+
     public String getUrl() {
         return url;
     }
@@ -58,6 +67,19 @@ public class JDONREFIndex
     public void setWithSwitchAlias(boolean withSwitchAlias)
     {
         this.withSwitchAlias = withSwitchAlias;
+        
+        departement_index = voie_index = adresse_index = pays_index = commune_index = troncon_index = poizon_index = index;
+        
+        if (withSwitchAlias)
+        {
+            departement_index += "_departement_"+this.millis;
+            voie_index += "_voie_"+this.millis;
+            adresse_index += "_adresse_"+this.millis;
+            pays_index += "_pays_"+this.millis;
+            commune_index += "_commune_"+this.millis;
+            troncon_index += "_troncon_"+this.millis;
+            poizon_index += "_poizon_"+this.millis;
+        }
     }
 
     
@@ -100,20 +122,47 @@ public class JDONREFIndex
         return index;
     }
 
-    public void setIndex(String index) {
-        this.index = index;
-        
-        long millis = Calendar.getInstance().getTimeInMillis();
+    long millis = Calendar.getInstance().getTimeInMillis();
+
+    public long getMillis() {
+        return millis;
+    }
+
+    public void setMillis(long millis) {
+        if (millis!=0)
+            this.millis = millis;
+        else
+            this.millis = Calendar.getInstance().getTimeInMillis();
         
         departement_index = voie_index = adresse_index = pays_index = commune_index = troncon_index = poizon_index = index;
         
-        departement_index += "_departement_"+millis;
-        voie_index += "_voie_"+millis;
-        adresse_index += "_adresse_"+millis;
-        pays_index += "_pays_"+millis;
-        commune_index += "_commune_"+millis;
-        troncon_index += "_troncon_"+millis;
-        poizon_index += "_poizon_"+millis;
+        if (withSwitchAlias)
+        {
+            departement_index += "_departement_"+this.millis;
+            voie_index += "_voie_"+this.millis;
+            adresse_index += "_adresse_"+this.millis;
+            pays_index += "_pays_"+this.millis;
+            commune_index += "_commune_"+this.millis;
+            troncon_index += "_troncon_"+this.millis;
+            poizon_index += "_poizon_"+this.millis;
+        }
+    }
+    
+    public void setIndex(String index) {
+        this.index = index;
+        
+        departement_index = voie_index = adresse_index = pays_index = commune_index = troncon_index = poizon_index = index;
+        
+        if (withSwitchAlias)
+        {
+            departement_index += "_departement_"+millis;
+            voie_index += "_voie_"+millis;
+            adresse_index += "_adresse_"+millis;
+            pays_index += "_pays_"+millis;
+            commune_index += "_commune_"+millis;
+            troncon_index += "_troncon_"+millis;
+            poizon_index += "_poizon_"+millis;
+        }
     }
 
     public String getAlias() {
@@ -240,63 +289,65 @@ public class JDONREFIndex
             System.out.println("Démarrage de l'indexation");
         long start = Calendar.getInstance().getTimeInMillis();
         
-        
-        if (!withSwitchAlias)
+        if (restart)
         {
-            this.setIndex(this.alias);
-            util.showDeleteIndex(index);
-            
-            departement_index = voie_index = adresse_index = pays_index = commune_index = troncon_index = poizon_index = index;
+            if (!withSwitchAlias)
+            {
+                this.setIndex(this.alias);
+                util.showDeleteIndex(index);
 
-            util.showCreateIndex(index,"./src/resources/index/jdonrefv4-settings.json");
-            util.showSetRefreshInterval(index,"-1");
-        }
-        else
-        {
-            if (isFlag(FLAGS.DEPARTEMENT))
-            {
-                util.showCreateIndex(departement_index,"./src/resources/index/jdonrefv4-settings_oneshard.json");
-                util.showSetRefreshInterval(departement_index,"-1");
+                util.showCreateIndex(index,"./src/resources/index/jdonrefv4-settings.json","5");
+                util.showSetRefreshInterval(index,"-1");
             }
-            if (isFlag(FLAGS.VOIE))
+            else
             {
-                util.showCreateIndex(voie_index,"./src/resources/index/jdonrefv4-settings.json");
-                util.showSetRefreshInterval(voie_index,"-1");
-            }
-            if (isFlag(FLAGS.ADRESSE))
-            {
-                util.showCreateIndex(adresse_index,"./src/resources/index/jdonrefv4-settings.json");
-                util.showSetRefreshInterval(adresse_index,"-1");
-            }
-            if (isFlag(FLAGS.PAYS))
-            {
-                util.showCreateIndex(pays_index,"./src/resources/index/jdonrefv4-settings_oneshard.json");
-                util.showSetRefreshInterval(pays_index,"-1");
-            }
-            if (isFlag(FLAGS.COMMUNE))
-            {
-                util.showCreateIndex(commune_index,"./src/resources/index/jdonrefv4-settings_oneshard.json");
-                util.showSetRefreshInterval(commune_index,"-1");
-            }
-            if (isFlag(FLAGS.TRONCON))
-            {
-                util.showCreateIndex(troncon_index,"./src/resources/index/jdonrefv4-settings.json");
-                util.showSetRefreshInterval(troncon_index,"-1");
-            }
-            if (isFlag(FLAGS.POIZON))
-            {
-                util.showCreateIndex(poizon_index,"./src/resources/index/jdonrefv4-settings.json");
-                util.showSetRefreshInterval(poizon_index,"-1");
+                if (isFlag(FLAGS.DEPARTEMENT))
+                {
+                    util.showCreateIndex(departement_index,"./src/resources/index/jdonrefv4-settings.json","1");
+                    util.showSetRefreshInterval(departement_index,"-1");
+                }
+                if (isFlag(FLAGS.VOIE))
+                {
+                    util.showCreateIndex(voie_index,"./src/resources/index/jdonrefv4-settings.json","6");
+                    util.showSetRefreshInterval(voie_index,"-1");
+                }
+                if (isFlag(FLAGS.ADRESSE))
+                {
+                    util.showCreateIndex(adresse_index,"./src/resources/index/jdonrefv4-settings.json","6");
+                    util.showSetRefreshInterval(adresse_index,"-1");
+                }
+                if (isFlag(FLAGS.PAYS))
+                {
+                    util.showCreateIndex(pays_index,"./src/resources/index/jdonrefv4-settings.json","1");
+                    util.showSetRefreshInterval(pays_index,"-1");
+                }
+                if (isFlag(FLAGS.COMMUNE))
+                {
+                    util.showCreateIndex(commune_index,"./src/resources/index/jdonrefv4-settings.json","1");
+                    util.showSetRefreshInterval(commune_index,"-1");
+                }
+                if (isFlag(FLAGS.TRONCON))
+                {
+                    util.showCreateIndex(troncon_index,"./src/resources/index/jdonrefv4-settings.json","5");
+                    util.showSetRefreshInterval(troncon_index,"-1");
+                }
+                if (isFlag(FLAGS.POIZON))
+                {
+                    util.showCreateIndex(poizon_index,"./src/resources/index/jdonrefv4-settings.json","1");
+                    util.showSetRefreshInterval(poizon_index,"-1");
+                }
             }
         }
 
         if (isFlag(FLAGS.DEPARTEMENT))
         {
-            util.showPutMapping(departement_index,"departement", "./src/resources/mapping/mapping-departement.json");
+            if (restart)
+                util.showPutMapping(departement_index,"departement", "./src/resources/mapping/mapping-departement.json");
         }
         if (isFlag(FLAGS.DEPARTEMENT) || isFlag(FLAGS.VOIE) || isFlag(FLAGS.ADRESSE) || isFlag(FLAGS.TRONCON))
         {
             DepartementIndex dptIndex = DepartementIndex.getInstance();
+            dptIndex.setDept(codesDepartements);
             dptIndex.setFlags(flags);
             dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
@@ -306,7 +357,8 @@ public class JDONREFIndex
         }
         if (isFlag(FLAGS.VOIE))
         {
-            util.showPutMapping(voie_index,"voie", "./src/resources/mapping/mapping-voie.json");
+            if (restart)
+                util.showPutMapping(voie_index,"voie", "./src/resources/mapping/mapping-voie.json");
             VoieIndex vIndex = VoieIndex.getInstance();
             vIndex.setUtil(util);
             vIndex.setConnection(connection);
@@ -316,7 +368,8 @@ public class JDONREFIndex
         }
         if (isFlag(FLAGS.ADRESSE))
         {
-            util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse.json");
+            if (restart)
+                util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse.json");
             AdresseIndex adrIndex = AdresseIndex.getInstance();
             adrIndex.setUtil(util);
             adrIndex.setConnection(connection);
@@ -326,7 +379,8 @@ public class JDONREFIndex
         }
         if (isFlag(FLAGS.PAYS))
         {
-            util.showPutMapping(pays_index,"pays", "./src/resources/mapping/mapping-pays.json");
+            if (restart)
+                util.showPutMapping(pays_index,"pays", "./src/resources/mapping/mapping-pays.json");
             PaysIndex paysIndex = PaysIndex.getInstance();
             paysIndex.setVerbose(isVerbose());
             paysIndex.setConnection(connection);
@@ -336,8 +390,10 @@ public class JDONREFIndex
         }
         if (isFlag(FLAGS.COMMUNE))
         {
-            util.showPutMapping(commune_index,"commune", "./src/resources/mapping/mapping-commune.json");
+            if (restart)
+                util.showPutMapping(commune_index,"commune", "./src/resources/mapping/mapping-commune.json");
             CommuneIndex cIndex = CommuneIndex.getInstance();
+            cIndex.setDept(codesDepartements);
             cIndex.setVerbose(isVerbose());
             cIndex.setConnection(connection);
             cIndex.setWithGeometry(withGeometry);
@@ -346,7 +402,8 @@ public class JDONREFIndex
         }
         if (isFlag(FLAGS.TRONCON))
         {
-            util.showPutMapping(troncon_index,"troncon", "./src/resources/mapping/mapping-troncon.json");
+            if (restart)
+                util.showPutMapping(troncon_index,"troncon", "./src/resources/mapping/mapping-troncon.json");
             TronconIndex tIndex = TronconIndex.getInstance();
             tIndex.setUtil(util);
             tIndex.setConnection(connection);
@@ -356,7 +413,8 @@ public class JDONREFIndex
         }
         if (isFlag(FLAGS.POIZON))
         {
-            util.showPutMapping(poizon_index,"poizon", "./src/resources/mapping/mapping-poizon.json");
+            if (restart)
+                util.showPutMapping(poizon_index,"poizon", "./src/resources/mapping/mapping-poizon.json");
             PoizonIndex pzIndex = PoizonIndex.getInstance();
             pzIndex.setVerbose(isVerbose());
             pzIndex.setConnection(connection);
@@ -373,61 +431,67 @@ public class JDONREFIndex
                 DepartementIndex.getInstance().indexJDONREFDepartement(getVoies(), "75");
             if (isFlag(FLAGS.COMMUNE))
                 CommuneIndex.getInstance().indexJDONREFCommune(getCommunes());
+            util.showSetRefreshInterval(index,"30s");
         }
         else
         {
             if (isFlag(FLAGS.PAYS))
-                PaysIndex.getInstance().indexJDONREFPays();
+            {
+                PaysIndex.getInstance().indexJDONREFPays();   
+                util.showSetRefreshInterval(pays_index,"30s");
+                util.showSetReplicaNumber(pays_index, "1");
+                if (withSwitchAlias)
+                    util.showExchangeIndexInAlias(alias, pays_index, index+"_pays");
+            }
             if (isFlag(FLAGS.DEPARTEMENT))
+            {
                 DepartementIndex.getInstance().indexJDONREFDepartements();
+                util.showSetRefreshInterval(departement_index,"30s");
+                util.showSetReplicaNumber(departement_index, "1");
+                if (withSwitchAlias)
+                    util.showExchangeIndexInAlias(alias, departement_index, index+"_departement");                
+            }
             if (isFlag(FLAGS.COMMUNE))
+            {
                 CommuneIndex.getInstance().indexJDONREFCommune();
+                util.showSetRefreshInterval(commune_index,"30s");
+                util.showSetReplicaNumber(commune_index, "1");
+                if (withSwitchAlias)
+                    util.showExchangeIndexInAlias(alias, commune_index, index+"_commune");
+            }
+            if (isFlag(FLAGS.POIZON))
+            {
+                PoizonIndex.getInstance().indexJDONREFPoizon();
+                util.showSetRefreshInterval(poizon_index,"30s");
+                util.showSetReplicaNumber(poizon_index, "1");
+                if (withSwitchAlias)
+                    util.showExchangeIndexInAlias(alias, poizon_index, index+"_poizon");
+            }
             for(int i=0;i<codesDepartements.length;i++)
                 DepartementIndex.getInstance().indexJDONREFDepartement(codesDepartements[i]);
-            if (isFlag(FLAGS.POIZON))
-                PoizonIndex.getInstance().indexJDONREFPoizon();
-        }
-        
-        if (withSwitchAlias)
-        {
-            if (isFlag(FLAGS.DEPARTEMENT))
-            {
-                util.showExchangeIndexInAlias(alias, departement_index, index+"_departement");
-                util.showSetRefreshInterval(departement_index,"30s");
-            }
+            
             if (isFlag(FLAGS.VOIE))
             {
-                util.showExchangeIndexInAlias(alias, voie_index, index+"_voie");
                 util.showSetRefreshInterval(voie_index,"30s");
+                util.showSetReplicaNumber(voie_index, "1");
+                if (withSwitchAlias)
+                    util.showExchangeIndexInAlias(alias, voie_index, index+"_voie");                
             }
             if (isFlag(FLAGS.ADRESSE))
             {
-                util.showExchangeIndexInAlias(alias, adresse_index, index+"_adresse");
                 util.showSetRefreshInterval(adresse_index,"30s");
-            }
-            if (isFlag(FLAGS.PAYS))
-            {
-                util.showExchangeIndexInAlias(alias, pays_index, index+"_pays");
-                util.showSetRefreshInterval(pays_index,"30s");
-            }
-            if (isFlag(FLAGS.COMMUNE))
-            {
-                util.showExchangeIndexInAlias(alias, commune_index, index+"_commune");
-                util.showSetRefreshInterval(commune_index,"30s");
-            }
+                //util.showSetReplicaNumber(adresse_index, "1");
+                if (withSwitchAlias)
+                    util.showExchangeIndexInAlias(alias, adresse_index, index+"_adresse");                
+            }  
             if (isFlag(FLAGS.TRONCON))
             {
-                util.showExchangeIndexInAlias(alias, troncon_index, index+"_troncon");
                 util.showSetRefreshInterval(troncon_index,"30s");
-            }
-            if (isFlag(FLAGS.POIZON))
-            {
-                util.showExchangeIndexInAlias(alias, poizon_index, index+"_poizon");
-                util.showSetRefreshInterval(poizon_index,"30s");
+                util.showSetReplicaNumber(troncon_index, "1");
+                if (withSwitchAlias)
+                    util.showExchangeIndexInAlias(alias, troncon_index, index+"_troncon");
             }
         }
-        else
-            util.showSetRefreshInterval(index,"30s");
         
         long end = Calendar.getInstance().getTimeInMillis();
         

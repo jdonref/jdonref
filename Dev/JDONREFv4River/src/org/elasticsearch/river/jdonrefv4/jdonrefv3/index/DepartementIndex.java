@@ -29,9 +29,19 @@ public class DepartementIndex
     
     boolean withGeometry = true;
     
-    HashSet<FLAGS> flags;
+    HashSet<FLAGS> flags = new HashSet<>();
     
     String index;
+        
+    String [] dept = new String[0];
+
+    public String[] getDept() {
+        return dept;
+    }
+
+    public void setDept(String[] dept) {
+        this.dept = dept;
+    }
     
     protected static DepartementIndex instance = null;
     
@@ -114,7 +124,7 @@ public class DepartementIndex
             System.out.println("Départements");
         
         DepartementDAO dao = new DepartementDAO();
-        ResultSet rs = dao.getAllDepartement(connection);
+        ResultSet rs = dao.getAllDepartement(connection, getDept());
 //      creation de l'objet metaDataDep
         MetaData metaDataDep= new MetaData();
         metaDataDep.setIndex(index);
@@ -158,6 +168,7 @@ public class DepartementIndex
             }
             i++;
         }
+        rs.close();
         if(!bulk.equals("")){
         System.out.println("departement : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
         if (!isVerbose())

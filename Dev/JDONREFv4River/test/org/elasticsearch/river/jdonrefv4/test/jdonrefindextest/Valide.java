@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.analysis.FrequentTermsUtil;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Commune;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Departement;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Voie;
@@ -86,13 +87,18 @@ public class Valide
     }
 //"geometrie":{"type":"point","coordinates":[2.3292484283447266,48.84809494018555]}}}}
     
-    public JDONREFIndex getJDONREFIndex(String index,String alias,boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,boolean withSwitchAlias,String url,String connectionString,String user,String passwd) throws SQLException, IOException
+    public JDONREFIndex getJDONREFIndex(String index,String alias,boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,boolean withSwitchAlias,String url,String connectionString,String user,String passwd,boolean restart,long millis) throws SQLException, IOException
     {
         JDONREFIndex jdonrefIndex = JDONREFIndex.getInstance();
         jdonrefIndex.setUrl(url);
         jdonrefIndex.setVerbose(verboseIndexation);
         jdonrefIndex.setIndex(index);
         jdonrefIndex.setAlias(alias);
+        jdonrefIndex.setRestart(restart);
+        jdonrefIndex.setWithGeometry(withGeometry);
+        jdonrefIndex.setWithSwitchAlias(withSwitchAlias);
+        if (millis!=0)
+            jdonrefIndex.setMillis(millis);
         if (reindex)
         {
             if (bouchon)
@@ -101,7 +107,6 @@ public class Valide
                 jdonrefIndex.setDepartements(getDepartements());
                 jdonrefIndex.setCommunes(getCommunes());
                 jdonrefIndex.setVoies(getVoies());
-                jdonrefIndex.setWithGeometry(withGeometry);
                 
                 jdonrefIndex.reindex();
             }
@@ -109,28 +114,31 @@ public class Valide
             {
                 Connection connection = DriverManager.getConnection(connectionString,user,passwd);
                 jdonrefIndex.setConnection(connection);
-                jdonrefIndex.setWithGeometry(withGeometry);
-                jdonrefIndex.setWithSwitchAlias(withSwitchAlias);
                 
-                int numDepartements = 1; // max = 96. 20 do not work skip setCodesDepartements to test it.
-                String[] departements = new String[numDepartements+(numDepartements>=20?-1:0)];
-                for(int i=1;i<=numDepartements;i++)
-                {
-                    if (i!=20)
-                    {
-                        String departement = Integer.toString(i);
-                        if (departement.length()==1) departement = "0"+departement;
-                        departements[i-1+(i>=20?-1:0)] = departement;
-                    }
-                }
-                //jdonrefIndex.setCodesDepartements(departements); // remove comments to select departements
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
+//                int numDepartements = 1; // max = 96. 20 not included. skip setCodesDepartements to test it (and all others).
+//                String[] departements = new String[numDepartements+(numDepartements>=20?-1:0)];
+//                for(int i=1;i<=numDepartements;i++)
+//                {
+//                    if (i!=20)
+//                    {
+//                        String departement = Integer.toString(i);
+//                        if (departement.length()==1) departement = "0"+departement;
+//                        departements[i-1+(i>=20?-1:0)] = departement;
+//                    }
+//                }
+                
+                String[] departements = {"95", "94", "93", "92", "91", "78", "77", "75"};
+                
+                
+//                departements = new String[]{"23"};
+                jdonrefIndex.setCodesDepartements(departements); // remove comments to select departements
+//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); // useless
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
-                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
+//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
                 jdonrefIndex.reindex();
             }
         }
@@ -142,24 +150,29 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        //String url = "10.213.93.74:9200";
-        String url = "plf.jdonrefv4.ppol.minint.fr";
+        String url = "192.168.77.129:9200";
+//        String url = "plf.jdonrefv4.ppol.minint.fr";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
         boolean withGeometry = false;
         boolean withSwitchAlias = true;
+        boolean restart = true;
         String indexName = "jdonref";
         String aliasName = "jdonref";
+        long millis = 0; // Calendar.getInstance one
+        //long millis = 1417344386023l;
 
         // connection à la base de JDONREF
         String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN2";
         String user = "postgres";
         String passwd = "postgres";
         
+        FrequentTermsUtil.setFilePath("./src/resources/analysis/word84.txt");
+        
         try {
             
-            JDONREFIndex index = getJDONREFIndex(indexName,aliasName,bouchon,reindex,verboseIndexation,withGeometry,withSwitchAlias,url,connectionString,user,passwd);
+            JDONREFIndex index = getJDONREFIndex(indexName,aliasName,bouchon,reindex,verboseIndexation,withGeometry,withSwitchAlias,url,connectionString,user,passwd,restart,millis);
             
 //            AdresseBusiness adresseBO = new AdresseBusiness(index);
 //            adresseBO.setHitsPerPage(5);

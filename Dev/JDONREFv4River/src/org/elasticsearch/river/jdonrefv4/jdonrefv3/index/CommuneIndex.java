@@ -25,6 +25,15 @@ public class CommuneIndex
     int paquetsBulk=500;
     
     String index = null;
+    String [] dept = new String[0];
+
+    public String[] getDept() {
+        return dept;
+    }
+
+    public void setDept(String[] dept) {
+        this.dept = dept;
+    }
 
     protected static CommuneIndex instance = null;
 
@@ -90,7 +99,9 @@ public class CommuneIndex
             System.out.println("Communes");
         
         CommuneDAO dao = new CommuneDAO();
-        ResultSet rs = dao.getAllCommunes(connection);
+        
+        ResultSet rs = dao.getAllCommunes(connection, getDept());
+
 //      creation de l'objet metaDataCommune
         MetaData metaDataCommune= new MetaData();
         metaDataCommune.setIndex(index);
@@ -123,6 +134,7 @@ public class CommuneIndex
             }
             i++;
         }
+        rs.close();
         if(!bulk.equals("")){
         System.out.println("commune : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idCommune));        
         util.indexResourceBulk(bulk);
@@ -131,6 +143,7 @@ public class CommuneIndex
     }
         
 
+    
     void indexJDONREFCommune(Commune[] communes) throws IOException
     {
         if (isVerbose())
