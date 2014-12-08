@@ -120,6 +120,7 @@ public class PaysIndex
             }
             i++;
         }
+        rs.close();
         if(!bulk.equals("")){
                 System.out.println("pays : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPays));        
                 if (!isVerbose())

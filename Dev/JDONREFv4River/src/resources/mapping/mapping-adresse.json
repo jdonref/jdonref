@@ -30,7 +30,7 @@
                             "ligne7" : { "type" : "string", "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv4_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
                             "pin" : { "properties" : { "centroide" : { "type" : "geo_point" , "fielddata" : { "format" : "compressed" , "precision" : "1cm"}}}},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-                            "fullName" : {"type": "string", "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index_token_count","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"}
+                            "fullName" : {"type": "string", "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index_token_count","search_analyzer":"jdonrefv4_search_unsplit", "similarity":"jdonrefv4"}
                         },
        "transform" : {
            "lang" : "groovy",

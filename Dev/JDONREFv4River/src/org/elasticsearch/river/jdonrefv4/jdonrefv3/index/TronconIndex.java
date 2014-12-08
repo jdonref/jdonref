@@ -279,6 +279,7 @@ ElasticSearchUtil util;
             }
             i++;
         }
+        rs.close();
         if(!bulk.equals("")){
                 System.out.println("troncons droit : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
                 if (!isVerbose())
@@ -327,6 +328,7 @@ ElasticSearchUtil util;
             }
             i++;
         }
+        rs.close();
         if(!bulk.equals("")){
                 System.out.println("troncons gauche : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
                 if (!isVerbose())

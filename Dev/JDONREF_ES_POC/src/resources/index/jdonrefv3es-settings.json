@@ -5,7 +5,7 @@
                 "jdonrefv3es_index" : {
                     "type" : "custom",
                     "tokenizer" : "whitespace",
-                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer","jdonrefv3es_synonyme", "jdonrefv3es_nGram"]
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "jdonrefv3es_synonyme", "french_stemmer", "jdonrefv3es_nGram"]
                 },
                 "jdonrefv3es_codes_index" : {
                     "type" : "custom",

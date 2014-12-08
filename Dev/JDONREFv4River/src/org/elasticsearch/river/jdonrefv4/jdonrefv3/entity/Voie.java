@@ -3,11 +3,13 @@ package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import org.apache.lucene.analysis.FrequentTermsUtil;
 
 /**
  *
@@ -205,7 +207,7 @@ public class Voie
     public String getDatForm(Date d){
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return formater.format(d);
-    }    
+    }        
     
     //TODO fct centroide 
     
@@ -242,6 +244,28 @@ public class Voie
          if (withGeometry){
             voie.add("geometrie" , geometrieJSON(geometrie));
          }
+         
+         
+//        LongArrayList ligne4Terms = FrequentTermsUtil.getMostFrequentTerms(toLigne4().trim());
+//        LongArrayList communeTerms = FrequentTermsUtil.getMostFrequentTerms(commune.commune);
+//        LongArrayList codeInseeTerms = FrequentTermsUtil.getMostFrequentTerms(commune.codeinsee);
+//        ligne4Terms.addAll(communeTerms);
+//        ligne4Terms.addAll(codeInseeTerms);
+//        if (ligne4Terms.size()>1)
+        {
+            //String encode = encodeMostFrequentTerms(ligne4Terms);
+            //voie.add("mostFrequentTerms",encode);
+        
+            //ArrayList<String> allTerms = FrequentTermsUtil.genereMostFrequentTerms(toLigne4()+" "+commune.dpt_code_departement+" "+commune.codeinsee+" "+commune.commune,2,5,1);
+            
+//            for(int i=0;i<allTerms.size();i++)
+//                System.out.println(" Ajoute "+allTerms.get(i));
+//            System.out.println(allTerms.size()+" combinaisons trouvées pour "+toLigne4()+" "+commune.codeinsee+" "+commune.commune);
+
+            //if (allTerms.size()>0)
+            //   voie.add("mostFrequentTerms",FrequentTermsUtil.cumul(allTerms));
+        }
+         
 //         voie.add("pin" , centroideJSON(centroide)); TODO centroide JSON
          //voie.add("fullName",toString().trim());
      

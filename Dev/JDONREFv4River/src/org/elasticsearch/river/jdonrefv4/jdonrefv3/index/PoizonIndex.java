@@ -95,7 +95,7 @@ public class PoizonIndex {
         ResultSet rsDatesT0 = dao.getDateT0AllPoizon(connection);
         while(rsDatesT0.next()){
             Date date = rsDatesT0.getTimestamp(1);
-            String output = util.search(object , URLEncoder.encode(attribut+":[\""+getDatForm(date)+"\" TO *]"));
+            String output = util.search(index+"/"+object , URLEncoder.encode(attribut+":[\""+getDatForm(date)+"\" TO *]"));
 
             if(!output.contains("\"hits\":{\"total\":0,")) // TODO : convertir en JSON
                 return lastUpdate;
@@ -147,6 +147,7 @@ public class PoizonIndex {
             }
             i++;
         }
+        rs.close();
         if(!bulk.equals("")){
                 System.out.println("poizon : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPoizon));
                 if (!isVerbose())

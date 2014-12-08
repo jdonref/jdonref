@@ -95,42 +95,43 @@ public class AdresseIndex {
         metaDataAdresse.setIndex(index);
         metaDataAdresse.setType("adresse");
               
-        String bulk ="";
+        StringBuilder bulk = new StringBuilder();
         int i =0;
         int lastIdBulk=idAdresseTmp;
 
         while(rs.next())
         {
-            if(paquetsBulk == 1) System.out.println(i+" adresses traités");
+            if(paquetsBulk == 1) System.out.println(dpt+": "+i+" adresses traités");
             if (isVerbose() && i%paquetsBulk==1)
-                System.out.println(i+" adresses traitées");
+                System.out.println(dpt+": "+i+" adresses traitées");
             
             Adresse adr = new Adresse(rs);
             if (adr.numero!=null){
 //            creation de l'objet metaDataAdresse plus haut
                 metaDataAdresse.setId(++idAdresse);
-                bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument(withGeometry).toString()+"\n"; 
+                bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
                 
 // envoyé le bulk par paquet de 1000 à partir de idAdresseTmp 
 // idAdresseTmp valeur de l'id de debut au moment de l'appel à cette methode
                 if((idAdresse-idAdresseTmp)%paquetsBulk==0){
                     System.out.println("adresse : bulk pour les ids de "+(idAdresse-paquetsBulk+1)+" à "+idAdresse);
                     if (!isVerbose())
-                        util.indexResourceBulk(bulk);
+                        util.indexResourceBulk(bulk.toString());
                     else
-                        util.showIndexResourceBulk(bulk);
-                    bulk="";
+                        util.showIndexResourceBulk(bulk.toString());
+                    bulk.setLength(0);
                     lastIdBulk=idAdresse;
                 }
             }    
             i++;     
         }
-        if(!bulk.equals("")){
+        rs.close();
+        if(bulk.length()!=0){
                 System.out.println("adresse : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
                 if (!isVerbose())
-                    util.indexResourceBulk(bulk);
+                    util.indexResourceBulk(bulk.toString());
                 else
-                    util.showIndexResourceBulk(bulk);
+                    util.showIndexResourceBulk(bulk.toString());
         }
         idAdresseTmp = idAdresse;
     }

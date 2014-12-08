@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import javax.json.Json;
@@ -77,6 +78,22 @@ public class ElasticSearchUtil
         System.out.println("health : "+output);
     }
     
+    public String deleteIndice(String indice)
+    {
+        WebResource webResource = client.resource("http://"+url+"/"+indice);
+        
+        ClientResponse response = webResource.accept("application/json").delete(ClientResponse.class);
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    public void deleteIndices(ArrayList<String> indices)
+    {
+        for(int i=0;i<indices.size();i++)
+            deleteIndice(indices.get(i));
+    }
+    
     public Iterator<String> getLastAliasIndices(String alias)
     {
         WebResource webResource = client.resource("http://"+url+"/_alias/"+alias);
@@ -96,6 +113,7 @@ public class ElasticSearchUtil
     
     public String setNewAlias(String index,String alias)
     {
+        ArrayList<String> indices = new ArrayList();
         Iterator<String> lastindices = getLastAliasIndices(alias);
         
         WebResource webResource = client.resource("http://"+url+"/_aliases");
@@ -113,7 +131,9 @@ public class ElasticSearchUtil
         while(lastindices.hasNext())
         {
             JsonObjectBuilder lastindex = Json.createObjectBuilder();
-            lastindex.add("index", lastindices.next());
+            String lastindice = lastindices.next();
+            indices.add(lastindice);
+            lastindex.add("index", lastindice);
             lastindex.add("alias", alias);
         
             JsonObjectBuilder removelastindex = Json.createObjectBuilder();
@@ -130,6 +150,8 @@ public class ElasticSearchUtil
         
         ClientResponse response = webResource.accept("application/json").post(ClientResponse.class,data);
         String output = response.getEntity(String.class);
+        
+        deleteIndices(indices);
         
         return output;
     }

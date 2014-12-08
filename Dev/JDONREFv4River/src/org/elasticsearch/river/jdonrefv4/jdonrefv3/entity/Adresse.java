@@ -3,11 +3,13 @@ package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import org.apache.lucene.analysis.FrequentTermsUtil;
 
 /**
  * @author Julien
@@ -151,7 +153,7 @@ public class Adresse
             adresse.add("repetition",repetition); 
         adresse.add("type_de_voie",voie.typedevoie);
         if (voie.article!=null)
-            adresse.add("artile",voie.article);
+            adresse.add("article",voie.article);
         adresse.add("libelle",voie.libelle);
         adresse.add("commune",voie.commune.commune);
         String code_arrondissement = voie.commune.getCodeArrondissement();
@@ -171,6 +173,20 @@ public class Adresse
         if (withGeometry)
             adresse.add("geometrie" , geometrieJSON(geometrie));
         adresse.add("pin" , geometrieJSON(geometrie));
+        
+//        LongArrayList fullNameTerms = FrequentTermsUtil.getMostFrequentTerms(toLigne4().trim()+" "+voie.commune.codeinsee+ " "+voie.commune.commune);
+        
+//        if (fullNameTerms.size()>1)
+        {
+            //CollectionUtils.sort(fullNameTerms);
+        
+        
+            //ArrayList<String> allTerms = FrequentTermsUtil.genereMostFrequentTerms(toLigne4().trim()+" "+voie.commune.dpt_code_departement+" "+voie.commune.codeinsee+ " "+voie.commune.commune,2,5,1);
+            //if (allTerms.size()>0)
+            //    adresse.add("mostFrequentTerms",FrequentTermsUtil.cumul(allTerms));
+            
+            
+        }
         
         //adresse.add("fullName",toString().trim());
 

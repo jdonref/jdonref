@@ -58,6 +58,29 @@ public class ElasticSearchUtil
         System.out.println("health : "+output);
     }
     
+    public String setReplicaNumber(String index,String replicas)
+    {
+        WebResource webResource = client.resource("http://"+url+"/"+index+"/_settings");
+        
+        JsonObjectBuilder number_of_replicas = Json.createObjectBuilder();
+        number_of_replicas.add("number_of_replicas",replicas);
+        
+        JsonObjectBuilder setting = Json.createObjectBuilder();
+        setting.add("index", number_of_replicas);
+        
+        ClientResponse response = webResource.accept("application/json").put(ClientResponse.class,setting.build().toString());
+        String output = response.getEntity(String.class);
+        
+        return output;
+    }
+    
+    public void showSetReplicaNumber(String index,String replicas)
+    {
+        String output = setReplicaNumber(index,replicas);
+        
+        System.out.println("setReplicaNumber : "+output);
+    }
+    
     public String setRefreshInterval(String index,String interval)
     {
         WebResource webResource = client.resource("http://"+url+"/"+index+"/_settings");
@@ -428,16 +451,23 @@ public class ElasticSearchUtil
         return output;
     }
     
-    void showCreateIndex(String index,String analysis) throws FileNotFoundException, IOException {
+    void showCreateIndex(String index,String analysis,String number_of_shards) throws FileNotFoundException, IOException {
         System.out.println("Creating index : "+index);
         
-        String res = createIndex(index,analysis);
+        String res = createIndex(index,analysis,number_of_shards);
         
         System.out.println(res);
     }
 
-    String createIndex(String index,String analysis) throws FileNotFoundException, IOException {
+    String changeNumberOfShards(String data,String number_of_shards)
+    {
+        return data.replace("number_of_shards\" : 5,", "number_of_shards\" : "+number_of_shards+",");
+    }
+    
+    String createIndex(String index,String analysis,String number_of_shards) throws FileNotFoundException, IOException {
         String content = readFile(analysis);
+        
+        content = changeNumberOfShards(content, number_of_shards);
         
         WebResource webResource = client.resource("http://"+url+"/"+index);
         

@@ -107,13 +107,9 @@ public class Valide
                 Connection connection = DriverManager.getConnection(connectionString,user,passwd);
                 jdonrefIndex.setConnection(connection);
                 jdonrefIndex.setWithGeometry(withGeometry);
-                jdonrefIndex.setCodesDepartements(new String[]{"01"});
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
+                //jdonrefIndex.setCodesDepartements(new String[]{"01"});
+                //jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE);
                 jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
                 jdonrefIndex.reindex();
             }
         }
@@ -125,14 +121,15 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "192.168.0.11:9200";
+        String url = "10.213.92.202:9200";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
         boolean withGeometry = false;
 
+ 
         // connection à la base de JDONREF
-        String connectionString = "jdbc:postgresql://192.168.135.129:5433/JDONREF_IGN";
+        String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN2";
         String user = "postgres";
         String passwd = "postgres";
         

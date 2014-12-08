@@ -24,7 +24,7 @@ public class VoieIndex {
     
     static int idVoie=0;
     static int idVoieTmp=0;
-    int paquetsBulk=500;
+    int paquetsBulk=200;
     
     String index = null;
 
@@ -105,15 +105,15 @@ public class VoieIndex {
         metaDataVoie.setIndex(index);
         metaDataVoie.setType("voie");
               
-        String bulk ="";
+        StringBuilder bulk = new StringBuilder();
         int i =0;
         int lastIdBulk=idVoieTmp;
 
         while(rs.next())
         {
-            if(paquetsBulk == 1) System.out.println(i+" voies traités");
+            if(paquetsBulk == 1) System.out.println(dpt+": "+i+" voies traités");
             if (isVerbose() && i%paquetsBulk==1)
-                System.out.println(i+" voies traitées");
+                System.out.println(dpt+": "+i+" voies traitées");
             
             Voie v = new Voie(rs);
             
@@ -127,26 +127,27 @@ public class VoieIndex {
                         
 //            creation de l'objet metaDataVoie plus haut
             metaDataVoie.setId(++idVoie);
-            bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument(withGeometry).toString()+"\n";
+            bulk.append(metaDataVoie.toJSONMetaData().toString()).append("\n").append(v.toJSONDocument(withGeometry).toString()).append("\n");
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);
                 if (!isVerbose())
-                    util.indexResourceBulk(bulk);
+                    util.indexResourceBulk(bulk.toString());
                 else
-                    util.showIndexResourceBulk(bulk);
-                bulk="";
+                    util.showIndexResourceBulk(bulk.toString());
+                bulk.setLength(0);
                 lastIdBulk=idVoie;
             }
             
             i++;
 //            addVoie(v);
         }
-        if(!bulk.equals("")){
+        rs.close();
+        if(bulk.length()!=0){
                 System.out.println("voie : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idVoie));        
                 if (!isVerbose())
-                    util.indexResourceBulk(bulk);
+                    util.indexResourceBulk(bulk.toString());
                 else
-                    util.showIndexResourceBulk(bulk);
+                    util.showIndexResourceBulk(bulk.toString());
         }
         idVoieTmp = idVoie;
     }

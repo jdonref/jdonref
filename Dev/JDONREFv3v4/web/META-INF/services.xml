@@ -39,4 +39,9 @@
         <nom>PAYS</nom>
         <cle>10007</cle>
     </service>
+    <service>
+        <identifiant>7</identifiant>
+        <nom>POIZON</nom>
+        <cle>10008</cle>
+    </service>
 </services>

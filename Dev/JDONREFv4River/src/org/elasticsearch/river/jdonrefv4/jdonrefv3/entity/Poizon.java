@@ -160,8 +160,13 @@ public class Poizon {
 //         poizon.add("libelle","..");
 //         poizon.add("commune",".."); //////
          
-         if(poizon_donnee6!=null)
-            poizon.add("code_postal",poizon_donnee6);
+        if(poizon_donnee6!=null && poizon_donnee6.length()>=5)
+        {
+            String code_postal = poizon_donnee6.substring(0,5);
+            poizon.add("code_postal", code_postal);
+            if (poizon_donnee6.length()>6)
+                poizon.add("commune",poizon_donnee6.substring(6));
+        }
         poizon.add("t0" , getDatForm(t0));
         poizon.add("t1" , getDatForm(t1));
         poizon.add("poizon_service", poizon_service); 
@@ -175,7 +180,7 @@ public class Poizon {
             poizon.add("ligne4", poizon_donnee4);
         if(poizon_donnee5!=null && poizon_donnee5.length()>0)
             poizon.add("ligne5", poizon_donnee5);
-        if(poizon_donnee6!=null && poizon_donnee5.length()>0)
+        if(poizon_donnee6!=null && poizon_donnee6.length()>0)
             poizon.add("ligne6", poizon_donnee6);
         if(poizon_donnee7!=null && poizon_donnee7.length()>0)
         {
