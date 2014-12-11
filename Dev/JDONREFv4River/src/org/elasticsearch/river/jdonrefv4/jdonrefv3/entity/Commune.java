@@ -2,6 +2,7 @@ package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -59,20 +60,44 @@ public class Commune
       codepostal = rs.getString(index[9]);
     }
     
+//    public Commune(ResultSet rs) throws SQLException
+//    {
+//      codeinsee = rs.getString(1);
+//      dpt_code_departement = rs.getString(2);
+//      commune = rs.getString(3);
+//      com_nom_desab = rs.getString(4);
+//      com_nom_origine = rs.getString(5);
+//      com_nom_pq = rs.getString(6);
+//      com_code_insee_commune = rs.getString(7);
+//      t0 = rs.getTimestamp(8);
+//      t1 = rs.getTimestamp(9);
+//      geometrie = rs.getString(10);
+//      codepostal = rs.getString(11);
+//      centroide = rs.getString(12);
+//    }
+    
     public Commune(ResultSet rs) throws SQLException
     {
-      codeinsee = rs.getString(1);
-      dpt_code_departement = rs.getString(2);
-      commune = rs.getString(3);
-      com_nom_desab = rs.getString(4);
-      com_nom_origine = rs.getString(5);
-      com_nom_pq = rs.getString(6);
-      com_code_insee_commune = rs.getString(7);
-      t0 = rs.getTimestamp(8);
-      t1 = rs.getTimestamp(9);
-      geometrie = rs.getString(10);
-      codepostal = rs.getString(11);
-      centroide = rs.getString(12);
+        ResultSetMetaData metaData = rs.getMetaData();
+        int nbColumn = metaData.getColumnCount();
+        for (int i = 0; i < nbColumn; i++) {
+            String nomColonne = metaData.getColumnLabel(i+1); 
+            switch(nomColonne){
+                case "com_code_insee" : codeinsee = rs.getString(nomColonne); break;
+                case "dpt_code_departement" : dpt_code_departement = rs.getString(nomColonne); break;
+                case "com_nom" : commune = rs.getString(nomColonne); break;
+                case "com_nom_desab" : com_nom_desab = rs.getString(nomColonne); break;
+                case "com_nom_origine" : com_nom_origine = rs.getString(nomColonne); break;
+                case "com_nom_pq" : com_nom_pq = rs.getString(nomColonne); break;
+                case "com_code_insee_commune" : com_code_insee_commune = rs.getString(nomColonne); break;
+                case "t0" : t0 = rs.getTimestamp(nomColonne); break;
+                case "t1" : t1 = rs.getTimestamp(nomColonne); break;
+                case "geometrie" : geometrie = rs.getString(nomColonne); break;
+                case "cdp_code_postal" : codepostal = rs.getString(nomColonne); break;
+                case "centroide" : centroide = rs.getString(nomColonne); break;
+                default: throw new Error("Nom ou labelle \""+nomColonne+"\" n'est pas renseigné");
+            }
+        }
     }
 
     public String[] getLignes()

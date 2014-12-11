@@ -34,9 +34,9 @@ public class CommuneDAO
                 "com_code_insee_commune," +                 //7
                 "com_communes.t0," +                        //8
                 "com_communes.t1," +                        //9
-                "st_AsGeoJSON(st_transform(geometrie,4326))," +    //10
+                "st_AsGeoJSON(st_transform(geometrie,4326)) AS geometrie," +    //10
                 "cdp_code_postal, " +                        //11
-                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) "+ //12
+                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS centroide "+ //12
                 "FROM com_communes, cdp_codes_postaux " +
                 "WHERE com_communes.com_code_insee = cdp_codes_postaux.com_code_insee";
           
@@ -48,26 +48,28 @@ public class CommuneDAO
     
         public ResultSet getAllCommunes(Connection connection, String[] dept) throws SQLException
     {
+        
+        String sql="SELECT " +
+                "com_communes.com_code_insee," +            //1
+                "com_communes.dpt_code_departement," +      //2
+                "com_nom," +                                //3
+                "com_nom_desab," +                          //4
+                "com_nom_origine," +                        //5
+                "com_nom_pq," +                             //6
+                "com_code_insee_commune," +                 //7
+                "com_communes.t0," +                        //8
+                "com_communes.t1," +                        //9
+                "st_AsGeoJSON(st_transform(geometrie,4326)) AS geometrie," +    //10
+                "cdp_code_postal, " +                        //11
+                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS centroide "+ //12
+                "FROM com_communes, cdp_codes_postaux " +
+                "WHERE com_communes.com_code_insee = cdp_codes_postaux.com_code_insee " ;
+        
+            
         if(dept.length != 0 && dept != null){
             int taille = dept.length;
             int i = 0;
-            String sql="SELECT " +
-                    "com_communes.com_code_insee," +            //1
-                    "com_communes.dpt_code_departement," +      //2
-                    "com_nom," +                                //3
-                    "com_nom_desab," +                          //4
-                    "com_nom_origine," +                        //5
-                    "com_nom_pq," +                             //6
-                    "com_code_insee_commune," +                 //7
-                    "com_communes.t0," +                        //8
-                    "com_communes.t1," +                        //9
-                    "st_AsGeoJSON(st_transform(geometrie,4326))," +    //10
-                    "cdp_code_postal, " +                        //11
-                    "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) "+ //12
-                    "FROM com_communes, cdp_codes_postaux " +
-                    "WHERE com_communes.com_code_insee = cdp_codes_postaux.com_code_insee"
-                    + " and ( com_communes.dpt_code_departement = '"+dept[i]+"' ";
-            
+            sql +="and ( com_communes.dpt_code_departement = '"+dept[i]+"' ";
             taille--;
             i++;
             while(taille>0){
@@ -76,6 +78,7 @@ public class CommuneDAO
                 i++;
             }
             sql += ")";
+            
             PreparedStatement ps = connection.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
@@ -83,4 +86,25 @@ public class CommuneDAO
         }else 
             return getAllCommunes(connection);
     }
+     
+        
+    public ResultSet getAllDep(Connection connection) throws SQLException
+    {
+        
+        String sql= "SELECT distinct dpt_code_departement " +
+                "FROM com_communes "+
+                "order by dpt_code_departement asc";
+
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+
+        return rs;
+
+    }
+        
+        
+        
+        
+
+        
 }
