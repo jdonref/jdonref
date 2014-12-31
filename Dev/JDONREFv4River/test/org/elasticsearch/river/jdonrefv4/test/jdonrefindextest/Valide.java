@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,7 +94,10 @@ public class Valide
         jdonrefIndex.setUrl(url);
         jdonrefIndex.setVerbose(verboseIndexation);
         jdonrefIndex.setIndex(index);
-        jdonrefIndex.setAlias(alias);
+        ArrayList<String> aliasL = new ArrayList<>();
+        aliasL.add(alias);
+        jdonrefIndex.setAliasL(aliasL);
+//        jdonrefIndex.setAlias(alias);
         jdonrefIndex.setRestart(restart);
         jdonrefIndex.setWithGeometry(withGeometry);
         jdonrefIndex.setWithSwitchAlias(withSwitchAlias);
@@ -127,30 +131,31 @@ public class Valide
 //                    }
 //                }
                 
-                String[] departements = {"95", "94", "93", "92", "91", "78", "77", "75"};
-                
-                
+//                String[] departements = {"95", "94", "93", "92", "91", "78", "77", "75"};
+                String[] departements = {"95"};
+                               
 //                departements = new String[]{"23"};
                 jdonrefIndex.setCodesDepartements(departements); // remove comments to select departements
 //                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); // useless
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
+//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); // useless
+//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
 //                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
-                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
+//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
+//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
+//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
                 jdonrefIndex.reindex();
             }
         }
         return jdonrefIndex;
     }
     
+    
 
     @Test
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "192.168.77.129:9200";
+        String url = "10.213.93.13:9200";
 //        String url = "plf.jdonrefv4.ppol.minint.fr";
         boolean bouchon = false;
         boolean reindex = true;
@@ -160,6 +165,7 @@ public class Valide
         boolean restart = true;
         String indexName = "jdonref";
         String aliasName = "jdonref";
+        
         long millis = 0; // Calendar.getInstance one
         //long millis = 1417344386023l;
 

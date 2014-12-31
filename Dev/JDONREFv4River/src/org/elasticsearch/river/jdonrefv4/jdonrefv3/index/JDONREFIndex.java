@@ -4,6 +4,7 @@ import com.sun.jersey.api.client.Client;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Commune;
@@ -22,7 +23,8 @@ public class JDONREFIndex
     boolean withSwitchAlias = false;
     ElasticSearchUtil util;
     String index = null;
-    String alias = null;
+//    String alias = null;
+    ArrayList<String> aliasL = new ArrayList<>();
     
     String departement_index;
     String voie_index;
@@ -164,13 +166,23 @@ public class JDONREFIndex
             poizon_index += "_poizon_"+millis;
         }
     }
+    
+    
 
-    public String getAlias() {
-        return alias;
+//    public String getAlias() {
+//        return alias;
+//    }
+//
+//    public void setAlias(String alias) {
+//        this.alias = alias;
+//    }
+
+    public ArrayList<String> getAliasL() {
+        return aliasL;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setAliasL(ArrayList<String> aliasL) {
+        this.aliasL = aliasL;
     }
 
     public ElasticSearchUtil getUtil() {
@@ -293,7 +305,7 @@ public class JDONREFIndex
         {
             if (!withSwitchAlias)
             {
-                this.setIndex(this.alias);
+                this.setIndex(this.index);
                 util.showDeleteIndex(index);
 
                 util.showCreateIndex(index,"./src/resources/index/jdonrefv4-settings.json","5");
@@ -441,7 +453,8 @@ public class JDONREFIndex
                 util.showSetRefreshInterval(pays_index,"30s");
                 util.showSetReplicaNumber(pays_index, "1");
                 if (withSwitchAlias)
-                    util.showExchangeIndexInAlias(alias, pays_index, index+"_pays");
+                    for(String alias : aliasL)
+                        util.showExchangeIndexInAlias(alias, pays_index, index+"_pays");
             }
             if (isFlag(FLAGS.DEPARTEMENT))
             {
@@ -449,7 +462,8 @@ public class JDONREFIndex
                 util.showSetRefreshInterval(departement_index,"30s");
                 util.showSetReplicaNumber(departement_index, "1");
                 if (withSwitchAlias)
-                    util.showExchangeIndexInAlias(alias, departement_index, index+"_departement");                
+                    for(String alias : aliasL)
+                        util.showExchangeIndexInAlias(alias, departement_index, index+"_departement");                
             }
             if (isFlag(FLAGS.COMMUNE))
             {
@@ -457,7 +471,8 @@ public class JDONREFIndex
                 util.showSetRefreshInterval(commune_index,"30s");
                 util.showSetReplicaNumber(commune_index, "1");
                 if (withSwitchAlias)
-                    util.showExchangeIndexInAlias(alias, commune_index, index+"_commune");
+                    for(String alias : aliasL)
+                        util.showExchangeIndexInAlias(alias, commune_index, index+"_commune");
             }
             if (isFlag(FLAGS.POIZON))
             {
@@ -465,7 +480,8 @@ public class JDONREFIndex
                 util.showSetRefreshInterval(poizon_index,"30s");
                 util.showSetReplicaNumber(poizon_index, "1");
                 if (withSwitchAlias)
-                    util.showExchangeIndexInAlias(alias, poizon_index, index+"_poizon");
+                    for(String alias : aliasL)
+                        util.showExchangeIndexInAlias(alias, poizon_index, index+"_poizon");
             }
             for(int i=0;i<codesDepartements.length;i++)
                 DepartementIndex.getInstance().indexJDONREFDepartement(codesDepartements[i]);
@@ -475,21 +491,24 @@ public class JDONREFIndex
                 util.showSetRefreshInterval(voie_index,"30s");
                 util.showSetReplicaNumber(voie_index, "1");
                 if (withSwitchAlias)
-                    util.showExchangeIndexInAlias(alias, voie_index, index+"_voie");                
+                    for(String alias : aliasL)
+                        util.showExchangeIndexInAlias(alias, voie_index, index+"_voie");                
             }
             if (isFlag(FLAGS.ADRESSE))
             {
                 util.showSetRefreshInterval(adresse_index,"30s");
-                //util.showSetReplicaNumber(adresse_index, "1");
+                util.showSetReplicaNumber(adresse_index, "1");
                 if (withSwitchAlias)
-                    util.showExchangeIndexInAlias(alias, adresse_index, index+"_adresse");                
+                    for(String alias : aliasL)
+                        util.showExchangeIndexInAlias(alias, adresse_index, index+"_adresse");                
             }  
             if (isFlag(FLAGS.TRONCON))
             {
                 util.showSetRefreshInterval(troncon_index,"30s");
                 util.showSetReplicaNumber(troncon_index, "1");
                 if (withSwitchAlias)
-                    util.showExchangeIndexInAlias(alias, troncon_index, index+"_troncon");
+                    for(String alias : aliasL)
+                        util.showExchangeIndexInAlias(alias, troncon_index, index+"_troncon");
             }
         }
         

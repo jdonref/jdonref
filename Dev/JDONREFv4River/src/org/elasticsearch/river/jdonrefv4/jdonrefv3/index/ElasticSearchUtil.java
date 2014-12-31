@@ -257,7 +257,7 @@ public class ElasticSearchUtil
         
         return output;
     }
-    
+
     public void showSetNewAlias(String index,String alias)
     {
         String output = setNewAlias(index, alias);
@@ -280,14 +280,19 @@ public class ElasticSearchUtil
     {
         String output = indexResourceBulk(bulk);
         
-        JsonReader reader = Json.createReader(new StringReader(output));
-        JsonObject object = reader.readObject();
-        boolean errors = object.getBoolean("errors");
-        
-        if (!errors)
-            System.out.println("bulk : "+output.substring(0,30)+" ...");
-        else
-            System.out.println("bulk : "+output);
+        try {
+            JsonReader reader = Json.createReader(new StringReader(output));
+            JsonObject object = reader.readObject();
+            boolean errors = object.getBoolean("errors");
+            
+            if (!errors) {
+                System.out.println("bulk : " + output.substring(0, 30) + " ...");
+            } else {
+                System.out.println("bulk : " + output);
+            }
+        } catch (Exception e) {
+            System.out.println("bulk : " + e.getMessage() + " with "+output);
+        }
     }
     
     public String indexResourceBulk(String bulk)
