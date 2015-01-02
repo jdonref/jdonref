@@ -197,20 +197,20 @@ public class ValideN {
                 String[] departementsIDF = {"75", "94", "93", "95", "92", "91", "78", "77"};
                 initParam.init2(departementsIDF);
                 
-                String[] listeDepartements = {"20_a"};
-                String[] listeDepartementsN = {"20_b"};
-//                String[] listeDepartements = initParam.getListeDepartement();
-//                String[] listeDepartementsN = initParam.getListeDepartementN();
+//                String[] listeDepartements = {"20_a"};
+//                String[] listeDepartementsN = {"20_b"};
+                String[] listeDepartements = initParam.getListeDepartement();
+                String[] listeDepartementsN = initParam.getListeDepartementN();
 
                 //on commente ce qu'on veux indexer !!
                 ArrayList<String> flags = new ArrayList<>();
-                flags.add("DEPARTEMENT");
-                flags.add("COMMUNE");
+//                flags.add("DEPARTEMENT");
+//                flags.add("COMMUNE");
 //                flags.add("VOIE");
 //                flags.add("ADRESSE");
-                flags.add("TRONCON");
-                flags.add("POIZON");
-                flags.add("PAYS");
+//                flags.add("POIZON");
+//                flags.add("PAYS");
+                  flags.add("TRONCON");
 
                 setIndexName("jdonref_idf");
                 aliasName.clear();
@@ -222,11 +222,13 @@ public class ValideN {
                 getJDONREFIndex(jdonrefIndex, listeDepartements,flags);
                 ///
                 flags.clear();
-                flags.add("DEPARTEMENT");
-                flags.add("COMMUNE");
+//                flags.add("DEPARTEMENT");
+//                flags.add("COMMUNE");
 //                flags.add("VOIE");
 //                flags.add("ADRESSE");
                 flags.add("TRONCON");
+                flags.add("POIZON");
+                flags.add("PAYS");
 
                 jdonrefIndex.setIndex("jdonref_without_idf");
                 aliasName.clear();
