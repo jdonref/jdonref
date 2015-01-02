@@ -27,6 +27,16 @@ public class VoieIndex {
     int paquetsBulk=200;
     
     String index = null;
+    
+    HashMap<String, Integer> map_idIndexVoieES =  new HashMap<>();
+
+    public HashMap<String, Integer> getMap_idIndexVoieES() {
+        return map_idIndexVoieES;
+    }
+
+    public void setMap_idIndexVoieES(HashMap<String, Integer> map_idIndexVoieES) {
+        this.map_idIndexVoieES = map_idIndexVoieES;
+    }
 
     protected static VoieIndex instance = null;
 
@@ -40,6 +50,8 @@ public class VoieIndex {
     
     public static VoieIndex getInstance()
     {
+//        idVoie=0;
+//        idVoieTmp=0;   
         if (instance==null)
             instance = new VoieIndex();
         return instance;
@@ -127,6 +139,7 @@ public class VoieIndex {
                         
 //            creation de l'objet metaDataVoie plus haut
             metaDataVoie.setId(++idVoie);
+            map_idIndexVoieES.put(v.idvoie, idVoie);
             bulk.append(metaDataVoie.toJSONMetaData().toString()).append("\n").append(v.toJSONDocument(withGeometry).toString()).append("\n");
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);

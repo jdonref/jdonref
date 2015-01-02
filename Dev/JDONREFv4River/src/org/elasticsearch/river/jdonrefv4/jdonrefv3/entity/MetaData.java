@@ -14,6 +14,7 @@ public class MetaData {
     String type;
     int id;
     int version;
+    String parent;
 
     
     public MetaData() {
@@ -67,6 +68,14 @@ public class MetaData {
         this.version = version;
     }
 
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
+
     
     public JsonObject toJSONMetaData()
     {
@@ -115,7 +124,21 @@ public class MetaData {
     }
     
         
-    
+        public JsonObject toJSONMetaDataWithPartent()
+    {
+         JsonObjectBuilder builder = Json.createObjectBuilder();
+         JsonObjectBuilder builder1 = Json.createObjectBuilder();
+         
+         builder.add("_index", index);
+         builder.add("_type", type);
+         builder.add("_id", id);
+         builder.add("_parent", parent);
+         
+         builder1.add("index", builder);
+
+
+        return builder1.build();
+    }
     
     
 }

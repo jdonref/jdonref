@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import javax.json.JsonObject;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.AdresseDAO;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Adresse;
@@ -24,7 +25,15 @@ public class AdresseIndex {
     int paquetsBulk=500;
 
     protected static AdresseIndex instance = null;
-    
+    HashMap<String, Integer> map_idIndexVoieES =  new HashMap<>();
+
+    public HashMap<String, Integer> getMap_idIndexVoieES() {
+        return map_idIndexVoieES;
+    }
+
+    public void setMap_idIndexVoieES(HashMap<String, Integer> map_idIndexVoieES) {
+        this.map_idIndexVoieES = map_idIndexVoieES;
+    }
     String index;
 
     public String getIndex() {
@@ -83,11 +92,10 @@ public class AdresseIndex {
     }
 
 
-    public void indexJDONREFAdressesDepartement(String dpt) throws IOException, SQLException
+    public void indexJDONREFAdressesDepartement(Boolean parent, String dpt) throws IOException, SQLException
     {
         if (isVerbose())
             System.out.println("dpt "+dpt+" : adresses");
-        
         AdresseDAO dao = new AdresseDAO();
         ResultSet rs = dao.getAllAdressesOfDepartement(connection, dpt);
 //      creation de l'objet metaDataAdresse
@@ -109,8 +117,11 @@ public class AdresseIndex {
             if (adr.numero!=null){
 //            creation de l'objet metaDataAdresse plus haut
                 metaDataAdresse.setId(++idAdresse);
-                bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
-                
+                if(parent == false) bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
+                else{
+                    metaDataAdresse.setParent(map_idIndexVoieES.get(adr.voie.idvoie).toString());
+                    bulk.append(metaDataAdresse.toJSONMetaDataWithPartent().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
+                }
 // envoyé le bulk par paquet de 1000 à partir de idAdresseTmp 
 // idAdresseTmp valeur de l'id de debut au moment de l'appel à cette methode
                 if((idAdresse-idAdresseTmp)%paquetsBulk==0){

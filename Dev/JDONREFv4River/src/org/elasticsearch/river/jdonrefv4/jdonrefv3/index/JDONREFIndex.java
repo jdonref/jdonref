@@ -21,6 +21,8 @@ public class JDONREFIndex
     boolean verbose = false;
     boolean withGeometry = true;
     boolean withSwitchAlias = false;
+    boolean parent = false;
+
     ElasticSearchUtil util;
     String index = null;
 //    String alias = null;
@@ -59,6 +61,14 @@ public class JDONREFIndex
         util.setUrl(url);
     }
     
+    public boolean isParent() {
+        return parent;
+    }
+
+    public void setParent(boolean parent) {
+        this.parent = parent;
+    }
+    
     public static JDONREFIndex getInstance()
     {
         if (instance==null)
@@ -74,13 +84,18 @@ public class JDONREFIndex
         
         if (withSwitchAlias)
         {
-            departement_index += "_departement_"+this.millis;
-            voie_index += "_voie_"+this.millis;
-            adresse_index += "_adresse_"+this.millis;
-            pays_index += "_pays_"+this.millis;
-            commune_index += "_commune_"+this.millis;
-            troncon_index += "_troncon_"+this.millis;
-            poizon_index += "_poizon_"+this.millis;
+            departement_index += "_departement_"+millis;
+            if(parent == false){
+                voie_index += "_voie_"+millis;
+                adresse_index += "_adresse_"+millis;
+            }else{
+                voie_index += "_adr_voie_"+millis;
+                adresse_index += "_adr_voie_"+millis;
+            }
+            pays_index += "_pays_"+millis;
+            commune_index += "_commune_"+millis;
+            troncon_index += "_troncon_"+millis;
+            poizon_index += "_poizon_"+millis;
         }
     }
 
@@ -140,13 +155,18 @@ public class JDONREFIndex
         
         if (withSwitchAlias)
         {
-            departement_index += "_departement_"+this.millis;
-            voie_index += "_voie_"+this.millis;
-            adresse_index += "_adresse_"+this.millis;
-            pays_index += "_pays_"+this.millis;
-            commune_index += "_commune_"+this.millis;
-            troncon_index += "_troncon_"+this.millis;
-            poizon_index += "_poizon_"+this.millis;
+            departement_index += "_departement_"+millis;
+            if(parent == false){
+                voie_index += "_voie_"+millis;
+                adresse_index += "_adresse_"+millis;
+            }else{
+                voie_index += "_adr_voie_"+millis;
+                adresse_index += "_adr_voie_"+millis;
+            }
+            pays_index += "_pays_"+millis;
+            commune_index += "_commune_"+millis;
+            troncon_index += "_troncon_"+millis;
+            poizon_index += "_poizon_"+millis;
         }
     }
     
@@ -158,8 +178,13 @@ public class JDONREFIndex
         if (withSwitchAlias)
         {
             departement_index += "_departement_"+millis;
-            voie_index += "_voie_"+millis;
-            adresse_index += "_adresse_"+millis;
+            if(parent == false){
+                voie_index += "_voie_"+millis;
+                adresse_index += "_adresse_"+millis;
+            }else{
+                voie_index += "_adr_voie_"+millis;
+                adresse_index += "_adr_voie_"+millis;
+            }
             pays_index += "_pays_"+millis;
             commune_index += "_commune_"+millis;
             troncon_index += "_troncon_"+millis;
@@ -325,8 +350,10 @@ public class JDONREFIndex
                 }
                 if (isFlag(FLAGS.ADRESSE))
                 {
-                    util.showCreateIndex(adresse_index,"./src/resources/index/jdonrefv4-settings.json","6");
-                    util.showSetRefreshInterval(adresse_index,"-1");
+                    if(!adresse_index.equals(voie_index)){
+                        util.showCreateIndex(adresse_index,"./src/resources/index/jdonrefv4-settings.json","6");
+                        util.showSetRefreshInterval(adresse_index,"-1");
+                    }
                 }
                 if (isFlag(FLAGS.PAYS))
                 {
@@ -380,8 +407,10 @@ public class JDONREFIndex
         }
         if (isFlag(FLAGS.ADRESSE))
         {
-            if (restart)
-                util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse.json");
+            if (restart){
+                if(parent==false) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse.json");
+                else util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-parent.json");
+            }
             AdresseIndex adrIndex = AdresseIndex.getInstance();
             adrIndex.setUtil(util);
             adrIndex.setConnection(connection);
@@ -484,24 +513,33 @@ public class JDONREFIndex
                         util.showExchangeIndexInAlias(alias, poizon_index, index+"_poizon");
             }
             for(int i=0;i<codesDepartements.length;i++)
-                DepartementIndex.getInstance().indexJDONREFDepartement(codesDepartements[i]);
+                DepartementIndex.getInstance().indexJDONREFDepartement(parent, codesDepartements[i]);
             
             if (isFlag(FLAGS.VOIE))
             {
                 util.showSetRefreshInterval(voie_index,"30s");
                 util.showSetReplicaNumber(voie_index, "1");
-                if (withSwitchAlias)
-                    for(String alias : aliasL)
-                        util.showExchangeIndexInAlias(alias, voie_index, index+"_voie");                
+                if (withSwitchAlias){
+                    if(parent==false){
+                        for(String alias : aliasL)
+                            util.showExchangeIndexInAlias(alias, voie_index, index+"_voie"); 
+                    }
+                }
             }
             if (isFlag(FLAGS.ADRESSE))
             {
                 util.showSetRefreshInterval(adresse_index,"30s");
                 util.showSetReplicaNumber(adresse_index, "1");
-                if (withSwitchAlias)
-                    for(String alias : aliasL)
-                        util.showExchangeIndexInAlias(alias, adresse_index, index+"_adresse");                
-            }  
+                if (withSwitchAlias){
+                    if(parent==false){
+                        for(String alias : aliasL)
+                            util.showExchangeIndexInAlias(alias, adresse_index, index+"_adresse"); 
+                    }else{
+                        for(String alias : aliasL)
+                            util.showExchangeIndexInAlias(alias, adresse_index, index+"_adr_voie"); 
+                    }
+                }
+            }            
             if (isFlag(FLAGS.TRONCON))
             {
                 util.showSetRefreshInterval(troncon_index,"30s");

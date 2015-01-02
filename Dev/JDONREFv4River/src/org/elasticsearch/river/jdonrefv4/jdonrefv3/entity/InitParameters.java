@@ -4,17 +4,13 @@
  */
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
-import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.lucene.analysis.FrequentTermsUtil;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.CommuneDAO;
-import org.elasticsearch.river.jdonrefv4.jdonrefv3.index.JDONREFIndex;
 
 
 /**
@@ -23,20 +19,7 @@ import org.elasticsearch.river.jdonrefv4.jdonrefv3.index.JDONREFIndex;
  */
 public class InitParameters {
     
-    String indexName = "";
-    ArrayList<String> aliasName = new ArrayList<>();
-    boolean bouchon = false;
-    boolean reindex = true;
-    boolean verboseIndexation = true;
-    boolean withGeometry = false;
-    boolean withSwitchAlias = true;
-    String url = "10.213.93.13:9200";
-//    String url = "plf.jdonrefv4.ppol.minint.fr";
-    String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN2";
-    String user = "postgres";
-    String passwd = "postgres";
-    boolean restart = true;
-    long millis = 0;
+    
 
      String[] listeDepartement;
      String[] listeDepartementN;
@@ -77,13 +60,11 @@ public class InitParameters {
 //        return str;
 //    }
     
-        public void allDeptInit() {
+        public void allDeptInit(Connection connection) {
             
             CommuneDAO dao = new CommuneDAO();
-            Connection connection = null;
             ResultSet rs = null;
         try {
-            connection = DriverManager.getConnection(connectionString,user,passwd);
             rs = dao.getAllDep(connection);
             while(rs.next())
             {
@@ -95,104 +76,6 @@ public class InitParameters {
         }
     }
 
-    /////////////////////////////////////////////GETTER SETTER DEBUT///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    public boolean isBouchon() {
-        return bouchon;
-    }
-
-    public void setBouchon(boolean bouchon) {
-        this.bouchon = bouchon;
-    }
-
-    public String getConnectionString() {
-        return connectionString;
-    }
-
-    public void setConnectionString(String connectionString) {
-        this.connectionString = connectionString;
-    }
-
-    public String getIndexName() {
-        return indexName;
-    }
-
-    public void setIndexName(String indexName) {
-        this.indexName = indexName;
-    }
-
-    public long getMillis() {
-        return millis;
-    }
-
-    public void setMillis(long millis) {
-        this.millis = millis;
-    }
-
-    public String getPasswd() {
-        return passwd;
-    }
-
-    public void setPasswd(String passwd) {
-        this.passwd = passwd;
-    }
-
-    public boolean isReindex() {
-        return reindex;
-    }
-
-    public void setReindex(boolean reindex) {
-        this.reindex = reindex;
-    }
-
-    public boolean isRestart() {
-        return restart;
-    }
-
-    public void setRestart(boolean restart) {
-        this.restart = restart;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public boolean isVerboseIndexation() {
-        return verboseIndexation;
-    }
-
-    public void setVerboseIndexation(boolean verboseIndexation) {
-        this.verboseIndexation = verboseIndexation;
-    }
-
-    public boolean isWithGeometry() {
-        return withGeometry;
-    }
-
-    public void setWithGeometry(boolean withGeometry) {
-        this.withGeometry = withGeometry;
-    }
-
-    public boolean isWithSwitchAlias() {
-        return withSwitchAlias;
-    }
-
-    public void setWithSwitchAlias(boolean withSwitchAlias) {
-        this.withSwitchAlias = withSwitchAlias;
-    }
     
      public String[] getListeDepartement() {
         return listeDepartement;
@@ -217,11 +100,6 @@ public class InitParameters {
     public void setAllDept(ArrayList<String> allDept) {
         this.allDept = allDept;
     }
-
-    /////////////////////////////////////////////GETTER SETTER FIN///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    
-
 
     /**
      * verification doublon
@@ -353,124 +231,5 @@ public class InitParameters {
             return (String[])arrayL.toArray(new String[arrayL.size()]);
         }
 
-       
-     public JDONREFIndex initJDONREFIndex() throws SQLException{   
-         
-        Connection connection = DriverManager.getConnection(connectionString,user,passwd);       
-        JDONREFIndex jdonrefIndex = JDONREFIndex.getInstance();
-        jdonrefIndex.setUrl(url);
-        jdonrefIndex.setVerbose(verboseIndexation);
-        jdonrefIndex.setIndex(indexName);
-        if(aliasName.size()>0)
-            aliasName.clear();
-        jdonrefIndex.setAliasL(aliasName);
-        jdonrefIndex.setRestart(restart);
-        jdonrefIndex.setWithGeometry(withGeometry);
-        jdonrefIndex.setWithSwitchAlias(withSwitchAlias);
-        if (millis!=0)
-            jdonrefIndex.setMillis(millis);
-        jdonrefIndex.setConnection(connection);
-        return jdonrefIndex;
-     } 
-      
-     public void getJDONREFIndexV2() throws SQLException, IOException
-    {
 
-        
-        JDONREFIndex jdonrefIndex = initJDONREFIndex();
-        aliasName.clear();
-        aliasName.add("jdonref");
-        aliasName.add("jdonref_idf");
-        jdonrefIndex.setAliasL(aliasName);
-        jdonrefIndex.setIndex("jdonref_idf");
-
-        
-        jdonrefIndex.setCodesDepartements(listeDepartement); 
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); 
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); //
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON); //
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
-        jdonrefIndex.reindex();
-        
-        aliasName.clear();
-        aliasName.add("jdonref");
-        aliasName.add("jdonref_without_idf");
-        jdonrefIndex.setAliasL(aliasName);
-        jdonrefIndex.setIndex("jdonref_without_idf");
-        
-        jdonrefIndex.setCodesDepartements(listeDepartementN); 
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); 
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); //
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS); //
-        jdonrefIndex.reindex();
-        
-    }  
-       
-         public void getJDONREFIndexV3() throws SQLException, IOException
-    {
-
-        JDONREFIndex jdonrefIndex = initJDONREFIndex();
-        
-
-        jdonrefIndex.setCodesDepartements(listeDepartementN); 
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); 
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); //
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON); //
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
-        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
-        jdonrefIndex.reindex();
-        
-//        aliasName.add("jdonref_idf");
-//        jdonrefIndex.setAliasL(aliasName);
-//        jdonrefIndex.setIndex("jdonref_idf");
-//        
-//        jdonrefIndex.setCodesDepartements(listeDepartement); 
-////        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); 
-//        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); //
-////        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
-////        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-////        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
-////        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
-////        jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
-//        jdonrefIndex.reindex();
-        
-    }  
-
-         
-    public static void main(String[] args) {
-        FrequentTermsUtil.setFilePath("./src/resources/analysis/word84.txt");
-        InitParameters initParam = InitParameters.getInstance();
-        initParam.setRestart(false);
-        initParam.setIndexName("jdonref_without_idf_adresse_1419844577042");  // modifier le nom de l'index en fonction jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.?????) commenté
-        initParam.setWithSwitchAlias(false);
-        
-        initParam.allDept.clear();
-        for(int i=62;i<96;i++){
-            initParam.allDept.add(""+i);
-        }
-        initParam.allDept.add("971");
-        initParam.allDept.add("972");
-        initParam.allDept.add("973");
-        initParam.allDept.add("974");
-        
-        String[] departementsIDF = {"95", "94", "93", "92", "91", "78", "77", "75"};
-        initParam.init2(departementsIDF);
-   
-        try {
-            initParam.getJDONREFIndexV3();
-        } catch (SQLException | IOException ex) {
-            Logger.getLogger(InitParameters.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    
 }
