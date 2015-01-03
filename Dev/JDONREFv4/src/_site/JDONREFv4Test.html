@@ -17,6 +17,7 @@
      mode bulk:<input id="mode_bulk" type="checkbox" /><br>
      debug:<input id="debug" type="checkbox" /><input id="debugDocId" type="text" /><br>
      maxSizePerType:<input id="maxSizePerType" type="text" value="5000"/><br>
+     index:<input id="index" type="text" value="jdonref"/><br>
      <!-- chemin de belvoir par défaut-->
      actif:<input id="active" type="checkbox" /><br>
      X1:<input id="minlon" type="text" value="6.61"/>
@@ -33,6 +34,7 @@
           var searchElement = document.getElementById('search'),
           mode_bulk = document.getElementById('mode_bulk'),
           maxSizePerType = document.getElementById('maxSizePerType'),
+          index = document.getElementById('index'),
           active = document.getElementById('active'),
           speed = document.getElementById('speed'),
           count = document.getElementById('count'),
@@ -59,7 +61,7 @@
           function getResults(keywords,minlon,maxlon,minlat,maxlat)
           {
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', '../../jdonref/adresse,voie,commune,departement,pays,poizon/_search');//?q='+ encodeURIComponent(keywords));
+                xhr.open('POST', '../../'+index.value+'/adresse,voie,commune,departement,pays,poizon/_search');//?q='+ encodeURIComponent(keywords));
                 xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     displayResults(xhr.responseText);
