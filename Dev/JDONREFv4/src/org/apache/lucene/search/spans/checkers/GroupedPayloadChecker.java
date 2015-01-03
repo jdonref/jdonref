@@ -28,18 +28,23 @@ public class GroupedPayloadChecker extends MultiPayloadChecker
           set.clear();
           BytesRef[] payloads = lastpayloads.get(i);
           int j = index;
-          byte[] payload;
           
           do
           {
-            payload = payloads[j].bytes;
-            
+              while(j>=0 && payloads[j]==null)
+              {
+                  j--;
+              }
+              if (j==-1) return true;
+              
+              byte[] payload = payloads[j].bytes;
+              
               if (!set.contains(new BytesRef(payload))) // Array do not override equals method, BytesRef do
               {
                   do
                   {
                       j--;
-                  } while (j >= 0 && Arrays.equals(payloads[j].bytes, payload));
+                  } while (j >= 0 && (payloads[j]==null || Arrays.equals(payloads[j].bytes, payload)));
                   if (j == -1) return true;
                   else set.add(new BytesRef(payload));
               }

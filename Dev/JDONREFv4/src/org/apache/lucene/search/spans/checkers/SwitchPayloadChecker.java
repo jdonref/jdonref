@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.search.spans.IMultiPayload;
 import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * Be aware checkers in different clauses are not matchable simultaneously.
@@ -70,7 +71,7 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
     
     ArrayList<IPayloadChecker> checkers = new ArrayList<>();
     
-    public void getBranch(MultiPayloadTermSpans subspan) throws IOException
+    public void getBranch(IMultiPayload subspan) throws IOException
     {
         checkers.clear();
         Document d = subspan.document();
@@ -90,7 +91,7 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
     }
     
     @Override
-    public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
+    public boolean checkNextPayload(org.apache.lucene.search.spans.IMultiPayload subspan) throws IOException
     {
         if (!branch)
         {
@@ -133,7 +134,7 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
     }
 
     @Override
-    public void setQuery(PayloadCheckerSpanQuery query) {
+    public void setQuery(IPayloadCheckerSpanQuery query) {
         Enumeration<String> eKeys = clauses.keys();
         while(eKeys.hasMoreElements())
         {

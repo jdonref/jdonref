@@ -11,8 +11,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 
 /**
- * Make EdgeNGramTokenFilter non final without private fields please !
- * Payloads support
+ * Makes payload the number of tokens with a given payload.
  * 
  * @author Julien
  */
@@ -36,15 +35,10 @@ public class TokenCountPayloadsFilter extends TokenFilter {
     protected final PayloadAttribute payloadAtt = addAttribute(PayloadAttribute.class);
 
     /**
-     * Creates EdgeNGramTokenFilter that can generate n-grams in the sizes of the given range
-     * and may be keep payloads
+     * Creates TokenCountPayloadsFilter payload the number of tokens with a given payload.
      * 
      * @param version the <a href="#version">Lucene match version</a>
      * @param input {@link TokenStream} holding the input to be tokenized
-     * @param side the {@link Side} from which to chop off an n-gram
-     * @param minGram the smallest n-gram to generate
-     * @param maxGram the largest n-gram to generate
-     * @param withPayloads true to keep payloads
      */
     public TokenCountPayloadsFilter(TokenStream input, int termCountPayloadFactor, Version version) {
         super(input);
@@ -98,7 +92,11 @@ public class TokenCountPayloadsFilter extends TokenFilter {
     
     public BytesRef getNewPayload(BytesRef payload,int count)
     {
-        int payloadStuff = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+        int payloadStuff;
+        if (payload!=null)
+            payloadStuff = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+        else
+            payloadStuff = 0;
         int newPayloadStuff = termCountPayloadFactor*count + payloadStuff;
         
         BytesRef bytes = encoder.encode(Integer.toString(newPayloadStuff).toCharArray());

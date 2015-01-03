@@ -1,7 +1,7 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.util.List;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  *
@@ -21,7 +21,7 @@ public abstract class AbstractIPayloadCheckerCollectionChecker extends AbstractP
     }
     
     @Override
-    public void setQuery(PayloadCheckerSpanQuery query) {
+    public void setQuery(IPayloadCheckerSpanQuery query) {
         for(int i=0;i<checkers.size();i++)
         {
             checkers.get(i).setQuery(query);

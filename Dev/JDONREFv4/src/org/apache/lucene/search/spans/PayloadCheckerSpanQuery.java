@@ -30,23 +30,17 @@ package org.apache.lucene.search.spans;
 
 import java.io.IOException;
 import java.util.*;
-import org.apache.lucene.analysis.FrequentTermsUtil;
 import org.apache.lucene.index.*;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.util.Bits;
-import org.elasticsearch.common.hppc.LongArrayList;
 import org.elasticsearch.common.lucene.search.MatchNoDocsQuery;
 
 /**
  * Matches span where payload checks the given rules.
  * @author Julien
  */
-public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
+public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable, IPayloadCheckerSpanQuery
 {
     protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
   
@@ -295,6 +289,11 @@ public class PayloadCheckerSpanQuery extends SpanQuery implements Cloneable
         if (freq.length==0) return true; // empty indeed ! => NoMatch
         
         return freq[0].freq>limit;
+    }
+
+    @Override
+    public int getClausesCount() {
+        return clauses.size();
     }
     
     public class TermFrequency implements Comparable<TermFrequency>

@@ -18,7 +18,7 @@ public class OrPayloadChecker extends AbstractIPayloadCheckerCollectionChecker
     }
     
     @Override
-    public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
+    public boolean checkNextPayload(org.apache.lucene.search.spans.IMultiPayload subspan) throws IOException
     {
         for(int i=0;i<checkers.size();i++)
         {

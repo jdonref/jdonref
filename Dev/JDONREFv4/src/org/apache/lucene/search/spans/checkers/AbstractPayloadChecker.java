@@ -1,8 +1,7 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
-import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * Abstract class to check document subspans for payload rules.
@@ -11,7 +10,7 @@ import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 public abstract class AbstractPayloadChecker implements IPayloadChecker
 {
     @Override
-    public abstract void setQuery(PayloadCheckerSpanQuery query);
+    public abstract void setQuery(IPayloadCheckerSpanQuery query);
     
     /**
      * Check one of the payload from one of the spans.
@@ -20,7 +19,7 @@ public abstract class AbstractPayloadChecker implements IPayloadChecker
      * @return false means check() will return false. true means nothing.
      */
     @Override
-    public abstract boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException;
+    public abstract boolean checkNextPayload(org.apache.lucene.search.spans.IMultiPayload subspan) throws IOException;
     
     /**
      * Return whether current document is checked or not

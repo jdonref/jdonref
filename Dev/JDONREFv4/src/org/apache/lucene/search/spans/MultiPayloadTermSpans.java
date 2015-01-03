@@ -15,12 +15,11 @@ import org.apache.lucene.util.BytesRef;
 /**
  * TermSpans that returns all the available payload for each match.
  * 
- * start return the last position. TODO: return all the positions available
- * 
  * @author Julien
  */
-public class MultiPayloadTermSpans extends TermSpans
+public class MultiPayloadTermSpans extends TermSpans implements IMultiPayload
 {
+    public static int NOINTEGERTYPEASPAYLOADFACTOR = -1;
     public static int NOTERMCOUNTPAYLOADFACTOR = -1;
     public static int NOTERMCOUNTBYPAYLOAD = -1;
     
@@ -53,11 +52,13 @@ public class MultiPayloadTermSpans extends TermSpans
         this.order = order;
     }
     
+    @Override
     public byte[] getCurrentPayload()
     {
         return currentPayload;
     }
     
+    @Override
     public int getCurrentCountByPayload()
     {
         return currentCountByPayload;
@@ -218,24 +219,6 @@ public class MultiPayloadTermSpans extends TermSpans
         readPayload = true;
         return true;
     }
-    
-//    protected void readPayloads() throws IOException {
-//        payloads.clear();
-//        termCountsByPayload.clear();
-//        while (count++ < freq)
-//        {
-//            position = postings.nextPosition();
-//            BytesRef payload = postings.getPayload();
-//            
-//            if (payload!=null) // TODO : understand how it can be null
-//            {
-//                byte[] newpayload = convertPayload(extractPayload(payload));
-//                payloads.add(newpayload);
-//                int totalCount = extractCountTermByPayload(payload);
-//                termCountsByPayload.add(totalCount);
-//            }
-//        } 
-//    }
     
     protected BytesRef extractPayload(BytesRef payload)
     {

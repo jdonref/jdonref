@@ -3,7 +3,7 @@ package org.apache.lucene.search.spans.checkers;
 import java.io.IOException;
 import java.util.Arrays;
 import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * Check a token with given payload in a document is present in the query.
@@ -25,7 +25,7 @@ public class OnePayloadChecker extends AbstractPayloadChecker
     protected boolean check;
     
     @Override
-    public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
+    public boolean checkNextPayload(org.apache.lucene.search.spans.IMultiPayload subspan) throws IOException
     {
         if (!check)
         {
@@ -57,7 +57,7 @@ public class OnePayloadChecker extends AbstractPayloadChecker
     }
 
     @Override
-    public void setQuery(PayloadCheckerSpanQuery query) {
+    public void setQuery(IPayloadCheckerSpanQuery query) {
     }
     
     @Override

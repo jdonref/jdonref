@@ -93,7 +93,7 @@ public class MultiPayloadSpanTermQuery extends SpanTermQuery
       throw new IllegalStateException("field \"" + term.field() + "\" was indexed without position data; cannot run SpanTermQuery (term=" + term.text() + ")");
     }
   }
-
+  
   public int getOrder()
   {
       return this.order;

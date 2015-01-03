@@ -2,8 +2,9 @@ package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import org.apache.lucene.search.spans.IMultiPayload;
 import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 import org.apache.lucene.util.BytesRef;
 
 /**
@@ -12,14 +13,14 @@ import org.apache.lucene.util.BytesRef;
  */
 public abstract class MultiPayloadChecker extends AbstractPayloadChecker
 {
-    protected PayloadCheckerSpanQuery query = null;
+    protected IPayloadCheckerSpanQuery query = null;
     
     public MultiPayloadChecker()
     {
     }
     
     @Override
-    public void setQuery(PayloadCheckerSpanQuery query) {
+    public void setQuery(IPayloadCheckerSpanQuery query) {
         this.query = query;
     }
     
@@ -31,7 +32,7 @@ public abstract class MultiPayloadChecker extends AbstractPayloadChecker
     {
       if (index==0)
       {
-          BytesRef[] payloads = new BytesRef[query.getClauses().length];
+          BytesRef[] payloads = new BytesRef[query.getClausesCount()];
           payloads[order] = new BytesRef(payload);
           lastpayloads.add(payloads);
       }
@@ -60,31 +61,34 @@ public abstract class MultiPayloadChecker extends AbstractPayloadChecker
     protected int index;
     protected boolean check;
     
-    protected MultiPayloadTermSpans currentSubSpan;
+    protected IMultiPayload currentSubSpan;
     
     @Override
-    public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
+    public boolean checkNextPayload(org.apache.lucene.search.spans.IMultiPayload subspan) throws IOException
     {
-        if (currentSubSpan!=subspan)
-        {
-            if (currentSubSpan!=null)
-            {
-                count=0;
-                //check = checkPayloads(index);
-                index++;
-                //if (!check) return false;
-            }
-            
-            currentSubSpan = subspan;
-        }
-        else
-        {
-            count++;
-        }
-        
         byte[] currentPayload = subspan.getCurrentPayload();
-        addPayload(currentPayload, index, count, subspan.getOrder());
         
+        if (currentPayload!=null)
+        {
+            if (currentSubSpan!=subspan)
+            {
+                if (currentSubSpan!=null)
+                {
+                    count=0;
+                    //check = checkPayloads(index);
+                    index++;
+                    //if (!check) return false;
+                }
+
+                currentSubSpan = subspan;
+            }
+            else
+            {
+                count++;
+            }
+
+            addPayload(currentPayload, index, count, subspan.getOrder());
+        }
         return true;
     }
 

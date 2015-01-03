@@ -2,8 +2,7 @@ package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * 
@@ -45,7 +44,7 @@ public class FieldChecker extends AbstractPayloadChecker
      * @throws IOException 
      */
     @Override
-    public boolean checkNextPayload(MultiPayloadTermSpans subspan) throws IOException
+    public boolean checkNextPayload(org.apache.lucene.search.spans.IMultiPayload subspan) throws IOException
     {
         if (!checked)
         {
@@ -85,7 +84,7 @@ public class FieldChecker extends AbstractPayloadChecker
     }
 
     @Override
-    public void setQuery(PayloadCheckerSpanQuery query) {
+    public void setQuery(IPayloadCheckerSpanQuery query) {
     }
 
     @Override

@@ -59,47 +59,50 @@ public class PayloadBeforeAnotherChecker extends MultiPayloadChecker
 
           for(int j=0;subcheck && j<=index;j++)
           {
-              payload = payloads[j].bytes;
-              int substate = 0;
-              
-              if (Arrays.equals(payload, payloadbefore))
+              if (payloads[j]!=null)
               {
-                  substate = 1;
-              }
-              if (Arrays.equals(payload, another))
-              {
-                  substate = 2;
-              }
-              
-              switch(state)
-              {
-                  case 0:
-                      switch(substate)
-                      {
-                          default:
-                          case 0: break;
-                          case 1: state = 1; break;
-                          case 2: state = 2; break;
-                      }
-                      break;
-                  case 1:
-                      switch(substate)
-                      {
-                          default:
-                          case 0: subcheck = false; break;
-                          case 1: break;
-                          case 2: state = 2; break;
-                      }
-                      break;
-                  case 2:
-                      switch(substate)
-                      {
-                          default:
-                          case 0:
-                          case 2: break;
-                          case 1: subcheck = false; break;
-                      }
-                      break;
+                payload = payloads[j].bytes;
+                int substate = 0;
+
+                if (Arrays.equals(payload, payloadbefore))
+                {
+                    substate = 1;
+                }
+                if (Arrays.equals(payload, another))
+                {
+                    substate = 2;
+                }
+
+                switch(state)
+                {
+                    case 0:
+                        switch(substate)
+                        {
+                            default:
+                            case 0: break;
+                            case 1: state = 1; break;
+                            case 2: state = 2; break;
+                        }
+                        break;
+                    case 1:
+                        switch(substate)
+                        {
+                            default:
+                            case 0: subcheck = false; break;
+                            case 1: break;
+                            case 2: state = 2; break;
+                        }
+                        break;
+                    case 2:
+                        switch(substate)
+                        {
+                            default:
+                            case 0:
+                            case 2: break;
+                            case 1: subcheck = false; break;
+                        }
+                        break;
+                }
               }
           }
           
