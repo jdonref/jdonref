@@ -149,22 +149,27 @@ public abstract class QueryTests
     
     void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6)
     {
-        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,-1,-1.0f,-1);
+        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,-1,-1.0f,-1,true);
+    }
+    
+    void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6, boolean match)
+    {
+        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,-1,-1.0f,-1,match);
     }
     
     void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6,int size)
     {
-        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,-1,-1.0f,size);
+        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,-1,-1.0f,size,true);
     }
     
     void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6,int indice,float note_minimum)
     {
-        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,indice,note_minimum,-1);
+        searchExactAdresse( voie, assertion_ligne4,assertion_ligne6,indice,note_minimum,-1,true);
     }
     
     abstract QueryBuilder getQueryBuilder(String voie);
     
-    void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6,int indice,float note_minimum,int size)
+    void searchExactAdresse(String voie,String assertion_ligne4,String assertion_ligne6,int indice,float note_minimum,int size,boolean match)
     {
         System.out.println("---------------------");
         System.out.println("Test Number "+testNumber++);
@@ -175,7 +180,7 @@ public abstract class QueryTests
         //QueryStringQueryBuilder qb = new QueryStringQueryBuilder(voie);
         
         long start = Calendar.getInstance().getTimeInMillis();
-        SearchResponse search = client().prepareSearch().setQuery(qb).setExplain(true).execute().actionGet();
+        SearchResponse search = client().prepareSearch().setQuery(qb)./*setExplain(true).*/execute().actionGet();
         long end = Calendar.getInstance().getTimeInMillis();
         System.out.println("Took "+(end-start)+" ms");
         SearchHit[] hits = search.getHits().getHits();
@@ -221,7 +226,8 @@ public abstract class QueryTests
             System.out.println("score : "+hits[0].getScore());
             printExplanation(hits[0].explanation());
         }
-        if (indice!=-1) Assert.assertTrue(positionMatch<=indice);
+        if (indice==-1 && !match) Assert.assertTrue(positionMatch==-1);
+        if (match && indice!=-1) Assert.assertTrue(positionMatch<=indice);
         if (note_minimum>-1)
         {
             if (hits[positionMatch].getScore()<note_minimum)

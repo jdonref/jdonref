@@ -2,55 +2,127 @@ package org.elasticsearch.common.lucene.search.jdonrefv4;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryParser;
 import org.apache.log4j.Logger;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.index.JDONREFv4TermContext;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.CollectionStatistics;
-import org.apache.lucene.search.ComplexExplanation;
-import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.IndexSearcher;
-import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery.TermWeight;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.TermStatistics;
-import org.apache.lucene.search.Weight;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
+import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.MultiPayloadTermSpans;
+import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.util.Bits;
-
+import org.elasticsearch.common.lucene.search.MatchNoDocsQuery;
+import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery.TermWeight;
+import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryParser;
 
 /**
  *
  * @author Julien
  */
-public class JDONREFv4Query extends BooleanQuery
+public class JDONREFv4Query extends BooleanQuery implements IPayloadCheckerSpanQuery
 {
     //public static boolean DEBUG = false;
     //public static int DEBUGDOCREFERENCE = 10366; //2092;
     public static final int AUTOCOMPLETE = 1;
     public static final int BULK = 2;
 
-    protected ConcurrentHashMap<String, Integer> termIndex;
+    protected ConcurrentHashMap<Integer, Integer> payloadIndex;
     
     protected int numTokens;
+    protected String field;
     
     protected int debugDoc = -1;
     protected int mode = JDONREFv4Query.AUTOCOMPLETE;
     
     protected int maxSizePerType = JDONREFv4QueryParser.DEFAULTMAXSIZE;
 
+    protected IPayloadChecker checker;
+    protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
+  
+  /** Adds a clause to a boolean query.
+   *
+   * @throws TooManyClauses if the new number of clauses exceeds the maximum clause number
+   * @see #getMaxClauseCount()
+   */
+    @Override
+  public void add(Query query, BooleanClause.Occur occur) {
+    add(new BooleanClause(query, occur));
+  }
+
+  /** Adds a clause to a boolean query.
+   * @throws TooManyClauses if the new number of clauses exceeds the maximum clause number
+   * @see #getMaxClauseCount()
+   */
+    @Override
+  public void add(BooleanClause clause) {
+    super.add(clause);
+    if (clause.getQuery() instanceof JDONREFv4TermQuery)
+    {
+        JDONREFv4TermQuery q = (JDONREFv4TermQuery)clause.getQuery();
+    
+        ((JDONREFv4TermQuery)q).setOrder(getClauses().length-1);
+        ((JDONREFv4TermQuery)q).setQueryIndex(getClauses().length-1);
+        
+        if (field == null) {
+            field = q.getTerm().field();
+        } else if (q.getTerm().field() != null && !q.getTerm().field().equals(field)) {
+            throw new IllegalArgumentException("Clauses must have same field.");
+        }
+        q.setTermCountPayloadFactor(termCountPayloadFactor);
+    }
+  }
+    
+    /** Returns true iff <code>o</code> is equal to this. */
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o) && o instanceof JDONREFv4Query &&
+                checker.equals(((JDONREFv4Query)o).getChecker()) &&
+                  termCountPayloadFactor == ((JDONREFv4Query)o).getTermCountPayloadFactor();
+    }
+
+    /** Returns a hash code value for this object.*/
+    @Override
+    public int hashCode() {
+      return super.hashCode() + checker.hashCode() + termCountPayloadFactor;
+    }
+    
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
+
+    public int getTermCountPayloadFactor() {
+        return termCountPayloadFactor;
+    }
+
+    public void setTermCountPayloadFactor(int termCountPayloadFactor) {
+        this.termCountPayloadFactor = termCountPayloadFactor;
+    }
+    
+    public IPayloadChecker getChecker() {
+        return checker;
+    }
+
+    public void setChecker(IPayloadChecker checker) {
+        this.checker = checker;
+        this.checker.setQuery(this);
+    }
+    
     public int getNumTokens() {
         return numTokens;
     }
 
+        public void setNumTokens(int numTokens) {
+            this.numTokens = numTokens;
+        }
+        
     public void setDebugDoc(int debugDoc) {
         this.debugDoc = debugDoc;
     }
@@ -69,17 +141,13 @@ public class JDONREFv4Query extends BooleanQuery
         return mode;
     }
 
-        public void setNumTokens(int numTokens) {
-            this.numTokens = numTokens;
-        }
-
-    public ConcurrentHashMap<String, Integer> getTermIndex()
+    public ConcurrentHashMap<Integer, Integer> getPayloadIndex()
     {
-        return termIndex;
+        return payloadIndex;
     }
         
-    public void setTermIndex(ConcurrentHashMap<String, Integer> termIndex) {
-        this.termIndex = termIndex;
+    public void setPayloadIndex(ConcurrentHashMap<Integer, Integer> payloadIndex) {
+        this.payloadIndex = payloadIndex;
     }
 
     public int getMaxSizePerType() {
@@ -89,6 +157,268 @@ public class JDONREFv4Query extends BooleanQuery
     public void setMaxSizePerType(int maxSizePerType) {
         this.maxSizePerType = maxSizePerType;
     }
+    
+    public Term[] getQueryTerms()
+    {
+        ArrayList<Term> terms = new ArrayList<>();
+        for(int i=0;i<getClauses().length;i++)
+        {
+            terms.add(((JDONREFv4TermQuery)getClauses()[i].getQuery()).getTerm());
+        }
+        return terms.toArray(new Term[0]);
+    }
+    
+    @Override
+    public JDONREFv4Query clone() {
+        JDONREFv4Query query = new JDONREFv4Query();
+                
+        for(BooleanClause clause : this.getClauses())
+        {
+            query.add(clause.getQuery().clone(),clause.getOccur());
+        }
+        
+        query.setChecker(checker.clone()); // do checker.setQuery
+        query.setTermCountPayloadFactor(termCountPayloadFactor);
+        query.setBoost(this.getBoost());
+        query.setDebugDoc(this.debugDoc);
+        query.setField(this.field);
+        query.setLimit(this.limit);
+        query.setMaxSizePerType(this.maxSizePerType);
+        query.setMinimumNumberShouldMatch(this.minNrShouldMatch);
+        query.setMode(this.mode);
+        query.setNumTokens(this.numTokens);
+        query.setPayloadIndex(this.payloadIndex);
+        
+        return query;
+    }
+    
+    @Override
+    public Query rewrite(IndexReader reader) throws IOException
+    {
+        // get clause order by frequencies
+        final List<AtomicReaderContext> leaves = reader.leaves();
+        TermContext[] contextArray = new TermContext[getClauses().length];
+        Term[] queryTerms = getQueryTerms();
+        collectTermContext(reader, leaves, contextArray, queryTerms);
+        JDONREFv4Query.TermFrequency[] freq = getTermInOrder(contextArray);
+        
+        //MultiPayloadSpanTermQuery mostFrequentQuery = null;
+        
+        // check limits
+        if (limit!=-1 && overLimits(freq))
+        {
+            return new MatchNoDocsQuery();
+//            LongArrayList currentMostFrequentTerms = FrequentTermsUtil.getMostFrequentTerms(queryTerms);
+//            
+//            if (currentMostFrequentTerms.size()<2)
+//            {
+//                BooleanFilter boolFilter = new BooleanFilter();
+//                for(int i=0;i<queryTerms.length;i++)
+//                {
+//                    if (freq[i].freq<limit)
+//                        boolFilter.add(new TermFilter(queryTerms[i]),Occur.MUST);
+//                    else
+//                        boolFilter.add(new TermFilter(queryTerms[i]),Occur.SHOULD);
+//                }
+//                ConstantScoreQuery constantQuery = new ConstantScoreQuery(boolFilter);
+//                constantQuery.setBoost(1);
+//                return constantQuery;
+//            }
+//            
+//            String currentMostFrequentTerm = FrequentTermsUtil.generateMostFrequentTerms(currentMostFrequentTerms);
+//            Term term = new Term("mostFrequentTerms",currentMostFrequentTerm);
+//            
+//            TermContext mostFrequentContext = collectTermContext(reader,leaves,term);
+//            if (mostFrequentContext == null || mostFrequentContext.docFreq()>limit)
+//            {
+//                BooleanFilter boolFilter = new BooleanFilter();
+//                for(int i=0;i<queryTerms.length;i++)
+//                {
+//                    if (freq[i].freq<limit)
+//                        boolFilter.add(new TermFilter(queryTerms[i]),Occur.MUST);
+//                    else
+//                        boolFilter.add(new TermFilter(queryTerms[i]),Occur.SHOULD);
+//                }
+//                ConstantScoreQuery constantQuery = new ConstantScoreQuery(boolFilter);
+//                constantQuery.setBoost(1);
+//                return constantQuery;
+//            }
+//            
+//            mostFrequentQuery = new MultiPayloadSpanTermQuery(term);
+//            mostFrequentQuery.setChecked(false);
+//            
+//            contextArray = Arrays.copyOf(contextArray, contextArray.length+1);
+//            contextArray[contextArray.length-1] = mostFrequentContext;
+//            
+//            this.clauses.add(mostFrequentQuery);
+        }
+        
+        // rewrite
+        JDONREFv4Query clone = null;
+        for (int i = 0; i < getClauses().length; i++) {
+            JDONREFv4TermQuery c = (JDONREFv4TermQuery) getClauses()[i].getQuery();
+            JDONREFv4TermQuery query = (JDONREFv4TermQuery) c.rewrite(reader);
+            if (query != c) {                     // clause rewrote: must clone
+                if (clone == null) {
+                    clone = (JDONREFv4Query) this.clone();
+                }
+                clone.getClauses()[i].setQuery(query); // write over existing clause
+            }
+        }
+        
+        if (clone != null) {
+            return clone;                        // some clauses rewrote
+        } else {
+            return this;                         // no clauses rewrote
+        }
+    }
+    
+    protected int limit;
+    
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+    
+    public int getLimit()
+    {
+        return this.limit;
+    }
+    
+    /**
+     * Return true if the less term frequencies is over the limit
+     * 
+     * @param contextArray assume frequencies are in order
+     * @return 
+     */
+    protected boolean overLimits(JDONREFv4Query.TermFrequency[] freq)
+    {
+        if (freq.length==0) return true; // empty indeed ! => NoMatch
+        
+        return freq[0].freq>limit;
+    }
+
+    @Override
+    public int getClausesCount() {
+        return getClauses().length;
+    }
+    
+    public class TermFrequency implements Comparable<JDONREFv4Query.TermFrequency>
+    {
+        public int i;
+        public int freq;
+        
+        @Override
+        public int compareTo(JDONREFv4Query.TermFrequency o)
+        {
+            return freq - o.freq;
+        }
+    }
+    
+    /**
+     * give the order by frequencies for term query from context
+     * @param contextArray
+     * @return 
+     */
+    public JDONREFv4Query.TermFrequency[] getTermInOrder(TermContext[] contextArray)
+    {
+        JDONREFv4Query.TermFrequency[] frequencies = new JDONREFv4Query.TermFrequency[contextArray.length];
+        for(int i=0;i<contextArray.length;i++)
+        {
+            JDONREFv4Query.TermFrequency tf = new JDONREFv4Query.TermFrequency();
+            tf.i = i;
+            if (contextArray[i]!=null)
+                tf.freq = contextArray[i].docFreq();
+            else
+                tf.freq = 0;
+            frequencies[i] = tf;
+        }
+        Arrays.sort(frequencies);
+        
+        return frequencies;
+    }
+    
+    public int[] revertFrequencies(PayloadCheckerSpanQuery.TermFrequency[] freq)
+    {
+        int[] res = new int[freq.length];
+        for(int i=0;i<freq.length;i++)
+            res[freq[i].i] = i;
+        
+        return res;
+    }
+
+  public TermContext collectTermContext(IndexReader reader,
+      List<AtomicReaderContext> leaves, Term term) throws IOException
+  {
+    TermContext termContext = null;
+    TermsEnum termsEnum = null;
+    for (AtomicReaderContext context : leaves) {
+      final Fields fields = context.reader().fields();
+      if (fields == null) {
+        // reader has no fields
+        continue;
+      }
+        final Terms terms = fields.terms(term.field());
+        if (terms == null) {
+          // field does not exist
+          continue;
+        }
+        termsEnum = terms.iterator(termsEnum);
+        assert termsEnum != null;
+        
+        if (termsEnum == TermsEnum.EMPTY) continue;
+        if (termsEnum.seekExact(term.bytes()))
+        {
+            if (termContext == null)
+                termContext = new TermContext(reader.getContext(),
+                    termsEnum.termState(), context.ord, termsEnum.docFreq(),
+                    termsEnum.totalTermFreq());
+            else
+            {
+                termContext.register(termsEnum.termState(), context.ord,
+                termsEnum.docFreq(), termsEnum.totalTermFreq());
+            }
+        }
+    }
+    return termContext;
+  }
+
+  public void collectTermContext(IndexReader reader,
+      List<AtomicReaderContext> leaves, TermContext[] contextArray,
+      Term[] queryTerms) throws IOException {
+    TermsEnum termsEnum = null;
+    for (AtomicReaderContext context : leaves) {
+      final Fields fields = context.reader().fields();
+      if (fields == null) {
+        // reader has no fields
+        continue;
+      }
+      for (int i = 0; i < queryTerms.length; i++) {
+        Term term = queryTerms[i];
+        TermContext termContext = contextArray[i];
+        final Terms terms = fields.terms(term.field());
+        if (terms == null) {
+          // field does not exist
+          continue;
+        }
+        termsEnum = terms.iterator(termsEnum);
+        assert termsEnum != null;
+        
+        if (termsEnum == TermsEnum.EMPTY) continue;
+        if (termsEnum.seekExact(term.bytes())) {
+          if (termContext == null) {
+            contextArray[i] = new TermContext(reader.getContext(),
+                termsEnum.termState(), context.ord, termsEnum.docFreq(),
+                termsEnum.totalTermFreq());
+          } else {
+            termContext.register(termsEnum.termState(), context.ord,
+                termsEnum.docFreq(), termsEnum.totalTermFreq());
+          }
+          
+        }
+        
+      }
+    }
+  }
     
 /**
    * Expert: the Weight for BooleanQuery, used to
@@ -170,10 +500,10 @@ public class JDONREFv4Query extends BooleanQuery
                 docsEnum.advance(doc);
                 float freq;
 
-                if (JDONREFv4Scorer.cumuler(field))
+                if (true) //JDONREFv4Scorer.cumuler(field))
                     freq = docsEnum.freq();
-                else
-                    freq = 1; // les tokens doivent être recherchés autant de fois qu'il y a de termes ?
+                //else
+                //    freq = 1; // les tokens doivent être recherchés autant de fois qu'il y a de termes ?
 
                 float queryBoost = 1.0f;
                 float topLevelBoost = 1.0f;
@@ -261,12 +591,12 @@ public class JDONREFv4Query extends BooleanQuery
                   JDONREFv4TermQuery query = (JDONREFv4TermQuery) w.getQuery();
                   String term = query.getTerm().field();
                   int token = query.getToken();
-                  boolean cumul = JDONREFv4Scorer.cumuler(term);
+                  boolean cumul = true; //JDONREFv4Scorer.cumuler(term);
 
                   requestTokenFrequencies[token]++;
                   tokens.add(token);
                   explanations.add(e);
-                  terms.add(termIndex.get(term));
+               //   terms.add(termIndex.get(term));
                   cumuler.add(cumul);
 
                   if (c.getOccur() == BooleanClause.Occur.SHOULD) {
@@ -275,7 +605,7 @@ public class JDONREFv4Query extends BooleanQuery
               }
           }
 
-          int maxterms = ((JDONREFv4Query)this.getQuery()).termIndex.size();
+          int maxterms = ((JDONREFv4Query)this.getQuery()).payloadIndex.size();
           float[] max_by_term = new float[maxterms];
           Explanation[] noncumulExpl = new Explanation[maxterms];
 
@@ -510,7 +840,9 @@ public class JDONREFv4Query extends BooleanQuery
     public Scorer scorer(AtomicReaderContext context, Bits acceptDocs)
         throws IOException {
         
-      List<JDONREFv4TermScorer> optional = new ArrayList<JDONREFv4TermScorer>();
+      int count = 0;
+        
+      List<JDONREFv4TermScorer> optional = new ArrayList<>();
       Iterator<BooleanClause> cIter = clauses().iterator();
       for (Weight w  : weights) {
         BooleanClause c =  cIter.next();
@@ -524,18 +856,67 @@ public class JDONREFv4Query extends BooleanQuery
         } else if (c.isProhibited()) {
             throw(new IOException("Prohibited clauses are not available."));
         } else {
+          if (((JDONREFv4TermQuery)w.getQuery()).isChecked())
+                  count++;
           optional.add(subScorer);
         }
       }
 
-      JDONREFv4Scorer scorer = new JDONREFv4Scorer(this, optional, maxCoord, context, termIndex,this.mode,this.debugDoc, maxSizePerType);
+      if (count>1)
+        count = Math.round(70.0f*count/100.0f);
+      
+      JDONREFv4Scorer scorer = new JDONREFv4Scorer(this, optional, maxCoord, context, payloadIndex,this.mode,this.debugDoc, maxSizePerType, checker, count);
       
       return scorer;
+    }
+    
+    // from FilteredQuery
+    public class QueryFirstBulkScorer extends BulkScorer {
+
+    private final Scorer scorer;
+    private final Bits filterBits;
+
+    public QueryFirstBulkScorer(Scorer scorer, Bits filterBits) {
+      this.scorer = scorer;
+      this.filterBits = filterBits;
+    }
+
+    @Override
+    public boolean score(Collector collector, int maxDoc) throws IOException {
+      // the normalization trick already applies the boost of this query,
+      // so we can use the wrapped scorer directly:
+      collector.setScorer(scorer);
+      if (scorer.docID() == -1) {
+        scorer.nextDoc();
+      }
+      while (true) {
+        final int scorerDoc = scorer.docID();
+        if (scorerDoc < maxDoc) {
+          if (filterBits==null || filterBits.get(scorerDoc)) { // filterBits may be null
+            collector.collect(scorerDoc);
+          }
+          scorer.nextDoc();
+        } else {
+          break;
+        }
+      }
+
+      return scorer.docID() != Scorer.NO_MORE_DOCS;
     }
   }
     
     @Override
+    public BulkScorer bulkScorer(AtomicReaderContext context, boolean scoreDocsInOrder,
+                                 Bits acceptDocs) throws IOException {
+
+      return new QueryFirstBulkScorer(scorer(context,acceptDocs),acceptDocs);
+    }
+  }
+    
+  @Override
   public Weight createWeight(IndexSearcher searcher) throws IOException {
-    return new JDONREFv4Weight(searcher, isCoordDisabled(),this.mode,this.debugDoc);
+    Weight jw = new JDONREFv4Weight(searcher, isCoordDisabled(),this.mode,this.debugDoc);
+    
+    return jw;
   }
 }

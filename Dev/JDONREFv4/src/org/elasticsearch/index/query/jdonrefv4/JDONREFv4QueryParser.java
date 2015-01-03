@@ -12,13 +12,9 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
 import org.apache.lucene.search.spans.checkers.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
@@ -51,17 +47,18 @@ public class JDONREFv4QueryParser implements QueryParser
     @Nullable
     private final ClusterService clusterService;
     
-    protected ConcurrentHashMap<String,Integer> termIndex = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<Integer,Integer> payloadIndex = new ConcurrentHashMap<>();
     
      public JDONREFv4QueryParser()
      {
           clusterService = null;
-          termIndex.put("ligne4",0);
-          termIndex.put("commune",1);
-          termIndex.put("codes",2);
-          termIndex.put("ligne7",3);
-          termIndex.put("code_pays",4);
-          termIndex.put("ligne1",5);
+          payloadIndex.put(1,0); // ligne1
+          payloadIndex.put(2,1); // ligne4
+          payloadIndex.put(11,2); // numero
+          payloadIndex.put(5,3); // commune
+          payloadIndex.put(3,4); // codes
+          payloadIndex.put(9,5); // ligne7
+          payloadIndex.put(10,6); // code pays
      }
     
     @Inject
@@ -230,37 +227,39 @@ public class JDONREFv4QueryParser implements QueryParser
         byte[] ligne7 = encoder.encode("9".toCharArray()).bytes;
         byte[] numero = encoder.encode("11".toCharArray()).bytes;
         byte[] commune = encoder.encode("5".toCharArray()).bytes;
-        byte[] code_departement = encoder.encode("8".toCharArray()).bytes;
-        byte[] code_insee = encoder.encode("7".toCharArray()).bytes;
-        byte[] code_insee_commune = encoder.encode("6".toCharArray()).bytes;
-        byte[] code_arrondissement = encoder.encode("4".toCharArray()).bytes;
-        byte[] code_postal = encoder.encode("3".toCharArray()).bytes;
+        byte[] codes = encoder.encode("3".toCharArray()).bytes;
+//        byte[] code_departement = encoder.encode("8".toCharArray()).bytes;
+//        byte[] code_insee = encoder.encode("7".toCharArray()).bytes;
+//        byte[] code_insee_commune = encoder.encode("6".toCharArray()).bytes;
+//        byte[] code_arrondissement = encoder.encode("4".toCharArray()).bytes;
+//        byte[] code_postal = encoder.encode("3".toCharArray()).bytes;
         
         OnePayloadChecker ligne1Present = new OnePayloadChecker(ligne1);
         OnePayloadChecker ligne4Present = new OnePayloadChecker(ligne4);
         OnePayloadChecker ligne7Present = new OnePayloadChecker(ligne7);
         AllPayloadChecker allNumeroChecker = new AllPayloadChecker(numero);
         OnePayloadChecker communePresent = new OnePayloadChecker(commune);
-        OnePayloadChecker codeDepartementPresent = new OnePayloadChecker(code_departement);
-        OnePayloadChecker codeInseePresent = new OnePayloadChecker(code_insee);
-        OnePayloadChecker codeInseeCommunePresent = new OnePayloadChecker(code_insee_commune);
-        OnePayloadChecker codeArrondissementPresent = new OnePayloadChecker(code_arrondissement);
-        OnePayloadChecker codePostalPresent = new OnePayloadChecker(code_postal);
-        OrPayloadChecker codesPresent = new OrPayloadChecker(codeDepartementPresent,
-                                                             codeArrondissementPresent,
-                                                             codeInseePresent,
-                                                             codeInseeCommunePresent,
-                                                             codePostalPresent);
+        OnePayloadChecker codesPresent = new OnePayloadChecker(codes);
+//        OnePayloadChecker codeDepartementPresent = new OnePayloadChecker(code_departement);
+//        OnePayloadChecker codeInseePresent = new OnePayloadChecker(code_insee);
+//        OnePayloadChecker codeInseeCommunePresent = new OnePayloadChecker(code_insee_commune);
+//        OnePayloadChecker codeArrondissementPresent = new OnePayloadChecker(code_arrondissement);
+//        OnePayloadChecker codePostalPresent = new OnePayloadChecker(code_postal);
+//        OrPayloadChecker codesPresent = new OrPayloadChecker(codeDepartementPresent,
+//                                                             codeArrondissementPresent,
+//                                                             codeInseePresent,
+//                                                             codeInseeCommunePresent,
+//                                                             codePostalPresent);
         OrPayloadChecker codesOrCommunePresent = new OrPayloadChecker(codesPresent,communePresent);
         PayloadBeforeAnotherChecker numeroAvantLigne4 = new PayloadBeforeAnotherChecker(numero, ligne4);
         LimitChecker limit = new LimitChecker(maxSizePerType);
         
         SwitchPayloadConditionClause clause1 = new SwitchPayloadConditionClause("poizon", new OrPayloadChecker(ligne1Present, new AndPayloadChecker(ligne4Present, numeroAvantLigne4)));
-        SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker, ligne4Present.clone(),/* codesOrCommunePresent,*/ numeroAvantLigne4));
+        SwitchPayloadConditionClause clause2 = new SwitchPayloadConditionClause("adresse", new AndPayloadChecker(allNumeroChecker, ligne4Present.clone(),/* codesOrCommunePresent,*/ numeroAvantLigne4.clone()));
         SwitchPayloadConditionClause clause3 = new SwitchPayloadConditionClause("voie", new AndPayloadChecker(ligne4Present.clone()/* ,codesOrCommunePresent.clone()*/));
-        SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", new AndPayloadChecker(codesOrCommunePresent.clone()));
-        SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", new AndPayloadChecker(codeDepartementPresent.clone()));
-        SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", new AndPayloadChecker(ligne7Present.clone()));
+        SwitchPayloadConditionClause clause4 = new SwitchPayloadConditionClause("commune", codesOrCommunePresent);
+        SwitchPayloadConditionClause clause5 = new SwitchPayloadConditionClause("departement", codesPresent.clone());
+        SwitchPayloadConditionClause clause6 = new SwitchPayloadConditionClause("pays", ligne7Present);
         SwitchPayloadChecker switchChecker = new SwitchPayloadChecker(clause1, clause2, clause3, clause4, clause5, clause6);
         AndPayloadChecker andChecker = new AndPayloadChecker(gpChecker, switchChecker);
 
@@ -324,9 +323,12 @@ public class JDONREFv4QueryParser implements QueryParser
         BytesRef bytes = termAtt == null ? null : termAtt.getBytesRef();
         
         // JDONREFv4 Work rules
-        PayloadCheckerSpanQuery spanQuery = new PayloadCheckerSpanQuery();
+        //PayloadCheckerSpanQuery spanQuery = new PayloadCheckerSpanQuery();
+        JDONREFv4Query spanQuery = new JDONREFv4Query();
+        spanQuery.setMode(mode);
         spanQuery.setTermCountPayloadFactor(TERMCOUNTDEFAULTFACTOR);
         spanQuery.setChecker(getChecker(maxSizePerType));
+        spanQuery.setPayloadIndex(payloadIndex);
         if (maxSizePerType!=-1 && maxSizePerType!=DEFAULTMAXSIZE)
             spanQuery.setLimit(maxSizePerType);
         
@@ -350,6 +352,7 @@ public class JDONREFv4QueryParser implements QueryParser
 //        communeFilter.add(communeClausesFilter,BooleanClause.Occur.MUST);
         
         // phrase query:
+        int numTokenNotUnplited = 0;
         for (int i = 0; i < numTokens; i++) {
             try {
                 boolean hasNext = buffer.incrementToken();
@@ -363,15 +366,21 @@ public class JDONREFv4QueryParser implements QueryParser
             {
                 String type = typeAtt.type();
                 
-                MultiPayloadSpanTermQuery spanTermQuery = new MultiPayloadSpanTermQuery(new Term(term,BytesRef.deepCopyOf(bytes)));
+                //MultiPayloadSpanTermQuery spanTermQuery = new MultiPayloadSpanTermQuery(new Term(term,BytesRef.deepCopyOf(bytes)));
+                JDONREFv4TermQuery spanTermQuery = new JDONREFv4TermQuery(new Term(term,BytesRef.deepCopyOf(bytes)));
+                spanTermQuery.setToken(i);
                 if (UnsplitFilter.UNSPLIT_TYPE.equals(type))
                 {
                     //System.out.println("HITCH ! "+find+" span "+spanTermQuery.getTerm().text()+ " on "+parseContext.index());
                     spanTermQuery.setChecked(false);
                 }
-                spanQuery.addClause(spanTermQuery);
+                else numTokenNotUnplited++;
+                //spanQuery.addClause(spanTermQuery);
+                spanQuery.add(spanTermQuery,BooleanClause.Occur.SHOULD);
             }
         }
+        
+        spanQuery.setNumTokens(numTokenNotUnplited);
         
         if (debugDoc>0)
         {

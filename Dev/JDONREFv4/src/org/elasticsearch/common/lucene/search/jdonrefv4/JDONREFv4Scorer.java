@@ -5,10 +5,12 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
+import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query.JDONREFv4Weight;
 import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery.TermWeight;
@@ -23,7 +25,18 @@ public class JDONREFv4Scorer extends Scorer {
   
   protected AtomicReaderContext context;
   
-  protected ConcurrentHashMap<String, Integer> termIndex;
+  protected ConcurrentHashMap<Integer, Integer> payloadIndex;
+  protected IPayloadChecker checker;
+  
+  int debugDoc = -1;
+  
+  int mode = -1;
+  protected final int minnumber_should_match;
+  
+  public boolean cumuler(int payload)
+  {
+      return payload!=3;
+  }
   
   /**
    * For debug purposes only
@@ -48,19 +61,6 @@ public class JDONREFv4Scorer extends Scorer {
              commune+(commune.length()>0?" ":"")+
              ligne7;
   }
-  
-    /**
-     * Retourne vrai si le poids de tous les champs du terme doivent être cumulés.
-     * Retourne faux si seul le poids le plus élevé de tous les champs du terme doit être pris en compte.
-     * @param term
-     * @return
-     */
-    public static boolean cumuler(String term)
-    {
-        if (term.equals("codes")) return false;
-        
-        return true;
-    }
     
     // DefaultSimilarity only
     // TODO : paste to JDONREFv3TermScorer with a tuned Similarity
@@ -94,10 +94,10 @@ public class JDONREFv4Scorer extends Scorer {
         docsEnum.advance(doc);
         float freq;
         
-        if (cumuler(field))
+        //if (cumuler(field))
             freq = docsEnum.freq();
-        else
-            freq = 1; // les tokens doivent être recherchés autant de fois qu'il y a de termes ?
+        //else
+        //    freq = 1; // les tokens doivent être recherchés autant de fois qu'il y a de termes ?
         //float freq = collectionStats.sumTotalTermFreq();
         
         float queryBoost = 1.0f;
@@ -149,35 +149,16 @@ public class JDONREFv4Scorer extends Scorer {
         {
             TermWeight weight = (TermWeight) scorer.getWeight();
         
-            return score(weight,bucket.d,bucket.doc,term,weight.searcher);
-        }
-    }
-    
-    // JDONREFv3TermSimilarity only
-    public float score(JDONREFv4TermScorer scorer,Bucket bucket, Term term, IndexSearcher searcher) throws IOException
-    {
-        if (bucket.doc == scorer.docID())
-        {
-            if (debugDoc!=-1 && debugDoc==bucket.doc)
-            {
-                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" doc :"+bucket.doc+" use native scorer");
-            }
-            return scorer.score();
-        }
-        else
-        {
-            TermWeight weight = (TermWeight) scorer.getWeight();
-        
-            return score(weight,bucket.d,bucket.doc,term,searcher);
+            return score(weight,bucket.d,bucket.doc,term,scorer.getSearcher());
         }
     }
   
-    /** Calcule le score total théorique que peut rapporter un terme d'un document
+    /** Calcule le score total théorique que peut rapporter les tokens d'un document d'un payload donné
      *  Les termes de même offset ne sont comptés qu'une seule fois : le plus long ou celui de score le plus élevé.
      * 
      *  Le nombre de terme est aussi ajouté au bucket (qui tient compte des synonymes et nGram).
      */
-    public float totalScore(JDONREFv4TermScorer scorer,String term, Bucket bucket) throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
+    public void totalScore(JDONREFv4TermScorer scorer,Bucket bucket) throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
     {
         boolean debug = false;
         if (debugDoc!=-1 && debugDoc==bucket.doc)
@@ -185,66 +166,54 @@ public class JDONREFv4Scorer extends Scorer {
             debug = true;
         }
         
+        String term = ((JDONREFv4TermQuery)(scorer.weight().getQuery())).term.field();
+        
         AtomicReader atomicreader = context.reader();
+        
         Terms terms = atomicreader.getTermVector(bucket.doc,term);
-        if (terms==null) return 0.0f; // le terme n'existe pas dans ce document.
-        
-        IndexSearcher searcher = scorer.getSearcher(); // same searcher for all terms
-        
+        if (terms==null) return; // le terme n'existe pas dans ce document.
+
         if (debug)
         Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" totalScore for Term :"+term+", doc :"+bucket.doc);
         
         TermsEnum termsEnum = terms.iterator(null);
         BytesRef current;
         
-        Field field = termsEnum.getClass().getDeclaredField("startOffsets");
-        field.setAccessible(true);
-        int[] startOffsets = (int[]) field.get(termsEnum); // no security manager for now !
+        Field fieldStartOffsets = termsEnum.getClass().getDeclaredField("startOffsets");
+        fieldStartOffsets.setAccessible(true);
+        int[] startOffsets = (int[]) fieldStartOffsets.get(termsEnum); // no security manager for now !
+        
+        Field fieldPayloads = termsEnum.getClass().getDeclaredField("payloads");
+        fieldPayloads.setAccessible(true);
+        BytesRef payloads = (BytesRef) fieldPayloads.get(termsEnum);
+        
+        Field fieldPayloadIndex = termsEnum.getClass().getDeclaredField("payloadIndex");
+        fieldPayloadIndex.setAccessible(true);
+        int[] payloadIndexs = (int[]) fieldPayloadIndex.get(termsEnum);
         
         bucket.maxcoord += startOffsets.length;
-        
-        HashMap<Integer,Float> scoresPosition = new HashMap<Integer,Float>();
-        HashMap<Integer,Integer> lengthPosition = new HashMap<Integer,Integer>();
         
         float totalScore = 0.0f;
         int i = 0;
         while(!((current = termsEnum.next())==null))
         {
             Term t = new Term(term,current);
-            int length = t.text().length();
-            int offset = startOffsets[i];
+            int currentPayload = PayloadHelper.decodeInt(payloads.bytes,payloadIndexs[i]+payloads.offset);
             
-            float score = score(scorer,bucket,t,searcher);
-            
-            Float lastscore = scoresPosition.get(offset);
-            Integer lastlength = lengthPosition.get(offset);
-            
-            if (lastscore!=null)
+            if (currentPayload/1000000==1) // to generalize
             {
-                if (lastscore < score || lastscore==score && lastlength<length) // lastlength < length  ... le plus gros score n'est pas toujours le plus pertinent !?
+                int payloadValue = currentPayload%1000;
+                float currentScore = score(scorer,bucket,t);
+                int pIndex = this.payloadIndex.get(payloadValue).intValue();
+
+                if (cumuler(payloadValue))
                 {
-                    if (cumuler(term))
-                    {
-                        totalScore -= lastscore;
-                        totalScore += score;
-                    }
-                    else
-                    {
-                        totalScore = Math.max(score,totalScore); // lastscore may be == totalScore !? no need to check
-                    }
-                    scoresPosition.put(offset, score);
-                    lengthPosition.put(offset, length);
+                    bucket.total_score_by_payload[pIndex] += currentScore;
                 }
-                // else do nothing
-            }
-            else
-            {
-                if (cumuler(term))
-                    totalScore += score;
                 else
-                    totalScore = Math.max(totalScore,score);
-                scoresPosition.put(offset, score);
-                lengthPosition.put(offset, length);
+                {
+                    bucket.total_score_by_payload[pIndex] = Math.max(bucket.total_score_by_payload[pIndex],currentScore); 
+                }
             }
             
             i++;
@@ -253,47 +222,42 @@ public class JDONREFv4Scorer extends Scorer {
         if (debug)
         Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" totalScore for Term :"+term+", doc :"+bucket.doc+" = "+totalScore);
         
-        return totalScore;
+        return;
     }
     
     boolean foobar = false;
     
     public void setTotalScore(JDONREFv4TermScorer scorer,Bucket bucket) throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
     {
-        boolean ligne1Present = bucket.score_by_term[termIndex.get("ligne1")]>0;
-        boolean codePresent = bucket.score_by_term[termIndex.get("codes")]>0;
-        boolean communePresent = bucket.score_by_term[termIndex.get("commune")]>0;
-        boolean ligne4Present = bucket.score_by_term[termIndex.get("ligne4")]>0;
-        boolean ligne7Present = bucket.score_by_term[termIndex.get("ligne7")]>0;
-        boolean codePaysPresent = bucket.score_by_term[termIndex.get("code_pays")]>0;
+        boolean ligne1Present = bucket.score_by_payload[payloadIndex.get(1)]>0;
+        boolean codePresent = bucket.score_by_payload[payloadIndex.get(3)]>0;    
+        boolean communePresent = bucket.score_by_payload[payloadIndex.get(5)]>0;
+        boolean ligne4Present = bucket.score_by_payload[payloadIndex.get(2)]>0;
+        boolean numeroPresent = bucket.score_by_payload[payloadIndex.get(11)]>0;
+        boolean ligne7Present = bucket.score_by_payload[payloadIndex.get(9)]>0;
+        boolean codePaysPresent = bucket.score_by_payload[payloadIndex.get(10)]>0;
         
-        bucket.total_score_by_term[termIndex.get("ligne1")] = this.totalScore(scorer,"ligne1", bucket);
+        totalScore(scorer,bucket);
         
-        if (ligne1Present)
-        {
-            if (ligne4Present)
-                bucket.total_score_by_term[termIndex.get("ligne4")] = this.totalScore(scorer,"ligne4", bucket);
-        }
-        else
-        {
-            bucket.total_score_by_term[termIndex.get("ligne4")] = this.totalScore(scorer,"ligne4", bucket);
-        }
+        // le score de la ligne 1 et du numero sont toujours présent.
+        
+        if (ligne1Present && !ligne4Present)
+                bucket.total_score_by_payload[payloadIndex.get(2)] = 0;
         
         // le poids de la commune n'est pas prise en compte si seul un code est présent
-        if (communePresent || !codePresent)
+        if (communePresent && !codePresent)
         {
-            bucket.total_score_by_term[termIndex.get("commune")] = this.totalScore(scorer,"commune", bucket);
+            bucket.total_score_by_payload[payloadIndex.get(3)] = 0;
         }
         // le poids des codes n'est pas pris en compte si seul une commune est présente
-        if (codePresent || !communePresent)
+        if (codePresent && !communePresent)
         {
-            bucket.total_score_by_term[termIndex.get("codes")] = this.totalScore(scorer,"codes", bucket);
+            bucket.total_score_by_payload[payloadIndex.get(5)] = 0;
         }
         
-        if (ligne7Present)
-            bucket.total_score_by_term[termIndex.get("ligne7")] = this.totalScore(scorer,"ligne7", bucket);
-        if (codePaysPresent)
-            bucket.total_score_by_term[termIndex.get("code_pays")] = this.totalScore(scorer,"code_pays", bucket);
+        // fully optionnal score :
+        if (!ligne7Present) bucket.total_score_by_payload[payloadIndex.get(9)] = 0;
+        if (!codePaysPresent) bucket.total_score_by_payload[payloadIndex.get(10)] = 0;
     }
     
     public float getSumTotalScore(Bucket bucket)
@@ -306,9 +270,9 @@ public class JDONREFv4Scorer extends Scorer {
             debug = true;
         }
         
-        for(int i=0;i<bucket.total_score_by_term.length;i++)
+        for(int i=0;i<bucket.total_score_by_payload.length;i++)
         {
-            float subscore = bucket.total_score_by_term[i];
+            float subscore = bucket.total_score_by_payload[i];
             if (debug)
             {
                  Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumTotalScore for doc :"+bucket.doc+" term "+i+": "+subscore);
@@ -338,48 +302,54 @@ public class JDONREFv4Scorer extends Scorer {
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" "+getFullName(bucket));
         }
         
-        int[] freq_by_term = new int[bucket.score_by_term.length];
+        int[] freq_by_term = new int[bucket.score_by_payload.length];
         for(int i=0;i<bucket.score_by_subquery.length;i++)
         {
             float score = bucket.score_by_subquery[i];
             if (score>0)
             {
-                int token = bucket.token_by_subquery[i];
-                int freq = bucket.requestTokenFrequencies[token];
+                //int token = bucket.token_by_subquery[i];
+                //int freq = bucket.requestTokenFrequencies[token];
+                int freq = bucket.payload_by_subquery[i].length;
 
                 if (freq > 0) {
                     score /= freq;
                     
-                    String term = bucket.term_by_subquery[i];
-                    int termIdx = termIndex.get(term);
-                    float lastscore = bucket.score_by_term[termIdx];
+                    for(int j=0;j<bucket.payload_by_subquery[i].length;j++)
+                    {
+                        int payload = bucket.payload_by_subquery[i][j];
+                        int payloadIdx = payloadIndex.get(payload);
+                        
+                        float lastscore = bucket.score_by_payload[payloadIdx];
+                        
+                        if (debug && freq>1)
+                            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" ");
 
-                    if (debug && freq>1)
-                        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" ");
-                    
-                    if (cumuler(term)) {
-                        sum += score;
-                        bucket.coord += 1.0f/freq;
-                        bucket.score_by_term[termIdx] = score+lastscore;
-                    } else {
-                        if ((score = Math.max(lastscore, score))>lastscore)
+                        if (cumuler(payload))
                         {
                             sum += score;
                             bucket.coord += 1.0f/freq;
-                            if (lastscore>0)
+                            bucket.score_by_payload[payloadIdx] = score+lastscore;
+                        } else {
+                            if ((score = Math.max(lastscore, score))>lastscore)
                             {
-                                sum -= lastscore;
-                                //bucket.coord -= 1.0f/freq_by_term[termIdx];
-                            }   
-                            bucket.score_by_term[termIdx] = score;
-                            freq_by_term[termIdx] = freq;
+                                sum += score;
+                                bucket.coord += 1.0f/freq;
+                                if (lastscore>0)
+                                {
+                                    sum -= lastscore;
+                                    //bucket.coord -= 1.0f/freq_by_term[termIdx];
+                                }   
+                                bucket.score_by_payload[payloadIdx] = score;
+                                freq_by_term[payloadIdx] = freq;
+                            }
+                            else
+                                bucket.coord += 1.0f/freq;
                         }
-                        else
-                            bucket.coord += 1.0f/freq;
-                    }
-                    if (debug)
-                    {
-                        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" term: "+term+" subquery "+i+"="+score);
+                        if (debug)
+                        {
+                            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" SumScore for doc :"+bucket.doc+" payload: "+payload+" subquery "+i+"="+score);
+                        }
                     }
                 }
             }
@@ -422,10 +392,10 @@ public class JDONREFv4Scorer extends Scorer {
           {
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"  makeFinalScore doc "+bucket.doc);
           }
-          
+
           // Score relatif
           bucket.score = getSumScore(bucket);
-          
+
           if (bucket.score>0)
           {
               if (mode==JDONREFv4Query.BULK)
@@ -474,28 +444,28 @@ public class JDONREFv4Scorer extends Scorer {
         
         // Additionnal collection of data for later scoring adjustment
         JDONREFv4TermQuery query = (JDONREFv4TermQuery) ((TermWeight) scorer.getWeight()).getQuery();
-        Term term = query.getTerm();
-        int token = query.getToken();
-        int termQueryIndex = query.getQueryIndex();
+        
+        if (query.isChecked())
+        {        
+            Term term = query.getTerm();
+            int token = query.getToken();
+            int termQueryIndex = query.getQueryIndex();
 
-        // increment token frequencies
-        bucket.requestTokenFrequencies[token]++;
+            // increment token frequencies
+            //bucket.requestTokenFrequencies[token]++;
 
-        if (debug) {
-            Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName() + " collect score for Term :" + term + ", termQueryIndex:" + termQueryIndex + " doc :" + bucket.doc);
-        //float score = scorer.score();
-        }
-        float score = score(scorer, bucket,term);
-        //analyzeOrder(bucket, term,query);
-        //analyzeCodeBeforeAdress(bucket, term);
-        //analyzeAdressNumber(bucket, term);
+            if (debug) {
+                Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName() + " collect score for Term :" + term + ", termQueryIndex:" + termQueryIndex + " doc :" + bucket.doc);
+            }
+            float currentScore = score(scorer, bucket,term);
 
-        //bucket.score_by_term.put(term.field(),score);
-        bucket.score_by_subquery[termQueryIndex] = score;
-        bucket.token_by_subquery[termQueryIndex] = token;
-        bucket.term_by_subquery[termQueryIndex] = term.field();
-        if (debug) {
-            Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName() + " end collect score for Term :" + term + ", termQueryIndex:" + termQueryIndex + " doc :" + bucket.doc+ " score="+score);
+            bucket.score_by_subquery[termQueryIndex] = currentScore;
+            //bucket.token_by_subquery[termQueryIndex] = token;            
+            bucket.payload_by_subquery[termQueryIndex] = scorer.getCurrentPayloads();
+            
+            if (debug) {
+                Logger.getLogger(this.getClass().toString()).debug("Thread " + Thread.currentThread().getName() + " end collect score for Term :" + term + ", termQueryIndex:" + termQueryIndex + " doc :" + bucket.doc+ " score="+currentScore);
+            }
         }
   }
   
@@ -613,31 +583,14 @@ public class JDONREFv4Scorer extends Scorer {
     float score;             // incremental score
     float malus;             // malus final à appliquer
     
-    //boolean isOfTypeAdress;          // le document est une adresse
-    //boolean adressNumberPresent;     // présence du numéro d'adresse ...
-    //boolean isThereCodeBeforeAdress; // présence d'un code devant la ligne 4 de l'adresse
-    
-    //boolean[] currentAnalyzedFields;            // current Type beeing analyzed
-    //boolean[] lastAnalyzedFields;               // last Types beeing analyzed
-    //int currentToken; // index of the current type beeing analyzed
-    //HashMap<String,Boolean> analyzedTypes; // all types already been analyzed in order
-    //boolean[] analyzedFields; // all types already been analyzed in order
-
-    // reported to PayloadChecker :
-    //boolean mayBeWrongOrder;
-    //boolean wrongOrder;
-    
-    int[] requestTokenFrequencies; // Combien de fois chaque terme de la requête a-t-elle de correspondance ?
+    //int[] requestTokenFrequencies; // Combien de fois chaque terme de la requête a-t-elle de correspondance ?
                                   // nous (je !) ne le savons qu'au moment de la collecte, terme par terme ...
     float[]  score_by_subquery; // le score de chaque sous requête
-    int[] token_by_subquery;    // la sous-requete associée à chaque score
-    String[] term_by_subquery;     // le terme de chaque sous requête
+    //int[] token_by_subquery;    // la sous-requete associée à chaque score
+    int[][] payload_by_subquery;     // le terme de chaque sous requête
     
-    float[] score_by_term;        // le score cumulé de chaque terme
-    float[] total_score_by_term;  // le score cumulé maximum de chaque terme
-    
-    //HashMap<String,Float> score_by_term; // le score cumulé de chaque terme
-    //HashMap<String,Float> total_score_by_term; // le score cumulé maximum de chaque terme
+    float[] score_by_payload;        // le score cumulé de chaque terme
+    float[] total_score_by_payload;  // le score cumulé maximum de chaque terme
     
     int maxcoord;             // le nombre total de termes possibles (sans abbréviations et ngram)
     
@@ -645,19 +598,21 @@ public class JDONREFv4Scorer extends Scorer {
     // numRequiredMatched; then we can remove 32 limit on
     // required clauses
     int bits;                // used for bool constraints
-    int coord;               // count of terms in score
+    float coord;               // count of terms in score
     int hits;                // count of hits without frequencies
     Bucket next;             // next valid bucket
     
     public Bucket(int maxTokens)
     {
-        score_by_term = new float[termIndex.size()];
-        total_score_by_term = new float[termIndex.size()];
+        int size = payloadIndex.size();
         
-        requestTokenFrequencies = new int[maxTokens];
-        score_by_subquery = new float[maxTokens*termIndex.size()];
-        token_by_subquery = new int[maxTokens*termIndex.size()];
-        term_by_subquery = new String[maxTokens*termIndex.size()];
+        score_by_payload = new float[size];
+        total_score_by_payload = new float[size];
+        
+        //requestTokenFrequencies = new int[maxTokens];
+        score_by_subquery = new float[maxTokens*size];
+        //token_by_subquery = new int[maxTokens*size];
+        payload_by_subquery = new int[maxTokens*size][];
     }
   }
   
@@ -717,9 +672,6 @@ public class JDONREFv4Scorer extends Scorer {
   
   protected int maxCoord;
   
-  protected int mode;
-  protected int debugDoc;
-  
   protected int doc = -1;
   
   protected JDONREFv4Weight protectedWeight;
@@ -731,16 +683,19 @@ public class JDONREFv4Scorer extends Scorer {
   
   public JDONREFv4Scorer(JDONREFv4Weight weight,
       List<JDONREFv4TermScorer> optionalScorers,
-      int maxCoord, AtomicReaderContext context, ConcurrentHashMap<String, Integer> termIndex,
-      int mode, int debugDoc, int maxSizePerType) throws IOException {
+      int maxCoord, AtomicReaderContext context, ConcurrentHashMap<Integer, Integer> payloadIndex,
+      int mode, int debugDoc, int maxSizePerType, IPayloadChecker checker,int minnumber_should_match) throws IOException {
     super(weight);
     
     this.protectedWeight = weight;
     this.context = context;
     this.maxCoord = maxCoord;
-    this.termIndex = termIndex;
+    this.payloadIndex = payloadIndex;
     this.mode = mode;
     this.debugDoc = debugDoc;
+    this.checker = checker;
+    this.minnumber_should_match = minnumber_should_match;
+    //this.checker.setQuery(weight.getQuery()); // A CORRIGER
     
     bucketTable = new BucketTable(context, weight.weights().size());
 
@@ -766,6 +721,7 @@ public class JDONREFv4Scorer extends Scorer {
            JDONREFv4TermScorer scorer = optionalScorers.get(i);
            scorer.setParentScorer(this);
            subScorers[i] = scorer;
+           subScorers[i].order = i;
        }
        
        heapify(); // NB: un nextDoc a été appliqué à chaque scorer
@@ -844,8 +800,11 @@ public class JDONREFv4Scorer extends Scorer {
       {
           scorer = subscorers.get(i);
           Term term = ((JDONREFv4TermQuery) ((TermWeight) scorer.getWeight()).getQuery()).getTerm();
-            
-          bucket.score_by_term[termIndex.get(term.field())] = 1.0f; // 1.0f means existence, does not care about value
+
+          for(int j : scorer.getCurrentPayloads())
+          {
+            bucket.score_by_payload[payloadIndex.get(j)] = 1.0f; // 1.0f means existence, do not care about value
+          }
       }
       
       setTotalScore(scorer,bucket);
@@ -1002,18 +961,18 @@ public class JDONREFv4Scorer extends Scorer {
           return doc = NO_MORE_DOCS;
         }
       }
-      if (subScorers[0].docID() >= target) {
+      if (subScorers[0].docID() >= target && checkPayloads()) {
         if (debug)
           Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" calcul du score pour  "+subScorers[0].docID());
-        afterNext();
         
+        if (afterNext())
         //if (score!=0.0f || doc==NO_MORE_DOCS)
             return doc;
       }
     }
   }
   
-  protected void afterNext() throws IOException {
+  protected boolean afterNext() throws IOException {
       final JDONREFv4TermScorer sub = subScorers[0];
       doc = sub.docID();
       boolean debug = false;
@@ -1023,10 +982,11 @@ public class JDONREFv4Scorer extends Scorer {
       }
       if (debug)
           Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Préparation pour le document "+doc);
+      
       if (doc != NO_MORE_DOCS) {
           Bucket b = new Bucket(this.maxCoord);
           b.doc = doc;
-          b.d = this.context.reader().document(doc);
+          b.d = this.subScorers[0].document(); //this.context.reader().document(doc);
 
           if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Calcul du score pour le document "+doc+" scorer "+0);
@@ -1035,6 +995,8 @@ public class JDONREFv4Scorer extends Scorer {
           countMatches(b, 1);
           countMatches(b, 2);
 
+          if (nrMatchers < minnumber_should_match) return false;
+          
           try {
               makeFinalScore(scorers.scorer, b); // peu importe le scorer choisi, seule la valeur de queryNorm est utilisée (la même pour tous les scorer).
 
@@ -1048,14 +1010,17 @@ public class JDONREFv4Scorer extends Scorer {
           score = b.score * Math.pow(b.coord / maxCoord, 3);
 
           // arrondi le résultat à 10^-2
-          score = (float) Math.ceil(100 * score) / 100.0f;
+          //score = (float) Math.ceil(100 * score) / 100.0f;
           if (score > 200) {
               score = 200; // maximum
           }
-          
+
           if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Calcul du score final pour le document "+doc+" score: "+score);
+          
+          return true;
       }
+      return false;
   }
   
   protected void countMatches(Bucket b,int root) throws IOException {
@@ -1105,15 +1070,33 @@ public class JDONREFv4Scorer extends Scorer {
           return this.doc = NO_MORE_DOCS;
         }
       }
-      if (subScorers[0].docID() != this.doc) {
+      if (subScorers[0].docID() != this.doc && checkPayloads()) {
         if (debug)
             Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+"Nouveau document trouvé, préparation.");
-        afterNext();
         
-        //if (score!=0.0f || doc == NO_MORE_DOCS)
-        return doc;
+        if (afterNext())
+            return doc;
       }
     }
+  }
+  
+  public boolean checkPayloads() throws IOException
+  {
+      checker.clear();
+      
+      for(int i=0;i<subScorers.length;i++)
+      {
+          if (subScorers[i]!=null && subScorers[i].docID()==subScorers[0].docID() && subScorers[i].checked)
+          {
+            do
+            {
+                if (!checker.checkNextPayload(subScorers[i]))
+                    return false;
+            } while (subScorers[i].nextPayload());
+          }
+      }
+      
+      return checker.check();
   }
 
   @Override

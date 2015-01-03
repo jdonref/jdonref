@@ -8,6 +8,7 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryBuilder;
@@ -412,6 +413,7 @@ public class JDONREFv4QueryTests extends QueryTests
         Assert.assertFalse(br.hasFailures());
         
         refresh();
+        client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute();
     }
 
     @Test
@@ -421,7 +423,7 @@ public class JDONREFv4QueryTests extends QueryTests
         System.out.println(PAYS_INDEX+" num docs : "+indResponse.getIndex(PAYS_INDEX).getDocs().getNumDocs());
         System.out.println(DPT_INDEX+" num docs : "+indResponse.getIndex(DPT_INDEX).getDocs().getNumDocs());
         System.out.println(COMMUNE_INDEX+" num docs : "+indResponse.getIndex(COMMUNE_INDEX).getDocs().getNumDocs());
-        //System.out.println(TRONCON_INDEX+" num docs : "+indResponse.getIndex(TRONCON_INDEX).getDocs().getNumDocs());
+//        //System.out.println(TRONCON_INDEX+" num docs : "+indResponse.getIndex(TRONCON_INDEX).getDocs().getNumDocs());
         System.out.println(VOIE_INDEX+" num docs : "+indResponse.getIndex(VOIE_INDEX).getDocs().getNumDocs());
         System.out.println(ADR_INDEX+" num docs : "+indResponse.getIndex(ADR_INDEX).getDocs().getNumDocs());
         System.out.println(POIZON_INDEX+" num docs : "+indResponse.getIndex(POIZON_INDEX).getDocs().getNumDocs());
@@ -429,46 +431,48 @@ public class JDONREFv4QueryTests extends QueryTests
         ////////////
         /// VOIE
         // voie avec uniquement commune
-        searchExactAdresse("RUE DE LA FRANCE PARIS","RUE DE LA FRANCE","75005 PARIS"); // match
-        
-        // voie avec uniquement le code département
-        searchExactAdresse("RUE DE LA FRANCE 75","RUE DE LA FRANCE","75005 PARIS"); // match
-        
-        // voie partielle avec uniquement le code département
-        searchExactAdresse("FRANCE 75","RUE DE LA FRANCE","75005 PARIS"); // match
-        
-        // voie partielle avec uniquement le code postal
-        searchExactAdresse("FRANCE 75005","RUE DE LA FRANCE","75005 PARIS"); // match
-        
-        ////////////
-        /// ADRESSES
-        
-        // adresse avec uniquement commune
-        searchExactAdresse("59 BOULEVARD DE LA FRANCE HOPITAL","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
-        
-        // adresse avec uniquement code département
-        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
-        
-        // adresse avec uniquement code postal
-        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02000","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
-        
-        // adresse avec uniquement code insee
-        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02001","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
-        
+//        searchExactAdresse("RUE DE LA FRANCE PARIS","RUE DE LA FRANCE","75005 PARIS"); // match
+//        
+//        // voie avec uniquement le code département
+//        searchExactAdresse("RUE DE LA FRANCE 75","RUE DE LA FRANCE","75005 PARIS"); // match
+//        
+//        // voie partielle avec uniquement le code département
+//        searchExactAdresse("FRANCE 75","RUE DE LA FRANCE","75005 PARIS"); // match
+//        
+//        // voie partielle avec uniquement le code postal
+//        searchExactAdresse("FRANCE 75005","RUE DE LA FRANCE","75005 PARIS"); // match
+//        
+//        ////////////
+//        /// ADRESSES
+//        
+//        // adresse avec uniquement commune
+//        searchExactAdresse("59 BOULEVARD DE LA FRANCE HOPITAL","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+//        
+//        // adresse avec uniquement code département
+//        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+//        
+//        // adresse avec uniquement code postal
+//        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02000","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+//        
+//        // adresse avec uniquement code insee
+//        searchExactAdresse("59 BOULEVARD DE LA FRANCE 02001","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
+//        
         // adresse sans son numéro d'adresse => fail
-        searchExactAdresse("BOULEVARD DE LA FRANCE 02001","59 BOULEVARD DE LA FRANCE","02000 HOPITAL",0); // no match
+        searchExactAdresse("BOULEVARD DE LA FRANCE 02001","59 BOULEVARD DE LA FRANCE","02000 HOPITAL",1); // no match with adress, only with country
         
         // adresse avec code postal intercalé, mais FRANCE correspond au pays
         searchExactAdresse("59 BOULEVARD DE LA 02001 FRANCE","59 BOULEVARD DE LA FRANCE","02000 HOPITAL"); // match
         
         // adresse avec code postal intercalé => fail
-        searchExactAdresse("59 02001 BOULEVARD DE LA FRANCE","59 BOULEVARD DE LA FRANCE","02000 HOPITAL",0); // no match
+        searchExactAdresse("59 02001 BOULEVARD DE LA FRANCE","59 BOULEVARD DE LA FRANCE","02000 HOPITAL",false); // no match with adress, only with country
     }
 
     @Override
     QueryBuilder getQueryBuilder(String voie)
     {
         JDONREFv4QueryBuilder qb = new JDONREFv4QueryBuilder(voie);
+        qb.maxSize(100);
+        qb.mode(JDONREFv4Query.BULK);
         
         return qb;
     }

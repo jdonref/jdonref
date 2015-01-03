@@ -5,7 +5,7 @@
                 "jdonrefv4_index_token_count" : {
                     "type" : "custom",
                     "tokenizer" : "whitespace",
-                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*"french_keywords",*/ "french_stemmer","jdonrefv4_tokenCount","jdonrefv4_synonyme", "jdonrefv4_nGram", "jdonrefv4_unsplit_index"]
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*"french_keywords",*/ "french_stemmer","jdonrefv4_tokenCount","jdonrefv4_synonyme", "jdonrefv4_nGram", "jdonrefv4_integertypeaspayload"]
                 },
                 "jdonrefv4_index" : {
                     "type" : "custom",
@@ -25,7 +25,7 @@
                 "jdonrefv4_search_unpslit" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["lowercase", "french_elision", "french_stop"/*,/"french_keywords"*/, "french_stemmer", "jdonrefv4_unsplit_search"]
+                    "filter" : ["lowercase", "french_elision", "french_stop"/*,/"french_keywords"*/, "french_stemmer"]
                 }
             },
             "filter" : {
@@ -37,7 +37,7 @@
                 "french_elision": {
                   "type":         "elision",
                   "articles": [ "l", "m", "qu", "n", "s",
-                                  "j", "d", "c", "jusqu", "quoiqu",
+                                  "j", "jusqu", "quoiqu",
                                   "lorsqu", "puisqu"
                               ]
                 },
@@ -70,23 +70,13 @@
                     "keep_numbers" : true,
                     "keep_under_min" : true
                 },
+                "jdonrefv4_integertypeaspayload" : {
+                    "type":"integertypeaspayload",
+                    "factor": 1000000
+                },
                 "jdonrefv4_tokenCount": {
                     "type" : "tokencountpayloads",
                     "factor": 1000
-                },
-                "jdonrefv4_unsplit_index" : {
-                  "type": "unsplit",
-                  "min_words_unsplitted" : 2,
-                  "keep_originals" : true,
-                  "max_subwords" : 1,
-                  "path": "/usr/share/elasticsearch/plugins/jdonrefv4-0.3/word84.txt"
-                },
-                "jdonrefv4_unsplit_search" : {
-                  "type": "unsplit",
-                  "min_words_unsplitted" : 0,
-                  "keep_originals" : true,
-                  "max_subwords" : 1,
-                  "path": "/usr/share/elasticsearch/plugins/jdonrefv4-0.3/word84.txt"
                 }
             },
             "similarity": {

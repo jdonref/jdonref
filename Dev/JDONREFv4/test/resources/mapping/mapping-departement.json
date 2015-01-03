@@ -17,7 +17,7 @@
                         },
        "transform" : {
            "lang" : "groovy",
-           "script" : "ctx._source['fullName'] = ''; if (ctx._source['ligne7']!=null) { def tokens = ctx._source['ligne7'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|9'; }; if (ctx._source['code_pays']!=null) { def tokens = ctx._source['code_pays'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|10'; }; if (ctx._source['code_departement']!=null) { def tokens = ctx._source['code_departement'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|8'; };"
+           "script" : "ctx._source['fullName'] = ''; if (ctx._source['ligne7']!=null) { def tokens = ctx._source['ligne7'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|9'; }; if (ctx._source['code_pays']!=null) { def tokens = ctx._source['code_pays'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|10'; }; if (ctx._source['code_departement']!=null) { def tokens = ctx._source['code_departement'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|3'; };"
        }
     }
   }

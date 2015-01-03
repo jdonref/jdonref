@@ -6,6 +6,7 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.search.similarities.Similarity.SimScorer;
+import org.apache.lucene.search.spans.MultiPayloadTermSpans;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.ToStringUtils;
 
@@ -14,23 +15,64 @@ This may be combined with other terms with a {@link BooleanQuery}.
  */
 public class JDONREFv4TermQuery extends Query {
 
-    private final Term term;
-    private final int docFreq;
+    protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
+    protected final Term term;
+    protected final int docFreq;
     private final JDONREFv4TermContext perReaderTermState;
     protected boolean last = false;
     protected int token;
     protected int queryIndex;
+    protected boolean checked = true;
+    protected int order;
+    protected int integerTypeAsPayloadFactor = MultiPayloadTermSpans.NOINTEGERTYPEASPAYLOADFACTOR;
 
+    public boolean isLast() {
+        return last;
+    }
+
+    public void setLast(boolean last) {
+        this.last = last;
+    }
+
+    public int getTermCountPayloadFactor() {
+        return termCountPayloadFactor;
+    }
+
+    public void setTermCountPayloadFactor(int termCountPayloadFactor) {
+        this.termCountPayloadFactor = termCountPayloadFactor;
+    }
+
+    public int getIntegerTypeAsPayloadFactor() {
+        return integerTypeAsPayloadFactor;
+    }
+
+    public void setIntegerTypeAsPayloadFactor(int integerTypeAsPayloadFactor) {
+        this.integerTypeAsPayloadFactor = integerTypeAsPayloadFactor;
+    }
+    
+  public int getOrder()
+  {
+      return this.order;
+  }
+  
+    void setOrder(int i) {
+        this.order = i;
+    }
+    
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+    
     public int getToken() {
         return token;
     }
 
     public void setToken(int token) {
         this.token = token;
-    }
-
-    public void setIsLast() {
-        this.last = true;
     }
 
     public int getQueryIndex() {
@@ -114,10 +156,10 @@ public class JDONREFv4TermQuery extends Query {
             if (termsEnum == null) {
                 return null;
             }
-            DocsEnum docs = termsEnum.docs(acceptDocs, null);
-            assert docs != null;
-            //return new TermScorer(this, docs, similarity.simScorer(stats, context));
-            return new JDONREFv4TermScorer(this, docs, similarity.simScorer(stats, context), this.index, this.searcher);
+            final DocsAndPositionsEnum postings = termsEnum.docsAndPositions(acceptDocs, null, DocsAndPositionsEnum.FLAG_PAYLOADS);
+            
+            assert postings != null;
+            return new JDONREFv4TermScorer(this,postings, similarity.simScorer(stats, context), this.index, this.searcher, context.reader(),termCountPayloadFactor, order, checked);
         }
 
         /**

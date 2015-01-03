@@ -12,10 +12,7 @@ import org.elasticsearch.index.query.MultiPayloadSpanTermQueryParser;
 import org.elasticsearch.index.query.PayloadCheckerSpanQueryParser;
 import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryParser;
 import org.elasticsearch.indices.query.IndicesQueriesModule;
-import org.elasticsearch.plugin.analysis.EdgeNGramWithPayloadsFilterFactory;
-import org.elasticsearch.plugin.analysis.SynonymWithPayloadsTokenFilterFactory;
-import org.elasticsearch.plugin.analysis.TokenCountPayloadsFilterFactory;
-import org.elasticsearch.plugin.analysis.UnsplitFilterFactory;
+import org.elasticsearch.plugin.analysis.*;
 import org.elasticsearch.plugins.AbstractPlugin;
 
 /**
@@ -46,6 +43,7 @@ public class JDONREFv4Plugin extends AbstractPlugin
         module.addTokenFilter("payloadsynonym",SynonymWithPayloadsTokenFilterFactory.class);
         module.addTokenFilter("unsplit",UnsplitFilterFactory.class);
         module.addTokenFilter("tokencountpayloads",TokenCountPayloadsFilterFactory.class);
+        module.addTokenFilter("integertypeaspayload",IntegerTypeAsPayloadFilterFactory.class);
     }
     
     public void onModule(IndicesQueriesModule module)

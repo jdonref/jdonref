@@ -2,24 +2,47 @@ package org.elasticsearch.common.lucene.search.jdonrefv4;
 
 import java.io.IOException;
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.payloads.IntegerEncoder;
+import org.apache.lucene.analysis.payloads.PayloadHelper;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Weight;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.search.spans.IMultiPayload;
+import org.apache.lucene.search.spans.MultiPayloadTermSpans;
+import org.apache.lucene.util.BytesRef;
+import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4TermQuery.TermWeight;
 
 /** Expert: A <code>Scorer</code> for documents matching a <code>Term</code>.
  */
-public class JDONREFv4TermScorer extends Scorer {
-
-    protected final DocsEnum docsEnum;
+public class JDONREFv4TermScorer extends Scorer implements IMultiPayload
+{
+    public static int NOTERMCOUNTPAYLOADFACTOR = -1;
+    public static int NOTERMCOUNTBYPAYLOAD = -1;
+    
+    protected final DocsAndPositionsEnum docsEnum;
     protected final Similarity.SimScorer docScorer;
     protected boolean last;
     protected int index;
     protected IndexSearcher searcher;
     
     protected JDONREFv4Scorer parentScorer;
+    protected  int order;
+    protected  boolean checked;
+    protected int termCountPayloadFactor= MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
+    protected final AtomicReader reader;
+    protected int doc;
+    protected int freq;
+    protected   int count;
+    protected int position;
+    protected byte[] currentPayload;
+    protected int currentCountByPayload;
+    protected int currentIntegerTypeAsPayload;
+    public static IntegerEncoder encoder = new IntegerEncoder();
+    protected int integerTypeAsPayloadFactor = MultiPayloadTermSpans.NOINTEGERTYPEASPAYLOADFACTOR;
+    protected int[] payloads;
     
     public Weight weight()
     {
@@ -68,14 +91,20 @@ public class JDONREFv4TermScorer extends Scorer {
      *          The </code>Similarity.SimScorer</code> implementation 
      *          to be used for score computations.
      */
-    public JDONREFv4TermScorer(Weight weight, DocsEnum td, Similarity.SimScorer docScorer, int index, IndexSearcher searcher) {
+    public JDONREFv4TermScorer(TermWeight weight, DocsAndPositionsEnum td, Similarity.SimScorer docScorer, int index, IndexSearcher searcher, AtomicReader reader,int termCountPayloadFactor, int order, boolean checked)
+    {
         super(weight);
         this.docScorer = docScorer;
         this.docsEnum = td;
         this.index = index;
         this.searcher = searcher;
+        this.reader = reader;
+        
+        this.termCountPayloadFactor = termCountPayloadFactor;
+        this.order = order;
+        this.checked = checked;
     }
-
+    
     @Override
     public int docID() {
         return docsEnum.docID();
@@ -86,22 +115,19 @@ public class JDONREFv4TermScorer extends Scorer {
         return docsEnum.freq();
     }
     
-//    public int nextReachLimitDoc() throws IOException
-//    {
-//        int doc;
-//        Document d;
-//        String type;
-//        
-//        do
-//        {
-//            doc = docsEnum.nextDoc();
-//            if (doc == NO_MORE_DOCS) break;
-//            d = this.searcher.doc(doc);
-//            type = this.parentScorer.getType(d);
-//        } while(this.parentScorer.typeReachLimit(type));
-//        
-//        return doc;
-//    }
+    protected Document document;
+    protected int documentDoc;
+    
+    @Override
+    public Document document() throws IOException
+    {
+        if (document==null || doc!=documentDoc)
+        {
+            document = reader==null?null:reader.document(doc);
+            documentDoc = doc;
+        }
+        return document;
+    }
     
     /**
      * Advances to the next document matching the query. <br>
@@ -111,24 +137,99 @@ public class JDONREFv4TermScorer extends Scorer {
     @Override
     public int nextDoc() throws IOException
     {
-//        if (this.parentScorer==null)
-            return docsEnum.nextDoc();
-//        else
-//            return nextReachLimitDoc();
-    }
+        doc = docsEnum.nextDoc();
+        if (doc == DocIdSetIterator.NO_MORE_DOCS) {
+            return NO_MORE_DOCS;
+        }
         
+        freq = docsEnum.freq();
+        payloads = new int[freq];
+        count = 0;
+        
+        nextPayload();
+        
+        return doc;
+    }
+    
+    public boolean nextPayload() throws IOException
+    {
+        if (count++ < freq)
+        {
+            position = docsEnum.nextPosition();
+            BytesRef payload = docsEnum.getPayload();
+            if (payload != null)
+            {
+                currentPayload = convertPayload(extractPayload(payload));
+                currentCountByPayload = extractCountTermByPayload(payload);
+                currentIntegerTypeAsPayload = extractIntegerTypeAsPayload(payload);
+            }
+            else
+            {
+                currentPayload = null;
+                currentCountByPayload = -1;
+                currentIntegerTypeAsPayload = -1;
+            }
+            payloads[count-1] = currentPayload==null?0:PayloadHelper.decodeInt(currentPayload,0);
+            return true;
+        }
+        return false;
+    }
+    
+    
+    protected BytesRef extractPayload(BytesRef payload)
+    {
+        if (termCountPayloadFactor!=NOTERMCOUNTPAYLOADFACTOR)
+        {
+            int payloadStuff = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+            //int payloadValue     = payload/termCountPayloadFactor;
+            int payloadValue = payloadStuff%termCountPayloadFactor;
+            
+            return encoder.encode(Integer.toString(payloadValue).toCharArray());
+        }
+        else
+            return payload;
+    }
+    
+    protected int extractCountTermByPayload(BytesRef payload)
+    {
+        if (termCountPayloadFactor!=NOTERMCOUNTPAYLOADFACTOR)
+        {
+            int payloadStuff = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+            //int payloadValue     = payload/termCountPayloadFactor;
+            int payloadTermCount = (payloadStuff/termCountPayloadFactor)%integerTypeAsPayloadFactor;
+            
+            return payloadTermCount;
+        }
+        else
+            return NOTERMCOUNTBYPAYLOAD;
+    }
+    
+    protected int extractIntegerTypeAsPayload(BytesRef payload)
+    {
+        if (integerTypeAsPayloadFactor!=NOTERMCOUNTPAYLOADFACTOR)
+        {
+            int payloadStuff = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+            //int payloadValue     = payload/termCountPayloadFactor;
+            int integerTypeAsPayload = payloadStuff/integerTypeAsPayloadFactor;
+            
+            return integerTypeAsPayload;
+        }
+        else
+            return NOTERMCOUNTPAYLOADFACTOR;
+    }
+    
+    protected byte[] convertPayload(BytesRef payload) {
+        final byte[] bytes;
+        if (payload != null) {
+            bytes = new byte[payload.length];
+            System.arraycopy(payload.bytes, payload.offset, bytes, 0, payload.length);
+        } else {
+            bytes = null;
+        }
+        return bytes;
+    }
     
     boolean debugbar = false;
-    double malus;
-
-    public double getMalus() {
-        return malus;
-    }
-    boolean adressNumberPresent = false;
-
-    public boolean getAdressNumberPresent() {
-        return adressNumberPresent;
-    }
 
   /**
    * Expert: Collects matching documents in a range. Hook for optimization.
@@ -165,26 +266,6 @@ public class JDONREFv4TermScorer extends Scorer {
 
         return score;
     }
-
-//    public int advanceReachLimit(int target) throws IOException {
-//        int doc = docsEnum.advance(target);
-//        
-//        if (doc!=NO_MORE_DOCS)
-//        {
-//            if (target==this.parentScorer.debugDoc && doc!=target )
-//                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" miss "+target);
-//            Document d = this.searcher.doc(doc);
-//            String type = this.parentScorer.getType(d);
-//            if (this.parentScorer.typeReachLimit(type))
-//            {
-//                if (target==this.parentScorer.debugDoc && doc!=target )
-//                    Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getName()+" "+target+" reach "+((JDONREFv4TermQuery)weight.getQuery()).getTerm().field()+" limit");
-//                return nextDoc();
-//            }
-//        }
-//        
-//        return doc;
-//    }
     
     /**
      * Advances to the first match beyond the current whose document number is
@@ -197,10 +278,7 @@ public class JDONREFv4TermScorer extends Scorer {
      */
     @Override
     public int advance(int target) throws IOException {
-        //if (this.parentScorer==null)
-            return docsEnum.advance(target);
-        //else
-//            return advanceReachLimit(target);
+           return docsEnum.advance(target);
     }
 
     @Override
@@ -212,5 +290,30 @@ public class JDONREFv4TermScorer extends Scorer {
     @Override
     public String toString() {
         return "scorer(" + weight + ")";
+    }
+
+    public int[] getCurrentPayloads()
+    {
+        return payloads;
+    }
+    
+    public int getCurrentIntegerTypeAsPayload()
+    {
+        return currentIntegerTypeAsPayload;
+    }
+    
+    @Override
+    public int getCurrentCountByPayload() {
+        return currentCountByPayload;
+    }
+
+    @Override
+    public byte[] getCurrentPayload() {
+        return currentPayload;
+    }
+
+    @Override
+    public int getOrder() {
+        return order;
     }
 }
