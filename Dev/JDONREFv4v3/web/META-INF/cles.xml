@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : cles.xml
+    Created on : 24 avril 2008, 14:18
+    Author     : jmoquet
+    Description:
+        Purpose of the document follows.
+-->
+
+<repartition xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='file:/C:/Documents%20and%20Settings/jmoquet/Projects/JDONREFv2/cles.xsd'>
+      <ligne index="1">
+          <element>MONSIEUR</element>
+          <element>MADAME</element>
+          <element>MESSIEURS</element>
+          <element>MESDAMES</element>
+          <element>MESDEMOISELLES</element>
+          <element>CENTRE COMMERCIAL</element>
+          <element>CENTRE</element>
+      </ligne>
+      <ligne index="2">
+          <element>CHEZ</element>
+          <element>APPARTEMENT</element>
+          <element>BAL</element>
+          <element>ESCALIER</element>
+          <element>COULOIR</element>
+          <element>ETAGE</element>
+      </ligne>
+      <ligne index="3">
+          <element>ZI</element>
+          <element>ZA</element>
+          <element>ZAC</element>
+          <element>BATIMENT</element>
+          <element>ENTREE</element>
+          <element>IMMEUBLE</element>
+          <element>RESIDENCE</element>
+          <element>TOUR</element>
+      </ligne>
+      <ligne index="5">
+          <element>POSTE RESTANTE</element>
+      </ligne>
+      <ligne index="6">
+          <element>CODE POSTAL</element>
+          <element>CEDEX</element>
+      </ligne>
+</repartition>

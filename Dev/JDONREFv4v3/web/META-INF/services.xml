@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services>
+    <service>
+        <identifiant>1</identifiant>       
+        <nom>adresse</nom>
+        <cle>10001</cle>
+    </service>
+    <service>
+        <identifiant>2</identifiant>    
+        <nom>point adresse</nom>
+        <cle>10002</cle>
+    </service>
+    <service>
+        <identifiant>3</identifiant>
+        <nom>troncon</nom>
+        <cle>10003</cle>
+        
+    </service>
+    <service>
+        <identifiant>4</identifiant>
+        <nom>voie</nom>
+        <cle>10004</cle>
+        
+    </service>
+    <service>
+        <identifiant>5</identifiant>
+        <nom>commune</nom>
+        <cle>10005</cle>
+        
+    </service>
+    <service>
+        <identifiant>6</identifiant>
+        <nom>departement</nom>
+        <cle>10006</cle>
+        
+    </service>
+    <service>
+        <identifiant>7</identifiant>
+        <nom>PAYS</nom>
+        <cle>10007</cle>
+    </service>
+    <service>
+        <identifiant>7</identifiant>
+        <nom>POIZON</nom>
+        <cle>10008</cle>
+    </service>
+</services>
