@@ -51,6 +51,7 @@ import ppol.jdonref.dao.PoizonBean;
 import ppol.jdonref.poizon.GestionPoizon;
 import ppol.jdonref.referentiel.GestionAdr;
 import ppol.jdonref.referentiel.GestionReferentiel;
+import ppol.jdonref.referentiel.GestionReferentielES;
 import ppol.jdonref.referentiel.JDONREFv3LibES;
 import ppol.jdonref.referentiel.reversegeocoding.GestionInverse;
 import ppol.jdonref.utils.DateUtils;
@@ -305,6 +306,7 @@ public class JDONREFv4v3 implements IJDONREFv3 {
         String dateOption = "";
         boolean force = false;
         boolean fantoire = false;
+        String indexes = "";
         for (String option : options) {
             final String[] tokens = option.split("=");
             if (tokens != null && tokens.length == 2) {
@@ -314,6 +316,8 @@ public class JDONREFv4v3 implements IJDONREFv3 {
                     dateOption = (tokens[1] != null) ? tokens[1].trim() : "";
                 } else if (tokens[0].trim().equalsIgnoreCase("fantoire")) {
                     fantoire = (tokens[1] != null) ? Boolean.parseBoolean(tokens[1].trim()) : false;
+                } else if (tokens[0].trim().equalsIgnoreCase("indexes")) {
+                    indexes = (tokens[1] != null) ? tokens[1].trim() : "";
                 }
             }
         }
@@ -321,7 +325,7 @@ public class JDONREFv4v3 implements IJDONREFv3 {
 
         // EXECUTION DU SERVICE
         final GestionAdr gestionAdr = jdonrefv3lib.getGestionAdr();
-        
+        ((GestionReferentielES)gestionAdr.getGestionReferentiel()).getConnexionES().setIndex(indexes);
         final List<String[]> result = gestionAdr.valide(application, services, operation, donnees, date, force, null);
 
         return ResultAdapter.adapteValide(result, gererPays, fantoire);

@@ -872,7 +872,8 @@ public void jspInit()
                 '&donnees='+encodeURIComponent(ligne5)+
                 '&donnees='+encodeURIComponent(ligne6)+
                 '&donnees='+encodeURIComponent(ligne7)+
-                '&options=fantoire=true';
+                '&options=fantoire=true'+
+                '&options=indexes='+encodeURIComponent(document.getElementById("indexes").value);
             if ((operation&4)!=0) 
                 params += '&options=dpt='+encodeURIComponent(departements);
             if (force) params += '&options=force=true';
@@ -1368,6 +1369,7 @@ public void jspInit()
                 case 23: texte = "Valide POIZON : Obtiens une liste bouchon de POI/ZONE."; break;
                 case 24: texte = "Opération"; break;
                 case 25: texte = "Distance du décalage gauche/droite lors du géocodage"; break;
+                case 26: texte = "ES_Indexes : index1,index2..."; break;
             }
                     
             commentaires.innerHTML = texte+"<br>";
@@ -1506,6 +1508,7 @@ public void jspInit()
                         </select>
                     </td>
                 </tr>
+                <tr><td>ES_Indexes</td><td><input id="indexes" type="text" name="indexes" value="jdonref" size="50" onmouseover="comment(26);" onmouseout="comment(0);"/></td></tr>
                 </table>
             <br /><br/>
             <div id="commentaires" style="color:red"><br></div>

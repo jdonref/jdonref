@@ -69,6 +69,10 @@ public class GestionAdr {
     protected final GestionConnection gestionConnection;
     protected final GestionMots gestionMots;
     protected final GestionReferentiel gestionReferentiel;
+
+    public GestionReferentiel getGestionReferentiel() {
+        return gestionReferentiel;
+    }
     protected final GestionInverse gestionInverse;
     protected JDONREFParams params;
     
