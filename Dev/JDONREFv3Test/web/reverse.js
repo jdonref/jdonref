@@ -37,12 +37,13 @@ function callReverse(url){
             services += '&services='+sel_service.options[i].value;
         }
     }
-    
+    var ids4 = document.getElementById('inp_ids4').value;
     var date = new Date(); 
     var params = 'application=2'+ services + 
     '&donnees='+encodeURIComponent(x)+
     '&donnees='+encodeURIComponent(y)+
     '&distance='+encodeURIComponent(distance)+
+    '&options=ids4='+encodeURIComponent(ids4)+
     '&options=projection='+encodeURIComponent(projection);
     var xhr = getfile(url,params);
     

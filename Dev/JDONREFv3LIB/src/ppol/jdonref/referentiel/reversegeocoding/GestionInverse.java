@@ -183,6 +183,39 @@ public class GestionInverse {
         }
         return io;
     }
+    
+    public String findDepVoie(String voi_id, Connection connection) throws SQLException{
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT dpt_code_departement FROM idv_id_voies where voi_id = '");
+        sb.append(voi_id);sb.append("'");
+        String sb1 = sb.toString();
+        PreparedStatement ps = connection.prepareStatement(sb.toString());
+        ResultSet rs = ps.executeQuery();        
+        if (rs.next())
+            return rs.getString(1);
+        else
+            return null;
+    }
+    
+    
+    public InverseOption extractOptionsIds4(String[] options, Connection connection) throws JDONREFException, SQLException {
+
+        InverseOption io = new InverseOption();
+        
+        String ids4 = "";
+        for (String option : options) {
+            final String[] tokens = option.split("=");
+            if (tokens != null && tokens.length == 2) {
+                if (tokens[0].trim().equalsIgnoreCase("ids4")) {
+                    ids4 = (tokens[1] != null) ? tokens[1].trim() : "";
+                } 
+            }
+        }
+        String dept = findDepVoie(ids4, connection);
+        io.setVoi_id(ids4);
+        io.setDpt(dept);
+        return io;
+    }
 
     /**
      * 
@@ -505,8 +538,10 @@ public class GestionInverse {
         }
     }
 
-    public String[] inverse(int application, int[] services, int operation, String[] position, String distance, String strdate, int projection, String[] options, Connection connection) throws ParseException {
-        // Paramètres        
+
+    
+    public String[] inverse(int application, int[] services, int operation, String[] position, String distance, String strdate, int projection, String[] options, Connection connection) {
+       // Paramètres        
         Date date;
         if (strdate == null) {
             date = Calendar.getInstance().getTime();
@@ -519,6 +554,76 @@ public class GestionInverse {
                 return new String[]{"0", "5", "La date est mal formée."};
             }
         }
+
+        //service
+        boolean servicePays = false;
+        boolean serviceAdresse = false;
+        boolean serviceDpt = false;
+        boolean serviceTr = false;
+        for (Integer service : services) {   
+            Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromCle(service).getId();
+            if (id == SERVICE_ADRESSE) {
+                serviceAdresse = true;
+            } else if (id == SERVICE_DEPARTEMENT) {
+                serviceDpt = true;
+            }
+            if (id == SERVICE_PAYS) {
+                servicePays = true;
+            }
+            if (id == SERVICE_TRONCON) {
+                serviceTr = true;
+            }
+        }
+        
+        try {
+            String[] gi = null;
+            // si d'autres services sont selectionnés avec SERVICE_TRONCON ils ne seront pas pris en compte 
+            if(serviceTr){
+                gi = geocaodageInverseTr(application, operation, options, connection, date, projection);
+            }
+            else{
+                gi = geocaodageInverse(application, services, operation, position, distance, date, projection, options, connection, servicePays, serviceAdresse, serviceDpt);
+            }
+            return gi;
+        } catch (SQLException sqle) {
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
+            return new String[]{"0", "5", "Problème avec la base de données"};
+        } catch (ParseException pe) {
+//            GestionLogs.getInstance().logInverse(application, operation, false);
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
+            return new String[]{"0", "10", "Erreur de géométrie"};
+        }
+    }
+    
+    int[] toIntArray(List<Integer> list){
+        int[] ret = new int[list.size()];
+        for(int i=0; i<list.size();i++)
+            ret[i]=list.get(i);
+        return ret;
+    }
+    
+    public String[] geocaodageInverseTr(int application, int operation, String[] options, Connection connection, Date date, int projection) throws SQLException, ParseException {
+        // Options
+        InverseOption io = null;
+        try {
+            io = extractOptionsIds4(options, connection);
+        } catch (JDONREFException je) {
+            jdonrefParams.getGestionLog().logInverse(application, operation, false);
+            return new String[]{"0", "5", "Problème dans l'analyse des options ids void_id."};
+        } 
+        final ArrayList<GeocodageInverse> res = new ArrayList<GeocodageInverse>();
+        GeocodageInverse[] tro_res = inverseTronconsIntersections(application, io, connection, projection, date);
+        if (tro_res != null && tro_res.length > 0) 
+            for (int j = 0; j < tro_res.length; j++) 
+                res.add(tro_res[j]);
+        // Formate le résultat.
+        String[] resform = formateGeocodageInverse(res);
+        return resform;
+    }
+    
+    public String[] geocaodageInverse(int application, int[] services, int operation, String[] position, String distance, Date date, int projection, String[] options, Connection connection, boolean servicePays, boolean serviceAdresse, boolean serviceDpt) throws SQLException, ParseException {
+    // Paramètres        
         if (distance == null) // valeur par défaut
         {
             distance = "0";
@@ -558,100 +663,74 @@ public class GestionInverse {
             jdonrefParams.getGestionLog().logInverse(application, operation, false);
             return new String[]{"0", "5", "Problème dans l'analyse des options."};
         }
-        boolean servicePays = false;
-        boolean serviceAdresse = false;
-        boolean serviceDpt = false;
-        for (Integer service : services) {
-            Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromCle(service).getId();
-            if (id == SERVICE_ADRESSE) {
-                serviceAdresse = true;
-            } else if (id == SERVICE_DEPARTEMENT) {
-                serviceDpt = true;
-            }
-            if (id == SERVICE_PAYS) {
-                servicePays = true;
-            }
-        }
-        try {
-            GeocodageInverse[] dpt_res = null;
-            GeocodageInverse[] tmp_res = null;
-            ArrayList<String> departements = new ArrayList<String>();
 
-            final ArrayList<GeocodageInverse> res = new ArrayList<GeocodageInverse>();
-            // Commencer par déterminer le ou les département, si nécessaire.
-            if (io.dpt == null) {
-                tmp_res = inverseDepartement(application, pos, dst, date, projection, io, connection);
+        GeocodageInverse[] dpt_res = null;
+        GeocodageInverse[] tmp_res = null;
+        ArrayList<String> departements = new ArrayList<String>();
 
-                if (tmp_res.length == 0) {
-                    // Aucun résultat, utilise si disponible le département par défaut.
-                    if (io.defaultdpt == null) {
-                        // PAYS ETRANGER
-                        if (serviceAdresse) {
-                            GeocodageInverse[] pay_res = inversePays(application, pos, dst, date, projection, connection);
-                            if (pay_res != null && pay_res.length > 0) {
-                                for (int j = 0; j < pay_res.length; j++) {
-                                    res.add(pay_res[j]);
-                                }
-                                return formateGeocodageInverse(res);
-                            } else {
-                                return new String[]{"1", "0"};
+        final ArrayList<GeocodageInverse> res = new ArrayList<GeocodageInverse>();
+        // Commencer par déterminer le ou les département, si nécessaire.
+        if (io.dpt == null) {
+            tmp_res = inverseDepartement(application, pos, dst, date, projection, io, connection);
+
+            if (tmp_res.length == 0) {
+                // Aucun résultat, utilise si disponible le département par défaut.
+                if (io.defaultdpt == null) {
+                    // PAYS ETRANGER
+                    if (serviceAdresse) {
+                        GeocodageInverse[] pay_res = inversePays(application, pos, dst, date, projection, connection);
+                        if (pay_res != null && pay_res.length > 0) {
+                            for (int j = 0; j < pay_res.length; j++) {
+                                res.add(pay_res[j]);
                             }
+                            String[] formateGeocodageInverse = formateGeocodageInverse(res);
+                            return formateGeocodageInverse;
                         } else {
                             return new String[]{"1", "0"};
                         }
                     } else {
-                        departements.add(io.defaultdpt);
+                        return new String[]{"1", "0"};
                     }
-                } // Les résultats ne sont conservés que si ce niveau de géocodage est demandé.
-                else {
-                    if (serviceDpt) {
-                        dpt_res = tmp_res;
-                    }
-                    // dans tous les cas, la recherche sera effectuée dans les départements trouvés (conservés ou non).
-                    for (int i = 0; i < tmp_res.length; i++) {
-                        departements.add(((GeocodageInverse_Departement) tmp_res[i]).getCodeDepartement());
-                    }
+                } else {
+                    departements.add(io.defaultdpt);
                 }
-            } else {
-                departements.add(io.dpt);
-            }
-
-
-            // Tente un géocodage inverse pour chaque département
-            for (int i = 0; i < departements.size(); i++) {
-                ArrayList<GeocodageInverse> ondpt_res;
-
-                ondpt_res = inverseSurDepartement(departements.get(i), application, services, operation, date, pos, dst, projection, io, connection);
-
-                if (ondpt_res.size() > 0) {
-                    res.addAll(ondpt_res);
+            } // Les résultats ne sont conservés que si ce niveau de géocodage est demandé.
+            else {
+                if (serviceDpt) {
+                    dpt_res = tmp_res;
                 }
-                //Utilise le géocodage au département si demandé.
-                if (dpt_res != null && serviceDpt) {
-                    res.add(dpt_res[i]);
+                // dans tous les cas, la recherche sera effectuée dans les départements trouvés (conservés ou non).
+                for (int i = 0; i < tmp_res.length; i++) {
+                    departements.add(((GeocodageInverse_Departement) tmp_res[i]).getCodeDepartement());
                 }
             }
-
-            if (servicePays) {
-                GeocodageInverse[] pay_res = inversePays(application, pos, dst, date, projection, connection);
-                if (pay_res != null && pay_res.length > 0) {
-                    for (int j = 0; j < pay_res.length; j++) {
-                        res.add(pay_res[j]);
-                    }
-                }
-            }
-            // Formate le résultat.
-            return formateGeocodageInverse(res);
-
-        } catch (SQLException sqle) {
-//            GestionLogs.getInstance().logInverse(application, operation, false);
-            jdonrefParams.getGestionLog().logInverse(application, operation, false);
-            return new String[]{"0", "5", "Problème avec la base de données"};
-        } catch (ParseException pe) {
-//            GestionLogs.getInstance().logInverse(application, operation, false);
-            jdonrefParams.getGestionLog().logInverse(application, operation, false);
-            return new String[]{"0", "10", "Erreur de géométrie"};
+        } else {
+            departements.add(io.dpt);
         }
+
+        // Tente un géocodage inverse pour chaque département
+        for (int i = 0; i < departements.size(); i++) {
+            ArrayList<GeocodageInverse> ondpt_res;
+            ondpt_res = inverseSurDepartement(departements.get(i), application, services, operation, date, pos, dst, projection, io, connection);
+            if (ondpt_res.size() > 0) {
+                res.addAll(ondpt_res);
+            }
+            //Utilise le géocodage au département si demandé.
+            if (dpt_res != null && serviceDpt) {
+                res.add(dpt_res[i]);
+            }
+        }
+        if (servicePays) {
+            GeocodageInverse[] pay_res = inversePays(application, pos, dst, date, projection, connection);
+            if (pay_res != null && pay_res.length > 0) {
+                for (int j = 0; j < pay_res.length; j++) {
+                    res.add(pay_res[j]);
+                }
+            }
+        }
+        // Formate le résultat.
+        String[] resform = formateGeocodageInverse(res);
+        return resform;
     }
 
     /**
@@ -711,12 +790,12 @@ public class GestionInverse {
             res[18 + i * offset] = g.getLigne7();
             res[19 + i * offset] = g.getLigne7Origine();
             res[20 + i * offset] = g.getSovA3();
-
         }
-
         return res;
     }
 
+    
+    
     /**
      * Reverse geocoding d'une commune à partir d'une position.
      * 
@@ -1136,6 +1215,17 @@ public class GestionInverse {
 
         return res;
     }
+    
+    public GeocodageInverse[] inverseTronconsIntersections(int application, InverseOption io, Connection connection, int projection, Date date) throws SQLException, ParseException {
+        String tableVoie = GestionTables.getVoiVoiesTableName(io.dpt);
+        String tableTroncons = GestionHistoriqueTables.obtientTableTroncon(connection, io.dpt, date);
+        final ArrayList<Object[]> troncons = findTronconsIntersection(connection, tableTroncons, tableVoie, io.voi_id, projection, date);
+        final GeocodageInverse[] res = formatTronconsIntersection(troncons, io.dpt);
+
+        return res;
+    }
+    
+    
 
     /**
      * Deux conseils : 
@@ -1432,6 +1522,7 @@ public class GestionInverse {
         sb.append(distance);
         sb.append(" AND troncons.t0 <= ? AND troncons.t1 > ? AND voies.t0 <= ? AND voies.t1 > ? AND com_communes.t0 <= ? AND com_communes.t1 > ?");
 
+        String sb1 = sb.toString();
         ps = connection.prepareStatement(sb.toString());
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
         ps.setDate(1, sqlDate);
@@ -1532,7 +1623,103 @@ public class GestionInverse {
 
         return list.toArray(new GeocodageInverse[list.size()]);
     }
+    
+    
+    private ArrayList<Object[]> findTronconsIntersection(Connection connection, String tableTroncons, String tableVoie, String voi_id, int projection, Date date) throws SQLException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Select distinct tro_id,voi_id_droit,voi_id_gauche, voies.t0, voies.t1, point,voi_nom,voi_nom_origine, voies.com_code_insee, cdp_code_postal, com_nom, com_nom_origine, " +
+                "astext(st_transform(parent.geometrie, 2154)), tro_numero_debut_droit, tro_numero_debut_gauche, tro_numero_fin_droit, tro_numero_fin_gauche, voi_id=voi_id_droit, voi_id=voi_id_gauche ");
+        sb.append("from ");
+        sb.append("(SELECT parent.tro_id,parent.voi_id_droit, parent.voi_id_gauche, ");
+        sb.append("astext(st_intersection(parent.geometrie,enfant.geometrie)) as point ,");
+        sb.append("parent.geometrie,parent.tro_numero_debut_droit,parent.tro_numero_debut_gauche,parent.tro_numero_fin_droit,parent.tro_numero_fin_gauche ");
+        sb.append("FROM ");
+        sb.append("(select * from ");sb.append(tableTroncons);sb.append(" where ");
+        sb.append("voi_id_droit = '");sb.append(voi_id); sb.append("' or voi_id_gauche = '");sb.append(voi_id);
+        sb.append("' ) as enfant, ");
+        sb.append(tableTroncons);sb.append(" as parent ");
+        sb.append("Where st_distance(parent.geometrie,enfant.geometrie)=0) as parent ");
+        sb.append("inner join ");sb.append(tableVoie);sb.append(" as voies on ( parent.voi_id_droit = voi_id or parent.voi_id_gauche = voi_id ) ");  
+        sb.append("inner join com_communes ON voies.com_code_insee = com_communes.com_code_insee ");  
+        sb.append("where not ( voi_id_droit = '");sb.append(voi_id);sb.append("' or voi_id_gauche='");sb.append(voi_id);
+        sb.append("') order by tro_id ");
+        
+        String sb1 = sb.toString();
+        
+        PreparedStatement ps = connection.prepareStatement(sb.toString());
+        ResultSet rs = ps.executeQuery();
+        
+//        String baseSrid = (rs.next()) ? String.valueOf(rs.getInt(1)) : jdonrefParams.obtientProjectionPardefaut();
 
+        // Collecte
+        ArrayList<Object[]> tros = new ArrayList<Object[]>();
+        while (rs.next()) {
+            Object[] tro = new Object[17];
+            tro[0] = rs.getString(1); // id tr
+            tro[1] = rs.getString(2); // id voied
+            tro[2] = rs.getString(3); // id voieg
+            tro[3] = new Date(rs.getTimestamp(4).getTime()); // t0
+            tro[4] = new Date(rs.getTimestamp(5).getTime()); // t1
+            tro[5] = rs.getString(6); // point intersection
+            tro[6] = rs.getString(7); // nom de voie
+            tro[7] = rs.getString(8); // nom de voie d'origine
+            tro[8] = rs.getString(9); // code insee
+            tro[9] = rs.getString(10); // code postal
+            tro[10] = rs.getString(11); // nom de commune
+            tro[11] = rs.getString(12); // nom de commune d'origine
+            tro[12] = rs.getString(13); // geometrieStr au format texte
+            tro[13] = rs.getInt(14); // numÃ©ro debut droit
+            tro[14] = rs.getInt(15); // numÃ©ro fin droit
+            tro[15] = rs.getInt(16); // numÃ©ro debut gauche
+            tro[16] = rs.getInt(17); // numÃ©ro fin gauche
+
+            tros.add(tro);
+        }
+        rs.close();
+        ps.close();
+        return tros;
+    }
+    
+    @SuppressWarnings(value = "unchecked")
+    private GeocodageInverse[] formatTronconsIntersection(ArrayList<Object[]> tros, String dpt) {
+    ////////////////////////////////////////
+    // Formatage
+    ////////////////////////////////////////
+        List<GeocodageInverse> list = new ArrayList<GeocodageInverse>();
+
+        for (Object[] tro : tros) {
+            final GeocodageInverse_Troncon gi = new GeocodageInverse_Troncon();
+            gi.setCodeDepartement(dpt);
+            gi.setIdTr((String) tro[0]);
+            gi.setId((String) tro[1]);
+            gi.setT0((Date) tro[3]);
+            gi.setT1((Date) tro[4]);
+            gi.setCodeInsee((String) tro[8]);
+            gi.setCodePostal((String) tro[9]);
+            gi.setCommune((String) tro[10]);
+            gi.setCommuneOrigine((String) tro[11]);
+            gi.setNomVoie((String) tro[6]);
+            gi.setNomVoieOrigine((String) tro[7]);
+            gi.setPointIntersecton((String) tro[5]);
+            String[] position = gi.getPointIntersecton().substring(gi.getPointIntersecton().indexOf("(")+1, gi.getPointIntersecton().lastIndexOf(")")).split(" ");
+//            String[] position={"0.0","0.0"};
+            String distance="0.0";
+            double dst, x, y;
+            dst = Double.parseDouble(distance);
+            x = Double.parseDouble(position[0]);
+            y = Double.parseDouble(position[1]);
+            Coordinate c = new Coordinate(x, y);
+            gi.point = gf.createPoint(c);
+            gi.setDistance(dst);
+            gi.setNumero(0);
+            gi.setRep((char) 0);
+            
+            list.add(gi);
+        }
+        return list.toArray(new GeocodageInverse[list.size()]);
+    }
+
+    
     private void interpolleNumerosTroncon(Object[] troncon, Geometry cercle) throws ParseException {
         final String tronconStr = (String) troncon[10];
         int numero_debut = ((Integer) troncon[11]).intValue();

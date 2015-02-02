@@ -43,7 +43,7 @@
                     </tr>
                     <tr>
                         <td><label id=lab_distance for="inp_distance">distance&nbsp;:&nbsp;</label></td>
-                        <td><input type="text" id="inp_distance" size="50" value="1"/></td>
+                        <td><input type="text" id="inp_distance" size="50" value="100"/></td>
                     </tr>
                     <tr>
                         <td><label id=lab_service for="sel_service">services&nbsp;:&nbsp;</label></td>
@@ -65,6 +65,10 @@
                     <tr>
                         <td><label id=lab_projection for="inp_projection">projection&nbsp;:&nbsp;</label></td>
                         <td><input type="text" id="inp_projection" size="50" value='<%= request.getParameter("projection")%>'/></td>
+                    </tr>
+                    <tr>
+                        <td><label id=lab_ids4 for="inp_ids4">ids4&nbsp;:&nbsp;</label></td>
+                        <td><input type="text" id="inp_ids4" size="50" placeholder = "saisir un voi_id (selectionner le service troncon)" /></td>
                     </tr>
                     <tr>
                         <td><input type="button" value="Reverse" onclick="callReverse('<%=JADRREFJson%>/Reverse');"/></td>

@@ -41,6 +41,23 @@ public class InverseOption
      * Département dans lequel effectuer la recherche.
      */
     public String dpt;
+    public String voi_id;
+
+    public String getDpt() {
+        return dpt;
+    }
+
+    public void setDpt(String dpt) {
+        this.dpt = dpt;
+    }
+
+    public String getVoi_id() {
+        return voi_id;
+    }
+
+    public void setVoi_id(String voi_id) {
+        this.voi_id = voi_id;
+    }
     
     /**
      * Département dans lequel effectuer la recherche si aucun département n'a pu être identifié.

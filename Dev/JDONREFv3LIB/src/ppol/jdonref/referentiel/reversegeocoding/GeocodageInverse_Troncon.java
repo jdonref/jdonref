@@ -39,8 +39,27 @@ public class GeocodageInverse_Troncon extends GeocodageInverse_Voie {
 
     protected int numero;
     protected char rep;
+    protected String idTr;
+    protected String pointIntersecton;
+
+    public String getPointIntersecton() {
+        return pointIntersecton;
+    }
+
+    public void setPointIntersecton(String pointIntersecton) {
+        this.pointIntersecton = pointIntersecton;
+    }
+
+    public String getIdTr() {
+        return idTr;
+    }
+
+    public void setIdTr(String idTr) {
+        this.idTr = idTr;
+    }
 
     public GeocodageInverse_Troncon() {
+        this.precision = GestionInverse.GestionInverse_TRONCON;
     }
 
     @Override

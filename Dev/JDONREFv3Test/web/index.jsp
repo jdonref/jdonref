@@ -1336,6 +1336,11 @@ public void jspInit()
                 formulaire.ligne6.value = 'BH1 1AA';
                 formulaire.ligne7.value = 'ROYAUME UNI';
             }
+            else if (numero==6)
+            {
+                formulaire.ligne4.value = '2 BOULEVARD DE L HOPITAL';
+                formulaire.ligne6.value = '75005 PARIS';
+            }
         }
         function comment(ligne)
         {
@@ -1473,6 +1478,7 @@ public void jspInit()
                     <input type="button" value="Exemple 3" onclick="exemple(this.form,3);"/> 
                     <input type="button" value="Exemple 4" onclick="exemple(this.form,4);"/>
                     <input type="button" value="Exemple 5" onclick="exemple(this.form,5);"/>
+                    <input type="button" value="Exemple 6" onclick="exemple(this.form,6);"/>
                     <input type="button" value="Clear" onclick="exemple(this.form,0);"/>
                 </td></tr>
                 <tr><td>Ligne 1</td><td><input type="text" name="ligne1" size="50" onmouseover="comment(1);" onmouseout="comment(0);"/></td></tr>

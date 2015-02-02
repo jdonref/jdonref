@@ -60,6 +60,51 @@ import static org.junit.Assert.*;
  * @author Julien
  */
 public class GestionInverseTests {
+    
+    
+    
+    
+    public void testinverseTronconsIntersections(GestionInverse gi, int projection, InverseOption io, Connection db1) throws SQLException, Exception {
+        Date now = Calendar.getInstance().getTime();
+
+        GeocodageInverse[] res = gi.inverseTronconsIntersections(1, io, db1, projection, now);
+
+    }
+
+    @Test
+    public void testinverseTronconsIntersections() throws ClassNotFoundException, SQLException, JDOMException, IOException, JDONREFException, Exception {
+        JDONREFParams params = new JDONREFParams();
+        params.load("params.xml");
+        GestionConnection gc = new GestionConnection(params);
+        gc.load("connections.xml");
+        Connection db1 = gc.obtientConnection().connection;
+        GestionInverse gi = new GestionInverse(params);
+
+        GeometryFactory gf = new GeometryFactory();
+        InverseOption io = new InverseOption();
+
+//        long distance = 1;
+//        String code_dpt = "75";
+//        String voi_id = "751054649";
+//        io.dpt=code_dpt;
+//        io.voi_id=voi_id;
+        
+        String[] options = {"ids4=5915"};
+        io = gi.extractOptionsIds4(options, db1);
+
+        testinverseTronconsIntersections(gi, 2154, io, db1);
+    
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     public void testInverseTroncon(GestionInverse gi, String code_dpt, String ligne4_attendue, String ligne6_attendue, Point pt, double distance, int projection, InverseOption io, Connection db1) throws SQLException, Exception {
         Date now = Calendar.getInstance().getTime();
@@ -342,6 +387,7 @@ public class GestionInverseTests {
 
         testInversePays(gi, sov_a3, pt, distance, 2154, db1);
     }
+    
     
     
 }
