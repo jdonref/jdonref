@@ -1701,7 +1701,10 @@ public class GestionInverse {
             gi.setNomVoie((String) tro[6]);
             gi.setNomVoieOrigine((String) tro[7]);
             gi.setPointIntersecton((String) tro[5]);
-            String[] position = gi.getPointIntersecton().substring(gi.getPointIntersecton().indexOf("(")+1, gi.getPointIntersecton().lastIndexOf(")")).split(" ");
+            String[] coor = gi.getPointIntersecton().substring(gi.getPointIntersecton().indexOf("(")+1, gi.getPointIntersecton().lastIndexOf(")")).split(",");  
+            //si getPointIntersecton()est un multipoint on retiens uniquement le premier point de la liste
+            String[] position=coor[0].split(" ");
+            
 //            String[] position={"0.0","0.0"};
             String distance="0.0";
             double dst, x, y;
