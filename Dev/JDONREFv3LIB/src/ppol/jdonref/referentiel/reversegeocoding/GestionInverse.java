@@ -1642,7 +1642,7 @@ public class GestionInverse {
         sb.append("inner join ");sb.append(tableVoie);sb.append(" as voies on ( parent.voi_id_droit = voi_id or parent.voi_id_gauche = voi_id ) ");  
         sb.append("inner join com_communes ON voies.com_code_insee = com_communes.com_code_insee ");  
         sb.append("where not ( voi_id_droit = '");sb.append(voi_id);sb.append("' or voi_id_gauche='");sb.append(voi_id);
-        sb.append("') order by tro_id ");
+        sb.append("') order by point ");
         
         String sb1 = sb.toString();
         
