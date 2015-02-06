@@ -1,6 +1,7 @@
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -48,17 +49,39 @@ public class Departement {
         t1 = rs.getTimestamp(index[4]);
 //        geometrie = rs.getString(index[5]);
     }
+    
+//    public Departement(ResultSet rs) throws SQLException
+//    {
+//        code_departement = rs.getString(1);
+//        dpt_projection = rs.getString(2);
+//        dpt_referentiel = rs.getString(3);
+//        t0 = rs.getTimestamp(4);
+//        t1 = rs.getTimestamp(5);
+//        geometrie = rs.getString(6);
+//        centroide = rs.getString(7);
+//
+//    }
+    
     public Departement(ResultSet rs) throws SQLException
     {
-        code_departement = rs.getString(1);
-        dpt_projection = rs.getString(2);
-        dpt_referentiel = rs.getString(3);
-        t0 = rs.getTimestamp(4);
-        t1 = rs.getTimestamp(5);
-        geometrie = rs.getString(6);
-        centroide = rs.getString(7);
-
-    }
+        int nbColumnUnknown = 0;
+        ResultSetMetaData metaData = rs.getMetaData();
+        int nbColumn = metaData.getColumnCount();
+        for (int i = 0; i < nbColumn; i++) {
+            String nomColonne = metaData.getColumnLabel(i+1); 
+            switch(nomColonne){
+                case "dpt_code_departement" : code_departement = rs.getString(nomColonne); break;
+                case "dpt_projection" : dpt_projection = rs.getString(nomColonne); break;
+                case "dpt_referentiel" : dpt_referentiel = rs.getString(nomColonne); break;
+                case "dpt_t0" : t0 = rs.getTimestamp(nomColonne); break;
+                case "dpt_t1" : t1 = rs.getTimestamp(nomColonne); break;
+                case "dpt_geometrie" : geometrie = rs.getString(nomColonne); break;
+                case "dpt_centroide" : centroide = rs.getString(nomColonne); break;
+                default: nbColumnUnknown = nbColumnUnknown+1;
+            }
+        }
+    } 
+    
 
     public String toLigne6()
     {

@@ -1,6 +1,7 @@
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -98,29 +99,65 @@ public class Voie
         
     }
     
+//    public Voie(ResultSet rs) throws SQLException
+//    {
+////        commune = new Commune(rs,new int[]{3,4,9,10});
+//        commune = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,15});    
+//        idvoie = rs.getString(10);
+//        voi_code_fantoir = rs.getString(11);
+//        voi_nom = rs.getString(12);
+//        voi_nom_desab = rs.getString(13);
+//        voi_nom_origine = rs.getString(14);
+//        cdp_code_postal = rs.getString(15);
+//        typedevoie = rs.getString(16); 
+//        voi_type_de_voie_pq = rs.getString(17);
+//        libelle = rs.getString(18); 
+//        voi_lbl_pq = rs.getString(19);
+//        voi_lbl_sans_articles = rs.getString(20);
+//        voi_lbl_sans_articles_pq = rs.getString(21);
+//        voi_mot_determinant = rs.getString(22);
+//        voi_mot_determinant_pq = rs.getString(23);
+//        min_numero = rs.getInt(24); 
+//        max_numero = rs.getInt(25); 
+//        t0 = rs.getTimestamp(26);
+//        t1 = rs.getTimestamp(27);
+//        article = getArticle(rs.getString(13), typedevoie,libelle);
+//    }
+    
+    
     public Voie(ResultSet rs) throws SQLException
     {
-//        commune = new Commune(rs,new int[]{3,4,9,10});
-        commune = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,15});    
-        idvoie = rs.getString(10);
-        voi_code_fantoir = rs.getString(11);
-        voi_nom = rs.getString(12);
-        voi_nom_desab = rs.getString(13);
-        voi_nom_origine = rs.getString(14);
-        cdp_code_postal = rs.getString(15);
-        typedevoie = rs.getString(16); 
-        voi_type_de_voie_pq = rs.getString(17);
-        libelle = rs.getString(18); 
-        voi_lbl_pq = rs.getString(19);
-        voi_lbl_sans_articles = rs.getString(20);
-        voi_lbl_sans_articles_pq = rs.getString(21);
-        voi_mot_determinant = rs.getString(22);
-        voi_mot_determinant_pq = rs.getString(23);
-        min_numero = rs.getInt(24); 
-        max_numero = rs.getInt(25); 
-        t0 = rs.getTimestamp(26);
-        t1 = rs.getTimestamp(27);
-        article = getArticle(rs.getString(13), typedevoie,libelle);
+        int nbColumnUnknown = 0;
+        commune = new Commune(rs);
+        ResultSetMetaData metaData = rs.getMetaData();
+        int nbColumn = metaData.getColumnCount();
+        for (int i = 0; i < nbColumn; i++) {
+            String nomColonne = metaData.getColumnLabel(i+1); 
+            switch(nomColonne){
+                case "voi_id" : idvoie = rs.getString(nomColonne); break;
+                case "adr_voi_id" : idvoie = rs.getString(nomColonne); break;
+                case "voi_code_fantoir" : voi_code_fantoir = rs.getString(nomColonne); break;
+                case "voi_nom" : voi_nom = rs.getString(nomColonne); break;
+                case "voi_nom_desab" : voi_nom_desab = rs.getString(nomColonne); break;
+                case "voi_nom_origine" : voi_nom_origine = rs.getString(nomColonne); break;
+                case "cdp_code_postal" : cdp_code_postal = rs.getString(nomColonne); break;  
+                case "voi_type_de_voie" : typedevoie = rs.getString(nomColonne); break;
+                case "voi_type_de_voie_pq" : voi_type_de_voie_pq = rs.getString(nomColonne); break;
+                case "voi_lbl" : libelle = rs.getString(nomColonne); break;
+                case "voi_lbl_pq" : voi_lbl_pq = rs.getString(nomColonne); break;
+                case "voi_lbl_sans_articles" : voi_lbl_sans_articles = rs.getString(nomColonne); break;
+                case "voi_lbl_sans_articles_pq" : voi_lbl_sans_articles_pq = rs.getString(nomColonne); break;
+                case "voi_mot_determinant" : voi_mot_determinant = rs.getString(nomColonne); break;
+                case "voi_mot_determinant_pq" : voi_mot_determinant_pq = rs.getString(nomColonne); break;
+                case "voi_min_numero" : min_numero = rs.getInt(nomColonne); break;
+                case "voi_max_numero" : max_numero = rs.getInt(nomColonne); break;
+                case "voi_t0" : t0 = rs.getTimestamp(nomColonne); break;
+                case "voi_t1" : t1 = rs.getTimestamp(nomColonne); break;
+                default: nbColumnUnknown = nbColumnUnknown+1;
+            }
+        }
+        if(voi_nom_desab!=null && typedevoie!=null && libelle!=null)
+            article = getArticle(voi_nom_desab, typedevoie, libelle);
     }
 
     public String[] getLignes()

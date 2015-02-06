@@ -240,14 +240,15 @@ ElasticSearchUtil util;
         indexJDONREFTronconsDepartement(rs, "droits", dpt);
     }
 
-    public void indexJDONREFTronconsDepD(String dpt) throws IOException, SQLException
+
+    public void indexJDONREFTronconsDepSide(String dpt, String side) throws IOException, SQLException
     {
         if (isVerbose())
-            System.out.println("dpt "+dpt+" : troncons droit");
+            System.out.println("dpt "+dpt+" : troncons "+side);
         
         TronconDAO dao = new TronconDAO();
 //        ResultSet rs = dao.getAllTronconsByDep(connection, dpt);    
-        ResultSet rs = dao.getAllTronconsByDepD(connection, dpt);    
+        ResultSet rs = dao.getAllTronconsByDepBySide(connection, dpt,side);    
 //      creation de l'objet metaDataTroncon
         MetaData metaDataTroncon= new MetaData();
         metaDataTroncon.setIndex(index);
@@ -259,17 +260,17 @@ ElasticSearchUtil util;
 
             while(rs.next())
         {
-            if(paquetsBulk == 1) System.out.println(i+" troncons droit traités");    
+            if(paquetsBulk == 1) System.out.println(i+" troncons "+side+" traités");     
             if (isVerbose() && i%paquetsBulk==1)
-                System.out.println(i+" troncons droit traités");
+                System.out.println(i+" troncons "+side+" traités");
             
-            Troncon tr = new Troncon(rs,0);
+            Troncon tr = new Troncon(rs,side);
                         
 //            creation de l'objet metaDataTroncon plus haut
             metaDataTroncon.setId(++idTroncon);
             bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument(withGeometry).toString()+"\n";
             if((idTroncon-idTronconTmp)%paquetsBulk==0){
-                System.out.println("troncons droit : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
+                System.out.println("troncons "+side+" : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
                 if (!isVerbose())
                     util.indexResourceBulk(bulk);
                 else
@@ -281,56 +282,7 @@ ElasticSearchUtil util;
         }
         rs.close();
         if(!bulk.equals("")){
-                System.out.println("troncons droit : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
-                if (!isVerbose())
-                    util.indexResourceBulk(bulk);
-                else
-                    util.showIndexResourceBulk(bulk);
-        }
-        idTronconTmp = idTroncon;
-    }
-    public void indexJDONREFTronconsDepG(String dpt) throws IOException, SQLException
-    {
-        if (isVerbose())
-            System.out.println("dpt "+dpt+" : troncons gauche");
-        
-        TronconDAO dao = new TronconDAO();
-//        ResultSet rs = dao.getAllTronconsByDep(connection, dpt);    
-        ResultSet rs = dao.getAllTronconsByDepG(connection, dpt);    
-//      creation de l'objet metaDataTroncon
-        MetaData metaDataTroncon= new MetaData();
-        metaDataTroncon.setIndex(index);
-        metaDataTroncon.setType("troncon");
-              
-        String bulk ="";
-        int i =0;
-        int lastIdBulk=idTronconTmp;
-
-            while(rs.next())
-        {
-            if(paquetsBulk == 1) System.out.println(i+" troncons gauche traités");     
-            if (isVerbose() && i%paquetsBulk==1)
-                System.out.println(i+" troncons gauche traités");
-            
-            Troncon tr = new Troncon(rs,0);
-                        
-//            creation de l'objet metaDataTroncon plus haut
-            metaDataTroncon.setId(++idTroncon);
-            bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument(withGeometry).toString()+"\n";
-            if((idTroncon-idTronconTmp)%paquetsBulk==0){
-                System.out.println("troncons gauche : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);
-                if (!isVerbose())
-                    util.indexResourceBulk(bulk);
-                else
-                    util.showIndexResourceBulk(bulk);
-                bulk="";
-                lastIdBulk=idTroncon;
-            }
-            i++;
-        }
-        rs.close();
-        if(!bulk.equals("")){
-                System.out.println("troncons gauche : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
+                System.out.println("troncons "+side+" : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
                 if (!isVerbose())
                     util.indexResourceBulk(bulk);
                 else

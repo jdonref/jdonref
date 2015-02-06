@@ -1,9 +1,6 @@
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  *
@@ -32,11 +29,11 @@ public class CommuneDAO
                 "com_nom_origine," +                        //5
                 "com_nom_pq," +                             //6
                 "com_code_insee_commune," +                 //7
-                "com_communes.t0," +                        //8
-                "com_communes.t1," +                        //9
-                "st_AsGeoJSON(st_transform(geometrie,4326)) AS geometrie," +    //10
+                "com_communes.t0 AS com_t0," +                        //8
+                "com_communes.t1 AS com_t1," +                        //9
+                "st_AsGeoJSON(st_transform(geometrie,4326)) AS com_geometrie," +    //10
                 "cdp_code_postal, " +                        //11
-                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS centroide "+ //12
+                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS com_centroide "+ //12
                 "FROM com_communes, cdp_codes_postaux " +
                 "WHERE com_communes.com_code_insee = cdp_codes_postaux.com_code_insee";
           
@@ -50,18 +47,18 @@ public class CommuneDAO
     {
         
         String sql="SELECT " +
-                "com_communes.com_code_insee," +            //1
-                "com_communes.dpt_code_departement," +      //2
-                "com_nom," +                                //3
-                "com_nom_desab," +                          //4
-                "com_nom_origine," +                        //5
-                "com_nom_pq," +                             //6
-                "com_code_insee_commune," +                 //7
-                "com_communes.t0," +                        //8
-                "com_communes.t1," +                        //9
-                "st_AsGeoJSON(st_transform(geometrie,4326)) AS geometrie," +    //10
+                "com_communes.com_code_insee, " +            //1
+                "com_communes.dpt_code_departement, " +      //2
+                "com_nom, " +                                //3
+                "com_nom_desab, " +                          //4
+                "com_nom_origine, " +                        //5
+                "com_nom_pq, " +                             //6
+                "com_code_insee_commune, " +                 //7
+                "com_communes.t0 AS com_t0, " +              //8
+                "com_communes.t1 AS com_t1, " +              //9
+                "st_AsGeoJSON(st_transform(geometrie,4326)) AS com_geometrie, " +    //10
                 "cdp_code_postal, " +                        //11
-                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS centroide "+ //12
+                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS com_centroide "+ //12
                 "FROM com_communes, cdp_codes_postaux " +
                 "WHERE com_communes.com_code_insee = cdp_codes_postaux.com_code_insee " ;
         
@@ -93,7 +90,7 @@ public class CommuneDAO
         
         String sql= "SELECT distinct dpt_code_departement " +
                 "FROM com_communes "+
-                "order by dpt_code_departement asc";
+                "order by dpt_code_departement asc ";
 
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
@@ -101,10 +98,7 @@ public class CommuneDAO
         return rs;
 
     }
-        
-        
-        
-        
+
 
         
 }

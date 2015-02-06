@@ -7,6 +7,7 @@ package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -51,43 +52,78 @@ public class Troncon {
     }
   
 
+//    public Troncon(ResultSet rs) throws SQLException
+//    {
+//        this.tro_id = rs.getString(1);
+//        this.voi_id_droit = rs.getString(2);
+//        this.voi_id_gauche = rs.getString(3);
+//        this.tro_numero_debut_droit = rs.getInt(4);
+//        this.tro_numero_debut_gauche = rs.getInt(5);
+//        this.tro_numero_fin_droit = rs.getInt(6);
+//        this.tro_numero_fin_gauche = rs.getInt(7);
+//        this.tro_rep_debut_droit = rs.getString(8);
+//        this.tro_rep_debut_gauche = rs.getString(9);
+//        this.tro_rep_fin_droit = rs.getString(10);
+//        this.tro_rep_fin_gauche = rs.getString(11);
+//        this.tro_typ_adr = rs.getString(12);
+//        this.t0 = rs.getTimestamp(13);
+//        this.t1 = rs.getTimestamp(14);
+//        this.geometrie = rs.getString(15);
+//        
+//    }
+//    
+//        public Troncon(ResultSet rs, String side) throws SQLException
+//    {
+//        voie = new Voie(rs);    
+//        this.tro_id = rs.getString(28);
+//        this.voi_id_droit = rs.getString(29);
+//        this.tro_numero_debut_droit = rs.getInt(30);
+//        this.tro_numero_fin_droit = rs.getInt(31);
+//        this.tro_rep_debut_droit = rs.getString(32);
+//        this.tro_rep_fin_droit = rs.getString(33);
+//        this.tro_typ_adr = rs.getString(34);
+//        this.t0 = rs.getTimestamp(35);
+//        this.t1 = rs.getTimestamp(36);
+//        this.geometrie = rs.getString(37);
+//        this.centroide = rs.getString(38);
+//        
+//    }
+    
     public Troncon(ResultSet rs) throws SQLException
     {
-        
-        this.tro_id = rs.getString(1);
-        this.voi_id_droit = rs.getString(2);
-        this.voi_id_gauche = rs.getString(3);
-        this.tro_numero_debut_droit = rs.getInt(4);
-        this.tro_numero_debut_gauche = rs.getInt(5);
-        this.tro_numero_fin_droit = rs.getInt(6);
-        this.tro_numero_fin_gauche = rs.getInt(7);
-        this.tro_rep_debut_droit = rs.getString(8);
-        this.tro_rep_debut_gauche = rs.getString(9);
-        this.tro_rep_fin_droit = rs.getString(10);
-        this.tro_rep_fin_gauche = rs.getString(11);
-        this.tro_typ_adr = rs.getString(12);
-        this.t0 = rs.getTimestamp(13);
-        this.t1 = rs.getTimestamp(14);
-        this.geometrie = rs.getString(15);
-        
+        int nbColumnUnknown = 0;
+        ResultSetMetaData metaData = rs.getMetaData();
+        int nbColumn = metaData.getColumnCount();
+        for (int i = 0; i < nbColumn; i++) {
+            String nomColonne = metaData.getColumnLabel(i+1); 
+            switch(nomColonne){
+                case "tro_id" : tro_id = rs.getString(nomColonne); break;
+                case "voi_id_droit" : voi_id_droit = rs.getString(nomColonne); break;
+                case "voi_id_gauche" : voi_id_gauche = rs.getString(nomColonne); break;
+                case "tro_numero_debut_droit" : tro_numero_debut_droit = rs.getInt(nomColonne); break;
+                case "tro_numero_debut_gauche" : tro_numero_debut_gauche = rs.getInt(nomColonne); break;
+                case "tro_numero_fin_droit" : tro_numero_fin_droit = rs.getInt(nomColonne); break;
+                case "tro_numero_fin_gauche" : tro_numero_fin_gauche = rs.getInt(nomColonne); break;
+                case "tro_rep_debut_droit" : tro_rep_debut_droit = rs.getString(nomColonne); break;
+                case "tro_rep_debut_gauche" : tro_rep_debut_gauche = rs.getString(nomColonne); break;
+                case "tro_rep_fin_droit" : tro_rep_fin_droit = rs.getString(nomColonne); break;
+                case "tro_rep_fin_gauche" : tro_rep_fin_gauche = rs.getString(nomColonne); break;
+                case "tro_typ_adr" : tro_typ_adr = rs.getString(nomColonne); break;
+                case "tr_t0" : t0 = rs.getTimestamp(nomColonne); break;
+                case "tr_t1" : t1 = rs.getTimestamp(nomColonne); break;
+                case "tr_geometrie" : geometrie = rs.getString(nomColonne); break;
+                case "tr_centroide" : centroide = rs.getString(nomColonne); break;
+                default: nbColumnUnknown = nbColumnUnknown+1;
+            }
+        }  
     }
     
-    public Troncon(ResultSet rs, int test) throws SQLException
+    public Troncon(ResultSet rs, String side) throws SQLException
     {
-        voie = new Voie(rs);    
-        this.tro_id = rs.getString(28);
-        this.voi_id_droit = rs.getString(29);
-        this.tro_numero_debut_droit = rs.getInt(30);
-        this.tro_numero_fin_droit = rs.getInt(31);
-        this.tro_rep_debut_droit = rs.getString(32);
-        this.tro_rep_fin_droit = rs.getString(33);
-        this.tro_typ_adr = rs.getString(34);
-        this.t0 = rs.getTimestamp(35);
-        this.t1 = rs.getTimestamp(36);
-        this.geometrie = rs.getString(37);
-        this.centroide = rs.getString(38);
-        
+        this(rs);
+        voie = new Voie(rs);  
     }
+
     
     public String toLigne7()
     {
@@ -169,4 +205,6 @@ public class Troncon {
          
          return troncon.build();
     }
+
+
 }

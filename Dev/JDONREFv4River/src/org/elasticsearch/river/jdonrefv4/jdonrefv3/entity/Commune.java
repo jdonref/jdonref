@@ -78,6 +78,7 @@ public class Commune
     
     public Commune(ResultSet rs) throws SQLException
     {
+        int nbColumnUnknown = 0;
         ResultSetMetaData metaData = rs.getMetaData();
         int nbColumn = metaData.getColumnCount();
         for (int i = 0; i < nbColumn; i++) {
@@ -90,12 +91,12 @@ public class Commune
                 case "com_nom_origine" : com_nom_origine = rs.getString(nomColonne); break;
                 case "com_nom_pq" : com_nom_pq = rs.getString(nomColonne); break;
                 case "com_code_insee_commune" : com_code_insee_commune = rs.getString(nomColonne); break;
-                case "t0" : t0 = rs.getTimestamp(nomColonne); break;
-                case "t1" : t1 = rs.getTimestamp(nomColonne); break;
-                case "geometrie" : geometrie = rs.getString(nomColonne); break;
+                case "com_t0" : t0 = rs.getTimestamp(nomColonne); break;
+                case "com_t1" : t1 = rs.getTimestamp(nomColonne); break;
+                case "com_geometrie" : geometrie = rs.getString(nomColonne); break;
                 case "cdp_code_postal" : codepostal = rs.getString(nomColonne); break;
-                case "centroide" : centroide = rs.getString(nomColonne); break;
-                default: throw new Error("Nom ou labelle \""+nomColonne+"\" n'est pas renseigné");
+                case "com_centroide" : centroide = rs.getString(nomColonne); break;
+                default: nbColumnUnknown = nbColumnUnknown+1;
             }
         }
     }

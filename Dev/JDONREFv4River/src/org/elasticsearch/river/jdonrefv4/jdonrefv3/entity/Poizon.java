@@ -5,6 +5,7 @@
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -56,43 +57,91 @@ public class Poizon {
     public Poizon() {
     }
 
-    public Poizon(ResultSet rs) throws SQLException {
-
-        poizon_service = rs.getInt(1);
-        poizon_cle = rs.getString(2);
-        poizon_cle_pq = rs.getString(3);
-        poizon_lbl = rs.getString(4);
-        poizon_lbl_pq = rs.getString(5);
-        poizon_lbl_sans_articles = rs.getString(6);
-        poizon_lbl_sans_articles_pq = rs.getString(7);
-        poizon_id1 = rs.getString(8);
-        poizon_id2 = rs.getString(9);
-        poizon_id3 = rs.getString(10);
-        poizon_id4 = rs.getString(11);
-        poizon_id5 = rs.getString(12);
-        poizon_id6 = rs.getString(13);
-        poizon_id7 = rs.getString(14);
-        poizon_donnee1 = rs.getString(15);
-        poizon_donnee2 = rs.getString(16);
-        poizon_donnee3 = rs.getString(17);
-        poizon_donnee4 = rs.getString(18);
-        poizon_donnee5 = rs.getString(19);
-        poizon_donnee6 = rs.getString(20);
-        poizon_donnee7 = rs.getString(21);
-        poizon_donnee_origine1 = rs.getString(22);
-        poizon_donnee_origine2 = rs.getString(23);
-        poizon_donnee_origine3 = rs.getString(24);
-        poizon_donnee_origine4 = rs.getString(25);
-        poizon_donnee_origine5 = rs.getString(26);
-        poizon_donnee_origine6 = rs.getString(27);
-        poizon_donnee_origine7 = rs.getString(28);
-        t0 = rs.getTimestamp(29);
-        t1 = rs.getTimestamp(30);
-        poizon_referentiel = rs.getString(31);
-        geometrie = rs.getString(32);
-        centroide = rs.getString(33);
-
+//    public Poizon(ResultSet rs) throws SQLException {
+//
+//        poizon_service = rs.getInt(1);
+//        poizon_cle = rs.getString(2);
+//        poizon_cle_pq = rs.getString(3);
+//        poizon_lbl = rs.getString(4);
+//        poizon_lbl_pq = rs.getString(5);
+//        poizon_lbl_sans_articles = rs.getString(6);
+//        poizon_lbl_sans_articles_pq = rs.getString(7);
+//        poizon_id1 = rs.getString(8);
+//        poizon_id2 = rs.getString(9);
+//        poizon_id3 = rs.getString(10);
+//        poizon_id4 = rs.getString(11);
+//        poizon_id5 = rs.getString(12);
+//        poizon_id6 = rs.getString(13);
+//        poizon_id7 = rs.getString(14);
+//        poizon_donnee1 = rs.getString(15);
+//        poizon_donnee2 = rs.getString(16);
+//        poizon_donnee3 = rs.getString(17);
+//        poizon_donnee4 = rs.getString(18);
+//        poizon_donnee5 = rs.getString(19);
+//        poizon_donnee6 = rs.getString(20);
+//        poizon_donnee7 = rs.getString(21);
+//        poizon_donnee_origine1 = rs.getString(22);
+//        poizon_donnee_origine2 = rs.getString(23);
+//        poizon_donnee_origine3 = rs.getString(24);
+//        poizon_donnee_origine4 = rs.getString(25);
+//        poizon_donnee_origine5 = rs.getString(26);
+//        poizon_donnee_origine6 = rs.getString(27);
+//        poizon_donnee_origine7 = rs.getString(28);
+//        t0 = rs.getTimestamp(29);
+//        t1 = rs.getTimestamp(30);
+//        poizon_referentiel = rs.getString(31);
+//        geometrie = rs.getString(32);
+//        centroide = rs.getString(33);
+//
+//    }
+    
+    public Poizon(ResultSet rs) throws SQLException 
+    {
+        int nbColumnUnknown = 0;
+        ResultSetMetaData metaData = rs.getMetaData();
+        int nbColumn = metaData.getColumnCount();
+        for (int i = 0; i < nbColumn; i++) {
+            String nomColonne = metaData.getColumnLabel(i+1); 
+            switch(nomColonne){
+                case "poizon_service" : poizon_service = rs.getInt(nomColonne); break;
+                case "poizon_cle" : poizon_cle = rs.getString(nomColonne); break;
+                case "poizon_cle_pq" : poizon_cle_pq = rs.getString(nomColonne); break;
+                case "poizon_lbl" : poizon_lbl = rs.getString(nomColonne); break;
+                case "poizon_lbl_pq" : poizon_lbl_pq = rs.getString(nomColonne); break;
+                case "poizon_lbl_sans_articles" : poizon_lbl_sans_articles = rs.getString(nomColonne); break;
+                case "poizon_lbl_sans_articles_pq" : poizon_lbl_sans_articles_pq = rs.getString(nomColonne); break;
+                case "poizon_id1" : poizon_id1 = rs.getString(nomColonne); break;
+                case "poizon_id2" : poizon_id2 = rs.getString(nomColonne); break;
+                case "poizon_id3" : poizon_id3 = rs.getString(nomColonne); break;
+                case "poizon_id4" : poizon_id4 = rs.getString(nomColonne); break;
+                case "poizon_id5" : poizon_id5 = rs.getString(nomColonne); break;
+                case "poizon_id6" : poizon_id6 = rs.getString(nomColonne); break;
+                case "poizon_id7" : poizon_id7 = rs.getString(nomColonne); break;
+                case "poizon_donnee1" : poizon_donnee1 = rs.getString(nomColonne); break;
+                case "poizon_donnee2" : poizon_donnee2 = rs.getString(nomColonne); break;
+                case "poizon_donnee3" : poizon_donnee3 = rs.getString(nomColonne); break;
+                case "poizon_donnee4" : poizon_donnee4 = rs.getString(nomColonne); break;
+                case "poizon_donnee5" : poizon_donnee5 = rs.getString(nomColonne); break;
+                case "poizon_donnee6" : poizon_donnee6 = rs.getString(nomColonne); break;
+                case "poizon_donnee7" : poizon_donnee7 = rs.getString(nomColonne); break;
+                case "poizon_donnee_origine1" : poizon_donnee_origine1 = rs.getString(nomColonne); break;
+                case "poizon_donnee_origine2" : poizon_donnee_origine2 = rs.getString(nomColonne); break;
+                case "poizon_donnee_origine3" : poizon_donnee_origine3 = rs.getString(nomColonne); break;
+                case "poizon_donnee_origine4" : poizon_donnee_origine4 = rs.getString(nomColonne); break;
+                case "poizon_donnee_origine5" : poizon_donnee_origine5 = rs.getString(nomColonne); break;
+                case "poizon_donnee_origine6" : poizon_donnee_origine6 = rs.getString(nomColonne); break;
+                case "poizon_donnee_origine7" : poizon_donnee_origine7 = rs.getString(nomColonne); break;
+                case "pz_t0" : t0 = rs.getTimestamp(nomColonne); break;
+                case "pz_t1" : t1 = rs.getTimestamp(nomColonne); break;
+                case "poizon_referentiel" : poizon_referentiel = rs.getString(nomColonne); break;
+                case "pz_geometrie" : geometrie = rs.getString(nomColonne); break;
+                case "pz_centroide" : centroide = rs.getString(nomColonne); break;
+                default: nbColumnUnknown = nbColumnUnknown+1;
+            }
+        }
     }
+
+
     
     
     public String toString()

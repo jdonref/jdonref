@@ -46,14 +46,14 @@ public class PoizonDAO {
         "poizon_donnee_origine5, " +        //26
         "poizon_donnee_origine6, " +        //27
         "poizon_donnee_origine7, " +        //28
-        "t0, " +                            //29
-        "t1, " +                            //30
+        "t0 AS pz_t0, " +                   //29
+        "t1 AS pz_t1, " +                   //30
         "poizon_referentiel, " +            //31
-        "st_AsGeoJSON(st_transform(geometrie,4326))," +                     //32
-        "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) " +        //33
+        "st_AsGeoJSON(st_transform(geometrie,4326)) AS pz_geometrie, " +                     //32
+        "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS pz_centroide " +        //33
         "FROM poizon " +
-                "WHERE t0>= '"+lastUpdate+"'" +
-                "order by t0";      
+        "WHERE t0>= '"+lastUpdate+"'" +
+        "order by t0";      
         
 
         PreparedStatement ps = connection.prepareStatement(sql);
@@ -65,7 +65,7 @@ public class PoizonDAO {
     
     public ResultSet getDateT0AllPoizon(Connection connection) throws SQLException
     {
-        String sql = "SELECT t0 " +
+        String sql = "SELECT t0 AS pz_t0 " +
                 "FROM poizon " +
                 "group by t0 "+
                 "order by t0 desc";

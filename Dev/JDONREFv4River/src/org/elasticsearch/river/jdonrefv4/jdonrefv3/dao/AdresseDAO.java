@@ -42,8 +42,8 @@ public class AdresseDAO
                 "com_nom_origine," +                        // 6
                 "com_nom_pq," +                             // 7
                 "com_code_insee_commune," +                 // 8
-                "com_communes.t0," +                        // 9
-                "com_communes.t1, " +                       // 10
+                "com_communes.t0 AS com_t0," +                        // 9
+                "com_communes.t1 AS com_t1, " +                       // 10
                 "voi_voies_"+dpt+".voi_id, " +              // 11
                 "voi_code_fantoir," +                       // 12
                 "voi_nom," +                                // 13
@@ -60,14 +60,14 @@ public class AdresseDAO
                 "voi_mot_determinant_pq," +                 // 23
                 "voi_min_numero," +                         // 24
                 "voi_max_numero, " +                        // 25
-                "voi_voies_"+dpt+".t0," +                   // 26
-                "voi_voies_"+dpt+".t1, " +                  // 27
+                "voi_voies_"+dpt+".t0 AS voi_t0," +                   // 26
+                "voi_voies_"+dpt+".t1 AS voi_t1," +                  // 27
                 "adr_id," +                                 // 28
                 "adr_rep," +                                // 29
                 "adr_numero, " +                            // 30
-                "adr_adresses_"+dpt+".t0, " +               // 31
-                "adr_adresses_"+dpt+".t1, " +               // 32 
-                "st_AsGeoJSON(st_transform(adr_adresses_"+dpt+".geometrie,4326)) "+ // 33
+                "adr_adresses_"+dpt+".t0 AS adr_t0," +               // 31
+                "adr_adresses_"+dpt+".t1 AS adr_t1," +               // 32 
+                "st_AsGeoJSON(st_transform(adr_adresses_"+dpt+".geometrie,4326)) AS adr_geometrie "+ // 33
                 "FROM adr_adresses_"+dpt+", voi_voies_"+dpt+", com_communes "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee " +
                 "and adr_adresses_"+dpt+".voi_id = voi_voies_"+dpt+".voi_id";

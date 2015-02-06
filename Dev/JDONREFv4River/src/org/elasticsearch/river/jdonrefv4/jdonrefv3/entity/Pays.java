@@ -1,6 +1,7 @@
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -51,16 +52,36 @@ public class Pays {
         t1 = rs.getTimestamp(index[4]);
 //        geometrie = rs.getString(index[5]);
     }
+//    public Pays(ResultSet rs) throws SQLException
+//    {
+//        pays_sov_a3 = rs.getString(1);
+//        ligne7 = rs.getString(2);
+//        //pay_projection = rs.getString(2);
+//        pay_referentiel = rs.getString(3);
+//        t0 = rs.getTimestamp(4);
+//        t1 = rs.getTimestamp(5);
+//        geometrie = rs.getString(6);
+//        centroide = rs.getString(7);
+//    }
+    
     public Pays(ResultSet rs) throws SQLException
     {
-        pays_sov_a3 = rs.getString(1);
-        ligne7 = rs.getString(2);
-        //pay_projection = rs.getString(2);
-        pay_referentiel = rs.getString(3);
-        t0 = rs.getTimestamp(4);
-        t1 = rs.getTimestamp(5);
-        geometrie = rs.getString(6);
-        centroide = rs.getString(7);
+        int nbColumnUnknown = 0;
+        ResultSetMetaData metaData = rs.getMetaData();
+        int nbColumn = metaData.getColumnCount();
+        for (int i = 0; i < nbColumn; i++) {
+            String nomColonne = metaData.getColumnLabel(i+1); 
+            switch(nomColonne){
+                case "pay_sov_a3" : pays_sov_a3 = rs.getString(nomColonne); break;
+                case "pay_nom_origine" : ligne7 = rs.getString(nomColonne); break;
+                case "pay_referentiel" : pay_referentiel = rs.getString(nomColonne); break;
+                case "pay_t0" : t0 = rs.getTimestamp(nomColonne); break;
+                case "pay_t1" : t1 = rs.getTimestamp(nomColonne); break;
+                case "pay_geometrie" : geometrie = rs.getString(nomColonne); break;
+                case "pay_centroide" : centroide = rs.getString(nomColonne); break;
+                default: nbColumnUnknown = nbColumnUnknown+1;
+            }
+        }
     }
     
     @Override

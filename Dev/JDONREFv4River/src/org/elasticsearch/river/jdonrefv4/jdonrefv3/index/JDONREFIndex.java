@@ -262,6 +262,7 @@ public class JDONREFIndex
         flags.add(FLAGS.VOIE);
         flags.add(FLAGS.ADRESSE);
         flags.add(FLAGS.POIZON);
+        flags.add(FLAGS.TRONCON);
     }
     
     String[] codesDepartements = null;

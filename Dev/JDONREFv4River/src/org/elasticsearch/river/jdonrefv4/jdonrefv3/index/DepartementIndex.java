@@ -263,10 +263,9 @@ public class DepartementIndex
         
         if (isFlag(FLAGS.TRONCON))
         {
-            TronconIndex tIndex = TronconIndex.getInstance();
-            tIndex.indexJDONREFTronconsDepD(dpt);
-            tIndex.indexJDONREFTronconsDepG(dpt);
-
+            TronconIndex tIndex = TronconIndex.getInstance();            
+            tIndex.indexJDONREFTronconsDepSide(dpt,"droit");
+            tIndex.indexJDONREFTronconsDepSide(dpt,"gauche");
             // osbolete
             //tIndex.indexJDONREFTronconsDroitDepartement(dpt); 
             //tIndex.indexJDONREFTronconsGaucheDepartement(dpt);

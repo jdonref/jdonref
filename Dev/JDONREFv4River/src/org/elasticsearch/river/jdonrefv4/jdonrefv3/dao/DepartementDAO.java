@@ -22,10 +22,10 @@ public class DepartementDAO
                 "dpt_code_departement, " +  //1
                 "dpt_projection, " +        //2    
                 "dpt_referentiel, " +       //3
-                "t0, " +                    //4
-                "t1, " +                    //5
-                "st_AsGeoJSON(st_transform(geometrie,4326))," + //6
-                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) " +    //7
+                "t0 AS dpt_t0, " +                    //4
+                "t1 AS dpt_t1, " +                    //5
+                "st_AsGeoJSON(st_transform(geometrie,4326)) AS dpt_geometrie, " + //6
+                "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS dpt_centroide " +    //7
                 "FROM dpt_departements "+
                 "order by dpt_code_departement asc";
         
@@ -45,10 +45,10 @@ public class DepartementDAO
                     "dpt_code_departement, " +  //1
                     "dpt_projection, " +        //2    
                     "dpt_referentiel, " +       //3
-                    "t0, " +                    //4
-                    "t1, " +                    //5
-                    "st_AsGeoJSON(st_transform(geometrie,4326))," + //6
-                    "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) " +    //7
+                    "t0 AS dpt_t0, " +          //4
+                    "t1 AS dpt_t1, " +          //5
+                    "st_AsGeoJSON(st_transform(geometrie,4326)) AS dpt_geometrie, " + //6
+                    "st_AsGeoJSON(ST_Centroid(st_transform(geometrie,4326))) AS dpt_centroide " +    //7
                     "FROM dpt_departements ";
             if(dept.length != 0 && dept != null){
                 int taille = dept.length;

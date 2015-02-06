@@ -1,6 +1,7 @@
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,25 +46,49 @@ public class Adresse
         this.lon = lon;
     }   
     
+//    public Adresse(ResultSet rs) throws SQLException
+//    {
+//        voie = new Voie(rs,new int[]{10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27},new int[]{1,2,3,4,5,6,7,8,9,15});
+//        
+//        this.idadresse = rs.getString(28);
+//        this.repetition = rs.getString(29);
+//        this.numero = rs.getString(30);
+//        if (numero.equals("0") || numero.trim().equals(""))
+//            this.numero = null;
+//        if (repetition.equals("0") || repetition.trim().equals(""))
+//        {
+//            this.repetition = null;
+//        }
+//      t0 = rs.getTimestamp(31);
+//      t1 = rs.getTimestamp(32);
+//      geometrie = rs.getString(33);          
+////        setXY(rs.getString(33)); 
+//    }
+    
     public Adresse(ResultSet rs) throws SQLException
     {
-        voie = new Voie(rs,new int[]{10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27},new int[]{1,2,3,4,5,6,7,8,9,15});
-        
-        this.idadresse = rs.getString(28);
-        this.repetition = rs.getString(29);
-        this.numero = rs.getString(30);
+        int nbColumnUnknown = 0;
+        voie = new Voie(rs);
+        ResultSetMetaData metaData = rs.getMetaData();
+        int nbColumn = metaData.getColumnCount();
+        for (int i = 0; i < nbColumn; i++) {
+            String nomColonne = metaData.getColumnLabel(i+1); 
+            switch(nomColonne){
+                case "adr_id" : idadresse = rs.getString(nomColonne); break;
+                case "adr_rep" : repetition = rs.getString(nomColonne); break;
+                case "adr_numero" : numero = rs.getString(nomColonne); break;
+                case "adr_t0" : t0 = rs.getTimestamp(nomColonne); break;
+                case "adr_t1" : t1 = rs.getTimestamp(nomColonne); break;
+                case "adr_geometrie" : geometrie = rs.getString(nomColonne); break;
+//                case "adr_geometrie" : geometrie = setXY(rs.getString(nomColonne)); break;
+                default: nbColumnUnknown = nbColumnUnknown+1;
+            }
+        }
         if (numero.equals("0") || numero.trim().equals(""))
             this.numero = null;
         if (repetition.equals("0") || repetition.trim().equals(""))
-        {
             this.repetition = null;
-        }
-      t0 = rs.getTimestamp(31);
-      t1 = rs.getTimestamp(32);
-      geometrie = rs.getString(33);          
-//        setXY(rs.getString(33));
-        
-        
+
     }
     
     public String[] getLignes()
