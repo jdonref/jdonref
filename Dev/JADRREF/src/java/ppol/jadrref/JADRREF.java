@@ -595,7 +595,6 @@ public class JADRREF implements IJDONREFv3 {
         final GestionAdr gestionAdr = jdonrefv3lib.getGestionAdr();
         final String[] result = gestionAdr.inverse(application, services, operation, position, distance + "", date, projection, options);
 
-
         return ResultAdapter.adapteGeocodeInverse(result);
     }
 

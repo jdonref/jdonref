@@ -20,7 +20,7 @@
 <notepourmotdeterminant>2</notepourmotdeterminant>
 <notepourlibelle>50</notepourlibelle>
 <notepourtypedevoie>2</notepourtypedevoie>
-<notepournumero>10</notepournumero>
+<notepournumero>70</notepournumero>
 <notepourarrondissement>10</notepourarrondissement>
 
 <pourcentagedecorrespondancedecodepostal>40</pourcentagedecorrespondancedecodepostal>
@@ -58,6 +58,7 @@
 
 <gestiondepartements>true</gestiondepartements>
 <gestionpays>true</gestionpays>
+<gestionadresses>true</gestionadresses>
 
 <notepourcle>28</notepourcle>
 <notepourpoizon>50</notepourpoizon>
