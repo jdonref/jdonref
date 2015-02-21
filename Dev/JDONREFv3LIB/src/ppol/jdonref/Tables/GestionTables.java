@@ -994,6 +994,7 @@ public class GestionTables
     private final static String VHI_VOIES_HISTORISEE = "vhi_voies_historisee_";
     private final static  String VOA_VOIES_AMBIGUES = "voa_voies_ambigues_";
     private final static String VOI_VOIES = "voi_voies_";
+    private final static String ADR_ADRESSES = "adr_adresses_";
 
     /**
      * Donne le nom de la table des troncons a partir de son code departement
@@ -1035,6 +1036,17 @@ public class GestionTables
         return getTableNameWithPrefixAndSuffix(VOI_VOIES, dptCode);
     }
 
+    /**
+     * Donne le nom de la table des adresses a partir de son code departement
+     * @param dptCode
+     * @return
+     */
+    public static String getAdrAdressesTableName(String dptCode)
+    {
+        return getTableNameWithPrefixAndSuffix(ADR_ADRESSES, dptCode);
+    }
+
+    
     /**
      * Construit un nom de table a partir d'un prefix et d'un suffixe
      * seuls les caracteres [A-Za-z0-9_] sont authorises, les autres sont remplaces par '_'

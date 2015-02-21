@@ -477,7 +477,7 @@ public class GestionReferentielES extends GestionReferentiel
     }
     
     @Override
-    public List<String[]> valide(int application, int[] services, String[] lignes, String strdate, boolean force, boolean gererPays, Connection connection) throws
+    public List<String[]> valide(int application, int[] services, String[] lignes, String strdate, boolean force, boolean gestionAdresse,boolean gererPays, Connection connection) throws
             SQLException
     {
         String resource = "vide";
@@ -488,11 +488,9 @@ public class GestionReferentielES extends GestionReferentiel
             Client client = Client.create();
             resource = connexionES.getURL() + getUrl(services);
             String queryPOST = getQueryPOST(services, lignes);
-
             WebResource webResource = client.resource(resource);
             ClientResponse response = webResource.accept("application/json").post(ClientResponse.class, queryPOST);
             output = response.getEntity(String.class);
-
             return parseResponse(output,gererPays);
         }
         catch(ParseException pe)

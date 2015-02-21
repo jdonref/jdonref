@@ -1644,8 +1644,6 @@ public class GestionInverse {
         sb.append("where not ( voi_id_droit = '");sb.append(voi_id);sb.append("' or voi_id_gauche='");sb.append(voi_id);
         sb.append("') order by point ");
         
-        String sb1 = sb.toString();
-        
         PreparedStatement ps = connection.prepareStatement(sb.toString());
         ResultSet rs = ps.executeQuery();
         

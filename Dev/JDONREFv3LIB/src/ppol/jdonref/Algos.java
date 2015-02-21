@@ -338,17 +338,17 @@ public class Algos {
      * @return  la concaténation des chaines
      */
     public static String unsplit(String word1, String word2) {
-        if (word1 == null || word1.length() == 0) {
+        if (word1 == null || word1.trim().length() == 0) {
             if (word2 == null) {
                 return vide;
             }
             return word2;
-        } else if (word2 == null || word2.length() == 0) {
+        } else if (word2 == null || word2.trim().length() == 0) {
             return word1;
         }
 
         StringBuilder sb = new StringBuilder();
-        if (word1.length() != 0) {
+        if (word1.trim().length() != 0) {
             sb.append(word1);
             sb.append(" ");
         }
@@ -362,13 +362,13 @@ public class Algos {
      * @return la concaténation des chaines
      */
     public static String unsplit(String word1, String word2, String word3) {
-        if (word1 == null || word1.length() == 0) {
+        if (word1 == null || word1.trim().length() == 0) {
             return unsplit(word2, word3);
         }
-        if (word2 == null || word2.length() == 0) {
+        if (word2 == null || word2.trim().length() == 0) {
             return unsplit(word1, word3);
         }
-        if (word3 == null || word3.length() == 0) {
+        if (word3 == null || word3.trim().length() == 0) {
             return unsplit(word1, word2);
         }
 

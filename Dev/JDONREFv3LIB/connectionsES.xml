@@ -1,7 +1,7 @@
 <connections>
-    <connection>
-        <server>10.213.92.202</server>
-        <port>9200</port>
-        <index>jdonref</index>
-    </connection>
+<connection>
+<server>plf.jdonrefv4.ppol.minint.fr</server>
+<port>80</port>
+<index>jdonref</index>
+</connection>
 </connections>

@@ -1015,17 +1015,34 @@ public class GestionValidation {
         jdonrefParams.getGestionLog().logValidation(application, codedepartement, AGestionLogs.FLAG_VALIDE_CODEPOSTAL, true);
         return res;
     }
-    private final static String valideVoieCodePostal_sbtime_0 = "SELECT voies.t0,voies.t1,communes.t0,communes.t1,voi_min_numero,voi_max_numero FROM \"";
+    private final static String valideVoieCodePostal_sbtime_0 = "SELECT voies.t0,voies.t1,communes.t0,communes.t1,voi_min_numero,voi_max_numero FROM \"";    
     private final static String valideVoieCodePostal_sbtime_1 = "\" as voies,com_communes as communes WHERE communes.com_code_insee=voies.com_code_insee AND voi_id=? AND voi_nom=? AND communes.com_code_insee=? and communes.com_nom=? and voies.cdp_code_postal=? AND voies.t0<=? AND communes.t0<=? AND NOT (voies.t1<communes.t0 OR communes.t1<voies.t0)";
-    private final static String valideVoieCodePostal_chercheExact_0 = "SELECT DISTINCT voi_id,voies.voi_nom,voies.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,communes.com_nom_pq,?,voies.cdp_code_postal) AS note,voies.voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostal_chercheExact_0 = "SELECT DISTINCT voies.voi_id,voies.voi_nom,voies.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,communes.com_nom_pq,?,voies.cdp_code_postal) AS note,voies.voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostal_chercheExact_0_adr = "SELECT DISTINCT voies.voi_id,adr.adr_id, adr.adr_numero, adr.adr_rep,voies.voi_nom,voies.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,communes.com_nom_pq,?,voies.cdp_code_postal) AS note,voies.voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    
     private final static String valideVoieCodePostal_chercheExact_1 = "\" AS voies,com_communes AS communes WHERE voi_lbl_sans_articles=? AND ";
+    
+    private final static String valideVoieCodePostal_chercheExact_1_adr_1 = "\" AS voies left outer join \"";
+    private final static String valideVoieCodePostal_chercheExact_1_adr_2 = "\" as adr on adr.voi_id=voies.voi_id and adr.adr_numero=?";
+    private final static String valideVoieCodePostal_chercheExact_1_adr_3 = " and adr.adr_rep = ?";
+    private final static String valideVoieCodePostal_chercheExact_1_adr_4 = ",com_communes AS communes WHERE voi_lbl_sans_articles=? AND ";
+    
     private final static String valideVoieCodePostal_chercheExact_2 = "voi_type_de_voie=? AND ";
     private final static String valideVoieCodePostal_chercheExact_3 = "cdp_code_postal=? AND ";
     private final static String valideVoieCodePostal_chercheExact_4 = "voies.com_code_insee = communes.com_code_insee AND voies.t0<=? AND communes.t0<=? AND ";
     private final static String valideVoieCodePostal_chercheExact_5 = "voies.voi_min_numero<=? AND voies.voi_max_numero>=? AND ";
     private final static String valideVoieCodePostal_chercheExact_6 = "NOT (voies.t1<communes.t0 OR communes.t1<voies.t0) ORDER BY note DESC LIMIT ?";
+    
     private final static String valideVoieCodePostal_cherche_0 = "SELECT DISTINCT voi_id,voies.voi_nom,voies.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,communes.com_nom_pq,?,voies.cdp_code_postal) AS note,voies.voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq,voi_min_numero,voi_max_numero FROM \"";
+    
+    private final static String valideVoieCodePostal_cherche_0_adr = "SELECT DISTINCT voies.voi_id,adr.adr_id, adr.adr_numero, adr.adr_rep,voies.voi_nom,voies.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,communes.com_nom_pq,?,voies.cdp_code_postal) AS note,voies.voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq,voi_min_numero,voi_max_numero FROM \"";
+    
     private final static String valideVoieCodePostal_cherche_1 = "\" AS voies,com_communes AS communes WHERE note_voie_codepostal(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,communes.com_nom_pq,?,voies.cdp_code_postal)>=? AND voies.com_code_insee = communes.com_code_insee AND voies.t0<=? AND communes.t0<=? AND NOT (voies.t1<communes.t0 OR communes.t1<voies.t0)";
+    
+    private final static String valideVoieCodePostal_cherche_1_adr_1 = "\" AS voies left outer join \"";
+    private final static String valideVoieCodePostal_cherche_1_adr_2 = "\" as adr on adr.voi_id=voies.voi_id and adr.adr_numero=? and adr.adr_rep = ?";
+    private final static String valideVoieCodePostal_cherche_1_adr_3 = ",com_communes AS communes WHERE note_voie_codepostal(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,communes.com_nom_pq,?,voies.cdp_code_postal)>=? AND voies.com_code_insee = communes.com_code_insee AND voies.t0<=? AND communes.t0<=? AND NOT (voies.t1<communes.t0 OR communes.t1<voies.t0)";
+    
     private final static String valideVoieCodePostal_cherche_2 = " AND voies.voi_min_numero<=? AND voies.voi_max_numero>=?";
     private final static String valideVoieCodePostal_cherche_3 = " ORDER BY note DESC LIMIT ?";
 
@@ -1069,16 +1086,22 @@ public class GestionValidation {
      * 
      * @return null si le code departement n'a pas pu être déduit du cdp_code_postal.
      */
-    public String[] valideVoieCodePostal(int application, String[] lignes, Date date, boolean force, boolean gererPays, String payS, Connection connection) throws
+    public String[] valideVoieCodePostal(int application, String[] lignes, Date date, boolean force, boolean gererAdresse,boolean gererPays, String payS, Connection connection) throws
             SQLException {
         String ligne4 = lignes[3];
         String ligne6 = lignes[5];
         ArrayList<RefNumero> rcnumeros = gestionMots.trouveNumeros(ligne4);
         String strnumero = null;
         int numero = 0;
+        String repetition = " ";
         if (rcnumeros.size() > 0) {
             strnumero = rcnumeros.get(0).obtientNumeroNormalise();
             numero = Integer.parseInt(strnumero);
+            if (rcnumeros.get(0).obtientRepetition() == null) {
+                repetition = " ";
+            } else {
+                repetition = Character.toString(rcnumeros.get(0).obtientRepetitionNormalise());
+            }
         }
         RefTypeVoie rctypedevoie = gestionMots.trouveTypeVoie(ligne4, rcnumeros);
         String stypedevoie = rctypedevoie.obtientMot();
@@ -1112,10 +1135,14 @@ public class GestionValidation {
 
         // WA 09/2011 utilisation de GestionTables.getXXTableName
         //  String nomTable = voi_voies+code_departement;
-        String nomTable = GestionTables.getVoiVoiesTableName(code_departement);
+        String nomTableVoie = GestionTables.getVoiVoiesTableName(code_departement);
+        String nomTableAdresse = GestionTables.getAdrAdressesTableName(code_departement);
 
-        if (!GestionTables.tableExiste(nomTable, connection)) {
+        if (!GestionTables.tableExiste(nomTableVoie, connection)) {
             return new String[]{"0", "1", "Le département " + code_departement + " n'est pas géré."};
+        }
+        if (!GestionTables.tableExiste(nomTableAdresse,connection)) {
+            gererAdresse = false;
         }
 
         if (date == null) {
@@ -1130,7 +1157,7 @@ public class GestionValidation {
         StringBuilder sb = new StringBuilder();
 
         sb.append(valideVoieCodePostal_sbtime_0);
-        sb.append(nomTable);
+        sb.append(nomTableVoie);
         sb.append(valideVoieCodePostal_sbtime_1);
         PreparedStatement psTime = connection.prepareStatement(sb.toString());
         psTime.setTimestamp(6, tsdate);
@@ -1144,9 +1171,24 @@ public class GestionValidation {
         if (!force) {
             // Prépare la requête permettant de chercher les voies.
             sb.setLength(0);
-            sb.append(valideVoieCodePostal_chercheExact_0);
-            sb.append(nomTable);
-            sb.append(valideVoieCodePostal_chercheExact_1);
+            if (gererAdresse && numero!=0)
+                sb.append(valideVoieCodePostal_chercheExact_0_adr);
+            else
+                sb.append(valideVoieCodePostal_chercheExact_0);
+            sb.append(nomTableVoie);
+            if (gererAdresse && numero!=0)
+            {
+                sb.append(valideVoieCodePostal_chercheExact_1_adr_1);
+                sb.append(nomTableAdresse);
+                sb.append(valideVoieCodePostal_chercheExact_1_adr_2);
+                sb.append(valideVoieCodePostal_chercheExact_1_adr_3);
+                sb.append(valideVoieCodePostal_chercheExact_1_adr_4);
+            }
+            else
+            {
+                sb.append(valideVoieCodePostal_chercheExact_1);
+            }
+            
             if (stypedevoie_present) {
                 sb.append(valideVoieCodePostal_chercheExact_2);
             }
@@ -1168,6 +1210,13 @@ public class GestionValidation {
             psChercheExact.setString(index++, stypedevoie_phonetique);
             psChercheExact.setString(index++, cdp_code_postal);
 
+            // JM 02/2015 OUTER LEFT JOIN
+            if (gererAdresse && numero!=0)
+            {
+                psChercheExact.setInt(index++,numero);
+                psChercheExact.setString(index++,repetition);
+            }
+            
             // WHERE voi_lbl=? AND voi_type_de_voie=? AND cdp_code_postal=? AND 
             psChercheExact.setString(index++, slibelle_sans_articles);
             if (stypedevoie_present) {
@@ -1196,23 +1245,28 @@ public class GestionValidation {
         if (!force && rsChercheExact.next()) {
             rechercheexacte = true;
             do {
+                String service = (numero!=0)? (gererAdresse?((rsChercheExact.getString(2)!=null)?"2":"3"):"3"):"4";
+                
                 voies.add(new String[]{
                     rsChercheExact.getString(1), // voi_id
-                    rsChercheExact.getString(2), // nom
-                    rsChercheExact.getString(3), // code insee
-                    rsChercheExact.getString(4), // nom commune
-                    rsChercheExact.getString(5), // code postal
+                    rsChercheExact.getString(2+((gererAdresse && numero!=0)?3:0)), // nom
+                    rsChercheExact.getString(3+((gererAdresse && numero!=0)?3:0)), // code insee
+                    rsChercheExact.getString(4+((gererAdresse && numero!=0)?3:0)), // nom commune
+                    rsChercheExact.getString(5+((gererAdresse && numero!=0)?3:0)), // code postal
                     null, null, // t0 t1
-                    rsChercheExact.getString(7), // code fantoire
-                    rsChercheExact.getString(8), // nom desabbrevie
-                    rsChercheExact.getString(9), // nom commune desabbrevie
-                    rsChercheExact.getString(10), // libellé sans articles phonétique
+                    rsChercheExact.getString(7+((gererAdresse && numero!=0)?3:0)), // code fantoire
+                    rsChercheExact.getString(8+((gererAdresse && numero!=0)?3:0)), // nom desabbrevie
+                    rsChercheExact.getString(9+((gererAdresse && numero!=0)?3:0)), // nom commune desabbrevie
+                    rsChercheExact.getString(10+((gererAdresse && numero!=0)?3:0)), // libellé sans articles phonétique
                     null, // emplacement libre pour la note
                     "", // indique qu'il faut conserver le numéro d'adresse dans l'adresse.
-                    (numero != 0) ? "3" : "4"
+                    service,
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(2):null , // adr_id
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(3):null , // adr_numero
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(4):null   // adr_rep
                 });
 
-                notes.add(new Integer(rsChercheExact.getInt(6)));
+                notes.add(new Integer(rsChercheExact.getInt(6+((gererAdresse && numero!=0)?3:0))));
             } while (rsChercheExact.next());
 
             psChercheExact.close();
@@ -1225,9 +1279,20 @@ public class GestionValidation {
 
             // Prépare la requête permettant de chercher les voies.
             sb.setLength(0);
-            sb.append(valideVoieCodePostal_cherche_0);
-            sb.append(nomTable);
-            sb.append(valideVoieCodePostal_cherche_1);
+            if (gererAdresse&&numero!=0)
+                sb.append(valideVoieCodePostal_cherche_0_adr);
+            else
+                sb.append(valideVoieCodePostal_cherche_0);
+            sb.append(nomTableVoie);
+            if (gererAdresse&&numero!=0)
+            {
+                sb.append(valideVoieCodePostal_cherche_1_adr_1);
+                sb.append(nomTableAdresse);
+                sb.append(valideVoieCodePostal_cherche_1_adr_2);
+                sb.append(valideVoieCodePostal_cherche_1_adr_3);
+            }
+            else
+                sb.append(valideVoieCodePostal_cherche_1);
             sb.append(valideVoieCodePostal_cherche_3);
             PreparedStatement psCherche = connection.prepareStatement(sb.toString());
 
@@ -1239,6 +1304,12 @@ public class GestionValidation {
             psCherche.setString(index++, stypedevoie_phonetique);
             psCherche.setString(index++, cdp_code_postal);
 
+            if (gererAdresse&&numero!=0)
+            {
+                psCherche.setInt(index++,numero);
+                psCherche.setString(index++,repetition);
+            }
+            
             // note_voie_cdp_code_postal(?,motdeterminant,?,libellesansarticles_phonetique,?,typedevoie,communes.nom,?,voies.cdp_code_postal,?,voies.min_numero,voies.max_numero)>=?
             // HM 05/10/2012 note_voie_codepostal(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,communes.com_nom_pq,?,voies.cdp_code_postal)
             psCherche.setString(index++, sderniermot_phonetique);
@@ -1259,28 +1330,32 @@ public class GestionValidation {
             while (rsCherche.next()) {
                 String presencenumero = null;
                 boolean auTroncon = false;
-                if (numero >= rsCherche.getInt(11) && numero <= rsCherche.getInt(12)) {
+                if (numero >= rsCherche.getInt(11+((gererAdresse && numero!=0)?3:0)) && numero <= rsCherche.getInt(12+((gererAdresse && numero!=0)?3:0))) {
                     presencenumero = "";
                     if(numero != 0){
                         auTroncon = true;
                     }
                 }
+                String service = (numero!=0 && gererAdresse && rsCherche.getString(2)!=null)?"2":(auTroncon?"3":"4");
                 voies.add(new String[]{
                     rsCherche.getString(1), // voi_id
-                    rsCherche.getString(2), // nom
-                    rsCherche.getString(3), // code insee
-                    rsCherche.getString(4), // nom commune
-                    rsCherche.getString(5), // code postal
+                    rsCherche.getString(2+((gererAdresse && numero!=0)?3:0)), // nom
+                    rsCherche.getString(3+((gererAdresse && numero!=0)?3:0)), // code insee
+                    rsCherche.getString(4+((gererAdresse && numero!=0)?3:0)), // nom commune
+                    rsCherche.getString(5+((gererAdresse && numero!=0)?3:0)), // code postal
                     null, null, // t0 t1
-                    rsCherche.getString(7), // code fantoire
-                    rsCherche.getString(8), // nom desabbrevie
-                    rsCherche.getString(9), // nom commune desabbrevie
-                    rsCherche.getString(10), // libellé sans articles phonétique
+                    rsCherche.getString(7+((gererAdresse && numero!=0)?3:0)), // code fantoire
+                    rsCherche.getString(8+((gererAdresse && numero!=0)?3:0)), // nom desabbrevie
+                    rsCherche.getString(9+((gererAdresse && numero!=0)?3:0)), // nom commune desabbrevie
+                    rsCherche.getString(10+((gererAdresse && numero!=0)?3:0)), // libellé sans articles phonétique
                     null, // emplacement libre pour la note
                     presencenumero, // indique s'il faut ou pas conserver le numéro dans la ligne 4
-                    (auTroncon) ? "3" : "4"
+                    service,
+                    (gererAdresse && numero!=0)? rsCherche.getString(2):null , // adr_id
+                    (gererAdresse && numero!=0)? rsCherche.getString(3):null , // adr_numero
+                    (gererAdresse && numero!=0)? rsCherche.getString(4):null   // adr_rep
                 });
-                notes.add(new Integer(rsCherche.getInt(6)));
+                notes.add(new Integer(rsCherche.getInt(6+((gererAdresse && numero!=0)?3:0))));
             }
 
             rsCherche.close();
@@ -1372,9 +1447,18 @@ public class GestionValidation {
 
 
                 // voir valideVoieCodePostalCommune
-                if (numero == 0 ||
-                        ((min_numero != 0 || max_numero != 0) &&
+                if (numero != 0)
+                {
+                    if (gererAdresse && voies.get(i)[14]!=null)
+                        notesurmax += notenumero;
+                    else
+                    if (((min_numero != 0 || max_numero != 0) &&
                         numero >= min_numero && numero <= max_numero)) {
+                        notesurmax += notenumero/2;
+                    }
+                }
+                else
+                {
                     notesurmax += notenumero;
                 }
 
@@ -1401,19 +1485,8 @@ public class GestionValidation {
         res[4] = lignes[2];
         res[5] = lignes[4];
 
-        String repetition = null;
-        if (rcnumeros.size() > 0) {
-            if (rcnumeros.get(0).obtientRepetition() == null) {
-                repetition = "";
-            } else {
-                repetition = Character.toString(rcnumeros.get(0).obtientRepetitionNormalise());
-            }
-        } else {
-            repetition = "";
-        }
-
         int voisize = voies.size();
-        for (int i = 0,  offset = 0; i < voisize; i++, offset += VALIDEVOIE_TABSIZE) {
+        for (int i=0,offset = 0; i < voisize; i++, offset += VALIDEVOIE_TABSIZE) {
             String[] str = voies.get(i);
             res[offset + VALIDEVOIE_ID] = str[0];
             if (str[12] != null) {
@@ -1447,19 +1520,25 @@ public class GestionValidation {
         return res;
     }
 
-    public String[] valideVoieCodePostal(int application, String[] lignes, Date date, boolean auTroncon, boolean force, boolean gererPays, String payS, Connection connection) throws
+    public String[] valideVoieCodePostal(int application, String[] lignes, Date date, boolean auTroncon, boolean force, boolean gererAdresse,boolean gererPays, String payS, Connection connection) throws
             SQLException {
         String ligne4 = lignes[3];
         String ligne6 = lignes[5];
         ArrayList<RefNumero> rcnumeros = gestionMots.trouveNumeros(ligne4);
         String strnumero = null;
         int numero = 0;
+        String repetition = " ";
         if (rcnumeros.size() > 0) {
             strnumero = rcnumeros.get(0).obtientNumeroNormalise();
             numero = Integer.parseInt(strnumero);
+            if (rcnumeros.get(0).obtientRepetition() == null) {
+                repetition = " ";
+            } else {
+                repetition = Character.toString(rcnumeros.get(0).obtientRepetitionNormalise());
+            }
         }
 
-        if (auTroncon && numero == 0) {
+        if ((auTroncon || gererAdresse) && numero == 0) {
             return new String[]{"0", "5", "Aucun numéro de voie n'a été spécifié."};
         }
 
@@ -1495,10 +1574,14 @@ public class GestionValidation {
 
         // WA 09/2011 utilisation de GestionTables.getXXTableName
         //  String nomTable = voi_voies+code_departement;
-        String nomTable = GestionTables.getVoiVoiesTableName(code_departement);
+        String nomTableVoie = GestionTables.getVoiVoiesTableName(code_departement);
+        String nomTableAdresse = GestionTables.getAdrAdressesTableName(code_departement);
 
-        if (!GestionTables.tableExiste(nomTable, connection)) {
+        if (!GestionTables.tableExiste(nomTableVoie, connection)) {
             return new String[]{"0", "1", "Le département " + code_departement + " n'est pas géré."};
+        }
+        if (!GestionTables.tableExiste(nomTableAdresse,connection)) {
+            gererAdresse = false;
         }
 
         if (date == null) {
@@ -1513,7 +1596,7 @@ public class GestionValidation {
         StringBuilder sb = new StringBuilder();
 
         sb.append(valideVoieCodePostal_sbtime_0);
-        sb.append(nomTable);
+        sb.append(nomTableVoie);
         sb.append(valideVoieCodePostal_sbtime_1);
         PreparedStatement psTime = connection.prepareStatement(sb.toString());
         psTime.setTimestamp(6, tsdate);
@@ -1527,9 +1610,23 @@ public class GestionValidation {
         if (!force) {
             // Prépare la requête permettant de chercher les voies.
             sb.setLength(0);
-            sb.append(valideVoieCodePostal_chercheExact_0);
-            sb.append(nomTable);
-            sb.append(valideVoieCodePostal_chercheExact_1);
+            if (gererAdresse && numero!=0)
+                sb.append(valideVoieCodePostal_chercheExact_0_adr);
+            else
+                sb.append(valideVoieCodePostal_chercheExact_0);
+            sb.append(nomTableVoie);
+            if (gererAdresse && numero!=0)
+            {
+                sb.append(valideVoieCodePostal_chercheExact_1_adr_1);
+                sb.append(nomTableAdresse);
+                sb.append(valideVoieCodePostal_chercheExact_1_adr_2);
+                sb.append(valideVoieCodePostal_chercheExact_1_adr_3);
+                sb.append(valideVoieCodePostal_chercheExact_1_adr_4);
+            }
+            else
+            {
+                sb.append(valideVoieCodePostal_chercheExact_1);
+            }
             if (stypedevoie_present) {
                 sb.append(valideVoieCodePostal_chercheExact_2);
             }
@@ -1550,6 +1647,13 @@ public class GestionValidation {
             psChercheExact.setString(index++, stypedevoie_phonetique);
             psChercheExact.setString(index++, cdp_code_postal);
 
+            // JM 02/2015 OUTER LEFT JOIN
+            if (gererAdresse && numero!=0)
+            {
+                psChercheExact.setInt(index++,numero);
+                psChercheExact.setString(index++,repetition);
+            }
+            
             // WHERE voi_lbl=? AND voi_type_de_voie=? AND cdp_code_postal=? AND 
             psChercheExact.setString(index++, slibelle_sans_articles);
             if (stypedevoie_present) {
@@ -1578,25 +1682,28 @@ public class GestionValidation {
         if (!force && rsChercheExact.next()) {
             rechercheexacte = true;
             do {
+                String service = (numero!=0)? (gererAdresse?((rsChercheExact.getString(2)!=null)?"2":"3"):"3"):"4";
+                
                 voies.add(new String[]{
                     rsChercheExact.getString(1), // voi_id
-                    rsChercheExact.getString(2), // nom
-                    rsChercheExact.getString(3), // code insee
-                    rsChercheExact.getString(4), // nom commune
-                    rsChercheExact.getString(5), // code postal
+                    rsChercheExact.getString(2+((gererAdresse && numero!=0)?3:0)), // nom
+                    rsChercheExact.getString(3+((gererAdresse && numero!=0)?3:0)), // code insee
+                    rsChercheExact.getString(4+((gererAdresse && numero!=0)?3:0)), // nom commune
+                    rsChercheExact.getString(5+((gererAdresse && numero!=0)?3:0)), // code postal
                     null, null, // t0 t1
-                    rsChercheExact.getString(7), // code fantoire
-                    rsChercheExact.getString(8), // nom desabbrevie
-                    rsChercheExact.getString(9), // nom commune desabbrevie
-                    rsChercheExact.getString(10), // libellé sans articles phonétique
+                    rsChercheExact.getString(7+((gererAdresse && numero!=0)?3:0)), // code fantoire
+                    rsChercheExact.getString(8+((gererAdresse && numero!=0)?3:0)), // nom desabbrevie
+                    rsChercheExact.getString(9+((gererAdresse && numero!=0)?3:0)), // nom commune desabbrevie
+                    rsChercheExact.getString(10+((gererAdresse && numero!=0)?3:0)), // libellé sans articles phonétique
                     null, // emplacement libre pour la note
                     "", // indique qu'il faut conserver le numéro d'adresse dans l'adresse.
-                    rsChercheExact.getString(11), // mot determinant  phonetique (pour calculer la note)
-                    rsChercheExact.getString(12), // type de voie phonetique  (pour calculer la note)
-                    rsChercheExact.getString(13) // nom de commune phonetique (pour calculer la note)
+                    service,
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(2):null , // adr_id
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(3):null , // adr_numero
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(4):null   // adr_rep
                 });
 
-                notes.add(new Integer(rsChercheExact.getInt(6)));
+                notes.add(new Integer(rsChercheExact.getInt(6+((gererAdresse && numero!=0)?3:0))));
             } while (rsChercheExact.next());
 
             psChercheExact.close();
@@ -1609,9 +1716,20 @@ public class GestionValidation {
 
             // Prépare la requête permettant de chercher les voies.
             sb.setLength(0);
-            sb.append(valideVoieCodePostal_cherche_0);
-            sb.append(nomTable);
-            sb.append(valideVoieCodePostal_cherche_1);
+            if (gererAdresse&&numero!=0)
+                sb.append(valideVoieCodePostal_cherche_0_adr);
+            else
+                sb.append(valideVoieCodePostal_cherche_0);
+            sb.append(nomTableVoie);
+            if (gererAdresse&&numero!=0)
+            {
+                sb.append(valideVoieCodePostal_cherche_1_adr_1);
+                sb.append(nomTableAdresse);
+                sb.append(valideVoieCodePostal_cherche_1_adr_2);
+                sb.append(valideVoieCodePostal_cherche_1_adr_3);
+            }
+            else
+                sb.append(valideVoieCodePostal_cherche_1);
             if (auTroncon) {
                 sb.append(valideVoieCodePostal_cherche_2);
             }
@@ -1624,6 +1742,12 @@ public class GestionValidation {
             psCherche.setString(index++, slibelle_phonetique);
             psCherche.setString(index++, stypedevoie_phonetique);
             psCherche.setString(index++, cdp_code_postal);
+            
+            if (gererAdresse&&numero!=0)
+            {
+                psCherche.setInt(index++,numero);
+                psCherche.setString(index++,repetition);
+            }
 
             // note_voie_cdp_code_postal(?,motdeterminant,?,libellesansarticles_phonetique,?,typedevoie,communes.nom,?,voies.cdp_code_postal,?,voies.min_numero,voies.max_numero)>=?
             psCherche.setString(index++, sderniermot_phonetique);
@@ -1649,27 +1773,33 @@ public class GestionValidation {
 
             while (rsCherche.next()) {
                 String presencenumero = null;
-                if (numero >= rsCherche.getInt(11) && numero <= rsCherche.getInt(12)) {
+                boolean serviceTroncon = false;
+                if (numero >= rsCherche.getInt(11+((gererAdresse && numero!=0)?3:0)) && numero <= rsCherche.getInt(12+((gererAdresse && numero!=0)?3:0))) {
                     presencenumero = "";
+                    if(numero != 0){
+                        serviceTroncon = true;
+                    }
                 }
+                String service = (numero!=0 && gererAdresse && rsCherche.getString(2)!=null)?"2":(serviceTroncon?"3":"4");
                 voies.add(new String[]{
                     rsCherche.getString(1), // voi_id
-                    rsCherche.getString(2), // nom
-                    rsCherche.getString(3), // code insee
-                    rsCherche.getString(4), // nom commune
-                    rsCherche.getString(5), // code postal
+                    rsCherche.getString(2+((gererAdresse && numero!=0)?3:0)), // nom
+                    rsCherche.getString(3+((gererAdresse && numero!=0)?3:0)), // code insee
+                    rsCherche.getString(4+((gererAdresse && numero!=0)?3:0)), // nom commune
+                    rsCherche.getString(5+((gererAdresse && numero!=0)?3:0)), // code postal
                     null, null, // t0 t1
-                    rsCherche.getString(7), // code fantoire
-                    rsCherche.getString(8), // nom desabbrevie
-                    rsCherche.getString(9), // nom commune desabbrevie
-                    rsCherche.getString(10), // libellé sans articles phonétique
+                    rsCherche.getString(7+((gererAdresse && numero!=0)?3:0)), // code fantoire
+                    rsCherche.getString(8+((gererAdresse && numero!=0)?3:0)), // nom desabbrevie
+                    rsCherche.getString(9+((gererAdresse && numero!=0)?3:0)), // nom commune desabbrevie
+                    rsCherche.getString(10+((gererAdresse && numero!=0)?3:0)), // libellé sans articles phonétique
                     null, // emplacement libre pour la note
                     presencenumero, // indique s'il faut ou pas conserver le numéro dans la ligne 4
-                    rsCherche.getString(11), // mot determinant  phonetique (pour calculer la note)
-                    rsCherche.getString(12), // type de voie phonetique  (pour calculer la note)
-                    rsCherche.getString(13) // nom de commune phonetique (pour calculer la note)
+                    service,
+                    (gererAdresse && numero!=0)? rsCherche.getString(2):null , // adr_id
+                    (gererAdresse && numero!=0)? rsCherche.getString(3):null , // adr_numero
+                    (gererAdresse && numero!=0)? rsCherche.getString(4):null   // adr_rep
                 });
-                notes.add(new Integer(rsCherche.getInt(6)));
+                notes.add(new Integer(rsCherche.getInt(6+((gererAdresse && numero!=0)?3:0))));
             }
 
             rsCherche.close();
@@ -1761,9 +1891,18 @@ public class GestionValidation {
 
 
                 // voir valideVoieCodePostalCommune
-                if (numero == 0 ||
-                        ((min_numero != 0 || max_numero != 0) &&
+                if (numero != 0)
+                {
+                    if (gererAdresse && voies.get(i)[14]!=null)
+                        notesurmax += notenumero;
+                    else
+                    if (((min_numero != 0 || max_numero != 0) &&
                         numero >= min_numero && numero <= max_numero)) {
+                        notesurmax += notenumero/2;
+                    }
+                }
+                else
+                {
                     notesurmax += notenumero;
                 }
 
@@ -1790,17 +1929,6 @@ public class GestionValidation {
         res[4] = lignes[2];
         res[5] = lignes[4];
 
-        String repetition = null;
-        if (rcnumeros.size() > 0) {
-            if (rcnumeros.get(0).obtientRepetition() == null) {
-                repetition = "";
-            } else {
-                repetition = Character.toString(rcnumeros.get(0).obtientRepetitionNormalise());
-            }
-        } else {
-            repetition = "";
-        }
-
         int voisize = voies.size();
         for (int i = 0,  offset = 0; i < voisize; i++, offset += VALIDEVOIE_TABSIZE) {
             String[] str = voies.get(i);
@@ -1819,7 +1947,7 @@ public class GestionValidation {
             res[offset + VALIDEVOIE_T1] = str[6];
             res[offset + VALIDEVOIE_NOTE] = str[11];
             res[offset + VALIDEVOIE_FANTOIR] = str[7];
-            res[offset + VALIDEVOIE_SERVICE] = (auTroncon) ? "3" : "4";
+            res[offset + VALIDEVOIE_SERVICE] = str[13];
         }
 
         if (gererPays) {
@@ -1837,20 +1965,36 @@ public class GestionValidation {
     }
     private final static String valideVoieCodePostalCommune_psTime_0 = "SELECT voies.t0,voies.t1,communes.t0,communes.t1,voi_min_numero,voi_max_numero FROM \"";
     private final static String valideVoieCodePostalCommune_psTime_1 = "\" as voies,com_communes as communes WHERE communes.com_code_insee=voies.com_code_insee and voi_id=? and voi_nom=? and communes.com_code_insee=? and communes.com_nom=? and voies.cdp_code_postal=? AND voies.t0<=? AND communes.t0<=? AND NOT (voies.t1<communes.t0 OR communes.t1<voies.t0)";
+    
     private final static String valideVoieCodePostalCommune_psChercheExact_0 = "SELECT DISTINCT ";
-    private final static String valideVoieCodePostalCommune_psChercheExact_1 = "voi_id,voies.voi_nom,communes.com_nom,voies.cdp_code_postal,communes.com_code_insee,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,?,voies.cdp_code_postal,?,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
-    private final static String valideVoieCodePostalCommune_psChercheExact_2 = "voi_id,voies.voi_nom,communes.com_nom,voies.cdp_code_postal,communes.com_code_insee,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,?,voies.cdp_code_postal,voies.cdp_code_postal,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
-    private final static String valideVoieCodePostalCommune_psChercheExact_3 = "voi_id,voies.voi_nom,communes.com_nom,voies.cdp_code_postal,communes.com_code_insee,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,voies.cdp_code_postal,voies.cdp_code_postal,?,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
-    private final static String valideVoieCodePostalCommune_psChercheExact_4 = "voi_id,voies.voi_nom,communes.com_nom,voies.cdp_code_postal,communes.com_code_insee,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,voies.cdp_code_postal,voies.cdp_code_postal,voies.cdp_code_postal,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostalCommune_psChercheExact_1 = "voi_id,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,?,voies.cdp_code_postal,?,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostalCommune_psChercheExact_2 = "voi_id,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,?,voies.cdp_code_postal,voies.cdp_code_postal,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostalCommune_psChercheExact_3 = "voi_id,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,voies.cdp_code_postal,voies.cdp_code_postal,?,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostalCommune_psChercheExact_4 = "voi_id,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,voies.cdp_code_postal,voies.cdp_code_postal,voies.cdp_code_postal,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    
+    private final static String valideVoieCodePostalCommune_psChercheExact_1_adr = "voies.voi_id,adr_id,adr_numero,adr_rep,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,?,voies.cdp_code_postal,?,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostalCommune_psChercheExact_2_adr = "voies.voi_id,adr_id,adr_numero,adr_rep,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,?,voies.cdp_code_postal,voies.cdp_code_postal,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostalCommune_psChercheExact_3_adr = "voies.voi_id,adr_id,adr_numero,adr_rep,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,voies.cdp_code_postal,voies.cdp_code_postal,?,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    private final static String valideVoieCodePostalCommune_psChercheExact_4_adr = "voies.voi_id,adr_id,adr_numero,adr_rep,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,voies.cdp_code_postal,voies.cdp_code_postal,voies.cdp_code_postal,com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq FROM \"";
+    
     private final static String valideVoieCodePostalCommune_psChercheExact_5 = "\" as voies,com_communes as communes WHERE communes.dpt_code_departement=? AND voi_lbl_sans_articles=? AND ";
+    
+    private final static String valideVoieCodePostalCommune_psChercheExact_5_adr_1 = "\" as voies left outer join \"";
+    private final static String valideVoieCodePostalCommune_psChercheExact_5_adr_2 = "\" as adr on adr.voi_id=voies.voi_id and adr.adr_numero=? and adr.adr_rep = ?";
+    private final static String valideVoieCodePostalCommune_psChercheExact_5_adr_3 = ",com_communes as communes WHERE communes.dpt_code_departement=? AND voi_lbl_sans_articles=? AND ";
+    
     private final static String valideVoieCodePostalCommune_psChercheExact_6 = "voi_type_de_voie=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_7 = "communes.com_nom_desab=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_8 = "voies.cdp_code_postal=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_9 = "substr(voies.cdp_code_postal,4,2)=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_10 = "voies.voi_min_numero<=? AND voies.voi_max_numero>=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_11 = "voies.com_code_insee = communes.com_code_insee AND voies.t0<=? AND communes.t0<=? AND NOT (voies.t1<communes.t0 OR communes.t1<voies.t0) ORDER BY note DESC LIMIT ?";
+
     private final static String valideVoieCodePostalCommune_psCherche_0 = "SELECT DISTINCT ";
-    private final static String valideVoieCodePostalCommune_psCherche_1 = "voi_id,voies.voi_nom,communes.com_nom,voies.cdp_code_postal,communes.com_code_insee,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,";
+    private final static String valideVoieCodePostalCommune_psCherche_1 = "voies.voi_id,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,";
+    
+    private final static String valideVoieCodePostalCommune_psCherche_1_adr = "voies.voi_id,adr_id,adr_numero,adr_rep,voies.voi_nom,communes.com_code_insee,communes.com_nom,voies.cdp_code_postal,note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,";
+    
     private final static String valideVoieCodePostalCommune_psCherche_2 = "?";
     private final static String valideVoieCodePostalCommune_psCherche_3 = "voies.cdp_code_postal";
     private final static String valideVoieCodePostalCommune_psCherche_4 = ",voies.cdp_code_postal,";
@@ -1858,6 +2002,11 @@ public class GestionValidation {
     private final static String valideVoieCodePostalCommune_psCherche_6 = "voies.cdp_code_postal";
     private final static String valideVoieCodePostalCommune_psCherche_7 = ",com_code_insee_commune is null) as note,voi_code_fantoir,voies.voi_nom_desab,communes.com_nom_desab,voi_lbl_sans_articles_pq,voi_min_numero,voi_max_numero FROM \"";
     private final static String valideVoieCodePostalCommune_psCherche_8 = "\" as voies,";
+    
+    private final static String valideVoieCodePostalCommune_psCherche_8_adr_1 = "\" as voies left outer join \"";
+    private final static String valideVoieCodePostalCommune_psCherche_8_adr_2 = "\" as adr on adr.voi_id=voies.voi_id and adr.adr_numero=? and adr.adr_rep = ?";
+    private final static String valideVoieCodePostalCommune_psCherche_8_adr_3 = ",";
+    
     private final static String valideVoieCodePostalCommune_psCherche_9 = "(SELECT com_nom,com_code_insee,com_nom_pq,com_nom_desab,com_code_insee_commune,t0,t1 FROM com_communes WHERE dpt_code_departement=? AND note_commune_seul(?,com_nom_pq)>=? ) as communes WHERE note_voie_codepostal_commune(?,voi_mot_determinant_pq,?,voi_lbl_sans_articles_pq,?,voi_type_de_voie_pq,?,communes.com_nom_pq,";
     private final static String valideVoieCodePostalCommune_psCherche_10 = "?";
     private final static String valideVoieCodePostalCommune_psCherche_11 = "voies.cdp_code_postal";
@@ -1901,17 +2050,21 @@ public class GestionValidation {
      * @return null si aucun département ne peut être extrait du code postal.
      */
     public String[] valideVoieCodePostalCommune(int application, String[] lignes, RefCle rccodepostal, RefCle rccommune, Date date,
-            boolean force, boolean gererPays, String pays, Connection connection) throws SQLException {
+            boolean force, boolean gererAdresse, boolean gererPays, String pays, Connection connection) throws SQLException {
         String ligne4 = lignes[3];
         String ligne6 = lignes[5];
         ArrayList<RefNumero> rcnumeros = gestionMots.trouveNumeros(ligne4);
         int numero = 0;
-        String strnumero;
+        String strnumero = null;
+        String repetition = " ";
         if (rcnumeros.size() > 0) {
             strnumero = rcnumeros.get(0).obtientNumeroNormalise();
             numero = Integer.parseInt(strnumero);
-        } else {
-            strnumero = "";
+            if (rcnumeros.get(0).obtientRepetition() == null) {
+                repetition = " ";
+            } else {
+                repetition = Character.toString(rcnumeros.get(0).obtientRepetitionNormalise());
+            }
         }
 
         RefTypeVoie rctypedevoie = gestionMots.trouveTypeVoie(ligne4, rcnumeros);
@@ -1952,11 +2105,16 @@ public class GestionValidation {
 
         // WA 09/2011 utilisation de GestionTables.getXXTableName
         // String nomTable = voi_voies+code_departement;
-        String nomTable = GestionTables.getVoiVoiesTableName(code_departement);
-        if (!GestionTables.tableExiste(nomTable, connection)) {
+        String nomTableVoie = GestionTables.getVoiVoiesTableName(code_departement);
+        if (!GestionTables.tableExiste(nomTableVoie, connection)) {
             return new String[]{
                 "0", "1", "Le département " + code_departement + " n'est pas géré."
             };
+        }
+        
+        String nomTableAdresse = GestionTables.getAdrAdressesTableName(code_departement);
+        if (!GestionTables.tableExiste(nomTableAdresse, connection)) {
+            gererAdresse = false;
         }
 
         if (rccommune == null) {
@@ -1980,7 +2138,7 @@ public class GestionValidation {
         // Prépare la requête permettant de trouver les informations complémentaires : l'intervalle de validité
         StringBuilder sb = new StringBuilder();
         sb.append(valideVoieCodePostalCommune_psTime_0);
-        sb.append(nomTable);
+        sb.append(nomTableVoie);
         sb.append(valideVoieCodePostalCommune_psTime_1);
         PreparedStatement psTime = connection.prepareStatement(sb.toString());
         psTime.setTimestamp(6, tsdate);
@@ -1999,19 +2157,41 @@ public class GestionValidation {
             sb.append(valideVoieCodePostalCommune_psChercheExact_0);
             if (cdp_present) {
                 if (arrondissement != null) {
-                    sb.append(valideVoieCodePostalCommune_psChercheExact_1);
+                    if (gererAdresse && numero!=0)
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_1_adr);
+                    else
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_1);
                 } else {
-                    sb.append(valideVoieCodePostalCommune_psChercheExact_2);
+                    if (gererAdresse && numero!=0)
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_2_adr);
+                    else
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_2);
                 }
             } else {
                 if (arrondissement != null) {
-                    sb.append(valideVoieCodePostalCommune_psChercheExact_3);
+                    if (gererAdresse && numero!=0)
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_3_adr);
+                    else
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_3);
                 } else {
-                    sb.append(valideVoieCodePostalCommune_psChercheExact_4);
+                    if (gererAdresse && numero!=0)
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_4_adr);
+                    else
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_4);
                 }
             }
-            sb.append(nomTable);
-            sb.append(valideVoieCodePostalCommune_psChercheExact_5);
+            sb.append(nomTableVoie);
+            
+            if (gererAdresse && numero!=0)
+            {
+                sb.append(valideVoieCodePostalCommune_psChercheExact_5_adr_1);
+                sb.append(nomTableAdresse);
+                sb.append(valideVoieCodePostalCommune_psChercheExact_5_adr_2);
+                sb.append(valideVoieCodePostalCommune_psChercheExact_5_adr_3);
+            }
+            else
+                sb.append(valideVoieCodePostalCommune_psChercheExact_5);
+            
             if (typedevoie_present) {
                 sb.append(valideVoieCodePostalCommune_psChercheExact_6);
             }
@@ -2042,6 +2222,13 @@ public class GestionValidation {
                 psChercheExact.setString(index++, arrondissement);
             }
 
+            // JM 02/2015 OUTER LEFT JOIN
+            if (gererAdresse && numero!=0)
+            {
+                psChercheExact.setInt(index++,numero);
+                psChercheExact.setString(index++,repetition);
+            }
+            
             // communes.dpt_code_departement=? AND voi_lbl_sans_articles=? AND voi_type_de_voie=? AND communes.com_nom_pq=? AND voies.cdp_code_postal=? AND
             psChercheExact.setString(index++, code_departement);
             psChercheExact.setString(index++, slibelle_sans_articles);
@@ -2074,22 +2261,27 @@ public class GestionValidation {
         if (!force && rsChercheExact.next()) {
             rechercheexacte = true;
             do {
+                String service = (numero!=0)? (gererAdresse?((rsChercheExact.getString(2)!=null)?"2":"3"):"3"):"4";
+                
                 voies.add(new String[]{
                     rsChercheExact.getString(1), // voi_id
-                    rsChercheExact.getString(2), // nom
-                    rsChercheExact.getString(5), // code insee
-                    rsChercheExact.getString(3), // commune
-                    rsChercheExact.getString(4), // code postal
-                    null, null,
-                    rsChercheExact.getString(7), // code fantoir
-                    rsChercheExact.getString(8), // nom desabbreviée
-                    rsChercheExact.getString(9), // commune desabbreviée
-                    rsChercheExact.getString(10), // libellé sans articles phonétique
+                    rsChercheExact.getString(2+((gererAdresse && numero!=0)?3:0)), // nom
+                    rsChercheExact.getString(3+((gererAdresse && numero!=0)?3:0)), // code insee
+                    rsChercheExact.getString(4+((gererAdresse && numero!=0)?3:0)), // nom commune
+                    rsChercheExact.getString(5+((gererAdresse && numero!=0)?3:0)), // code postal
+                    null, null, // t0 t1
+                    rsChercheExact.getString(7+((gererAdresse && numero!=0)?3:0)), // code fantoire
+                    rsChercheExact.getString(8+((gererAdresse && numero!=0)?3:0)), // nom desabbrevie
+                    rsChercheExact.getString(9+((gererAdresse && numero!=0)?3:0)), // nom commune desabbrevie
+                    rsChercheExact.getString(10+((gererAdresse && numero!=0)?3:0)), // libellé sans articles phonétique
                     null, // emplacement libre pour la note
-                    "", // indique que le numéro sera conservé dans la ligne 4
-                    (numero != 0) ? "3" : "4"
+                    "", // indique qu'il faut conserver le numéro d'adresse dans l'adresse.
+                    service,
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(2):null , // adr_id
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(3):null , // adr_numero
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(4):null   // adr_rep
                 });
-                notes.add(new Integer(rsChercheExact.getInt(6)));
+                notes.add(new Integer(rsChercheExact.getInt(6+((gererAdresse && numero!=0)?3:0))));
             } while (rsChercheExact.next());
 
             rsChercheExact.close();
@@ -2101,7 +2293,11 @@ public class GestionValidation {
             }
             sb.setLength(0);
             sb.append(valideVoieCodePostalCommune_psCherche_0);
-            sb.append(valideVoieCodePostalCommune_psCherche_1);
+            
+            if (gererAdresse && numero!=0)
+                sb.append(valideVoieCodePostalCommune_psCherche_1_adr);
+            else
+                sb.append(valideVoieCodePostalCommune_psCherche_1);
             if (cdp_present) {
                 sb.append(valideVoieCodePostalCommune_psCherche_2);
             } else {
@@ -2114,8 +2310,16 @@ public class GestionValidation {
                 sb.append(valideVoieCodePostalCommune_psCherche_6);
             }
             sb.append(valideVoieCodePostalCommune_psCherche_7);
-            sb.append(nomTable);
-            sb.append(valideVoieCodePostalCommune_psCherche_8);
+            sb.append(nomTableVoie);
+            if (gererAdresse && numero!=0)
+            {
+                sb.append(valideVoieCodePostalCommune_psCherche_8_adr_1);
+                sb.append(nomTableAdresse);
+                sb.append(valideVoieCodePostalCommune_psCherche_8_adr_2);
+                sb.append(valideVoieCodePostalCommune_psCherche_8_adr_3);
+            }
+            else
+                sb.append(valideVoieCodePostalCommune_psCherche_8);
             // Sous requête de sélection de la commune
             sb.append(valideVoieCodePostalCommune_psCherche_9);
             if (cdp_present) {
@@ -2145,6 +2349,13 @@ public class GestionValidation {
             if (arrondissement != null) {
                 psCherche.setString(index++, arrondissement);
             }
+            
+            if (gererAdresse && numero!=0)
+            {
+                psCherche.setInt(index++,numero);
+                psCherche.setString(index++,repetition);
+            }
+            
             // communes.dpt_code_departement=? AND
             // WHERE communes.dpt_code_departement=? AND note_commune_seul(?,com_nom_pq)>=? 
             psCherche.setString(index++, code_departement);
@@ -2174,29 +2385,33 @@ public class GestionValidation {
 
             while (rsCherche.next()) {
                 String presencenumero = null;
-                boolean auTroncon = false;
-                if (numero >= rsCherche.getInt(11) && numero <= rsCherche.getInt(12)) {
+                boolean serviceTroncon = false;
+                if (numero >= rsCherche.getInt(11+((gererAdresse && numero!=0)?3:0)) && numero <= rsCherche.getInt(12+((gererAdresse && numero!=0)?3:0))) {
                     presencenumero = "";
                     if(numero != 0){
-                        auTroncon = true;
+                        serviceTroncon = true;
                     }
                 }
+                String service = (numero!=0 && gererAdresse && rsCherche.getString(2)!=null)?"2":(serviceTroncon?"3":"4");
                 voies.add(new String[]{
                     rsCherche.getString(1), // voi_id
-                    rsCherche.getString(2), // nom
-                    rsCherche.getString(5), // code insee
-                    rsCherche.getString(3), // commune
-                    rsCherche.getString(4), // code postal
-                    null, null,
-                    rsCherche.getString(7), // code fantoir
-                    rsCherche.getString(8), // nom desabbreviée
-                    rsCherche.getString(9), // commune desabbreviée
-                    rsCherche.getString(10), // libellé sans articles phonétique
+                    rsCherche.getString(2+((gererAdresse && numero!=0)?3:0)), // nom
+                    rsCherche.getString(3+((gererAdresse && numero!=0)?3:0)), // code insee
+                    rsCherche.getString(4+((gererAdresse && numero!=0)?3:0)), // nom commune
+                    rsCherche.getString(5+((gererAdresse && numero!=0)?3:0)), // code postal
+                    null, null, // t0 t1
+                    rsCherche.getString(7+((gererAdresse && numero!=0)?3:0)), // code fantoire
+                    rsCherche.getString(8+((gererAdresse && numero!=0)?3:0)), // nom desabbrevie
+                    rsCherche.getString(9+((gererAdresse && numero!=0)?3:0)), // nom commune desabbrevie
+                    rsCherche.getString(10+((gererAdresse && numero!=0)?3:0)), // libellé sans articles phonétique
                     null, // emplacement libre pour la note
-                    presencenumero, // indique si le numéro sera conservé dans la ligne 4
-                    (auTroncon) ? "3" : "4"
+                    presencenumero, // indique s'il faut ou pas conserver le numéro dans la ligne 4
+                    service,
+                    (gererAdresse && numero!=0)? rsCherche.getString(2):null , // adr_id
+                    (gererAdresse && numero!=0)? rsCherche.getString(3):null , // adr_numero
+                    (gererAdresse && numero!=0)? rsCherche.getString(4):null   // adr_rep
                 });
-                notes.add(new Integer(rsCherche.getInt(6)));
+                notes.add(new Integer(rsCherche.getInt(6+((gererAdresse && numero!=0)?3:0))));
             }
         }
 
@@ -2303,9 +2518,18 @@ public class GestionValidation {
                 //    notesurmax += notenumero;
                 //}
                 // OPTIMISATION DU CODE PRECEDENT
-                if (numero == 0 ||
-                        ((min_numero != 0 || max_numero != 0) &&
+                if (numero != 0)
+                {
+                    if (gererAdresse && voies.get(i)[14]!=null)
+                        notesurmax += notenumero;
+                    else
+                    if (((min_numero != 0 || max_numero != 0) &&
                         numero >= min_numero && numero <= max_numero)) {
+                        notesurmax += notenumero/2;
+                    }
+                }
+                else
+                {
                     notesurmax += notenumero;
                 }
 
@@ -2332,18 +2556,6 @@ public class GestionValidation {
         res[3] = lignes[1];
         res[4] = lignes[2];
         res[5] = lignes[4];
-
-        String repetition;
-        if (rcnumeros.size() > 0) {
-            RefNumero premier = rcnumeros.get(0);
-            if (premier.obtientRepetition() != null) {
-                repetition = Character.toString(premier.obtientRepetitionNormalise());
-            } else {
-                repetition = "";
-            }
-        } else {
-            repetition = "";
-        }
 
         /*     <li>Identifiant de la voie 1</li>
          *     <li>ligne4 1</li>
@@ -2396,20 +2608,24 @@ public class GestionValidation {
     }
 
     public String[] valideVoieCodePostalCommune(int application, String[] lignes, RefCle rccodepostal, RefCle rccommune, Date date,
-            boolean auTroncon, boolean force, boolean gererPays, String pays, Connection connection) throws SQLException {
+            boolean auTroncon, boolean force, boolean gererAdresse, boolean gererPays, String pays, Connection connection) throws SQLException {
         String ligne4 = lignes[3];
         String ligne6 = lignes[5];
         ArrayList<RefNumero> rcnumeros = gestionMots.trouveNumeros(ligne4);
         int numero = 0;
-        String strnumero;
+        String strnumero = null;
+        String repetition = " ";
         if (rcnumeros.size() > 0) {
             strnumero = rcnumeros.get(0).obtientNumeroNormalise();
             numero = Integer.parseInt(strnumero);
-        } else {
-            strnumero = "";
+            if (rcnumeros.get(0).obtientRepetition() == null) {
+                repetition = " ";
+            } else {
+                repetition = Character.toString(rcnumeros.get(0).obtientRepetitionNormalise());
+            }
         }
 
-        if (auTroncon && numero == 0) {
+        if ((auTroncon || gererAdresse) && numero == 0) {
             return new String[]{"0", "5", "Aucun numéro de voie n'a été spécifié."};
         }
 
@@ -2449,11 +2665,16 @@ public class GestionValidation {
 
         // WA 09/2011 utilisation de GestionTables.getXXTableName
         // String nomTable = voi_voies+code_departement;
-        String nomTable = GestionTables.getVoiVoiesTableName(code_departement);
-        if (!GestionTables.tableExiste(nomTable, connection)) {
+        String nomTableVoie = GestionTables.getVoiVoiesTableName(code_departement);
+        if (!GestionTables.tableExiste(nomTableVoie, connection)) {
             return new String[]{"0", "1", "Le département " + code_departement + " n'est pas géré."};
         }
 
+        String nomTableAdresse = GestionTables.getAdrAdressesTableName(code_departement);
+        if (!GestionTables.tableExiste(nomTableAdresse, connection)) {
+            gererAdresse = false;
+        }
+        
         if (rccommune == null) {
             rccommune = gestionMots.trouveNomVille(ligne6, rccodepostal);
         }
@@ -2475,7 +2696,7 @@ public class GestionValidation {
         // Prépare la requête permettant de trouver les informations complémentaires : l'intervalle de validité
         StringBuilder sb = new StringBuilder();
         sb.append(valideVoieCodePostalCommune_psTime_0);
-        sb.append(nomTable);
+        sb.append(nomTableVoie);
         sb.append(valideVoieCodePostalCommune_psTime_1);
         PreparedStatement psTime = connection.prepareStatement(sb.toString());
         psTime.setTimestamp(6, tsdate);
@@ -2494,19 +2715,40 @@ public class GestionValidation {
             sb.append(valideVoieCodePostalCommune_psChercheExact_0);
             if (cdp_present) {
                 if (arrondissement != null) {
-                    sb.append(valideVoieCodePostalCommune_psChercheExact_1);
+                    if (gererAdresse && numero!=0)
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_1_adr);
+                    else
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_1);
                 } else {
-                    sb.append(valideVoieCodePostalCommune_psChercheExact_2);
+                    if (gererAdresse && numero!=0)
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_2_adr);
+                    else
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_2);
                 }
             } else {
                 if (arrondissement != null) {
-                    sb.append(valideVoieCodePostalCommune_psChercheExact_3);
+                    if (gererAdresse && numero!=0)
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_3_adr);
+                    else
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_3);
                 } else {
-                    sb.append(valideVoieCodePostalCommune_psChercheExact_4);
+                    if (gererAdresse && numero!=0)
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_4_adr);
+                    else
+                        sb.append(valideVoieCodePostalCommune_psChercheExact_4);
                 }
             }
-            sb.append(nomTable);
-            sb.append(valideVoieCodePostalCommune_psChercheExact_5);
+            sb.append(nomTableVoie);
+            if (gererAdresse && numero!=0)
+            {
+                sb.append(valideVoieCodePostalCommune_psChercheExact_5_adr_1);
+                sb.append(nomTableAdresse);
+                sb.append(valideVoieCodePostalCommune_psChercheExact_5_adr_2);
+                sb.append(valideVoieCodePostalCommune_psChercheExact_5_adr_3);
+            }
+            else
+                sb.append(valideVoieCodePostalCommune_psChercheExact_5);
+            
             if (typedevoie_present) {
                 sb.append(valideVoieCodePostalCommune_psChercheExact_6);
             }
@@ -2537,6 +2779,13 @@ public class GestionValidation {
                 psChercheExact.setString(index++, arrondissement);
             }
 
+            // JM 02/2015 OUTER LEFT JOIN
+            if (gererAdresse && numero!=0)
+            {
+                psChercheExact.setInt(index++,numero);
+                psChercheExact.setString(index++,repetition);
+            }
+            
             // communes.dpt_code_departement=? AND voi_lbl_sans_articles=? AND voi_type_de_voie=? AND communes.com_nom_pq=? AND voies.cdp_code_postal=? AND
             psChercheExact.setString(index++, code_departement);
             psChercheExact.setString(index++, slibelle_sans_articles);
@@ -2569,21 +2818,27 @@ public class GestionValidation {
         if (!force && rsChercheExact.next()) {
             rechercheexacte = true;
             do {
+                String service = (numero!=0)? (gererAdresse?((rsChercheExact.getString(2)!=null)?"2":"3"):"3"):"4";
+                
                 voies.add(new String[]{
                     rsChercheExact.getString(1), // voi_id
-                    rsChercheExact.getString(2), // nom
-                    rsChercheExact.getString(5), // code insee
-                    rsChercheExact.getString(3), // commune
-                    rsChercheExact.getString(4), // code postal
-                    null, null,
-                    rsChercheExact.getString(7), // code fantoir
-                    rsChercheExact.getString(8), // nom desabbreviée
-                    rsChercheExact.getString(9), // commune desabbreviée
-                    rsChercheExact.getString(10),// libellé sans articles phonétique
+                    rsChercheExact.getString(2+((gererAdresse && numero!=0)?3:0)), // nom
+                    rsChercheExact.getString(3+((gererAdresse && numero!=0)?3:0)), // code insee
+                    rsChercheExact.getString(4+((gererAdresse && numero!=0)?3:0)), // nom commune
+                    rsChercheExact.getString(5+((gererAdresse && numero!=0)?3:0)), // code postal
+                    null, null, // t0 t1
+                    rsChercheExact.getString(7+((gererAdresse && numero!=0)?3:0)), // code fantoire
+                    rsChercheExact.getString(8+((gererAdresse && numero!=0)?3:0)), // nom desabbrevie
+                    rsChercheExact.getString(9+((gererAdresse && numero!=0)?3:0)), // nom commune desabbrevie
+                    rsChercheExact.getString(10+((gererAdresse && numero!=0)?3:0)), // libellé sans articles phonétique
                     null, // emplacement libre pour la note
-                    "" // indique que le numéro sera conservé dans la ligne 4
+                    "", // indique qu'il faut conserver le numéro d'adresse dans l'adresse.
+                    service,
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(2):null , // adr_id
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(3):null , // adr_numero
+                    (gererAdresse && numero!=0)? rsChercheExact.getString(4):null   // adr_rep
                 });
-                notes.add(new Integer(rsChercheExact.getInt(6)));
+                notes.add(new Integer(rsChercheExact.getInt(6+((gererAdresse && numero!=0)?3:0))));
             } while (rsChercheExact.next());
 
             rsChercheExact.close();
@@ -2596,7 +2851,10 @@ public class GestionValidation {
 
             sb.setLength(0);
             sb.append(valideVoieCodePostalCommune_psCherche_0);
-            sb.append(valideVoieCodePostalCommune_psCherche_1);
+            if (gererAdresse && numero!=0)
+                sb.append(valideVoieCodePostalCommune_psCherche_1_adr);
+            else
+                sb.append(valideVoieCodePostalCommune_psCherche_1);
             if (cdp_present) {
                 sb.append(valideVoieCodePostalCommune_psCherche_2);
             } else {
@@ -2609,8 +2867,16 @@ public class GestionValidation {
                 sb.append(valideVoieCodePostalCommune_psCherche_6);
             }
             sb.append(valideVoieCodePostalCommune_psCherche_7);
-            sb.append(nomTable);
-            sb.append(valideVoieCodePostalCommune_psCherche_8);
+            sb.append(nomTableVoie);
+            if (gererAdresse && numero!=0)
+            {
+                sb.append(valideVoieCodePostalCommune_psCherche_8_adr_1);
+                sb.append(nomTableAdresse);
+                sb.append(valideVoieCodePostalCommune_psCherche_8_adr_2);
+                sb.append(valideVoieCodePostalCommune_psCherche_8_adr_3);
+            }
+            else
+                sb.append(valideVoieCodePostalCommune_psCherche_8);
             // Sous requête de sélection de la commune
             sb.append(valideVoieCodePostalCommune_psCherche_9);
             if (cdp_present) {
@@ -2643,6 +2909,13 @@ public class GestionValidation {
             if (arrondissement != null) {
                 psCherche.setString(index++, arrondissement);
             }
+            
+            if (gererAdresse && numero!=0)
+            {
+                psCherche.setInt(index++,numero);
+                psCherche.setString(index++,repetition);
+            }
+            
             // communes.dpt_code_departement=? AND
             // WHERE communes.dpt_code_departement=? AND note_commune_seul(?,com_nom_pq)>=? 
             psCherche.setString(index++, code_departement);
@@ -2679,24 +2952,33 @@ public class GestionValidation {
 
             while (rsCherche.next()) {
                 String presencenumero = null;
-                if (numero >= rsCherche.getInt(11) && numero <= rsCherche.getInt(12)) {
+                boolean serviceTroncon = false;
+                if (numero >= rsCherche.getInt(11+((gererAdresse && numero!=0)?3:0)) && numero <= rsCherche.getInt(12+((gererAdresse && numero!=0)?3:0))) {
                     presencenumero = "";
+                    if(numero != 0){
+                        serviceTroncon = true;
+                    }
                 }
+                String service = (numero!=0 && gererAdresse && rsCherche.getString(2)!=null)?"2":(serviceTroncon?"3":"4");
                 voies.add(new String[]{
                     rsCherche.getString(1), // voi_id
-                    rsCherche.getString(2), // nom
-                    rsCherche.getString(5), // code insee
-                    rsCherche.getString(3), // commune
-                    rsCherche.getString(4), // code postal
-                    null, null,
-                    rsCherche.getString(7), // code fantoir
-                    rsCherche.getString(8), // nom desabbreviée
-                    rsCherche.getString(9), // commune desabbreviée
-                    rsCherche.getString(10),// libellé sans articles phonétique
+                    rsCherche.getString(2+((gererAdresse && numero!=0)?3:0)), // nom
+                    rsCherche.getString(3+((gererAdresse && numero!=0)?3:0)), // code insee
+                    rsCherche.getString(4+((gererAdresse && numero!=0)?3:0)), // nom commune
+                    rsCherche.getString(5+((gererAdresse && numero!=0)?3:0)), // code postal
+                    null, null, // t0 t1
+                    rsCherche.getString(7+((gererAdresse && numero!=0)?3:0)), // code fantoire
+                    rsCherche.getString(8+((gererAdresse && numero!=0)?3:0)), // nom desabbrevie
+                    rsCherche.getString(9+((gererAdresse && numero!=0)?3:0)), // nom commune desabbrevie
+                    rsCherche.getString(10+((gererAdresse && numero!=0)?3:0)), // libellé sans articles phonétique
                     null, // emplacement libre pour la note
-                    presencenumero // indique si le numéro sera conservé dans la ligne 4
+                    presencenumero, // indique s'il faut ou pas conserver le numéro dans la ligne 4
+                    service,
+                    (gererAdresse && numero!=0)? rsCherche.getString(2):null , // adr_id
+                    (gererAdresse && numero!=0)? rsCherche.getString(3):null , // adr_numero
+                    (gererAdresse && numero!=0)? rsCherche.getString(4):null   // adr_rep
                 });
-                notes.add(new Integer(rsCherche.getInt(6)));
+                notes.add(new Integer(rsCherche.getInt(6+((gererAdresse && numero!=0)?3:0))));
             }
         }
 
@@ -2804,9 +3086,18 @@ public class GestionValidation {
                 //    notesurmax += notenumero;
                 //}
                 // OPTIMISATION DU CODE PRECEDENT
-                if (numero == 0 ||
-                        ((min_numero != 0 || max_numero != 0) &&
+                if (numero != 0)
+                {
+                    if (gererAdresse && voies.get(i)[14]!=null)
+                        notesurmax += notenumero;
+                    else
+                    if (((min_numero != 0 || max_numero != 0) &&
                         numero >= min_numero && numero <= max_numero)) {
+                        notesurmax += notenumero/2;
+                    }
+                }
+                else
+                {
                     notesurmax += notenumero;
                 }
 
@@ -2834,7 +3125,6 @@ public class GestionValidation {
         res[4] = lignes[2];
         res[5] = lignes[4];
 
-        String repetition;
         if (rcnumeros.size() > 0) {
             RefNumero premier = rcnumeros.get(0);
             if (premier.obtientRepetition() != null) {
@@ -2877,7 +3167,7 @@ public class GestionValidation {
             res[offset + VALIDEVOIE_T1] = str[6];
             res[offset + VALIDEVOIE_NOTE] = str[11];
             res[offset + VALIDEVOIE_FANTOIR] = str[7];
-            res[offset + VALIDEVOIE_SERVICE] = (auTroncon) ? "3" : "4";
+            res[offset + VALIDEVOIE_SERVICE] = str[13];
         }
 
         if (gererPays) {

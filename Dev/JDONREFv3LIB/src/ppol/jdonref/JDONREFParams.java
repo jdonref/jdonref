@@ -99,6 +99,9 @@ public class JDONREFParams {
     private boolean utilisationDeLaGestionDesDepartements = false;
     // WA 01/2012 Ajout d'un parametre stipulant si on doit chercher les pays ou non
     private boolean utilisationDeLaGestionDesPays = false;
+    // JM 01/2015 validation à l'adresse
+    private boolean utilisationDeLaGestionDesAdresses = false;
+    
     // WA 01/2012 Pays par defaut
     private String paysParDefaut = "FRANCE";
     private String projectionPayspardefaut = "4326";
@@ -522,6 +525,8 @@ public class JDONREFParams {
         codeDepartementParDefaut = getStringArray(root, "codedepartementpardefaut", codeDepartementParDefaut);
         // WA 09/2011 Ajout d'un parametre stipulant si on doit utiliser la gestion des departements ou non.
         utilisationDeLaGestionDesDepartements = getBoolean(root, "gestiondepartements", false);
+        // JM 02/2015 Ajout d'un paramètre stipulant si on doit utiliser la validation à l'adresse ou non.
+        utilisationDeLaGestionDesAdresses = getBoolean(root, "gestionadresses", false);
         // WA 01/2012 Pays
         pourcentageDeCorrespondanceDePays = getInt(root, "pourcentagedecorrespondancedepays", pourcentageDeCorrespondanceDePays);
         utilisationDeLaGestionDesPays = getBoolean(root, "gestionpays", false);
@@ -1178,6 +1183,13 @@ public class JDONREFParams {
      */
     public boolean isUtilisationDeLaGestionDesDepartements() {
         return utilisationDeLaGestionDesDepartements;
+    }
+    
+    /**
+     * @return the utilisationDeLaGestionDesDepartements
+     */
+    public boolean isUtilisationDeLaGestionDesAdresses() {
+        return utilisationDeLaGestionDesAdresses;
     }
 
     /**

@@ -671,7 +671,7 @@ public class GestionGeocodage {
             sb.append("))");
             sb.append(" FROM \"adr_adresses_");
             sb.append(code_departement);
-            sb.append("\" WHERE voi_id=? AND adr_numero=? AND adr_rep is null AND t0<=? AND ?<=t1");
+            sb.append("\" WHERE voi_id=? AND adr_numero=? AND (adr_rep = ' ' or adr_rep is null) AND t0<=? AND ?<=t1");
             psCherchePointAdresse =
                     connection.prepareStatement(sb.toString());
             psCherchePointAdresse.setString(1, voi_id);

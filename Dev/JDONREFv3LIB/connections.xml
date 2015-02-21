@@ -1,10 +1,10 @@
 <connections>
-    <connection>
-        <server>10.213.93.5</server>
-        <database>jdonref-navteq-bspp</database>
-        <port>5432</port>
-        <user>jdonrefadmin</user>
-        <password>passwd-jdonrefadmin</password>
-        <ponderation>1</ponderation>
-    </connection>
+<connection>
+<server>10.213.92.25</server>
+<database>JDONREF_IGN2</database>
+<port>5432</port>
+<user>postgres</user>
+<password>postgres</password>
+<ponderation>1</ponderation>
+</connection>
 </connections>

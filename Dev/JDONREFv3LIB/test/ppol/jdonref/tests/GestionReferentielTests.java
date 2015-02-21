@@ -2133,6 +2133,8 @@ public class GestionReferentielTests implements Runnable
     
     void afficheResultats(List<String[]> res, String adresse_recherchee, String resultat_attendu, boolean gererPays) throws Exception
     {
+        if (res.size()==0) throw(new Exception("Aucun résultat"));
+        
         for(int i=0;i<res.size();i++)
             afficheResultats(res.get(i),adresse_recherchee,resultat_attendu,gererPays);
     }
@@ -2546,7 +2548,8 @@ public class GestionReferentielTests implements Runnable
             Exception
     {
         boolean gererPays = (lines.length == 7);
-        String[] res = referentiel.valide(2, lines, null, false, gererPays, conn);
+        boolean gererAdresse = true;
+        String[] res = referentiel.valide(2, lines, null, false, gererAdresse,gererPays, conn);
 
         afficheResultats(res, lines, resultatAttendu, gererPays);
     }
@@ -2555,7 +2558,8 @@ public class GestionReferentielTests implements Runnable
             Exception
     {
         boolean gererPays = (lines.length == 7);
-        List<String[]> res = referentiel.valide(2, services, lines, null, false, gererPays, conn);
+        boolean gererAdresse = true;
+        List<String[]> res = referentiel.valide(2, services, lines, null, false, gererAdresse,gererPays, conn);
 
         afficheResultats(res, lines, resultatAttendu, gererPays);
     }
@@ -2588,205 +2592,302 @@ public class GestionReferentielTests implements Runnable
             gestDpt.loadDptCodes(db1, "departementsSynonymes.xml", "algosCP-Departements.xml");
         }
         
-        JDONREFv3Lib.getInstance("");
+        JDONREFv3Lib.getInstance("params.xml");
         
         //regarder fichier \Dev\Src\JDONREFv3LIB\services.xml clé=1001
-        testValideFullService(referentiel, new int[]{1001},new String[]
+//        testValideFullService(referentiel, new int[]{1001},new String[]
+//                {
+//                    "", "", "", "BD DE L HOPITAL", "", "75013"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//        
+//        // REPRISE DES ANCIENS TESTS (6 lignes)
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "BD DE L HOPITAL", "", "75013"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "PL TASSIGNY", "", "75016"
+//                }, "PL DU MAL DE LATTRE DE TASSIGNY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "GAULLE", "", "75016"
+//                }, "PLACE CHARLES DE GAULLE", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "AVENUE DU COLONEL HENRI ROL-TAN", "", "75014"
+//                },
+//                "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "AV DU CNL H ROL TAN", "", "75014"
+//                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "AVENUE PAUL VAILLANT COUTURIER", "", "75"
+//                }, "AVENUE PAUL VAILLANT COUTURIER",
+//                db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "BD DE L HOPITAL", "", "75013"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "BD DE L HOPITAL", "", "75013"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//
+//        // departementvoiecomplete)
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "AV DU MAL DE LATTRE DE TASSIGNY", "", "75"
+//                }, "PL DU MAL DE LATTRE DE TASSIGNY",
+//                db1);
+//        // motsclescodepostal)
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "GAULLE", "", "75016 PARIS"
+//                }, "PLACE CHARLES DE GAULLE", db1);
+//
+//        // motsclesdepartement)
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "ROL TANGU", "", "751"
+//                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "TANGUY", "", "751"
+//                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "VAILLANT COUTUMIER", "", "75"
+//                }, "AVENUE PAUL VAILLANT COUTURIER", db1);
+//
+//        // motsclesdepartementcommune
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "CHARBONNE", "", "75 PARIS"
+//                }, "RUE DE CHARONNE", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "ROL TAN", "", "75014 PARIS"
+//                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "SQUARE ALICE", "", "75 PARIS"
+//                }, "SQUARE ALICE", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "ROL MANGI", "", "75 PARIS"
+//                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "PAUL TANGI", "", "75 PARIS"
+//                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "ROL TANVY", "", "75 PARIS"
+//                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "TANVY", "", "75 PARIS"
+//                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "AV DU COLONEL HENRI ROL TANVY", "", "75 PARIS"
+//                },
+//                "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        // Ce test est valable uniquement si la tolérance vis à vis des communes est faible.
+//        if(params.obtientPourcentageDeCorrespondanceDeCommune() < 60)
+//        {
+//            testValideFull(referentiel, new String[]
+//                    {
+//                        "", "", "", "AV H ROL TANGUY", "", "75 PARI"
+//                    }, "AV DU COLONEL HENRI ROL TANGUY", db1);
+//        }
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "HOPITAL", "", "75 PARIS 5"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "PARC", "", "75 PARIS"
+//                }, "VILLA DU PARC", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "AVENUE", "", "75 PARIS"
+//                }, "SQUARE DE L AVENUE DU BOIS", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "ROL TAN", "", "PARIS"
+//                }, "RUE ALFRED ROLL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "ROL TAN", "", "75014 PARIS"
+//                }, "AVENUE PAUL APPELL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "ROL TAN", "", "75014"
+//                }, "AVENUE PAUL APPELL", db1);
+//
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "HOPITAL SAINT", "", "75013 PARIS"
+//                }, "RUE DE L HOPITAL SAINT LOUIS", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "OPITL LOUIS", "", "75 PARIS"
+//                }, "RUE DE L HOPITAL SAINT LOUIS", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "ROL TAN", "", "75068 PARIS"
+//                }, "RUE ALFRED ROLL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "GAULLE", "", "75013 PARIS"
+//                }, "PONT CHARLES DE GAULLE", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "MACDONALD", "", "75015 PARIS"
+//                }, "BOULEVARD MACDONALD", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "HOPITAL", "", "75013 PARIS"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//
+//        // motsclescommune)
+//        if (gestDpt.isDptCodePresent("45"))
+//        {
+//            testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "CHARLES DE GAULLE", "", "SAINT"
+//                }, "45130 SAINT AY", db1);
+//        }
+//        // adressecomplete)
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "BOULEVARD HOPITAL", "", "75013"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "BOULEVARD HOPITOL", "", "PARIS"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "BOULEVARD HOPITAL", "", "PARIS"
+//                }, "BOULEVARD DE L HOPITAL", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "RUE DARU", "", "75013 PARIS"
+//                }, "RUE DARU", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "RUE DE L AVRE", "", "75015 PARIS"
+//                }, "RUE DE L AVRE", db1);
+//        testValideFull(referentiel, new String[]
+//                {
+//                    "", "", "", "2 ROUTE DE L OUEST", "", "94"
+//                }, "ROUTE DE L OUEST", db1);
+        testValideFullService(referentiel, new int[]{1002},new String[]
                 {
-                    "", "", "", "BD DE L HOPITAL", "", "75013"
-                }, "BOULEVARD DE L HOPITAL", db1);
+                    "", "", "", "24 BOULEVARD HOPITAL", "", "PARIS"
+                },
+                "24 BOULEVARD DE L HOPITAL", db1);
         
-        // REPRISE DES ANCIENS TESTS (6 lignes)
         testValideFull(referentiel, new String[]
                 {
-                    "", "", "", "BD DE L HOPITAL", "", "75013"
-                }, "BOULEVARD DE L HOPITAL", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "PL TASSIGNY", "", "75016"
-                }, "PL DU MAL DE LATTRE DE TASSIGNY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "GAULLE", "", "75016"
-                }, "PLACE CHARLES DE GAULLE", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "AVENUE DU COLONEL HENRI ROL-TAN", "", "75014"
+                    "", "", "", "24 BOULEVARD HOPITAL", "", "75116 PARIS"
                 },
-                "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
+                "24 BOULEVARD DE L HOPITAL", db1);
+        
+        testValideFullService(referentiel, new int[]{1002}, new String[]
                 {
-                    "", "", "", "AV DU CNL H ROL TAN", "", "75014"
-                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "AVENUE PAUL VAILLANT COUTURIER", "", "75"
-                }, "AVENUE PAUL VAILLANT COUTURIER",
-                db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "BD DE L HOPITAL", "", "75013"
-                }, "BOULEVARD DE L HOPITAL", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "BD DE L HOPITAL", "", "75013"
-                }, "BOULEVARD DE L HOPITAL", db1);
-
-        // departementvoiecomplete)
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "AV DU MAL DE LATTRE DE TASSIGNY", "", "75"
-                }, "PL DU MAL DE LATTRE DE TASSIGNY",
-                db1);
-        // motsclescodepostal)
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "GAULLE", "", "75016 PARIS"
-                }, "PLACE CHARLES DE GAULLE", db1);
-
-        // motsclesdepartement)
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "ROL TANGU", "", "751"
-                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "TANGUY", "", "751"
-                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "VAILLANT COUTUMIER", "", "75"
-                }, "AVENUE PAUL VAILLANT COUTURIER", db1);
-
-        // motsclesdepartementcommune
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "CHARBONNE", "", "75 PARIS"
-                }, "RUE DE CHARONNE", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "ROL TAN", "", "75014 PARIS"
-                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "SQUARE ALICE", "", "75 PARIS"
-                }, "SQUARE ALICE", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "ROL MANGI", "", "75 PARIS"
-                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "PAUL TANGI", "", "75 PARIS"
-                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "ROL TANVY", "", "75 PARIS"
-                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "TANVY", "", "75 PARIS"
-                }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "AV DU COLONEL HENRI ROL TANVY", "", "75 PARIS"
+                    "", "", "", "24 BOULEVARD HOPITAL", "", "75116 PARIS"
                 },
-                "AV DU COLONEL HENRI ROL TANGUY", db1);
-        // Ce test est valable uniquement si la tolérance vis à vis des communes est faible.
-        if(params.obtientPourcentageDeCorrespondanceDeCommune() < 60)
-        {
-            testValideFull(referentiel, new String[]
-                    {
-                        "", "", "", "AV H ROL TANGUY", "", "75 PARI"
-                    }, "AV DU COLONEL HENRI ROL TANGUY", db1);
-        }
+                "24 BOULEVARD DE L HOPITAL", db1);
+        
+        testValideFullService(referentiel, new int[]{1003}, new String[]
+                {
+                    "", "", "", "24 BOULEVARD HOPITAL", "", "75116 PARIS"
+                },
+                "24 BOULEVARD DE L HOPITAL", db1);
+        
+        testValideFullService(referentiel, new int[]{1004}, new String[]
+                {
+                    "", "", "", "24 BOULEVARD HOPITAL", "", "75116 PARIS"
+                },
+                "24 BOULEVARD DE L HOPITAL", db1);
+        
         testValideFull(referentiel, new String[]
                 {
-                    "", "", "", "HOPITAL", "", "75 PARIS 5"
-                }, "BOULEVARD DE L HOPITAL", db1);
+                    "", "", "", "1 RUE PIERRE BROSSOLETTE", "", "92400 COURBEVOIE"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        
+        testValideFullService(referentiel, new int[]{1002},new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BROSSOLETTE", "", "92400 COURBEVOIE"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1003},new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BROSSOLETTE", "", "92400 COURBEVOIE"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1004},new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BROSSOLETTE", "", "92400 COURBEVOIE"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        
         testValideFull(referentiel, new String[]
                 {
-                    "", "", "", "PARC", "", "75 PARIS"
-                }, "VILLA DU PARC", db1);
-        testValideFull(referentiel, new String[]
+                    "", "", "", "1 RUE PIERRE BRASSOLETTE", "", "92400 COURBEVOIE"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        
+        testValideFullService(referentiel, new int[]{1002},new String[]
                 {
-                    "", "", "", "AVENUE", "", "75 PARIS"
-                }, "SQUARE DE L AVENUE DU BOIS", db1);
-        testValideFull(referentiel, new String[]
+                    "", "", "", "1 RUE PIERRE BRASSOLETTE", "", "92400 COURBEVOIE"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1003},new String[]
                 {
-                    "", "", "", "ROL TAN", "", "PARIS"
-                }, "RUE ALFRED ROLL", db1);
-        testValideFull(referentiel, new String[]
+                    "", "", "", "1 RUE PIERRE BRASSOLETTE", "", "92400 COURBEVOIE"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1004},new String[]
                 {
-                    "", "", "", "ROL TAN", "", "75014 PARIS"
-                }, "AVENUE PAUL APPELL", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "ROL TAN", "", "75014"
-                }, "AVENUE PAUL APPELL", db1);
-
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "HOPITAL SAINT", "", "75013 PARIS"
-                }, "RUE DE L HOPITAL SAINT LOUIS", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "OPITL LOUIS", "", "75 PARIS"
-                }, "RUE DE L HOPITAL SAINT LOUIS", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "ROL TAN", "", "75068 PARIS"
-                }, "RUE ALFRED ROLL", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "GAULLE", "", "75013 PARIS"
-                }, "PONT CHARLES DE GAULLE", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "MACDONALD", "", "75015 PARIS"
-                }, "BOULEVARD MACDONALD", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "HOPITAL", "", "75013 PARIS"
-                }, "BOULEVARD DE L HOPITAL", db1);
-
-        // motsclescommune)
-        if (gestDpt.isDptCodePresent("45"))
-        {
-            testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "CHARLES DE GAULLE", "", "SAINT"
-                }, "45130 SAINT AY", db1);
-        }
-        // adressecomplete)
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "BOULEVARD HOPITAL", "", "75013"
-                }, "BOULEVARD DE L HOPITAL", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "BOULEVARD HOPITOL", "", "PARIS"
-                }, "BOULEVARD DE L HOPITAL", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "BOULEVARD HOPITAL", "", "PARIS"
-                }, "BOULEVARD DE L HOPITAL", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "RUE DARU", "", "75013 PARIS"
-                }, "RUE DARU", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "RUE DE L AVRE", "", "75015 PARIS"
-                }, "RUE DE L AVRE", db1);
-        testValideFull(referentiel, new String[]
-                {
-                    "", "", "", "2 ROUTE DE L OUEST", "", "94"
-                }, "ROUTE DE L OUEST", db1);
+                    "", "", "", "1 RUE PIERRE BRASSOLETTE", "", "92400 COURBEVOIE"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        
         testValideFull(referentiel, new String[]
                 {
                     "", "", "", "1 RUE PIERRE BROSSOLETTE", "", "92004"
                 }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1002}, new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BROSSOLETTE", "", "92004"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1003}, new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BROSSOLETTE", "", "92004"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1004}, new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BROSSOLETTE", "", "92004"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        
+        testValideFull(referentiel, new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BRASSOLETTE", "", "92004"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1002}, new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BRASSOLETTE", "", "92004"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1003}, new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BRASSOLETTE", "", "92004"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        testValideFullService(referentiel, new int[]{1004}, new String[]
+                {
+                    "", "", "", "1 RUE PIERRE BRASSOLETTE", "", "92004"
+                }, "1 RUE PIERRE BROSSOLETTE", db1);
+        
+        
         testValideFull(referentiel, new String[]
                 {
                     "", "", "", "PLACE DU MARECHAL DE LATTRE DE TASSIGNY", "", "75116 PARIS"

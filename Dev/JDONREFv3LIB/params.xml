@@ -1,6 +1,7 @@
-<params>
 
-<version>2.4.3</version>
+<params>
+    
+    <version>2.4.3</version>
 
 <logpath>logs/</logpath>
 <logClasseName>ppol.jdonref.GestionLogs</logClasseName>
@@ -59,6 +60,7 @@
 
 <gestiondepartements>true</gestiondepartements>
 <gestionpays>true</gestionpays>
+<gestionadresses>true</gestionadresses>
 
 <notepourcle>28</notepourcle>
 <notepourpoizon>50</notepourpoizon>

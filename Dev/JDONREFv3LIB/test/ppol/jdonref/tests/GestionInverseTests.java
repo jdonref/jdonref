@@ -64,11 +64,15 @@ public class GestionInverseTests {
     
     
     
-    public void testinverseTronconsIntersections(GestionInverse gi, int projection, InverseOption io, Connection db1) throws SQLException, Exception {
+    public void testinverseTronconsIntersections(GestionInverse gi, String code_dpt,int projection, InverseOption io, Connection db1) throws SQLException, Exception {
         Date now = Calendar.getInstance().getTime();
 
+        io.dpt = code_dpt;
+        
         GeocodageInverse[] res = gi.inverseTronconsIntersections(1, io, db1, projection, now);
 
+        if (res.length==0)
+            throw(new Exception("Aucun résultat"));
     }
 
     @Test
@@ -83,17 +87,16 @@ public class GestionInverseTests {
         GeometryFactory gf = new GeometryFactory();
         InverseOption io = new InverseOption();
 
-//        long distance = 1;
+//        long distance = 0;
 //        String code_dpt = "75";
 //        String voi_id = "751054649";
 //        io.dpt=code_dpt;
 //        io.voi_id=voi_id;
         
-        String[] options = {"ids4=5915"};
+        String[] options = {"ids4=751054649"};
         io = gi.extractOptionsIds4(options, db1);
 
-        testinverseTronconsIntersections(gi, 2154, io, db1);
-    
+        testinverseTronconsIntersections(gi, "75", 2154, io, db1);
     }
     
     

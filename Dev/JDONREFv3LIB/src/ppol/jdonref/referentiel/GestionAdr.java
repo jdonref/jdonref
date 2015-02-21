@@ -760,6 +760,7 @@ public class GestionAdr {
             }
         }
 
+        boolean gestionAdresse = params.isUtilisationDeLaGestionDesAdresses();
 
         // Vérifications préalables.
         if (gestionMots == null) {
@@ -950,7 +951,7 @@ public class GestionAdr {
                 //gestionPays = gestionPays || (lignes.length == 7);
 
                 // Les logs sont effectués dans cette méthode.
-                listRet.addAll(gestionReferentiel.valide(application, services, adresse, date, force, gestionPays, refconnection.connection));
+                listRet.addAll(gestionReferentiel.valide(application, services, adresse, date, force, gestionAdresse,gestionPays, refconnection.connection));
 
                 return listRet;
             } catch (SQLException ex) {

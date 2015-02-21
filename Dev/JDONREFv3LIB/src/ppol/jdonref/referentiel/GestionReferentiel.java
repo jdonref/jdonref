@@ -2483,7 +2483,7 @@ public class GestionReferentiel {
      * @param force pour force la recherche par correspondance phonétique et orthographique
      * @return null si ni le code postal ni la commune n'ont été trouvés dans la ligne 6.
      */
-    public String[] valide(int application, String[] lignes, String strdate, boolean force, boolean gererPays, Connection connection) throws
+    public String[] valide(int application, String[] lignes, String strdate, boolean force, boolean gererAdresse,boolean gererPays, Connection connection) throws
             SQLException {
         // WA 01/2012 Pays
         int nbLinesAddr = gererPays ? 7 : 6;
@@ -2623,7 +2623,7 @@ public class GestionReferentiel {
                             // La première note est la seule qui correspond bien, la commune est choisie.
                             // Les logs sont effectués dans cette méthode.
                             String[] res = gestionValidation.valideVoieCodePostalCommune(application, dpt_lignes, rccodepostal, null, date,
-                                    force, gererPays, pays, connection);
+                                    force, gererAdresse,gererPays, pays, connection);
 
                             return res;
                         }
@@ -2634,7 +2634,7 @@ public class GestionReferentiel {
                 if (ligne4.length() > 0) // Les logs sont effectués dans cette méthode
                 {
                     return gestionValidation.valideVoieCodePostalCommune(application, lignes, refcodepostal, refcommune, date, force,
-                            gererPays, pays, connection);
+                            gererAdresse,gererPays, pays, connection);
                 } else // Les logs sont effectués dans cette méthode
                 {
                     return gestionValidation.valideCommuneEtCodePostal(application, lignes, refcodepostal, refcommune, date, force,
@@ -2644,7 +2644,7 @@ public class GestionReferentiel {
         } else if (codepostal.length() > 0) {
             if (ligne4.length() > 0) // Les logs sont effectués dans cette méthode
             {
-                return gestionValidation.valideVoieCodePostal(application, lignes, date, force, gererPays, pays, connection);
+                return gestionValidation.valideVoieCodePostal(application, lignes, date, force, gererAdresse,gererPays, pays, connection);
             } else // Les logs sont effectués dans cette méthode
             {
                 return gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, pays, connection);
@@ -2663,7 +2663,7 @@ public class GestionReferentiel {
         };
     }
 
-    public List<String[]> valide(int application, int[] services, String[] lignes, String strdate, boolean force, boolean gererPays, Connection connection) throws
+    public List<String[]> valide(int application, int[] services, String[] lignes, String strdate, boolean force, boolean gererAdresse,boolean gererPays, Connection connection) throws
             SQLException {
         final List<String[]> listRet = new ArrayList<String[]>();
         // WA 01/2012 Pays
@@ -2741,11 +2741,8 @@ public class GestionReferentiel {
             Integer id = JDONREFv3Lib.getInstance().getServices().getServiceFromCle(serviceCle).getId();
             
             //if (serviceCle == SERVICE_POINT_ADRESSE) {           
-            if (id == SERVICE_POINT_ADRESSE) { 
-                
-                continue; // NON IMPLEMENTE
-            } else if (id == SERVICE_ADRESSE) {
-                listRet.add(valide(application, lignes, strdate, force, gererPays, connection));
+            if (id == SERVICE_ADRESSE) {
+                listRet.add(valide(application, lignes, strdate, force, gererAdresse,gererPays, connection));
             } else if (id == SERVICE_PAYS) {
                 listRet.add(paysValides);
             } else if (id == SERVICE_DEPARTEMENT) {
@@ -2773,6 +2770,8 @@ public class GestionReferentiel {
                 }
             } else { // TRONCON ET VOIE
                 final boolean auTroncon = (id == SERVICE_TRONCON);
+                if (id!=SERVICE_POINT_ADRESSE) gererAdresse = false;
+                
                 if (commune.length() > 0) {
                     if (codepostal.length() == 0) {
                         // Les logs sont effectués dans cette méthode
@@ -2834,7 +2833,7 @@ public class GestionReferentiel {
                                     // La première note est la seule qui correspond bien, la commune est choisie.
                                     // Les logs sont effectués dans cette méthode.
                                     listRet.add(gestionValidation.valideVoieCodePostalCommune(application, dpt_lignes, rccodepostal, null, date,
-                                            auTroncon, force, gererPays, paysLigneId7, connection));
+                                        auTroncon, force, gererAdresse,gererPays, paysLigneId7, connection));
                                 }
                             }
                         } else {
@@ -2844,7 +2843,7 @@ public class GestionReferentiel {
                     } else {
                         if (ligne4.length() > 0) {
                             listRet.add(gestionValidation.valideVoieCodePostalCommune(application, lignes, refcodepostal, refcommune, date,
-                                    auTroncon, force, gererPays, paysLigneId7, connection));
+                                    auTroncon, force, gererAdresse,gererPays, paysLigneId7, connection));
                         } else {
                             jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                             listRet.add(new String[]{"0", "8", "L'adresse ne comprend pas de nom de voie."});
@@ -2852,7 +2851,7 @@ public class GestionReferentiel {
                     }
                 } else if (codepostal.length() > 0) {
                     if (ligne4.length() > 0) {
-                        listRet.add(gestionValidation.valideVoieCodePostal(application, lignes, date, auTroncon, force, gererPays, paysLigneId7, connection));
+                        listRet.add(gestionValidation.valideVoieCodePostal(application, lignes, date, auTroncon, force, gererAdresse,gererPays, paysLigneId7, connection));
                     } else {
                         jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                         listRet.add(new String[]{"0", "8", "L'adresse ne comprend pas de nom de voie."});

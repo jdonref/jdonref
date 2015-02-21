@@ -110,8 +110,7 @@ public abstract class GeocodageInverse {
     public abstract String getCodeInsee();
     
     public abstract String getSovA3();
-        
-
+    
     /**
      * Constructeur abstrait
      * @param pt
