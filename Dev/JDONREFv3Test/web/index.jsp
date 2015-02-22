@@ -332,7 +332,7 @@ public void jspInit()
                                 balise += "<tr><td>date</td><td>"+geocodagedata.propositions[0].date+"</td></tr>";
                                 balise += "<tr><td>referentiel</td><td>"+geocodagedata.propositions[0].referentiel+"</td></tr>";
                                 balise += "<tr><td>projection</td><td>"+geocodagedata.propositions[0].projection+"</td></tr>";
-                                balise += "<tr><td colspan='2'><a href='reverse.jsp?x="+geocodagedata.propositions[0].x+"&y="+geocodagedata.propositions[0].y+"&adr="+adr+"&projection="+geocodagedata.propositions[0].projection+"'>Inverse</a></td></tr>";
+                                balise += "<tr><td colspan='2'><a href='reverse.jsp?ids4="+data.propositions[0].ids[3]+"&x="+geocodagedata.propositions[0].x+"&y="+geocodagedata.propositions[0].y+"&adr="+adr+"&projection="+geocodagedata.propositions[0].projection+"'>Inverse</a></td></tr>";
                                 balise += "</table>";
                                 geocodage.innerHTML = balise;
                             }

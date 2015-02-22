@@ -2,7 +2,7 @@
 <web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
     <context-param>
         <param-name>JDONREFv3JSON</param-name>
-        <param-value>http://10.213.93.13:8080/JDONREFv3JSON</param-value>
+        <param-value>http://10.213.92.233:8080/JDONREFv3JSON</param-value>
     </context-param>
     <servlet>
         <servlet-name>Normalise</servlet-name>

@@ -68,7 +68,7 @@
                     </tr>
                     <tr>
                         <td><label id=lab_ids4 for="inp_ids4">ids4&nbsp;:&nbsp;</label></td>
-                        <td><input type="text" id="inp_ids4" size="50" placeholder = "saisir un voi_id (selectionner le service troncon)" /></td>
+                        <td><input type="text" id="inp_ids4" size="50" placeholder = "saisir un voi_id (selectionner le service troncon)" value='<%= request.getParameter("ids4")%>'/></td>
                     </tr>
                     <tr>
                         <td><input type="button" value="Reverse" onclick="callReverse('<%=JADRREFJson%>/Reverse');"/></td>
