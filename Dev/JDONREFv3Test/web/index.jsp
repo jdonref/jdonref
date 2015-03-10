@@ -852,7 +852,7 @@ public void jspInit()
         // Permet de récupérer le résultat de la validation
         // des 6, 7 lignes d'une adresse.
         //
-        function valide(fonction, operation, services, ligne1, ligne2, ligne3, ligne4, ligne5, ligne6, ligne7, force)
+        function valide(fonction, operation, services, ligne1, ligne2, ligne3, ligne4, ligne5, ligne6, ligne7, force, dpt)
         {
             startvalide = new Date(); // global car appelée dans fonction.
             var servicesParam = "";
@@ -861,9 +861,15 @@ public void jspInit()
                     servicesParam += '&services='+encodeURIComponent(services.options[i].value);
                 }
             }
+            var optionsParam = "";
+            if (dpt != "")
+                optionsParam += "&options=dpt="+dpt;
+            optionsParam += '&options=fantoire=true'+
+                            '&options=indexes='+encodeURIComponent(document.getElementById("indexes").value);
             var url = '<%=JADRREFJson%>/Valide';
             var params = 'application=2'+
                 servicesParam +
+                optionsParam +
                 '&operation='+encodeURIComponent(operation)+
                 '&donnees='+encodeURIComponent(ligne1)+
                 '&donnees='+encodeURIComponent(ligne2)+
@@ -871,9 +877,7 @@ public void jspInit()
                 '&donnees='+encodeURIComponent(ligne4)+
                 '&donnees='+encodeURIComponent(ligne5)+
                 '&donnees='+encodeURIComponent(ligne6)+
-                '&donnees='+encodeURIComponent(ligne7)+
-                '&options=fantoire=true'+
-                '&options=indexes='+encodeURIComponent(document.getElementById("indexes").value);
+                '&donnees='+encodeURIComponent(ligne7);
             if ((operation&4)!=0) 
                 params += '&options=dpt='+encodeURIComponent(departements);
             if (force) params += '&options=force=true';
@@ -886,7 +890,7 @@ public void jspInit()
         // Permet de récupérer le résultat d'une étape de normalisation
         // sur les 6 lignes d'une adresse.
         // 
-        function normalise(fonction,operation,services,ligne1,ligne2,ligne3,ligne4,ligne5,ligne6, ligne7, pays)
+        function normalise(fonction,operation,services,ligne1,ligne2,ligne3,ligne4,ligne5,ligne6, ligne7, pays, dpt)
         {       
                 var getDpt = false;
                 var desabreviation = false;
@@ -909,10 +913,25 @@ public void jspInit()
                         servicesParam += '&services='+encodeURIComponent(services.options[i].value);
                     }
                 }
-                
+                var optionsParam = "";
+                if (dpt != "")
+                    optionsParam += "&options=dpt="+dpt;
+                if(desabreviation){
+                    optionsParam += '&options=desabreviation=true';
+                }
+                if(reduction38){
+                    optionsParam += '&options=reduction38=true';
+                }
+                if(getDpt){
+                    optionsParam += '&options=getDpt=true';
+                }
+                if(pays){
+                    optionsParam += '&options=pays=true';
+                }
                 var url = '<%=JADRREFJson%>/Normalise';
                 var params = 'application=2'+
                              servicesParam +
+                             optionsParam +
                              '&operation='+encodeURIComponent(operation)+
                              '&donnees='+encodeURIComponent(ligne1)+
                              '&donnees='+encodeURIComponent(ligne2)+
@@ -921,18 +940,6 @@ public void jspInit()
                              '&donnees='+encodeURIComponent(ligne5)+
                              '&donnees='+encodeURIComponent(ligne6)+
                              '&donnees='+encodeURIComponent(ligne7);
-                if(desabreviation){
-                    params += '&options=desabreviation=true';
-                }
-                if(reduction38){
-                    params += '&options=reduction38=true';
-                }
-                if(getDpt){
-                    params += '&options=getDpt=true';
-                }
-                if(pays){
-                    params += '&options=pays=true';
-                }
                 
                 var xhr = getfile(url,params,fonction);
                 
@@ -941,7 +948,7 @@ public void jspInit()
         }
         // Permet de récupérer le résultat d'une étape de découpage
         // sur les 6 lignes d'adresse
-        function decoupe(fonction,services,ligne1,ligne2,ligne3,ligne4,ligne5,ligne6, ligne7)
+        function decoupe(fonction,services,ligne1,ligne2,ligne3,ligne4,ligne5,ligne6, ligne7, dpt)
         {
             var servicesParam = "";
             var serviceAdr = false;
@@ -986,10 +993,14 @@ public void jspInit()
                 operationsParam += '&operations=524288'+
                                   '&operations=1048576';
             }
+            var optionsParam = "";
+            if (dpt != "")
+                optionsParam = "&options=dpt="+dpt;
             var url = '<%=JADRREFJson%>/Decoupe';
             var params = 'application=2'+
                          servicesParam +
                          operationsParam +
+                         optionsParam +
                          '&donnees='+encodeURIComponent(ligne1)+
                          '&donnees='+encodeURIComponent(ligne2)+
                          '&donnees='+encodeURIComponent(ligne3)+
@@ -997,7 +1008,7 @@ public void jspInit()
                          '&donnees='+encodeURIComponent(ligne5)+
                          '&donnees='+encodeURIComponent(ligne6);
                          ((ligne7 == "")?'':params +='&donnees='+encodeURIComponent(ligne7));
-                          
+                         
             
             var xhr = getfile(url,params,fonction);
             
@@ -1061,7 +1072,8 @@ public void jspInit()
                    formulaire.ligne5.value,
                    formulaire.ligne6.value,
                    formulaire.ligne7.value,
-                   force
+                   force,
+                   formulaire.dpt.value
                   );
         }
         // 
@@ -1086,7 +1098,8 @@ public void jspInit()
                       formulaire.ligne5.value,
                       formulaire.ligne6.value,
                       formulaire.ligne7.value,
-                      gestPays);
+                      gestPays,
+                      formulaire.dpt.value);
             var end = new Date();
             afficheTimer(balise,start,end);
         }
@@ -1104,7 +1117,8 @@ public void jspInit()
                     formulaire.ligne4.value,
                     formulaire.ligne5.value,
                     formulaire.ligne6.value,
-                    formulaire.ligne7.value);
+                    formulaire.ligne7.value,
+                    formulaire.dpt.value);
             var end = new Date();
             afficheTimer(balise,start,end);
         }        
@@ -1375,6 +1389,7 @@ public void jspInit()
                 case 24: texte = "Opération"; break;
                 case 25: texte = "Distance du décalage gauche/droite lors du géocodage"; break;
                 case 26: texte = "ES_Indexes : index1,index2..."; break;
+                case 27: texte = "Départements par défaut : 75,77,78,91,92,93,94,95"; break;
             }
                     
             commentaires.innerHTML = texte+"<br>";
@@ -1490,6 +1505,7 @@ public void jspInit()
                 <tr><td>Ligne 7</td><td> <input type="text" name="ligne7" size="50" onmouseover="comment(20);" onmouseout="comment(0);"/></td></tr>
                 <tr><td>Projection</td><td><input type="text" id="inp_projection" size="50" value="2154" onmouseover="comment(21);" onmouseout="comment(0);"/></td></tr>
                 <tr><td>Distance</td><td><input type="text" id="inp_distance" size="50" value="0" onmouseover="comment(25);" onmouseout="comment(0);"/></td></tr>
+                <tr><td>Dpt</td><td><input type="text" name="dpt" size="50" value="" onmouseover="comment(27);" onmouseout="comment(0);"/></td></tr>
                 <tr><td style="vertical-align:top;">Services</td>
                     <td>
                         <select name="services" multiple="true" size="9" onmouseover="comment(22);" onmouseout="comment(0);">
