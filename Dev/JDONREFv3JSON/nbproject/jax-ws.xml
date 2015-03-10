@@ -3,8 +3,8 @@
   <services/>
   <clients>
     <client name="JDONREF">
-      <wsdl-url>http://10.213.92.191/JDONREFv3/JDONREF?wsdl</wsdl-url>
-      <local-wsdl-file>10.213.92.191/JDONREFv3/JDONREF.wsdl</local-wsdl-file>
+      <wsdl-url>http://localhost:8084/JDONREFv3/JDONREF?wsdl</wsdl-url>
+      <local-wsdl-file>localhost_8084/JDONREFv3/JDONREF.wsdl</local-wsdl-file>
       <package-name forceReplace="true">ppol.jdonref.json.client</package-name>
       <catalog-file>catalog.xml</catalog-file>
     </client>
