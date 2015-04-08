@@ -299,12 +299,15 @@ public class JADRREF implements IJDONREFv3 {
 
         // TRAITEMENT DES OPTIONS
         String dateOption = "";
+        String dpt = "";
         boolean force = false;
         boolean fantoire = false;
         for (String option : options) {
             final String[] tokens = option.split("=");
             if (tokens != null && tokens.length == 2) {
-                if (tokens[0].trim().equalsIgnoreCase("force")) {
+                if (tokens[0].trim().equalsIgnoreCase("dpt")) {
+                    dpt = (tokens[1] != null) ? tokens[1].trim() : "";
+                } else if (tokens[0].trim().equalsIgnoreCase("force")) {
                     force = (tokens[1] != null) ? Boolean.parseBoolean(tokens[1].trim()) : false;
                 } else if (tokens[0].trim().equalsIgnoreCase("date")) {
                     dateOption = (tokens[1] != null) ? tokens[1].trim() : "";
@@ -317,7 +320,7 @@ public class JADRREF implements IJDONREFv3 {
 
         // EXECUTION DU SERVICE
         final GestionAdr gestionAdr = jdonrefv3lib.getGestionAdr();
-        final List<String[]> result = gestionAdr.valide(application, services, operation, donnees, date, force, null);
+        final List<String[]> result = gestionAdr.valide(application, services, operation, donnees, date, force, dpt);
 
         return ResultAdapter.adapteValide(result, gererPays, fantoire);
     }

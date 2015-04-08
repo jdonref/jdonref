@@ -1,6 +1,6 @@
 <params>
 
-<version>3.1.0</version>
+<version>3.1.1</version>
 
 <logpath>logs/jadrref_logs/</logpath>
 <logClasseName>ppol.jdonref.GestionLogs</logClasseName>
@@ -19,8 +19,8 @@
 <notepourcommune>50</notepourcommune>
 <notepourmotdeterminant>2</notepourmotdeterminant>
 <notepourlibelle>50</notepourlibelle>
-<notepourtypedevoie>2</notepourtypedevoie>
-<notepournumero>70</notepournumero>
+<notepourtypedevoie>10</notepourtypedevoie>
+<notepournumero>30</notepournumero>
 <notepourarrondissement>10</notepourarrondissement>
 
 <pourcentagedecorrespondancedecodepostal>40</pourcentagedecorrespondancedecodepostal>
