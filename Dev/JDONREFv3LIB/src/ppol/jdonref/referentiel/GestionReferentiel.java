@@ -2461,6 +2461,11 @@ public class GestionReferentiel {
         return false;
     }
 
+    public String[] valide(int application, String[] lignes, String strdate, boolean force, boolean gererAdresse,boolean gererPays, Connection connection) throws
+            SQLException {
+        return valide(application, lignes, strdate, force, gererAdresse, gererPays, connection, "");
+    }
+    
     /**
      * Valide l'adresse normalisée et restructurée proposée.<br>
      * Quelque soit les paramètres spécifiés, deux recherches peuvent être effectuées:
@@ -2483,7 +2488,7 @@ public class GestionReferentiel {
      * @param force pour force la recherche par correspondance phonétique et orthographique
      * @return null si ni le code postal ni la commune n'ont été trouvés dans la ligne 6.
      */
-    public String[] valide(int application, String[] lignes, String strdate, boolean force, boolean gererAdresse,boolean gererPays, Connection connection) throws
+    public String[] valide(int application, String[] lignes, String strdate, boolean force, boolean gererAdresse,boolean gererPays, Connection connection, String restriction_departements) throws
             SQLException {
         // WA 01/2012 Pays
         int nbLinesAddr = gererPays ? 7 : 6;
@@ -2566,7 +2571,7 @@ public class GestionReferentiel {
             if (codepostal.length() == 0) {
                 // Les logs sont effectués dans cette méthode
                 String[] communes = gestionValidation.valideCommune(application, lignes, refcommune, date, force, gererPays, pays,
-                        connection);
+                        connection,restriction_departements);
 
                 // Vérifie si la première commune trouvée n'est pas la seule qui pourrait correspondre.
                 if (ligne4.length() > 0 && (communes[GestionValidation.VALIDE_CODE_FONCTION].compareTo("3") == 0 ||
@@ -2638,7 +2643,7 @@ public class GestionReferentiel {
                 } else // Les logs sont effectués dans cette méthode
                 {
                     return gestionValidation.valideCommuneEtCodePostal(application, lignes, refcodepostal, refcommune, date, force,
-                            gererPays, pays, connection);
+                            gererPays, pays, connection,restriction_departements);
                 }
             }
         } else if (codepostal.length() > 0) {
@@ -2647,7 +2652,7 @@ public class GestionReferentiel {
                 return gestionValidation.valideVoieCodePostal(application, lignes, date, force, gererAdresse,gererPays, pays, connection);
             } else // Les logs sont effectués dans cette méthode
             {
-                return gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, pays, connection);
+                return gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, pays, connection,restriction_departements);
             }
         }
 
@@ -2664,6 +2669,11 @@ public class GestionReferentiel {
     }
 
     public List<String[]> valide(int application, int[] services, String[] lignes, String strdate, boolean force, boolean gererAdresse,boolean gererPays, Connection connection) throws
+            SQLException {
+        return valide(application, services, lignes, strdate, force, gererAdresse, gererPays, connection, "");
+    }
+    
+    public List<String[]> valide(int application, int[] services, String[] lignes, String strdate, boolean force, boolean gererAdresse,boolean gererPays, Connection connection,String restriction_departements) throws
             SQLException {
         final List<String[]> listRet = new ArrayList<String[]>();
         // WA 01/2012 Pays
@@ -2742,12 +2752,12 @@ public class GestionReferentiel {
             
             //if (serviceCle == SERVICE_POINT_ADRESSE) {           
             if (id == SERVICE_ADRESSE) {
-                listRet.add(valide(application, lignes, strdate, force, gererAdresse,gererPays, connection));
+                listRet.add(valide(application, lignes, strdate, force, gererAdresse,gererPays, connection,restriction_departements));
             } else if (id == SERVICE_PAYS) {
                 listRet.add(paysValides);
             } else if (id == SERVICE_DEPARTEMENT) {
                 if (codepostal.length() > 0) {
-                    listRet.add(gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, paysLigneId7, connection));
+                    listRet.add(gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, paysLigneId7, connection,restriction_departements));
                 } else {
                     jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
                     listRet.add(new String[]{"0", "8", "L'adresse ne comprend pas de code postal."});
@@ -2756,13 +2766,13 @@ public class GestionReferentiel {
                 if (commune.length() > 0) {
                     if (codepostal.length() == 0) {
                         listRet.add(gestionValidation.valideCommune(application, lignes, refcommune, date, force, gererPays, paysLigneId7,
-                                connection));
+                                connection,restriction_departements));
                     } else {
                         listRet.add(gestionValidation.valideCommuneEtCodePostal(application, lignes, refcodepostal, refcommune, date, force,
-                                gererPays, paysLigneId7, connection));
+                                gererPays, paysLigneId7, connection,restriction_departements));
                     }
                 } else if (codepostal.length() > 0) {
-                    listRet.add(gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, pays, connection));
+                    listRet.add(gestionValidation.valideCodePostal(application, lignes, date, force, gererPays, pays, connection,restriction_departements));
 
                 } else {
                     jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_ERREUR, false);
@@ -2776,7 +2786,7 @@ public class GestionReferentiel {
                     if (codepostal.length() == 0) {
                         // Les logs sont effectués dans cette méthode
                         String[] communes = gestionValidation.valideCommune(application, lignes, refcommune, date, force, gererPays, paysLigneId7,
-                                connection);
+                                connection, restriction_departements);
 
                         // Vérifie si la première commune trouvée n'est pas la seule qui pourrait correspondre.
                         if (ligne4.length() > 0 && (communes[GestionValidation.VALIDE_CODE_FONCTION].compareTo("3") == 0 ||
@@ -4403,6 +4413,11 @@ public class GestionReferentiel {
     String chercheCommuneDansChaine_4 = ") AND position_levenstein_joker(?,com_nom_desab,?,0)<>0";
     String chercheCommuneDansChaine_4_optimisee = ") AND position_levenstein_joker(?,com_nom_desab,?,0)<>0 order by com_nom";
 
+    public ArrayList<RefCommune> chercheCommuneDansChaine(String chaine, ArrayList<String> codes_departement, Connection connection) throws
+            SQLException {
+        return chercheCommuneDansChaine(chaine, codes_departement, connection, "");
+    }
+    
     /**
      * Cherche les noms de commune du département spécifié présentes dans la chaine spécifiée, aux erreurs près.<br>
      * La recherche est effectuée sur la version désabbréviée de la commune.<br>
@@ -4416,7 +4431,7 @@ public class GestionReferentiel {
      * @param codes_departement les départements dans lequels chercher la commune, s'il n'est pas spécifié, 
      * les codes de département par défaut sont utilisés.
      */
-    public ArrayList<RefCommune> chercheCommuneDansChaine(String chaine, ArrayList<String> codes_departement, Connection connection) throws
+    public ArrayList<RefCommune> chercheCommuneDansChaine(String chaine, ArrayList<String> codes_departement, Connection connection, String restriction_departements) throws
             SQLException {
         // utilise les départements par défaut si nécessaire
         if (codes_departement.size() == 0) {

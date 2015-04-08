@@ -417,7 +417,7 @@ public class GestionAdr {
             }
         }
     }
-
+    
     /**
      * Effectue les opérations de normalisation demandées.
      * @param operation une combinaison de bits :
@@ -556,7 +556,7 @@ public class GestionAdr {
             // Restructuration
             if ((operation & 2) != 0) {
                 try {
-                    adresse = gestionMots.restructure(adresse, retourne_departements_presumes, gestionPays, refconnection.connection);
+                    adresse = gestionMots.restructure(adresse, retourne_departements_presumes, gestionPays, refconnection.connection, str_departements);
 
 //                    if (retourne_departements_presumes)
 //                    {
@@ -841,7 +841,7 @@ public class GestionAdr {
                         retourne_departements_presumes = true;
                     }
 
-                    adresse = gestionMots.restructure(adresse, retourne_departements_presumes, gestionPays, refconnection.connection);
+                    adresse = gestionMots.restructure(adresse, retourne_departements_presumes, gestionPays, refconnection.connection,str_departements);
 
                     if (retourne_departements_presumes) {
                         str_departements = adresse[6];
@@ -951,7 +951,7 @@ public class GestionAdr {
                 //gestionPays = gestionPays || (lignes.length == 7);
 
                 // Les logs sont effectués dans cette méthode.
-                listRet.addAll(gestionReferentiel.valide(application, services, adresse, date, force, gestionAdresse,gestionPays, refconnection.connection));
+                listRet.addAll(gestionReferentiel.valide(application, services, adresse, date, force, gestionAdresse,gestionPays, refconnection.connection,str_departements));
 
                 return listRet;
             } catch (SQLException ex) {

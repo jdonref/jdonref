@@ -5797,10 +5797,10 @@ public class GestionMots {
     private int indiceElementPrecedent(ArrayList<RefCle> elements, int indice) {
         int index = elements.get(indice).obtientIndex();
 
-        // Passe les éléments ne même index.
+        // Passe les éléments de même index.
         do {
             indice--;
-        } while (indice >= 0 && elements.get(indice).obtientIndex() == index);
+        } while (indice >= 0 && (elements.get(indice).obtientIndex() == index));// || elements.get(indice).obtientIndex()+elements.get(indice).mot.length()>index));
 
         if (indice == -1) {
             return -1;
@@ -5866,11 +5866,38 @@ public class GestionMots {
     }
 
     /**
-     * Trouve le type de voie de même index que l'élément d'indice spécifié (voir indiceElementPrecedent pour les définitions des termes).<br>
-     * L'élément trouvé est tel que la catégorie pour laquelle il a été trouvé est type de voie.
+     * Trouve l'objet de catégorie donné de même index que l'élément d'indice spécifié (voir indiceElementPrecedent pour les définitions des termes).<br>
      * @param elements
      * @param indice
-     * @return -1 si aucune element type de voie de même index n'est trouvé.
+     * @return -1 si aucun element de la catégorie donnée et de même index n'est trouvé.
+     */
+    private int trouveElementDeMotDeCategorie(ArrayList<RefCle> elements, int indice, CategorieMot categorie) {
+        int index = elements.get(indice).obtientIndex();
+        // Cherche le premier élément de même index
+        int lastindice;
+        do {
+            lastindice = indice;
+            indice--;
+        } while (indice >= 0 && elements.get(indice).obtientIndex() == index);
+
+        // Cherche parmi les éléments de même index un élément de la catégorie spécifiée
+        indice = lastindice;
+        do {
+            RefCle element = elements.get(indice);
+            if ((element.obtientCle()!=null && element.obtientCle().estDeLaCategorie(categorie)) || 
+                (element.obtientCleAbbreviation()!=null && element.obtientCleAbbreviation().estAbbreviationDeCategorie(categorie))    ) {
+                return indice;
+            }
+            indice++;
+        } while (indice < elements.size() && elements.get(indice).obtientIndex() == index);
+        return -1;
+    }
+    
+    /**
+     * Trouve l'objet de catégorie donné de même index que l'élément d'indice spécifié (voir indiceElementPrecedent pour les définitions des termes).<br>
+     * @param elements
+     * @param indice
+     * @return -1 si aucun element de la catégorie donnée et de même index n'est trouvé.
      */
     private int trouveElementDeCategorie(ArrayList<RefCle> elements, int indice, CategorieMot categorie) {
         int index = elements.get(indice).obtientIndex();
@@ -6002,6 +6029,81 @@ public class GestionMots {
     }
 
     /**
+     * Permet de savoir si l'élément est précédé par plusieurs articles et un élément autre qui disposait d'une autre catégorie.
+     * @param elements
+     * @param indiceprecedent_0 l'indice de l'élément qui précédé l'élément.
+     * @param autrecategorie l'autre catégorie à rechercher.
+     * @return
+     */
+    private boolean estPrecedeDeAutre(ArrayList<RefCle> elements, int indiceprecedent_0, CategorieMot autrecategorie) {
+        if (indiceprecedent_0 != -1) {
+            int indiceprecedent = indiceprecedent_0;
+
+            // Cherche si un ou des articles précédent la catégorie,
+            int trouve, lastindiceprecedent = -1;
+            do {
+                lastindiceprecedent = indiceprecedent;
+                trouve = trouveArticleOuAutre(elements, indiceprecedent, CategorieMot.Autre);
+                if (trouve == 1) {
+                    indiceprecedent = indiceElementPrecedent(elements, indiceprecedent);
+                }
+            } while (indiceprecedent != -1 && trouve == 1);
+            // Si un ou des articles est trouvé,
+            if (trouve == 1) {
+                // Cherche si l'autre catégorie le précéde
+                indiceprecedent = indiceElementPrecedent(elements, lastindiceprecedent);
+                if (indiceprecedent != -1) {
+                    trouve = trouveArticleOuAutre(elements, indiceprecedent, CategorieMot.Autre);
+                }
+            }
+            // Si la catégorie Autre est trouvée
+            if (trouve == 2) {
+                return trouveElementDeMotDeCategorie(elements, indiceprecedent, autrecategorie)!=-1;
+
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Permet de savoir si l'élément est suivi par plusieurs articles et un élément d'une autre catégorie.
+     * @param elements
+     * @param indicesuivant_0 l'indice de l'élément qui précédé l'élément.
+     * @param autrecategorie l'autre catégorie à rechercher.
+     * @return
+     */
+    private boolean estSuiviDe(ArrayList<RefCle> elements, int indicesuivant_0, CategorieMot autrecategorie)
+    {
+        if (indicesuivant_0 != -1) {
+            int indicesuivant = indicesuivant_0;
+
+            // Cherche si un ou des articles suivent la catégorie,
+            int trouve, lastindicesuivant = -1;
+            do {
+                lastindicesuivant = indicesuivant;
+                trouve = trouveArticleOuAutre(elements, indicesuivant, autrecategorie);
+                if (trouve == 1) {
+                    indicesuivant = indiceElementSuivant(elements, indicesuivant);
+                }
+            } while (indicesuivant != -1 && trouve == 1);
+            // Si un ou des articles est trouvé,
+            if (trouve == 1) {
+                // Cherche si l'autre catégorie le précéde
+                indicesuivant = indiceElementSuivant(elements, lastindicesuivant);
+                if (indicesuivant != -1) {
+                    trouve = trouveArticleOuAutre(elements, indicesuivant, autrecategorie);
+                }
+            }
+            // Si l'autre catégorie est trouvée
+            if (trouve == 2) {
+                // C'est qu'il s'agit d'un complément de cette catégorie
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Permet de savoir si l'élément est précédé par plusieurs articles et un élément d'une autre catégorie.
      * @param elements
      * @param indiceprecedent_0 l'indice de l'élément qui précédé l'élément.
@@ -6012,7 +6114,7 @@ public class GestionMots {
         if (indiceprecedent_0 != -1) {
             int indiceprecedent = indiceprecedent_0;
 
-            // Cherche si un ou des articles précédent le type de voie,
+            // Cherche si un ou des articles précédent la catégorie,
             int trouve, lastindiceprecedent = -1;
             do {
                 lastindiceprecedent = indiceprecedent;
@@ -6445,6 +6547,31 @@ public class GestionMots {
             }
         }
     }
+    
+    private boolean contientCommune(ArrayList<ArrayList<RefCle>> elements)
+    {
+        for (ArrayList<RefCle> elementsLine : elements) {
+            for (RefCle cle : elementsLine) {
+                if (cle.obtientCategorieMot() == CategorieMot.Ville) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private boolean contientCodePostalouCodeDepartement(ArrayList<ArrayList<RefCle>> elements)
+    {
+        for (ArrayList<RefCle> elementsLine : elements) {
+            for (RefCle cle : elementsLine) {
+                if (cle.obtientCategorieMot() == CategorieMot.CodeDepartement || cle.obtientCategorieMot() == CategorieMot.CodePostal)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * Determine parmis les N (>1) pays presents lequel est le plus suceptible d'être le bon.
@@ -6453,19 +6580,32 @@ public class GestionMots {
      * @param count
      */
     private void resoudAmbiguitesDoublonsPays(ArrayList<ArrayList<RefCle>> elements, int count) {
-        // On cherche le pays le plus lointain dans l'adresse
+        
+        boolean france = contientCodePostalouCodeDepartement(elements) || contientCommune(elements);
+        
+        // On cherche le pays le plus lointain dans l'adresse ou la france
         RefCle maxPays = null;
         for (ArrayList<RefCle> elementsLine : elements) {
             int lineMaxIndex = -1;
             for (RefCle cle : elementsLine) {
-                if ((cle.obtientCategorieMot() == CategorieMot.Pays) && (cle.obtientIndex() > lineMaxIndex)) {
-                    lineMaxIndex = cle.obtientIndex();
-                    maxPays = cle;
+                if ((cle.obtientCategorieMot() == CategorieMot.Pays))
+                {
+                    if (france)
+                    {
+                        if (cle.cleMot.est("FRANCE"))
+                            maxPays = cle;
+                    }
+                    else
+                    if (cle.obtientIndex() > lineMaxIndex)
+                    {
+                        lineMaxIndex = cle.obtientIndex();
+                        maxPays = cle;
+                   }
                 }
             }
         }
         // Puis on 'desactive' tous les autres
-        if (maxPays != null) {
+        if (maxPays != null || france) {
             for (ArrayList<RefCle> elementsLine : elements) {
                 for (RefCle cle : elementsLine) {
                     if ((cle.obtientCategorieMot() == CategorieMot.Pays) && (!cle.equals(maxPays))) {
@@ -7208,7 +7348,7 @@ public class GestionMots {
      * Plusieurs cas différents peuvent être rencontrés:
      * 1. Elle débute la ligne, il s'agit d'une commune
      * 2. Il s'agit d'un nom de voie du type RUE DE PARIS, pour lequel le contexte du libellé n'est pas intéressant
-     * 3. Elle est précédé d'une clé, il s'agit d'un simple mot
+     * 3. Elle est précédé d'une clé ou d'un article, il s'agit d'un simple mot
      * 4. Elle est précédé d'une valeur précédée d'une clé, il s'agit d'une commune.
      * 5. Il s'agit d'un nom de voie du type RUE DU FAUBOURG DE PARIS, pour lequel le contexte du libellé est intéressant
      * 6. Il s'agit pas d'une commune.
@@ -7222,7 +7362,8 @@ public class GestionMots {
         // Cas numéro 1,
         // Il faut vérifier qu'un type de voie et éventuellement un ou des articles précédent le nom de commune
         // A cet effet, les éléments précédent sont analysés.
-        if (estPrecedeDe(elements, indiceprecedent_0, CategorieMot.TypeDeVoie)) {
+        if (estPrecedeDe(elements, indiceprecedent_0, CategorieMot.TypeDeVoie) ||
+            estPrecedeDeAutre(elements, indiceprecedent_0, CategorieMot.TypeDeVoie)) {
             element.definitCategorieMot(CategorieMot.Libelle);
             return i;
         }
@@ -7232,7 +7373,7 @@ public class GestionMots {
             return i;
         }
         // Cas numéro 3,
-        if (estPrecedeDe(elements, indiceprecedent_0, CategorieMot.Cle)) {
+        if (estPrecedeDe(elements, indiceprecedent_0, CategorieMot.Cle) || estPrecedeDe(elements, indiceprecedent_0, CategorieMot.Article)) {
             element.definitCategorieMot(CategorieMot.Autre);
             return i;
         }
@@ -7254,6 +7395,17 @@ public class GestionMots {
         return i;
     }
 
+    private int indicePrecedentRecouvre(ArrayList<RefCle> elements, RefCle element, int indiceprecedent_0)
+    {
+        for(int i=0;i<elements.size();i++)
+        {
+            RefCle el = elements.get(i);
+            if (el==element) break;
+            if (el.obtientIndex()+el.mot.length()>element.obtientIndex()) return i;
+        }
+        return -1;
+    }
+    
     /**
      * Résoud les ambiguités des pays
      * Plusieurs cas différents peuvent être rencontrés:
@@ -7263,6 +7415,7 @@ public class GestionMots {
      * 4. Il est precede d'un code postal -> pays
      * 5. Il s'agit d'un nom de voie du type SQUARE DES ECRIVAINS COMBATTANTS MORTS POUR LA FRANCE, pour lequel le contexte du libellé est intéressant
      * 6. Il s'agit d'un nom de commune du type SEYNE SUR FRANCE, pour lequel le contexte du libellé est intéressant
+     * 7. Il s'agit aussi d'une commune
      */
     private int resoudAmbiguitesPays(ArrayList<RefCle> elements, RefCle element, int indiceprecedent_0, String contexte,
             ArrayList<String> codes_departement, Connection connection, int i) throws SQLException {
@@ -7302,6 +7455,27 @@ public class GestionMots {
             element.definitCategorieMot(CategorieMot.Libelle);
             return i;
         }
+        
+        // Cas 7 : c'est aussi une commune, la commune a priorité
+        if (trouveElementDeCategorie(elements, i, CategorieMot.Ville)!=-1)
+        {
+            element.definitCategorieMot(CategorieMot.Libelle);
+            return i;
+        }
+        // 7bis : la commune précédente recouvre le pays ...
+        int indiceRecouvre = -1;
+        if ((indiceRecouvre=indicePrecedentRecouvre(elements, element, indiceprecedent_0))!=-1 && trouveElementDeCategorie(elements, indiceRecouvre, CategorieMot.Ville)!=-1)
+        {
+            element.definitCategorieMot(CategorieMot.Libelle);
+            return i;
+        }
+        
+        // Cas 8 : précédé d'un article
+        if (trouveElementDeCategorie(elements, indiceprecedent_0, CategorieMot.Article)!=-1)
+        {
+            element.definitCategorieMot(CategorieMot.Libelle);
+            return i;
+        }
 
         // Sinon, c'est bien un pays. On supprime tous les elements le constituant.
         i = supprimeElementsInclus(i, elements);
@@ -7314,6 +7488,36 @@ public class GestionMots {
      */
     private void resoudAmbiguitesCodeDepartement(RefCle element, String contexte, ArrayList<String> codes_departement, Connection connection)
             throws SQLException {
+        // 1 seul cas: Vérifie si le code de département ne fait pas partie d'une voie
+        if (referentiel.resoudAmbiguiteAvecContexte(element.obtientNomDeCle(),
+                element.obtientMot(),
+                CategorieAmbiguite.NombreDansVoie.toString(),
+                contexte,
+                codes_departement,
+                connection)) {
+            // Il s'agit alors d'un nom de voie.
+            element.definitCategorieMot(CategorieMot.Libelle);
+            return;
+        }
+    }
+    
+    /**
+     * Résoud les ambiguités liées aux codes de département.<br>
+     * 1 seul cas: Vérifie si le code de département ne fait pas partie d'une voie
+     */
+    private void resoudAmbiguitesCodeDepartement(ArrayList<RefCle> elements,RefCle element, String contexte, ArrayList<String> codes_departement, Connection connection)
+            throws SQLException {
+        
+        if (debutDeSegment(elements, indiceElementPrecedent(elements,element.obtientIndex()) , element.obtientIndex() ))
+        {
+            int indiceSuivant = indiceElementSuivant(elements, element.obtientIndex());
+            
+            if (estSuiviDe(elements, indiceSuivant, CategorieMot.Libelle) || estSuiviDe(elements,indiceSuivant, CategorieMot.Autre))
+            {
+                element.definitCategorieMot(CategorieMot.Numero);
+            }
+        }
+        
         // 1 seul cas: Vérifie si le code de département ne fait pas partie d'une voie
         if (referentiel.resoudAmbiguiteAvecContexte(element.obtientNomDeCle(),
                 element.obtientMot(),
@@ -7418,7 +7622,40 @@ public class GestionMots {
         // Sinon, il s'agit d'un numéro ordinaire.
         }
     }
+    
+    private void resoudAmbiguitesSuperposition(ArrayList<RefCle> elements, RefCle element, int i) {
+        int indice = i;
+        int index = element.obtientIndex();
+        int endindex = element.obtientMot().length();
+        for(int j=0;j<elements.size();j++)
+        {
+            if (j!=i)
+            {
+                int indexj = elements.get(j).obtientIndex();
+                int endindexj = indexj + elements.get(j).obtientMot().length();
 
+                if (indexj<index)
+                {
+                    if (endindexj>index)
+                    {
+                        elements.remove(j); j--;
+                    }
+                }
+                else if (endindexj>endindex)
+                {
+                    if (indexj<endindex)
+                    {
+                        elements.remove(j); j--;
+                    }
+                }
+                else if( indexj>=index && endindexj<=endindex)
+                {
+                    elements.remove(j); j--;
+                }
+            }
+        }
+    }
+    
     /**
      * Résoud les ambiguités des éléments qui sont contenus dans d'autres 
      */
@@ -7460,6 +7697,7 @@ public class GestionMots {
      * @param indiceprecedent_0
      */
     private int resoudAmbiguitesArticle(ArrayList<RefCle> elements, RefCle element, int indiceprecedent_0, int i) {
+        
         if (trouveElementDeCategorie(elements, i, CategorieMot.Cle) != -1) {
             if (trouveElementDeCategorie(elements, indiceprecedent_0, CategorieMot.Numero) == -1 &&
                     trouveElementDeCategorie(elements, indiceprecedent_0, CategorieMot.Repetition) == -1) {
@@ -7468,13 +7706,17 @@ public class GestionMots {
                 return i;
             }
         }
-        // WA 01 2012 Pays
-        if ((trouveElementDeCategorie(elements, i, CategorieMot.Ville) != -1) || (trouveElementDeCategorie(elements, i, CategorieMot.Pays) != -1)) {
-            elements.remove(i);
-            i--;
-            return i;
+        
+        if (indiceprecedent_0==-1 || trouveElementDeCategorie(elements, indiceprecedent_0, CategorieMot.TypeDeVoie) == -1)
+        {
+            // WA 01 2012 Pays
+            if ((trouveElementDeCategorie(elements, i, CategorieMot.Ville) != -1) || (trouveElementDeCategorie(elements, i, CategorieMot.Pays) != -1)) {
+                elements.remove(i);
+                i--;
+                return i;
+            }
         }
-
+        
         // sinon, il s'agit bien d'un article et les références suivantes peuvent être supprimées.
         supprimeElementMemeIndex(i, elements);
 
@@ -7532,7 +7774,7 @@ public class GestionMots {
                 i = resoudAmbiguitesCles(elements, element, indiceprecedent_0, m, contexte, contexte_apres, codes_departement, connection, i);
             } // Résoud l'ambiguité de type ville : S'agit-il d'un nom de commune ou d'un nom de voie?
             else if (categorie == CategorieMot.CodeDepartement) {
-                resoudAmbiguitesCodeDepartement(element, contexte, codes_departement, connection);
+                resoudAmbiguitesCodeDepartement(elements,element, contexte, codes_departement, connection);
             }
         }
 
@@ -7568,6 +7810,8 @@ public class GestionMots {
         }
     }
 
+    Levenstein l = new Levenstein();
+    
     /**
      * Résoud les ambiguités plus complexes pour les éléments de la chaine spécifiée.<br>
      * Les ambiguités possibles sont:
@@ -7614,7 +7858,15 @@ public class GestionMots {
                 resoudAmbiguitesInclusion(elements, element, i);
             }
         }
-
+        
+        for (int i = 0; i < elements.size(); i++) {
+            RefCle element = elements.get(i);
+            CategorieMot categorie = element.obtientCategorieMot();
+            if ((categorie == CategorieMot.Ville) || (categorie == CategorieMot.TypeDeVoie) || (categorie == CategorieMot.Pays))
+                if (element.obtientNomDeCle()==null || l.distance_levenstein(element.mot,element.obtientNomDeCle())==0)
+                    resoudAmbiguitesSuperposition(elements, element, i);
+        }
+        
         for (int i = 0; i < elements.size(); i++) {
             RefCle element = elements.get(i);
             resoudAmbiguitesInclusion(elements, element, i);
@@ -8520,7 +8772,21 @@ public class GestionMots {
             }
         }
     }
+    
+    private ArrayList<String> selectionneCodeDepartement(ArrayList<ArrayList<RefCle>> nombres) {
+        return selectionneCodeDepartement(nombres,"");
+    }
 
+    private boolean inclus(String[] restriction, String departement)
+    {
+        for(String dpt : restriction)
+        {
+            if (dpt.equals(departement))
+                return true;
+        }
+        return false;
+    }
+    
     /**
      * Extrait des nombres sélectionnés comme pouvant être le code postal, celui 
      * qui a le plus de chance de le représenter.<br>
@@ -8532,7 +8798,10 @@ public class GestionMots {
      * @param nombres
      * @return
      */
-    private ArrayList<String> selectionneCodeDepartement(ArrayList<ArrayList<RefCle>> nombres) {
+    private ArrayList<String> selectionneCodeDepartement(ArrayList<ArrayList<RefCle>> nombres,String restriction_departements) {
+        
+        String[] restriction = restriction_departements!=null?restriction_departements.split(","):new String[]{};
+        
         ArrayList<String> res = new ArrayList<String>();
         for (int i = nombres.size() - 1; i >= 0; i--) {
             ArrayList<RefCle> nombresi = nombres.get(i);
@@ -8541,31 +8810,40 @@ public class GestionMots {
                 CategorieMot categorie = nbj.obtientCategorieMot();
                 String mot = nbj.obtientMot();
 
+                String pretendant = "";
+                
                 if (categorie == CategorieMot.CodePostal) {
                     // WA 09/2011 on utilise maintenant GestionDepartement qui se charge d'extraire le code departement d'un code postal.
 //                    res.add(nbj.obtientMot().substring(0, 2));
-                    res.add(GestionCodesDepartements.getInstance().computeCodeDptFromCodePostal(mot));
+                    pretendant = GestionCodesDepartements.getInstance().computeCodeDptFromCodePostal(mot);
 
                 } else if (categorie == CategorieMot.CodeDepartement || mot.length() == 2) {
                     // WA 09/2011 on utilise maintenant GestionDepartement qui se charge de donner la denomination officielle
                     // d'un dpt a partir d'un eventuel synonyme.
 //                    res.add(nbj.obtientMot());
-                    res.add(GestionCodesDepartements.getInstance().getOfficialCodeDpt(mot));
+                    pretendant = GestionCodesDepartements.getInstance().getOfficialCodeDpt(mot);
                 }
+                
+                if (restriction.length==0 || !inclus(restriction, pretendant))
+                    res.add(pretendant);
             }
         }
         return res;
     }
 
+    private ArrayList<String> trouveCodeDepartement(ArrayList<ArrayList<RefCle>> elements, Connection connection) throws SQLException {
+        return trouveCodeDepartement(elements, connection, "");
+    }
+    
     /**
      * Trouve le code de département dans les éléments trouvées dans une adresse.
      * @param lignes
      * @return
      */
-    private ArrayList<String> trouveCodeDepartement(ArrayList<ArrayList<RefCle>> elements, Connection connection) throws SQLException {
+    private ArrayList<String> trouveCodeDepartement(ArrayList<ArrayList<RefCle>> elements, Connection connection, String restriction_departements) throws SQLException {
         ArrayList<ArrayList<RefCle>> nombres = trouvePretendusCodesDepartements(elements, connection);
 
-        return selectionneCodeDepartement(nombres);
+        return selectionneCodeDepartement(nombres,restriction_departements);
     }
 
     /**
@@ -8867,6 +9145,11 @@ public class GestionMots {
         }
         return pays;
     }
+    
+    public String[] restructure(String[] lignes, boolean ajouter_departements_finaux, boolean gererPays, Connection connection) throws
+            SQLException {
+        return restructure(lignes, ajouter_departements_finaux, gererPays, connection, "");
+    }
 
     /**
      * Restructure l'adresse spécifiée.<br>
@@ -8881,20 +9164,28 @@ public class GestionMots {
      * @param gererPays indique si on doit prendre en compte les eventuels pays presents
      * @return les 6 ou 7 lignes d'adresse restructurées.
      */
-    public String[] restructure(String[] lignes, boolean ajouter_departements_finaux, boolean gererPays, Connection connection) throws
+    public String[] restructure(String[] lignes, boolean ajouter_departements_finaux, boolean gererPays, Connection connection, String restriction_departements) throws
             SQLException {
         ArrayList<ArrayList<RefCle>> elements = new ArrayList<ArrayList<RefCle>>();
         String[] restants = new String[lignes.length];
-
-        for (int i = 0; i < lignes.length; i++) {
+        
+        for (int i = 0; i < lignes.length; i++)
+        {
             // Identifie les éléments clés dans chaque ligne d'adresse.
             // Les clés, leurs abbréviations, les nombres, les èmes, les articles, les répétitions,
             // les types de voie, les codes departement potentiels, et tous les autres mots.
             elements.add(chercheElements(lignes[i]));
         }
-
-        ArrayList<String> codes_departement = trouveCodeDepartement(elements, connection);
-
+        
+        ArrayList<String> codes_departement = trouveCodeDepartement(elements, connection,restriction_departements);
+        
+        if (codes_departement.size()==0 && restriction_departements!=null && restriction_departements.length()>0)
+        {
+            String[] dpts = restriction_departements.split(",");
+            for(int i=0;i<dpts.length;i++)
+                codes_departement.add(dpts[i].trim());
+        }
+        
         // WA 01/2012 Pays pays a priori, avant desambiguisation
         List<RefPays> pays = null;
         if (params.isUtilisationDeLaGestionDesPays() && gererPays) {

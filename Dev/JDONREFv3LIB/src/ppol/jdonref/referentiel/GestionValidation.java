@@ -36,6 +36,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import ppol.jdonref.AGestionLogs;
 import ppol.jdonref.Algos;
@@ -247,15 +249,32 @@ public class GestionValidation {
     private final static String valideCommune_psTime_0 = "SELECT t0,t1 FROM com_communes WHERE com_code_insee=? AND com_nom=? AND t0<=?";
     private final static String valideCommune_psChercheExact_0 = "SELECT DISTINCT com_communes.com_code_insee,com_communes.com_nom,cdp_codes_postaux.cdp_code_postal,note_commune(?,com_communes.com_nom_pq,?,cdp_code_postal,com_code_insee_commune is null) AS note, com_nom_desab ";
     private final static String valideCommune_psChercheExact_1 = "SELECT DISTINCT com_communes.com_code_insee,com_communes.com_nom,cdp_codes_postaux.cdp_code_postal,note_commune(?,com_communes.com_nom_pq,cdp_code_postal,cdp_code_postal,com_code_insee_commune is null) AS note, com_nom_desab ";
-    private final static String valideCommune_psChercheExact_2 = "FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND com_nom_desab=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?";
-    private final static String valideCommune_psChercheExact_3 = "FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND substr(com_communes.com_code_insee,4,2)=? AND com_nom_desab=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?";
+    private final static String valideCommune_psChercheExact_2 = "FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND com_nom_desab=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0)";
+    private final static String valideCommune_psChercheExact_3 = " AND substr(com_communes.com_code_insee,4,2)=? ";
+    private final static String valideCommune_psChercheExact_4 = " AND (";
+    private final static String valideCommune_psChercheExact_5 = " OR ";
+    private final static String valideCommune_psChercheExact_6 = "cdp_codes_postaux.dpt_code_departement=?";
+    private final static String valideCommune_psChercheExact_7 = " )";
+    private final static String valideCommune_psChercheExact_8 = "ORDER BY note DESC LIMIT ?";
+    
+    
     private final static String valideCommune_psCherche_0 = "SELECT DISTINCT com_communes.com_code_insee,com_communes.com_nom,cdp_codes_postaux.cdp_code_postal,note_commune(?,com_communes.com_nom_pq,?,cdp_code_postal,com_code_insee_commune is null) AS note, com_nom_desab ";
     private final static String valideCommune_psCherche_1 = "SELECT DISTINCT com_communes.com_code_insee,com_communes.com_nom,cdp_codes_postaux.cdp_code_postal,note_commune(?,com_communes.com_nom_pq,cdp_code_postal,cdp_code_postal,com_code_insee_commune is null) AS note, com_nom_desab ";
     private final static String valideCommune_psCherche_2 = "FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND ";
     private final static String valideCommune_psCherche_3 = "note_commune(?,com_nom_pq,?,cdp_code_postal,com_code_insee_commune is null)>=? AND ";
     private final static String valideCommune_psCherche_4 = "note_commune(?,com_nom_pq,cdp_code_postal,cdp_code_postal,com_code_insee_commune is null)>=? AND ";
-    private final static String valideCommune_psCherche_5 = "com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?";
+    private final static String valideCommune_psCherche_5 = "com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0)";
+    private final static String valideCommune_psCherche_6 = " AND (";
+    private final static String valideCommune_psCherche_7 = " OR ";
+    private final static String valideCommune_psCherche_8 = "cdp_codes_postaux.dpt_code_departement=?";
+    private final static String valideCommune_psCherche_9 = " )";
+    private final static String valideCommune_psCherche_10 = " ORDER BY note DESC LIMIT ?";
 
+    public String[] valideCommune(int application, String lignes[], RefCle rccommune, Date dt, boolean force, boolean gererPays, String pays,
+            Connection connection) throws SQLException {
+        return valideCommune(application, lignes, rccommune, dt, force, gererPays, pays, connection, "");
+    }
+    
     /**
      * Valide la commune spécifiée jusque la date sélectionnée.<br>
      * La recherche est effectuée en deux étapes:
@@ -284,7 +303,7 @@ public class GestionValidation {
      *     <li>...</li></ul>
      */
     public String[] valideCommune(int application, String lignes[], RefCle rccommune, Date dt, boolean force, boolean gererPays, String pays,
-            Connection connection) throws SQLException {
+            Connection connection,String restriction_departements) throws SQLException {
         String ligne6 = lignes[5];
         if (dt == null) {
             dt = Calendar.getInstance().getTime();
@@ -302,6 +321,12 @@ public class GestionValidation {
         } else {
             arrondissement = null;
         }
+        
+        String[] dpts;
+        if (restriction_departements!=null && restriction_departements.length()>0)
+            dpts = restriction_departements.split(",");
+        else
+            dpts = null;
 
         ArrayList<String> communes = new ArrayList<String>();
         ArrayList<String> communes_desabbrevie = new ArrayList<String>();
@@ -330,11 +355,25 @@ public class GestionValidation {
             } else {
                 sb.append(valideCommune_psChercheExact_1);
             }
-            if (arrondissement == null) {
-                sb.append(valideCommune_psChercheExact_2);
-            } else {
+            sb.append(valideCommune_psChercheExact_2);
+            if (arrondissement != null) {
                 sb.append(valideCommune_psChercheExact_3);
             }
+            if (dpts!=null)
+            {
+                sb.append(valideCommune_psChercheExact_4);
+                for(int i=0;i<dpts.length;i++)
+                {
+                    if (i>0) sb.append(valideCommune_psChercheExact_5);
+                    sb.append(valideCommune_psChercheExact_6);
+                }
+                sb.append(valideCommune_psChercheExact_7);
+            }
+            
+            sb.append(valideCommune_psChercheExact_8);
+            
+            
+            
             psChercheExact = connection.prepareStatement(sb.toString());
 
             // note_commune(?,nom,?,cdp_code_postal,com_code_insee_commune is null)
@@ -344,10 +383,6 @@ public class GestionValidation {
                 psChercheExact.setString(index++, arrondissement);
             }
 
-            // substr(com_communes.com_code_insee,3,2)=?
-            if (arrondissement != null) {
-                psChercheExact.setString(index++, arrondissement);
-            }
             // com_nom_pq=? AND 
             psChercheExact.setString(index++, commune);
 
@@ -355,6 +390,17 @@ public class GestionValidation {
             psChercheExact.setTimestamp(index++, tsdate);
             psChercheExact.setTimestamp(index++, tsdate);
 
+            // substr(com_communes.com_code_insee,3,2)=?
+            if (arrondissement != null) {
+                psChercheExact.setString(index++, arrondissement);
+            }
+            
+            if (dpts!=null)
+                for(String dpt : dpts)
+                {
+                    psChercheExact.setString(index++, dpt.trim());
+                }
+            
             // LIMIT ?
             psChercheExact.setInt(index++, jdonrefParams.obtientNombreDeCommuneParDefaut());
 
@@ -393,6 +439,17 @@ public class GestionValidation {
                 sb.append(valideCommune_psCherche_4);
             }
             sb.append(valideCommune_psCherche_5);
+            if (dpts!=null)
+            {
+                sb.append(valideCommune_psCherche_6);
+                for(int i=0;i<dpts.length;i++)
+                {
+                    if (i>0) sb.append(valideCommune_psCherche_7);
+                    sb.append(valideCommune_psCherche_8);
+                }
+                sb.append(valideCommune_psCherche_9);
+            }
+            sb.append(valideCommune_psCherche_10);
             PreparedStatement psCherche = connection.prepareStatement(sb.toString());
 
             //
@@ -415,6 +472,12 @@ public class GestionValidation {
             psCherche.setTimestamp(index++, tsdate);
             psCherche.setTimestamp(index++, tsdate);
 
+            if (dpts!=null)
+                for(String dpt : dpts)
+                {
+                    psCherche.setString(index++, dpt.trim());
+                }
+            
             // LIMIT ?
             psCherche.setInt(index++, jdonrefParams.obtientNombreDeCommuneParDefaut());
 
@@ -507,21 +570,38 @@ public class GestionValidation {
         jdonrefParams.getGestionLog().logValidation(application, null, AGestionLogs.FLAG_VALIDE_COMMUNE, true);
         return res;
     }
+    
     private final static String valideCommuneEtCodePostal_psTime_0 = "SELECT communes.t0,communes.t1,cdp_codes_postaux.t0,cdp_codes_postaux.t1 FROM com_communes as communes,cdp_codes_postaux WHERE communes.com_code_insee=cdp_codes_postaux.com_code_insee AND communes.com_code_insee=? AND com_nom=? AND cdp_codes_postaux.cdp_code_postal=? AND communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<communes.t0)";
     private final static String valideCommuneEtCodePostal_psChercheExact_0 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal_commune(?,com_nom_pq,?,cdp_code_postal,?,com_code_insee_commune IS null) AS note, com_nom_desab ";
     private final static String valideCommuneEtCodePostal_psChercheExact_1 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal_commune(?,com_nom_pq,?,cdp_code_postal,cdp_code_postal,com_code_insee_commune IS null) AS note, com_nom_desab ";
     private final static String valideCommuneEtCodePostal_psChercheExact_2 = "FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND ";
     private final static String valideCommuneEtCodePostal_psChercheExact_3 = "cdp_code_postal=? AND ";
     private final static String valideCommuneEtCodePostal_psChercheExact_4 = "substr(cdp_code_postal,4,2)=? AND ";
-    private final static String valideCommuneEtCodePostal_psChercheExact_5 = "com_nom_desab=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?";
+    private final static String valideCommuneEtCodePostal_psChercheExact_5 = "com_nom_desab=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ";
+    private final static String valideCommuneEtCodePostal_psChercheExact_6 = " AND (";
+    private final static String valideCommuneEtCodePostal_psChercheExact_7 = " OR ";
+    private final static String valideCommuneEtCodePostal_psChercheExact_8 = "cdp_codes_postaux.dpt_code_departement=?";
+    private final static String valideCommuneEtCodePostal_psChercheExact_9 = " )";       
+    private final static String valideCommuneEtCodePostal_psChercheExact_10 = "ORDER BY note DESC LIMIT ?";
+    
     private final static String valideCommuneEtCodePostal_psCherche_0 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal_commune(?,com_nom_pq,?,cdp_code_postal,?,com_code_insee_commune is null) as note, com_nom_desab ";
     private final static String valideCommuneEtCodePostal_psCherche_1 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal_commune(?,com_nom_pq,?,cdp_code_postal,cdp_code_postal,com_code_insee_commune is null) as note, com_nom_desab ";
     private final static String valideCommuneEtCodePostal_psCherche_2 = "FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND ";
     private final static String valideCommuneEtCodePostal_psCherche_3 = "com_communes.dpt_code_departement=? AND ";
     private final static String valideCommuneEtCodePostal_psCherche_4 = "note_codepostal_commune(?,com_nom_pq,?,cdp_code_postal,?,com_code_insee_commune is null)>=? AND ";
     private final static String valideCommuneEtCodePostal_psCherche_5 = "note_codepostal_commune(?,com_nom_pq,?,cdp_code_postal,cdp_code_postal,com_code_insee_commune is null)>=? AND ";
-    private final static String valideCommuneEtCodePostal_psCherche_6 = "com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?";
+    private final static String valideCommuneEtCodePostal_psCherche_6 = "com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ";
+    private final static String valideCommuneEtCodePostal_psCherche_7 = " AND (";
+    private final static String valideCommuneEtCodePostal_psCherche_8 = " OR ";
+    private final static String valideCommuneEtCodePostal_psCherche_9 = "cdp_codes_postaux.dpt_code_departement=?";
+    private final static String valideCommuneEtCodePostal_psCherche_10 = " )";
+    private final static String valideCommuneEtCodePostal_psCherche_11 = "ORDER BY note DESC LIMIT ?";
 
+    public String[] valideCommuneEtCodePostal(int application, String[] lignes, RefCle rccodepostal, RefCle rccommune, Date date,
+            boolean force, boolean gererPays, String pays, Connection connection) throws SQLException {
+        return valideCommuneEtCodePostal(application, lignes, rccodepostal, rccommune, date, force, gererPays, pays, connection, "");
+    }
+    
     /**
      * Valide le couple commune et code postal spécifié.<br>
      * La recherche est effectuée en deux étapes:
@@ -550,7 +630,7 @@ public class GestionValidation {
      *     <li>...</li></ul>
      */
     public String[] valideCommuneEtCodePostal(int application, String[] lignes, RefCle rccodepostal, RefCle rccommune, Date date,
-            boolean force, boolean gererPays, String pays, Connection connection) throws SQLException {
+            boolean force, boolean gererPays, String pays, Connection connection,String restriction_departements) throws SQLException {
         String ligne6 = lignes[5];
         if (rccodepostal == null) {
             rccodepostal = gestionMots.trouveCodePostal(ligne6);
@@ -570,6 +650,12 @@ public class GestionValidation {
         }
         String code_departement = gestionMots.trouveCodeDepartement(cdp_code_postal).obtientMot();
 
+        String[] dpts;
+        if (restriction_departements!=null && restriction_departements.length()>0)
+            dpts = restriction_departements.split(",");
+        else
+            dpts = null;
+        
         ArrayList<String> communes = new ArrayList<String>();
         ArrayList<String> communes_desabbrevie = new ArrayList<String>();
         ArrayList<String> codepostal = new ArrayList<String>();
@@ -603,6 +689,17 @@ public class GestionValidation {
                 sb.append(valideCommuneEtCodePostal_psChercheExact_4);
             }
             sb.append(valideCommuneEtCodePostal_psChercheExact_5);
+            if (dpts!=null)
+            {
+                sb.append(valideCommuneEtCodePostal_psChercheExact_6);
+                for(int i=0;i<dpts.length;i++)
+                {
+                    if (i>0) sb.append(valideCommuneEtCodePostal_psChercheExact_7);
+                    sb.append(valideCommuneEtCodePostal_psChercheExact_8);
+                }
+                sb.append(valideCommuneEtCodePostal_psChercheExact_9);
+            }
+            sb.append(valideCommuneEtCodePostal_psChercheExact_10);
 
             psChercheExact = connection.prepareStatement(sb.toString());
 
@@ -629,6 +726,12 @@ public class GestionValidation {
             psChercheExact.setTimestamp(index++, tsdate);
             psChercheExact.setTimestamp(index++, tsdate);
 
+            if (dpts!=null)
+                for(String dpt : dpts)
+                {
+                    psChercheExact.setString(index++, dpt.trim());
+                }
+            
             // LIMIT ?
             psChercheExact.setInt(index++, jdonrefParams.obtientNombreDeCommuneParDefaut());
 
@@ -668,6 +771,19 @@ public class GestionValidation {
                 sb.append(valideCommuneEtCodePostal_psCherche_5);
             }
             sb.append(valideCommuneEtCodePostal_psCherche_6);
+            
+            if (dpts!=null)
+            {
+                sb.append(valideCommuneEtCodePostal_psCherche_7);
+                for(int i=0;i<dpts.length;i++)
+                {
+                    if (i>0) sb.append(valideCommuneEtCodePostal_psCherche_8);
+                    sb.append(valideCommuneEtCodePostal_psCherche_9);
+                }
+                sb.append(valideCommuneEtCodePostal_psCherche_10);
+            }
+            
+            sb.append(valideCommuneEtCodePostal_psCherche_11);
 
             PreparedStatement psCherche = connection.prepareStatement(sb.toString());
 
@@ -700,6 +816,12 @@ public class GestionValidation {
             psCherche.setTimestamp(index++, tsdate);
             psCherche.setTimestamp(index++, tsdate);
 
+            if (dpts!=null)
+                for(String dpt : dpts)
+                {
+                    psCherche.setString(index++, dpt.trim());
+                }
+            
             // LIMIT ?
             psCherche.setInt(index++, jdonrefParams.obtientNombreDeCommuneParDefaut());
 
@@ -819,9 +941,23 @@ public class GestionValidation {
         return res;
     }
     private final static String valideCodePostal_psTime_0 = "SELECT t0,t1 FROM cdp_codes_postaux WHERE com_code_insee=? AND cdp_code_postal=? AND t0<=?";
-    private final static String valideCodePostal_psChercheLike_1 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal(?,cdp_code_postal) as note,com_nom_desab FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND cdp_code_postal=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?";
-    private final static String valideCodePostal_psCherche_0 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal(?,cdp_code_postal) as note,com_nom_desab FROM com_communes,cdp_codes_postaux WHERE cdp_codes_postaux.dpt_code_departement = ? AND com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND note_codepostal(?,cdp_code_postal)>=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?";
+    private final static String valideCodePostal_psChercheLike_1 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal(?,cdp_code_postal) as note,com_nom_desab FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND cdp_code_postal=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0)";
+    private final static String valideCodePostal_psChercheLike_2 = " AND (";
+    private final static String valideCodePostal_psChercheLike_3 = " OR ";
+    private final static String valideCodePostal_psChercheLike_4 = "cdp_codes_postaux.dpt_code_departement=?";
+    private final static String valideCodePostal_psChercheLike_5 = " )";
+    private final static String valideCodePostal_psChercheLike_6 = " ORDER BY note DESC LIMIT ?";
+    private final static String valideCodePostal_psCherche_0 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal(?,cdp_code_postal) as note,com_nom_desab FROM com_communes,cdp_codes_postaux WHERE cdp_codes_postaux.dpt_code_departement = ? AND com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND note_codepostal(?,cdp_code_postal)>=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0)";
+    private final static String valideCodePostal_psCherche_1 = " AND (";
+    private final static String valideCodePostal_psCherche_2 = " OR ";
+    private final static String valideCodePostal_psCherche_3 = "cdp_codes_postaux.dpt_code_departement=?";
+    private final static String valideCodePostal_psCherche_4 = " )";
+    private final static String valideCodePostal_psCherche_5 = " ORDER BY note DESC LIMIT ?";
 
+    public String[] valideCodePostal(int application, String[] lignes, Date date, boolean force, boolean gererPays, String pays, Connection connection) throws SQLException {
+        return valideCodePostal(application, lignes, date, force, gererPays, pays, connection, "");
+    }
+    
     /**
      * Valide le code postal spécifiée jusqu'à la date spécifiée.<br>
      * La recherche est effectuée en deux temps:
@@ -850,10 +986,15 @@ public class GestionValidation {
      *     <li>...</li></ul>
      * @param force a true, la recherche exacte n'est pas effectuée.
      */
-    public String[] valideCodePostal(int application, String[] lignes, Date date, boolean force, boolean gererPays, String pays, Connection connection) throws SQLException {
+    public String[] valideCodePostal(int application, String[] lignes, Date date, boolean force, boolean gererPays, String pays, Connection connection,String restriction_departements) throws SQLException {
         String ligne6 = lignes[5];
         String cdp_code_postal = gestionMots.trouveCodePostal(ligne6).obtientMot();
         String codedepartement = gestionMots.trouveCodeDepartement(cdp_code_postal).obtientMot();
+        String[] dpts;
+        if (restriction_departements!=null && restriction_departements.length()>0)
+            dpts = restriction_departements.split(",");
+        else
+            dpts = null;
 
         ResultSet rsChercheLike = null;
         PreparedStatement psChercheLike = null;
@@ -875,25 +1016,46 @@ public class GestionValidation {
         boolean rechercheexacte = false;
 
         if (!force) {
+            StringBuilder psChercheLike_sb = new StringBuilder();
+            psChercheLike_sb.append(valideCodePostal_psChercheLike_1);
+            if (dpts!=null)
+            {
+                psChercheLike_sb.append(valideCodePostal_psChercheLike_2);
+                for(int i=0;i<dpts.length;i++)
+                {
+                    if (i>0) psChercheLike_sb.append(valideCodePostal_psChercheLike_3);
+                    psChercheLike_sb.append(valideCodePostal_psChercheLike_4);
+                }
+                psChercheLike_sb.append(valideCodePostal_psChercheLike_5);
+            }
+            psChercheLike_sb.append(valideCodePostal_psChercheLike_6);
+            
             // Prépare la requête permettant de chercher les communes dont le code postal
             // s'approche du code postal spécifié.
             //sb.setLength(0);
             //sb.append("SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal(?,cdp_code_postal) as note,com_nom_desab FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND cdp_code_postal=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?");
-            psChercheLike = connection.prepareStatement(valideCodePostal_psChercheLike_1);
-
+            psChercheLike = connection.prepareStatement(psChercheLike_sb.toString());
+            
             int index = 1;
             // SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal(?,cdp_code_postal) as note,com_nom_desab 
             psChercheLike.setString(index++, cdp_code_postal);
             // cdp_code_postal like ? AND 
             psChercheLike.setString(index++, cdp_code_postal);
-
+            
             // com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND
             psChercheLike.setTimestamp(index++, tsdate);
             psChercheLike.setTimestamp(index++, tsdate);
-
+            
+            
+            if (dpts!=null)
+            {
+                for(String dpt : dpts)
+                    psChercheLike.setString(index++,dpt.trim());
+            }
+            
             // ORDER BY note DESC LIMIT ?
             psChercheLike.setInt(index++, jdonrefParams.obtientNombreDeCommuneParDefaut());
-
+            
             rsChercheLike = psChercheLike.executeQuery();
         }
 
@@ -917,10 +1079,24 @@ public class GestionValidation {
                 psChercheLike.close();
             }
 
+            StringBuilder psCherche_sb = new StringBuilder();
+            psCherche_sb.append(valideCodePostal_psCherche_0);
+            if (dpts!=null)
+            {
+                psCherche_sb.append(valideCodePostal_psCherche_1);
+                for(int i=0;i<dpts.length;i++)
+                {
+                    if (i>0) psCherche_sb.append(valideCodePostal_psCherche_2);
+                    psCherche_sb.append(valideCodePostal_psCherche_3);
+                }
+                psCherche_sb.append(valideCodePostal_psCherche_4);
+            }
+            psCherche_sb.append(valideCodePostal_psCherche_5);
+            
             // Prépare la requête permettant de chercher les communes dont le code postal s'approche du code postal spécifié.
             //sb.setLength(0);
             //sb.append("SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal(?,cdp_code_postal) as note,com_nom_desab FROM com_communes,cdp_codes_postaux WHERE cdp_codes_postaux.dpt_code_departement = ? AND com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND note_codepostal(?,cdp_code_postal)>=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ORDER BY note DESC LIMIT ?");
-            PreparedStatement psCherche = connection.prepareStatement(valideCodePostal_psCherche_0);
+            PreparedStatement psCherche = connection.prepareStatement(psCherche_sb.toString());
 
             int index = 1;
 
@@ -938,9 +1114,15 @@ public class GestionValidation {
             psCherche.setTimestamp(index++, tsdate);
             psCherche.setTimestamp(index++, tsdate);
 
+            if (dpts!=null)
+            {
+                for(String dpt : dpts)
+                    psCherche.setString(index++,dpt.trim());
+            }
+            
             // LIMIT ? 
             psCherche.setInt(index++, jdonrefParams.obtientNombreDeCommuneParDefaut());
-
+            
             ResultSet rsCherche = psCherche.executeQuery();
 
             while (rsCherche.next()) {
@@ -1028,7 +1210,7 @@ public class GestionValidation {
     private final static String valideVoieCodePostal_chercheExact_1_adr_4 = ",com_communes AS communes WHERE voi_lbl_sans_articles=? AND ";
     
     private final static String valideVoieCodePostal_chercheExact_2 = "voi_type_de_voie=? AND ";
-    private final static String valideVoieCodePostal_chercheExact_3 = "cdp_code_postal=? AND ";
+    private final static String valideVoieCodePostal_chercheExact_3 = "dpt_code_departement=? AND ";
     private final static String valideVoieCodePostal_chercheExact_4 = "voies.com_code_insee = communes.com_code_insee AND voies.t0<=? AND communes.t0<=? AND ";
     private final static String valideVoieCodePostal_chercheExact_5 = "voies.voi_min_numero<=? AND voies.voi_max_numero>=? AND ";
     private final static String valideVoieCodePostal_chercheExact_6 = "NOT (voies.t1<communes.t0 OR communes.t1<voies.t0) ORDER BY note DESC LIMIT ?";
@@ -1223,7 +1405,7 @@ public class GestionValidation {
                 psChercheExact.setString(index++, stypedevoie);
             }
             if (cdp_code_postal.length() == 5) {
-                psChercheExact.setString(index++, cdp_code_postal);
+                psChercheExact.setString(index++, code_departement);
             }
 
             // voies.t0<=? AND communes.t0<=? 
@@ -1362,6 +1544,8 @@ public class GestionValidation {
             psCherche.close();
         }
 
+        HashMap<String,Integer> solutions = new HashMap<String,Integer>(); // gestion de la redondance.
+        
         int maxnote_constant = jdonrefParams.obtientNotePourMotDeterminant() +
                 jdonrefParams.obtientNotePourTypeDeVoie() +
                 jdonrefParams.obtientNotePourCodePostal();
@@ -1370,6 +1554,8 @@ public class GestionValidation {
         int notenumero = jdonrefParams.obtientNotePourNumero();
         //
         // POUR CHAQUE SOLUTION TROUVE, CONSERVE LES DERNIERES MISES A JOUR.
+        // AJUSTE LA NOTE SUIVANT LE NUMERO
+        // ELIMINE LES SOLUTIONS REDONDANTES (MEME LIBELLE, MEME NUMERO, MEME COMMUNE)
         // voi_id=? and communes.com_code_insee=? and communes.nom=? and communes.cdp_code_postal=?
         for (int i = 0; i < voies.size(); i++) {
             psTime.setString(1, voies.get(i)[0]);
@@ -1386,7 +1572,35 @@ public class GestionValidation {
             double notesurmax = ((double) (notes.get(i).intValue() * maxnote)) / NOTE_MAX;
             maxnote += notenumero;
 
-            if (rsTime.next()) {
+            // Dedoublonnage
+            String candidat = voies.get(i)[1]+" "+voies.get(i)[3];
+            Integer ancienne_solution;
+            boolean doublon = false;
+            if ((ancienne_solution=solutions.get(candidat))!=null)
+            {
+                int i_ancienne_solution = ancienne_solution.intValue();
+                int service_ancienne_solution = Integer.parseInt(voies.get(i_ancienne_solution)[13]);
+                if (service_ancienne_solution<Integer.parseInt(voies.get(i)[13]))
+                    doublon = true;
+                else if (service_ancienne_solution>Integer.parseInt(voies.get(i)[13])) // UNIQUEMENT 2 solutions
+                {
+                    // suppression de l'ancienne solution
+                    voies.remove(i_ancienne_solution);
+                    notes.remove(i_ancienne_solution);
+                    i--;
+                    Iterator<String> keys = solutions.keySet().iterator();
+                    while(keys.hasNext())
+                    {
+                        String key = keys.next();
+                        if (solutions.get(key).intValue()>i_ancienne_solution)
+                        {
+                            solutions.put(key,solutions.get(key).intValue()-1);
+                        }
+                    }
+                }
+            }
+            
+            if (!doublon && rsTime.next()) {
                 long dt0;
                 long dt1;
                 long dtv0 = rsTime.getTimestamp(1).getTime();
@@ -1454,7 +1668,10 @@ public class GestionValidation {
                     else
                     if (((min_numero != 0 || max_numero != 0) &&
                         numero >= min_numero && numero <= max_numero)) {
-                        notesurmax += notenumero/2;
+                        if (min_numero%2 == max_numero%2)
+                            notesurmax += notenumero/2;
+                        else
+                            notesurmax += notenumero/4;
                     }
                 }
                 else
@@ -1465,8 +1682,10 @@ public class GestionValidation {
                 int note = (int) (notesurmax * NOTE_MAX) / maxnote;
                 notes.set(i, new Integer(note));
                 voies.get(i)[11] = Integer.toString(note);
+                solutions.put(candidat, i);
             } else {
                 voies.remove(i);
+                notes.remove(i);
                 i--;
             }
             rsTime.close();
@@ -1660,7 +1879,7 @@ public class GestionValidation {
                 psChercheExact.setString(index++, stypedevoie);
             }
             if (cdp_code_postal.length() == 5) {
-                psChercheExact.setString(index++, cdp_code_postal);
+                psChercheExact.setString(index++, code_departement);
             }
 
             // voies.t0<=? AND communes.t0<=? 
@@ -1806,6 +2025,8 @@ public class GestionValidation {
             psCherche.close();
         }
 
+        HashMap<String,Integer> solutions = new HashMap<String,Integer>(); // gestion de la redondance.
+        
         int maxnote_constant = jdonrefParams.obtientNotePourMotDeterminant() +
                 jdonrefParams.obtientNotePourTypeDeVoie() +
                 jdonrefParams.obtientNotePourCodePostal();
@@ -1830,7 +2051,35 @@ public class GestionValidation {
             double notesurmax = ((double) (notes.get(i).intValue() * maxnote)) / NOTE_MAX;
             maxnote += notenumero;
 
-            if (rsTime.next()) {
+            // Dedoublonnage
+            String candidat = voies.get(i)[1]+" "+voies.get(i)[3];
+            Integer ancienne_solution;
+            boolean doublon = false;
+            if ((ancienne_solution=solutions.get(candidat))!=null)
+            {
+                int i_ancienne_solution = ancienne_solution.intValue();
+                int service_ancienne_solution = Integer.parseInt(voies.get(i_ancienne_solution)[13]);
+                if (service_ancienne_solution<Integer.parseInt(voies.get(i)[13]))
+                    doublon = true;
+                else if (service_ancienne_solution>Integer.parseInt(voies.get(i)[13])) // UNIQUEMENT 2 solutions
+                {
+                    // suppression de l'ancienne solution
+                    voies.remove(i_ancienne_solution);
+                    notes.remove(i_ancienne_solution);
+                    i--;
+                    Iterator<String> keys = solutions.keySet().iterator();
+                    while(keys.hasNext())
+                    {
+                        String key = keys.next();
+                        if (solutions.get(key).intValue()>i_ancienne_solution)
+                        {
+                            solutions.put(key,solutions.get(key).intValue()-1);
+                        }
+                    }
+                }
+            }
+            
+            if (!doublon && rsTime.next()) {
                 long dt0;
                 long dt1;
                 long dtv0 = rsTime.getTimestamp(1).getTime();
@@ -1898,7 +2147,10 @@ public class GestionValidation {
                     else
                     if (((min_numero != 0 || max_numero != 0) &&
                         numero >= min_numero && numero <= max_numero)) {
-                        notesurmax += notenumero/2;
+                        if (min_numero%2 == max_numero%2)
+                            notesurmax += notenumero/2;
+                        else
+                            notesurmax += notenumero/4;
                     }
                 }
                 else
@@ -1909,8 +2161,10 @@ public class GestionValidation {
                 int note = (int) (notesurmax * NOTE_MAX) / maxnote;
                 notes.set(i, new Integer(note));
                 voies.get(i)[11] = Integer.toString(note);
+                solutions.put(candidat,i);
             } else {
                 voies.remove(i);
+                notes.remove(i);
                 i--;
             }
             rsTime.close();
@@ -1985,7 +2239,7 @@ public class GestionValidation {
     
     private final static String valideVoieCodePostalCommune_psChercheExact_6 = "voi_type_de_voie=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_7 = "communes.com_nom_desab=? AND ";
-    private final static String valideVoieCodePostalCommune_psChercheExact_8 = "voies.cdp_code_postal=? AND ";
+    private final static String valideVoieCodePostalCommune_psChercheExact_8 = "communes.dpt_code_departement=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_9 = "substr(voies.cdp_code_postal,4,2)=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_10 = "voies.voi_min_numero<=? AND voies.voi_max_numero>=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_11 = "voies.com_code_insee = communes.com_code_insee AND voies.t0<=? AND communes.t0<=? AND NOT (voies.t1<communes.t0 OR communes.t1<voies.t0) ORDER BY note DESC LIMIT ?";
@@ -2237,7 +2491,7 @@ public class GestionValidation {
             }
             psChercheExact.setString(index++, commune);
             if (cdp_present) {
-                psChercheExact.setString(index++, cdp_code_postal);
+                psChercheExact.setString(index++, code_departement);
             }
             if (arrondissement != null) {
                 psChercheExact.setString(index++, arrondissement);
@@ -2415,6 +2669,7 @@ public class GestionValidation {
             }
         }
 
+        HashMap<String,Integer> solutions = new HashMap<String,Integer>(); // gestion de la redondance.
 
         int maxnote_constant = jdonrefParams.obtientNotePourMotDeterminant() +
                 jdonrefParams.obtientNotePourTypeDeVoie() +
@@ -2439,8 +2694,37 @@ public class GestionValidation {
                     notecommune * Algos.nombreDeMots(Algos.phonexNonVide(voie[9]));
             double notesurmax = ((double) (notes.get(i).intValue() * maxnote)) / NOTE_MAX;
             maxnote += notenumero;
+            
+            
+            // Dedoublonnage
+            String candidat = voies.get(i)[1]+" "+voies.get(i)[3];
+            Integer ancienne_solution;
+            boolean doublon = false;
+            if ((ancienne_solution=solutions.get(candidat))!=null)
+            {
+                int i_ancienne_solution = ancienne_solution.intValue();
+                int service_ancienne_solution = Integer.parseInt(voies.get(i_ancienne_solution)[13]);
+                if (service_ancienne_solution<Integer.parseInt(voies.get(i)[13]))
+                    doublon = true;
+                else if (service_ancienne_solution>Integer.parseInt(voies.get(i)[13])) // UNIQUEMENT 2 solutions
+                {
+                    // suppression de l'ancienne solution
+                    voies.remove(i_ancienne_solution);
+                    notes.remove(i_ancienne_solution);
+                    i--;
+                    Iterator<String> keys = solutions.keySet().iterator();
+                    while(keys.hasNext())
+                    {
+                        String key = keys.next();
+                        if (solutions.get(key).intValue()>i_ancienne_solution)
+                        {
+                            solutions.put(key,solutions.get(key).intValue()-1);
+                        }
+                    }
+                }
+            }
 
-            if (rsTime.next()) {
+            if (!doublon && rsTime.next()) {
                 long dt0;
                 long dt1;
                 long dtv0 = rsTime.getTimestamp(1).getTime(); // intervalle de validité de la voie
@@ -2525,7 +2809,10 @@ public class GestionValidation {
                     else
                     if (((min_numero != 0 || max_numero != 0) &&
                         numero >= min_numero && numero <= max_numero)) {
-                        notesurmax += notenumero/2;
+                        if (min_numero%2 == max_numero%2)
+                            notesurmax += notenumero/2;
+                        else
+                            notesurmax += notenumero/4;
                     }
                 }
                 else
@@ -2536,8 +2823,10 @@ public class GestionValidation {
                 int note = (int) ((notesurmax * NOTE_MAX) / (maxnote));
                 notes.set(i, new Integer(note));
                 voie[11] = Integer.toString(note);
+                solutions.put(candidat,i);
             } else {
                 voies.remove(i);
+                notes.remove(i);
                 i--;
             }
             rsTime.close();
@@ -2794,7 +3083,7 @@ public class GestionValidation {
             }
             psChercheExact.setString(index++, commune);
             if (cdp_present) {
-                psChercheExact.setString(index++, cdp_code_postal);
+                psChercheExact.setString(index++, code_departement);
             }
             if (arrondissement != null) {
                 psChercheExact.setString(index++, arrondissement);
@@ -2982,6 +3271,7 @@ public class GestionValidation {
             }
         }
 
+        HashMap<String,Integer> solutions = new HashMap<String,Integer>(); // gestion de la redondance.
 
         int maxnote_constant = jdonrefParams.obtientNotePourMotDeterminant() +
                 jdonrefParams.obtientNotePourTypeDeVoie() +
@@ -3008,7 +3298,35 @@ public class GestionValidation {
             double notesurmax = ((double) (notes.get(i).intValue() * maxnote)) / NOTE_MAX;
             maxnote += notenumero;
 
-            if (rsTime.next()) {
+            // Dedoublonnage
+            String candidat = voies.get(i)[1]+" "+voies.get(i)[3];
+            Integer ancienne_solution;
+            boolean doublon = false;
+            if ((ancienne_solution=solutions.get(candidat))!=null)
+            {
+                int i_ancienne_solution = ancienne_solution.intValue();
+                int service_ancienne_solution = Integer.parseInt(voies.get(i_ancienne_solution)[13]);
+                if (service_ancienne_solution<Integer.parseInt(voies.get(i)[13]))
+                    doublon = true;
+                else if (service_ancienne_solution>Integer.parseInt(voies.get(i)[13])) // UNIQUEMENT 2 solutions
+                {
+                    // suppression de l'ancienne solution
+                    voies.remove(i_ancienne_solution);
+                    notes.remove(i_ancienne_solution);
+                    i--;
+                    Iterator<String> keys = solutions.keySet().iterator();
+                    while(keys.hasNext())
+                    {
+                        String key = keys.next();
+                        if (solutions.get(key).intValue()>i_ancienne_solution)
+                        {
+                            solutions.put(key,solutions.get(key).intValue()-1);
+                        }
+                    }
+                }
+            }
+            
+            if (!doublon && rsTime.next()) {
                 long dt0;
                 long dt1;
                 long dtv0 = rsTime.getTimestamp(1).getTime(); // intervalle de validité de la voie
@@ -3093,7 +3411,10 @@ public class GestionValidation {
                     else
                     if (((min_numero != 0 || max_numero != 0) &&
                         numero >= min_numero && numero <= max_numero)) {
-                        notesurmax += notenumero/2;
+                        if (min_numero%2 == max_numero%2)
+                            notesurmax += notenumero/2;
+                        else
+                            notesurmax += notenumero/4;
                     }
                 }
                 else
@@ -3104,8 +3425,10 @@ public class GestionValidation {
                 int note = (int) ((notesurmax * NOTE_MAX) / (maxnote));
                 notes.set(i, new Integer(note));
                 voie[11] = Integer.toString(note);
+                solutions.put(candidat,i);
             } else {
                 voies.remove(i);
+                notes.remove(i);
                 i--;
             }
             rsTime.close();

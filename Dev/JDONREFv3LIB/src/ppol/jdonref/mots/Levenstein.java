@@ -276,8 +276,8 @@ public class Levenstein {
 
         //w = arg2.length()+1;
         //h = arg1.length()+1;
-        w = arg1.length();
-        h = arg2.length();
+        w = arg2.length();
+        h = arg1.length();
 
         if (h == 1) {
             return w - 1;
