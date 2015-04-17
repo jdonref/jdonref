@@ -1,6 +1,6 @@
 <params>
 
-<version>3.1.1</version>
+<version>3.1.2</version>
 
 <logpath>logs/jadrref_logs/</logpath>
 <logClasseName>ppol.jdonref.GestionLogs</logClasseName>
