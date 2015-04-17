@@ -5826,6 +5826,30 @@ public class GestionMots {
      * @param indice
      * @return -1 si aucun élément ne précéde l'indice spécifié.
      */
+    private int indiceElementSuivantContenu(ArrayList<RefCle> elements, int indice) {
+        int index = elements.get(indice).obtientIndex();
+        int size = elements.get(indice).obtientNomDeCle().length();
+
+        // Passe les éléments ne même index.
+        do {
+            indice++;
+        } while (indice < elements.size() && elements.get(indice).obtientIndex() == index);
+
+        if (indice == elements.size()) {
+            return -1;
+
+
+        }
+        return indice;
+    }
+    
+    /**
+     * Obtient l'indice de l'élément suivant l'élément spécifié dans la chaine.<br>
+     * Voir la méthode indiceElementPrecedent pour les définitions.
+     * @param elements
+     * @param indice
+     * @return -1 si aucun élément ne précéde l'indice spécifié.
+     */
     private int indiceElementSuivant(ArrayList<RefCle> elements, int indice) {
         int index = elements.get(indice).obtientIndex();
         int size = elements.get(indice).obtientNomDeCle().length();
@@ -6058,8 +6082,19 @@ public class GestionMots {
             }
             // Si la catégorie Autre est trouvée
             if (trouve == 2) {
-                return trouveElementDeMotDeCategorie(elements, indiceprecedent, autrecategorie)!=-1;
-
+                if (trouveElementDeMotDeCategorie(elements, indiceprecedent, autrecategorie)!=-1)
+                {
+                    return true;
+                    /*
+                    indiceprecedent = indiceElementPrecedent(elements, indiceprecedent);
+                    if (indiceprecedent==-1) return true;
+                    else
+                    {
+                        if (estPrecedeDe(elements, indiceprecedent, autrecategorie))
+                            return false;
+                        return true;
+                    }*/
+                }
             }
         }
         return false;
@@ -7359,14 +7394,28 @@ public class GestionMots {
             i = supprimeElementsInclus(i, elements);
             return i;
         }
-        // Cas numéro 1,
+        
+        // Cas numéro 7
         // Il faut vérifier qu'un type de voie et éventuellement un ou des articles précédent le nom de commune
         // A cet effet, les éléments précédent sont analysés.
         if (estPrecedeDe(elements, indiceprecedent_0, CategorieMot.TypeDeVoie) ||
             estPrecedeDeAutre(elements, indiceprecedent_0, CategorieMot.TypeDeVoie)) {
-            element.definitCategorieMot(CategorieMot.Libelle);
-            return i;
+            if (indiceElementSuivant(elements,elements.indexOf(element))!=-1)
+            {
+                element.definitCategorieMot(CategorieMot.Libelle);
+                return i;
+            }
+            else
+            {
+                // Cas particulier ou la commune trouvée en absorbe d'autres, alors qu'elle est précédée par un type de voie ...
+                if (estSuiviDe(elements, indiceElementSuivantContenu(elements, elements.indexOf(element)), CategorieMot.Ville))
+                {
+                    element.definitCategorieMot(CategorieMot.Libelle);
+                    return i;
+                }
+            }
         }
+        // Cas numéro 1,
         if (estPrecedeDe(elements, indiceprecedent_0, CategorieMot.NumeroCleApres)) {
             // la commune est trouvée seule, il est présupposé qu'il s'agit d'une commune
             i = supprimeElementsInclus(i, elements);
@@ -7508,9 +7557,11 @@ public class GestionMots {
     private void resoudAmbiguitesCodeDepartement(ArrayList<RefCle> elements,RefCle element, String contexte, ArrayList<String> codes_departement, Connection connection)
             throws SQLException {
         
-        if (debutDeSegment(elements, indiceElementPrecedent(elements,element.obtientIndex()) , element.obtientIndex() ))
+        int indexof = elements.indexOf(element);
+        
+        if (debutDeSegment(elements, indiceElementPrecedent(elements,indexof) , indexof ))
         {
-            int indiceSuivant = indiceElementSuivant(elements, element.obtientIndex());
+            int indiceSuivant = indiceElementSuivant(elements, indexof);
             
             if (estSuiviDe(elements, indiceSuivant, CategorieMot.Libelle) || estSuiviDe(elements,indiceSuivant, CategorieMot.Autre))
             {
@@ -8377,6 +8428,7 @@ public class GestionMots {
         } else {
             res = new String[nbLignesAddr + 1];
             StringBuilder sb = new StringBuilder();
+            sb.append("dpt=");
             for (int i = 0; i < codes_departements_finaux.size(); i++) {
                 if (i > 0) {
                     sb.append(',');
@@ -8463,6 +8515,7 @@ public class GestionMots {
             if (resultTab[i] == null) {
                 resultTab[i] = "";
             }
+            if (i==7) resultTab[i] = "dpt=";
         }
         // S'il y a un contenu en ligne 7, il est deplace en ligne 4 (a la fin)
         if (resultTab[6].length() != 0) {

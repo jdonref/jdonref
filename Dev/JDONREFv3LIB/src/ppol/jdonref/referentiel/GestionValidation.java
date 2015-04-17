@@ -576,7 +576,7 @@ public class GestionValidation {
     private final static String valideCommuneEtCodePostal_psChercheExact_1 = "SELECT DISTINCT com_nom,cdp_code_postal,com_communes.com_code_insee,note_codepostal_commune(?,com_nom_pq,?,cdp_code_postal,cdp_code_postal,com_code_insee_commune IS null) AS note, com_nom_desab ";
     private final static String valideCommuneEtCodePostal_psChercheExact_2 = "FROM com_communes,cdp_codes_postaux WHERE com_communes.com_code_insee=cdp_codes_postaux.com_code_insee AND ";
     private final static String valideCommuneEtCodePostal_psChercheExact_3 = "cdp_code_postal=? AND ";
-    private final static String valideCommuneEtCodePostal_psChercheExact_4 = "substr(cdp_code_postal,4,2)=? AND ";
+    //private final static String valideCommuneEtCodePostal_psChercheExact_4 = "substr(cdp_code_postal,4,2)=? AND ";
     private final static String valideCommuneEtCodePostal_psChercheExact_5 = "com_nom_desab=? AND com_communes.t0<=? AND cdp_codes_postaux.t0<=? AND NOT (com_communes.t1<cdp_codes_postaux.t0 OR cdp_codes_postaux.t1<com_communes.t0) ";
     private final static String valideCommuneEtCodePostal_psChercheExact_6 = " AND (";
     private final static String valideCommuneEtCodePostal_psChercheExact_7 = " OR ";
@@ -685,9 +685,9 @@ public class GestionValidation {
             if (cdp_code_postal.length() == 5) {
                 sb.append(valideCommuneEtCodePostal_psChercheExact_3);
             }
-            if (arrondissement != null) {
+            /*if (arrondissement != null) {
                 sb.append(valideCommuneEtCodePostal_psChercheExact_4);
-            }
+            }*/
             sb.append(valideCommuneEtCodePostal_psChercheExact_5);
             if (dpts!=null)
             {
@@ -716,9 +716,9 @@ public class GestionValidation {
                 psChercheExact.setString(index++, cdp_code_postal);
             }
             // substr(cdp_code_postal,4,2)=? AND 
-            if (arrondissement != null) {
+            /*if (arrondissement != null) {
                 psChercheExact.setString(index++, arrondissement);
-            }
+            }*/
 
             psChercheExact.setString(index++, commune);
 
@@ -2240,7 +2240,7 @@ public class GestionValidation {
     private final static String valideVoieCodePostalCommune_psChercheExact_6 = "voi_type_de_voie=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_7 = "communes.com_nom_desab=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_8 = "communes.dpt_code_departement=? AND ";
-    private final static String valideVoieCodePostalCommune_psChercheExact_9 = "substr(voies.cdp_code_postal,4,2)=? AND ";
+    //private final static String valideVoieCodePostalCommune_psChercheExact_9 = "substr(voies.cdp_code_postal,4,2)=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_10 = "voies.voi_min_numero<=? AND voies.voi_max_numero>=? AND ";
     private final static String valideVoieCodePostalCommune_psChercheExact_11 = "voies.com_code_insee = communes.com_code_insee AND voies.t0<=? AND communes.t0<=? AND NOT (voies.t1<communes.t0 OR communes.t1<voies.t0) ORDER BY note DESC LIMIT ?";
 
@@ -2453,9 +2453,9 @@ public class GestionValidation {
             if (cdp_present) {
                 sb.append(valideVoieCodePostalCommune_psChercheExact_8);
             }
-            if (arrondissement != null) {
+            /*if (arrondissement != null) {
                 sb.append(valideVoieCodePostalCommune_psChercheExact_9);
-            }
+            }*/
             if (numero != 0) {
                 sb.append(valideVoieCodePostalCommune_psChercheExact_10);
             }
@@ -2493,9 +2493,10 @@ public class GestionValidation {
             if (cdp_present) {
                 psChercheExact.setString(index++, code_departement);
             }
-            if (arrondissement != null) {
-                psChercheExact.setString(index++, arrondissement);
-            }
+            // substr
+            //if (arrondissement != null) {
+            //    psChercheExact.setString(index++, arrondissement);
+            //}
 
             //"voies.voi_min_numero>=? AND voies.voi_max_numero<=? AND "
             if (numero != 0) {
@@ -3045,9 +3046,9 @@ public class GestionValidation {
             if (cdp_present) {
                 sb.append(valideVoieCodePostalCommune_psChercheExact_8);
             }
-            if (arrondissement != null) {
-                sb.append(valideVoieCodePostalCommune_psChercheExact_9);
-            }
+            //if (arrondissement != null) {
+            //    sb.append(valideVoieCodePostalCommune_psChercheExact_9);
+            //}
             if (auTroncon) {
                 sb.append(valideVoieCodePostalCommune_psChercheExact_10);
             }
@@ -3085,9 +3086,10 @@ public class GestionValidation {
             if (cdp_present) {
                 psChercheExact.setString(index++, code_departement);
             }
-            if (arrondissement != null) {
-                psChercheExact.setString(index++, arrondissement);
-            }
+            // substr
+            //if (arrondissement != null) {
+            //    psChercheExact.setString(index++, arrondissement);
+            //}
 
             //"voies.voi_min_numero>=? AND voies.voi_max_numero<=? AND "
             if (auTroncon) {

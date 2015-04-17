@@ -73,6 +73,7 @@ public class GestionAdr {
     public GestionReferentiel getGestionReferentiel() {
         return gestionReferentiel;
     }
+    
     protected final GestionInverse gestionInverse;
     protected JDONREFParams params;
     
@@ -843,16 +844,16 @@ public class GestionAdr {
 
                     adresse = gestionMots.restructure(adresse, retourne_departements_presumes, gestionPays, refconnection.connection,str_departements);
 
-                    if (retourne_departements_presumes) {
-                        str_departements = adresse[6];
+                    if (retourne_departements_presumes && adresse[adresse.length-1].startsWith("dpt=")) {
+                        str_departements = adresse.length>=5?adresse[adresse.length-1].substring(4):"";
                         // Les départements présumés sont ensuite supprimés
-                        String[] tmp_adresse = new String[6];
-                        for (int i = 0; i < 6; i++) {
+                        String[] tmp_adresse = new String[adresse.length-2];
+                        for (int i = 0; i < tmp_adresse.length; i++) {
                             tmp_adresse[i] = adresse[i];
                         }
                         adresse = tmp_adresse;
                     }
-//                    GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
+                    //GestionLogs.getInstance().logNormalisation(application, GestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
                     params.getGestionLog().logNormalisation(application, AGestionLogs.FLAG_NORMALISE_RESTRUCTURE, true);
                 } catch (java.lang.StringIndexOutOfBoundsException sqle) {
                     StringBuilder sb = new StringBuilder();
