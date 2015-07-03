@@ -21,6 +21,8 @@ public class JDONREFv3Lib extends ppol.jdonref.referentiel.JDONREFv3Lib {
      * Le gestionnaire de mots.
      */
     private final GestionMots gestionMots = new GestionMots();
+    
+    private final GestionOptions gestionOptions = GestionOptions.getInstance();
 
     public static ppol.jdonref.referentiel.JDONREFv3Lib getInstance() {
         if (INSTANCE == null) {
@@ -91,8 +93,10 @@ public class JDONREFv3Lib extends ppol.jdonref.referentiel.JDONREFv3Lib {
             gestionMots.definitJDONREFParams(params);
 
             // Définit le répertoire des logs.
-//            GestionLogs.getInstance().definitRepertoire(params.obtientLogPath());
+//  GestionLogs.getInstance().definitRepertoire(params.obtientLogPath());
             params.getGestionLog();
+            
+            gestionOptions.loadOptions(params.obtientConfigPath() + "options.xml");
 
             // Définit les paramètres du gestionnaire de description de tables.
             GestionDescriptionTables.definitJDONREFParams(params);
@@ -111,5 +115,9 @@ public class JDONREFv3Lib extends ppol.jdonref.referentiel.JDONREFv3Lib {
 
     public GestionMots getGestionMots() {
         return gestionMots;
+    }
+    
+    public GestionOptions getGestionOptions() {
+        return gestionOptions;
     }
 }

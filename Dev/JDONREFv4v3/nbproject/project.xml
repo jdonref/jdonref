@@ -166,7 +166,7 @@
                     <file>${file.reference.xml-apis.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
-                <library files="1">
+                <library>
                     <file>${file.reference.JDONREFv3LIB.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>

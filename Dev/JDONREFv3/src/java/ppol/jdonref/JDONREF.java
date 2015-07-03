@@ -142,6 +142,9 @@ public class JDONREF implements IJDONREFv3 {
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
 
+        //Gestion des options par défaut
+        options = ((ppol.jdonref.JDONREFv3Lib)jdonrefv3lib).getGestionOptions().getOptions(application, options);
+        
         // Liste des services.
         final List<ServiceParameters> serviceList = new ArrayList<ServiceParameters>();
         try {
@@ -225,6 +228,9 @@ public class JDONREF implements IJDONREFv3 {
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
 
+        //Gestion des options par défaut
+        options = ((ppol.jdonref.JDONREFv3Lib)jdonrefv3lib).getGestionOptions().getOptions(application, options);
+        
         // Liste des services.
         final List<ServiceParameters> serviceList = new ArrayList<ServiceParameters>();
         try {
@@ -297,6 +303,9 @@ public class JDONREF implements IJDONREFv3 {
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
 
+        //Gestion des options par défaut
+        options = ((ppol.jdonref.JDONREFv3Lib)jdonrefv3lib).getGestionOptions().getOptions(application, options);
+        
         // Liste des services.
         final List<ServiceParameters> serviceList = new ArrayList<ServiceParameters>();
         try {
@@ -369,6 +378,9 @@ public class JDONREF implements IJDONREFv3 {
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
 
+        //Gestion des options par défaut
+        options = ((ppol.jdonref.JDONREFv3Lib)jdonrefv3lib).getGestionOptions().getOptions(application, options);
+        
         // Liste des services.
         final List<ServiceParameters> serviceList = new ArrayList<ServiceParameters>();
         try {
@@ -441,6 +453,9 @@ public class JDONREF implements IJDONREFv3 {
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
 
+        //Gestion des options par défaut
+        options = ((ppol.jdonref.JDONREFv3Lib)jdonrefv3lib).getGestionOptions().getOptions(application, options);
+        
         // Liste des services.
         final List<ServiceParameters> serviceList = new ArrayList<ServiceParameters>();
         try {
@@ -533,6 +548,9 @@ public class JDONREF implements IJDONREFv3 {
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
 
+        //Gestion des options par défaut
+        options = ((ppol.jdonref.JDONREFv3Lib)jdonrefv3lib).getGestionOptions().getOptions(application, options);
+        
         // Liste des services.
         final List<ServiceParameters> serviceList = new ArrayList<ServiceParameters>();
         try {
@@ -604,6 +622,9 @@ public class JDONREF implements IJDONREFv3 {
         //CHARGEMENT DU FICHIER DE CONFIGURATION
         jdonrefv3lib = chargeConf(jdonrefv3lib);
 
+        //Gestion des options par défaut
+        options = ((ppol.jdonref.JDONREFv3Lib)jdonrefv3lib).getGestionOptions().getOptions(application, options);
+        
         // Liste des services.
         final List<ServiceParameters> serviceList = new ArrayList<ServiceParameters>();
         try {
