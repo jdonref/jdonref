@@ -2,6 +2,8 @@ package org.elasticsearch.index.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import org.apache.lucene.search.spans.MultiPayloadSpanTermFilter;
+import org.apache.lucene.search.spans.PayloadCheckerSpanFilter;
 import org.apache.lucene.search.spans.checkers.AbstractPayloadChecker;
 import org.elasticsearch.ElasticsearchIllegalArgumentException;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -11,9 +13,9 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
  * 
  * @author Julien
  */
-public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements SpanQueryBuilder
+public class PayloadCheckerSpanFilterBuilder extends BaseFilterBuilder
 {
-    protected ArrayList<SpanQueryBuilder> clauses = new ArrayList<>();
+    protected ArrayList<MultiPayloadSpanTermFilterBuilder> clauses = new ArrayList<>();
     
     protected AbstractPayloadChecker checker = null;
     
@@ -21,14 +23,14 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
     
     protected int limit = -1;
     
-    protected int termCountPayloadFactor = PayloadCheckerSpanQueryParser.NOTERMCOUNTPAYLOADFACTOR;
+    protected int termCountPayloadFactor = PayloadCheckerSpanFilter.NOTERMCOUNTPAYLOADFACTOR;
     
     /**
      * Do not return results if over limit documents should be scanned.
      * @param limit -1 = no limit (default value)
      * @return 
      */
-    public PayloadCheckerSpanQueryBuilder limit(int limit)
+    public PayloadCheckerSpanFilterBuilder limit(int limit)
     {
         this.limit = limit;
         return this;
@@ -39,13 +41,13 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
      * @param factor
      * @return 
      */
-    public PayloadCheckerSpanQueryBuilder termCountPayloadFactor(int factor)
+    public PayloadCheckerSpanFilterBuilder termCountPayloadFactor(int factor)
     {
         this.termCountPayloadFactor = factor;
         return this;
     }
 
-    public PayloadCheckerSpanQueryBuilder clause(MultiPayloadSpanTermQueryBuilder clause) {
+    public PayloadCheckerSpanFilterBuilder clause(MultiPayloadSpanTermFilterBuilder clause) {
         clauses.add(clause);
         return this;
     }
@@ -53,12 +55,12 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
     /**
      * Sets the query name for the filter that can be used when searching for matched_filters per hit.
      */
-    public PayloadCheckerSpanQueryBuilder queryName(String queryName) {
+    public PayloadCheckerSpanFilterBuilder queryName(String queryName) {
         this.queryName = queryName;
         return this;
     }
     
-    public PayloadCheckerSpanQueryBuilder checker(AbstractPayloadChecker checker) {
+    public PayloadCheckerSpanFilterBuilder checker(AbstractPayloadChecker checker) {
         this.checker = checker;
         return this;
     }
@@ -70,7 +72,7 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
             throw new ElasticsearchIllegalArgumentException("Must have at least one clause when building a payloadcheckerSpanQuery query");
         }
         
-        builder.startObject(PayloadCheckerSpanQueryParser.NAME);
+        builder.startObject(PayloadCheckerSpanFilterParser.NAME);
         
         if (limit!=-1)
         {
@@ -78,7 +80,7 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
         }
         
         builder.startArray("clauses");
-        for (SpanQueryBuilder clause : clauses) {
+        for (MultiPayloadSpanTermFilterBuilder clause : clauses) {
             clause.toXContent(builder, params);
         }
         builder.endArray();
@@ -90,7 +92,7 @@ public class PayloadCheckerSpanQueryBuilder extends BaseQueryBuilder implements 
             builder.endObject();
         }
 
-        if (termCountPayloadFactor != PayloadCheckerSpanQueryParser.NOTERMCOUNTPAYLOADFACTOR) {
+        if (termCountPayloadFactor != PayloadCheckerSpanFilter.NOTERMCOUNTPAYLOADFACTOR) {
             builder.field("termcountpayloadfactor", termCountPayloadFactor);
         }
         

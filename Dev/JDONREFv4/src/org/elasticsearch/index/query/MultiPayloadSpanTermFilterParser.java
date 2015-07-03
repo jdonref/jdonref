@@ -2,8 +2,8 @@ package org.elasticsearch.index.query;
 
 import java.io.IOException;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.spans.MultiPayloadSpanTermFilter;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.inject.Inject;
@@ -14,12 +14,12 @@ import org.elasticsearch.index.mapper.MapperService;
  *
  * @author Julien
  */
-public class MultiPayloadSpanTermQueryParser implements QueryParser {
+public class MultiPayloadSpanTermFilterParser implements FilterParser {
 
     public static String NAME = "span_multipayloadterm";
 
     @Inject
-    public MultiPayloadSpanTermQueryParser() {
+    public MultiPayloadSpanTermFilterParser() {
     }
 
     @Override
@@ -28,7 +28,7 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
     }
 
     @Override
-    public Query parse(QueryParseContext parseContext) throws IOException, QueryParsingException {
+    public Filter parse(QueryParseContext parseContext) throws IOException, QueryParsingException {
         XContentParser parser = parseContext.parser();
 
         XContentParser.Token token = parser.currentToken();
@@ -41,7 +41,7 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
         boolean checked = true;
         String value = null;
         float boost = 1.0f;
-        String queryName = null;
+        String filterName = null;
         token = parser.nextToken();
         if (token == XContentParser.Token.START_OBJECT) {
             String currentFieldName = null;
@@ -58,7 +58,7 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
                     } else if ("checked".equals(currentFieldName)) {
                         checked = parser.booleanValue();
                     } else if ("_name".equals(currentFieldName)) {
-                        queryName = parser.text();
+                        filterName = parser.text();
                     }
                     else {
                         throw new QueryParsingException(parseContext.index(), "["+NAME+"] query does not support [" + currentFieldName + "]");
@@ -88,17 +88,16 @@ public class MultiPayloadSpanTermQueryParser implements QueryParser {
             valueBytes = new BytesRef(value);
         }
 
-        return makeQuery(parseContext, fieldName, valueBytes, boost, queryName, checked);
+        return makeFilter(parseContext, fieldName, valueBytes, boost, filterName, checked);
     }
     
-    public Query makeQuery(QueryParseContext parseContext,String fieldName, BytesRef valueBytes,float boost,String queryName, boolean checked)
+    public Filter makeFilter(QueryParseContext parseContext,String fieldName, BytesRef valueBytes,float boost,String filterName, boolean checked)
     {
-        MultiPayloadSpanTermQuery query = new MultiPayloadSpanTermQuery(new Term(fieldName, valueBytes));
-        query.setBoost(boost);
-        query.setChecked(checked);
-        if (queryName != null) {
-            parseContext.addNamedQuery(queryName, query);
+        MultiPayloadSpanTermFilter filter = new MultiPayloadSpanTermFilter(new Term(fieldName, valueBytes));
+        filter.setChecked(checked);
+        if (filterName != null) {
+            parseContext.addNamedFilter(filterName, filter);
         }
-        return query;
+        return filter;
     }
 }

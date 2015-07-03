@@ -34,7 +34,7 @@ public class PayloadCheckerFactory {
         return instance;
     }
     
-    public IPayloadChecker parseInnerQuery(QueryParseContext parseContext) throws IOException
+    public IPayloadChecker parseInnerFilter(QueryParseContext parseContext) throws IOException
     {
         XContentParser parser = parseContext.parser();
         
@@ -132,7 +132,7 @@ public class PayloadCheckerFactory {
         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
             if (token == XContentParser.Token.START_OBJECT)
             {
-                IPayloadChecker checker = parseInnerQuery(parseContext);
+                IPayloadChecker checker = parseInnerFilter(parseContext);
                 checkers.add(checker);
             }
         }
@@ -204,7 +204,7 @@ public class PayloadCheckerFactory {
             else if (token == XContentParser.Token.START_OBJECT)
             {
                 if ("checker".equals(currentFieldName))
-                    innerchecker = parseInnerQuery(parseContext);
+                    innerchecker = parseInnerFilter(parseContext);
             }
         }
         
@@ -252,7 +252,7 @@ public class PayloadCheckerFactory {
             }
             else if (token == XContentParser.Token.START_OBJECT)
             {
-                IPayloadChecker checker = parseInnerQuery(parseContext);
+                IPayloadChecker checker = parseInnerFilter(parseContext);
                 SwitchPayloadConditionClause clause = new SwitchPayloadConditionClause(currentFieldName, checker);
                 clauses.add(clause);
             }
@@ -484,9 +484,9 @@ public class PayloadCheckerFactory {
             else if (token == XContentParser.Token.START_OBJECT)
             {
                 if ("condition".equals(currentFieldName))
-                    condition = parseInnerQuery(parseContext);
+                    condition = parseInnerFilter(parseContext);
                 else if ("then".equals(currentFieldName))
-                    then = parseInnerQuery(parseContext);
+                    then = parseInnerFilter(parseContext);
                 else
                     throw new QueryParsingException(parseContext.index(), "[" + NAME + "] [payload] does not support "+currentFieldName);
             }
@@ -516,11 +516,11 @@ public class PayloadCheckerFactory {
             else if (token == XContentParser.Token.START_OBJECT)
             {
                 if ("condition".equals(currentFieldName))
-                    condition = parseInnerQuery(parseContext);
+                    condition = parseInnerFilter(parseContext);
                 else if ("then".equals(currentFieldName))
-                    then = parseInnerQuery(parseContext);
+                    then = parseInnerFilter(parseContext);
                 else if ("else".equals(currentFieldName))
-                    elseChecker = parseInnerQuery(parseContext);
+                    elseChecker = parseInnerFilter(parseContext);
                 else
                     throw new QueryParsingException(parseContext.index(), "[" + NAME + "] [payload] does not support "+currentFieldName);
             }

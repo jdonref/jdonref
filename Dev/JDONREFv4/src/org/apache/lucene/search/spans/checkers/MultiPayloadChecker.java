@@ -1,10 +1,7 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import org.apache.lucene.search.spans.IMultiPayload;
-import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 import org.apache.lucene.util.BytesRef;
 
 /**
@@ -13,46 +10,61 @@ import org.apache.lucene.util.BytesRef;
  */
 public abstract class MultiPayloadChecker extends AbstractPayloadChecker
 {
-    protected IPayloadCheckerSpanQuery query = null;
-    
+    protected static final int MAXPAYLOADS_INROW = 20;
+    protected static final int MAXPAYLOADS_INCOLUMN = 20;
+        
     public MultiPayloadChecker()
     {
+        lastpayloads = new BytesRef[MAXPAYLOADS_INCOLUMN][MAXPAYLOADS_INROW];
     }
     
-    @Override
-    public void setQuery(IPayloadCheckerSpanQuery query) {
-        this.query = query;
-    }
+//    @Override
+//    public void setQuery(IPayloadCheckerSpanQuery query) {
+//        this.query = query;
+//    }
     
-    ArrayList<BytesRef[]> lastpayloads = new ArrayList<>();
+    protected BytesRef[][] lastpayloads;
+    protected int numcolumns;
+    protected int numrows;
+    //ArrayList<BytesRef[]> lastpayloads = new ArrayList<>();
     
     protected abstract boolean checkPayloads(int index);
   
+    /**
+     * 
+     * @param payload payload du terme en cours
+     * @param index le numéro du terme en cours (row)
+     * @param count le numéro du payload du terme en cours (column)
+     * @param order l'ordre du terme en cours
+     */
     protected void addPayload(byte[] payload,int index,int count,int order)
     {
       if (index==0)
       {
-          BytesRef[] payloads = new BytesRef[query.getClausesCount()];
-          payloads[order] = new BytesRef(payload);
-          lastpayloads.add(payloads);
+          numrows = Math.max(numrows, order+1);
+          lastpayloads[numcolumns++][order] = new BytesRef(payload);
       }
       else
       if (count==0)
       {
-          for(int i=0;i<lastpayloads.size();i++)
+          numrows = Math.max(numrows, order+1);
+          for(int i=0;i<numcolumns;i++)
           {
-              BytesRef[] payloads = lastpayloads.get(i);
-              payloads[order] = new BytesRef(payload);
+              lastpayloads[i][order] = new BytesRef(payload);
           }
       }
       else
       {
-        int size = lastpayloads.size()/(count);
+        //int size = lastpayloads.size()/(count);
+        numrows = Math.max(numrows, order+1);
+        int size = numcolumns/count;
         for(int i=0;i<size;i++)
         {
-            BytesRef[] payloads = lastpayloads.get(i).clone();
-            payloads[order] = new BytesRef(payload);
-            lastpayloads.add(payloads);
+            for(int j=0;j<numrows;j++)
+            {
+                lastpayloads[numcolumns][j] = lastpayloads[i][j];
+            }
+            lastpayloads[numcolumns++][order] = new BytesRef(payload);
         }
       }
     }
@@ -106,6 +118,8 @@ public abstract class MultiPayloadChecker extends AbstractPayloadChecker
         index = 0;
         check = false;
         currentSubSpan = null;
-        lastpayloads.clear();
+        numcolumns = 0;
+        numrows = 0;
+        //lastpayloads.clear();
     }
 }

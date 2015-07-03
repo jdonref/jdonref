@@ -1,7 +1,7 @@
 package org.elasticsearch.index.query.jdonrefv4;
 
 import java.io.IOException;
-import org.elasticsearch.common.lucene.search.jdonrefv4.JDONREFv4Query;
+import org.elasticsearch.common.lucene.search.jdonrefv4.MaximumScoreBooleanQuery;
 import org.elasticsearch.common.xcontent.ToXContent.Params;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BaseQueryBuilder;
@@ -11,21 +11,24 @@ import org.elasticsearch.index.query.BoostableQueryBuilder;
  *
  * @author Julien
  */
-public class JDONREFv4QueryBuilder extends BaseQueryBuilder implements BoostableQueryBuilder<JDONREFv4QueryBuilder>
+public class JDONREFv4QueryBuilder extends BaseQueryBuilder
 {
     private final String value;
     
-    private float boost = -1;
-    
     private String queryName;
     
-    private int mode = JDONREFv4Query.AUTOCOMPLETE;
-    
     protected int debugDoc = -1;
-    
-    protected int maxSizePerType = JDONREFv4QueryParser.DEFAULTMAXSIZE;
+    protected boolean debugMode = JDONREFv4QueryParser.DEFAULTDEBUGMODE;
     
     protected String default_field = JDONREFv4QueryParser.DEFAULTFIELD;
+    
+    protected boolean progressiveShouldMatch = JDONREFv4QueryParser.DEFAULTPROGRESSIVESHOULDMATCH;
+    
+    public JDONREFv4QueryBuilder debugMode(boolean debugMode)
+    {
+        this.debugMode = debugMode;
+        return this;
+    }
     
     /**
      *  Construct a new JDONREFv3 Query.
@@ -38,44 +41,9 @@ public class JDONREFv4QueryBuilder extends BaseQueryBuilder implements Boostable
     }
     
     /**
-    * Set the maximum size for each type return by the query.
-    * Default to 300.
-    */
-    public JDONREFv4QueryBuilder maxSize(int maxsize) {
-        this.maxSizePerType = maxsize;
-        return this;
-    }
-    
-    /**
-    * Sets the boost for this query. Documents matching this query will (in addition to the normal
-    * weightings) have their score multiplied by the boost provided.
-    */
-    @Override
-    public JDONREFv4QueryBuilder boost(float boost) {
-        this.boost = boost;
-        return this;
-    }
-    
-    /**
-     * Set the mode for this query.
-     * BULK => les scores sont relatifs aux documents trouvés (qualité de la notation)
-     * AUTOCOMPLETE => les scores sont absolus (performance)
+     * Set the debugDoc for this query.
      * 
-     * @param mode
-     * @return
-     */
-    public JDONREFv4QueryBuilder mode(int mode)
-    {
-        this.mode = mode;
-        return this;
-    }
-    
-    /**
-     * Set the mode for this query.
-     * BULK => les scores sont relatifs aux documents trouvés (qualité de la notation)
-     * AUTOCOMPLETE => les scores sont absolus (performance)
-     * 
-     * @param mode
+     * @param debugDoc
      * @return
      */
     public JDONREFv4QueryBuilder debugDoc(int debugDoc)
@@ -97,6 +65,12 @@ public class JDONREFv4QueryBuilder extends BaseQueryBuilder implements Boostable
         return this;
     }
     
+    public JDONREFv4QueryBuilder progressiveShouldMatch(boolean progressiveShouldMatch)
+    {
+        this.progressiveShouldMatch = progressiveShouldMatch;
+        return this;
+    }
+    
     static boolean iamhere = false;
     
     
@@ -105,19 +79,21 @@ public class JDONREFv4QueryBuilder extends BaseQueryBuilder implements Boostable
         builder.startObject(JDONREFv4QueryParser.NAME);
         
         builder.field("value", value);
-        builder.field("maxSizePerType", maxSizePerType);
-        builder.field("mode",mode==JDONREFv4Query.BULK?"bulk":"autocomplete");
         if (!JDONREFv4QueryParser.DEFAULTFIELD.equals(default_field))
         {
             builder.field("default_field",default_field);
         }
+        if (debugMode!=JDONREFv4QueryParser.DEFAULTDEBUGMODE)
+        {
+            builder.field("debugMode",debugMode);
+        }
+        if (progressiveShouldMatch!=JDONREFv4QueryParser.DEFAULTPROGRESSIVESHOULDMATCH)
+        {
+            builder.field("progressive_should_match",progressiveShouldMatch);
+        }
         if (debugDoc!=-1)
         {
             builder.field("debugDoc",debugDoc);
-        }
-        if (boost != -1)
-        {
-            builder.field("boost", boost);
         }
         if (queryName != null)
         {

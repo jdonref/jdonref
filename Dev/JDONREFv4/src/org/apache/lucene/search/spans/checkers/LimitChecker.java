@@ -1,7 +1,6 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * 
@@ -54,9 +53,9 @@ public class LimitChecker extends AbstractPayloadChecker
         return res;
     }
 
-    @Override
-    public void setQuery(IPayloadCheckerSpanQuery query) {
-    }
+//    @Override
+//    public void setQuery(IPayloadCheckerSpanQuery query) {
+//    }
 
     @Override
     public LimitChecker clone()

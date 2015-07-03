@@ -31,7 +31,7 @@ import org.apache.lucene.util.BytesRef;
  * 
  * @lucene.experimental
  */
-public final class JDONREFv4TermContext {
+public final class PayloadAsScoreTermContext {
 
   public TermContext context;
     
@@ -55,7 +55,7 @@ public final class JDONREFv4TermContext {
   /**
    * Creates an empty {@link TermContext} from a {@link IndexReaderContext}
    */
-  public JDONREFv4TermContext(IndexReaderContext context) {
+  public PayloadAsScoreTermContext(IndexReaderContext context) {
     assert context != null && context.isTopLevel;
     topReaderContext = context;
     docFreq = 0;
@@ -74,7 +74,7 @@ public final class JDONREFv4TermContext {
    * Creates a {@link TermContext} with an initial {@link TermState},
    * {@link IndexReader} pair.
    */
-  public JDONREFv4TermContext(IndexReaderContext context, TermState state, int ord, int docFreq, long totalTermFreq) {
+  public PayloadAsScoreTermContext(IndexReaderContext context, TermState state, int ord, int docFreq, long totalTermFreq) {
     this(context);
     register(state, ord, docFreq, totalTermFreq);
     this.context.register(state, ord, docFreq, totalTermFreq);
@@ -88,12 +88,12 @@ public final class JDONREFv4TermContext {
    * <p>
    * Note: the given context must be a top-level context.
    */
-  public static JDONREFv4TermContext build(IndexReaderContext context, Term term)
+  public static PayloadAsScoreTermContext build(IndexReaderContext context, Term term)
       throws IOException {
     assert context != null && context.isTopLevel;
     final String field = term.field();
     final BytesRef bytes = term.bytes();
-    final JDONREFv4TermContext perReaderTermState = new JDONREFv4TermContext(context);
+    final PayloadAsScoreTermContext perReaderTermState = new PayloadAsScoreTermContext(context);
     //if (DEBUG) System.out.println("prts.build term=" + term);
     for (final AtomicReaderContext ctx : context.leaves()) {
       //if (DEBUG) System.out.println("  r=" + leaves[i].reader);

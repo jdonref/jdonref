@@ -2,7 +2,6 @@ package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
 import org.apache.lucene.search.spans.IMultiPayload;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * Public interface to check document subspans for payload rules.
@@ -10,7 +9,7 @@ import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
  */
 public interface IPayloadChecker extends Cloneable
 {
-    void setQuery(IPayloadCheckerSpanQuery query);
+//    void setQuery(IPayloadCheckerSpanQuery query);
     
     /**
      * Check one of the payload from one of the spans.

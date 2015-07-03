@@ -2,6 +2,8 @@ package org.apache.lucene.analysis;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
@@ -18,8 +20,12 @@ import org.apache.lucene.util.Version;
 public class TokenCountPayloadsFilter extends TokenFilter {
 
     public static final int NOTERMCOUNTPAYLOADFACTOR = -1;
+    public static final Set<String> DEFAULT_IGNOREDTYPES = new HashSet<>();
+    
+    protected int termCountPayloadFactor = NOTERMCOUNTPAYLOADFACTOR;
+    protected Set<String> ignoredTypes = DEFAULT_IGNOREDTYPES;
+    
     protected Version version;
-    protected int termCountPayloadFactor = TokenCountPayloadsFilterFactory.NOTERMCOUNTPAYLOADFACTOR;
     protected final CharacterUtils charUtils;
     
     IntegerEncoder encoder = new IntegerEncoder();
@@ -33,6 +39,7 @@ public class TokenCountPayloadsFilter extends TokenFilter {
     protected final PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
     protected final PositionLengthAttribute posLenAtt = addAttribute(PositionLengthAttribute.class);
     protected final PayloadAttribute payloadAtt = addAttribute(PayloadAttribute.class);
+    protected final TypeAttribute typeAtt = addAttribute(TypeAttribute.class);
 
     /**
      * Creates TokenCountPayloadsFilter payload the number of tokens with a given payload.
@@ -40,11 +47,12 @@ public class TokenCountPayloadsFilter extends TokenFilter {
      * @param version the <a href="#version">Lucene match version</a>
      * @param input {@link TokenStream} holding the input to be tokenized
      */
-    public TokenCountPayloadsFilter(TokenStream input, int termCountPayloadFactor, Version version) {
+    public TokenCountPayloadsFilter(TokenStream input, Set<String> ignoredTypes, int termCountPayloadFactor, Version version) {
         super(input);
 
         this.version = version;
         this.termCountPayloadFactor = termCountPayloadFactor;
+        this.ignoredTypes = ignoredTypes;
         this.charUtils = version.onOrAfter(Version.LUCENE_44)
                 ? CharacterUtils.getInstance(version)
                 : CharacterUtils.getJava4Instance();
@@ -59,9 +67,10 @@ public class TokenCountPayloadsFilter extends TokenFilter {
         int positionLength;
         int tokStart;
         int tokEnd;
+        String type;
         BytesRef payload;
         
-        public Token(char[] curTermBuffer, int curTermLength, int curCodePointCount, int positionIncrement, int positionLength, int tokStart, int tokEnd, BytesRef payload)
+        public Token(char[] curTermBuffer, int curTermLength, int curCodePointCount, int positionIncrement, int positionLength, int tokStart, int tokEnd, BytesRef payload, String type)
         {
             this.curTermBuffer = curTermBuffer;
             this.curTermLength = curTermLength;
@@ -71,23 +80,25 @@ public class TokenCountPayloadsFilter extends TokenFilter {
             this.tokStart = tokStart;
             this.tokEnd = tokEnd;
             this.payload = payload;
+            this.type = type;
         }
     }
     
-    public void addToken(char[] curTermBuffer, int curTermLength, int curCodePointCount, int positionIncrement, int positionLength, int tokStart, int tokEnd, BytesRef payload)
+    public void addToken(char[] curTermBuffer, int curTermLength, int curCodePointCount, int positionIncrement, int positionLength, int tokStart, int tokEnd, BytesRef payload, String type)
     {
+        Token t = new Token(curTermBuffer, curTermLength, curCodePointCount, positionIncrement, positionLength, tokStart, tokEnd, payload, type);
         if (payload!=null)
         {
-            Token t = new Token(curTermBuffer, curTermLength, curCodePointCount, positionIncrement, positionLength, tokStart, tokEnd, payload);
-        
-            Integer count = payloadsCounts.get(payload);
-            if (count==null)
-                payloadsCounts.put(payload,1);
-            else
-                payloadsCounts.put(payload,count+1);
-        
-            tokens.add(t);
+            if (!this.ignoredTypes.contains(type))
+            {
+                Integer count = payloadsCounts.get(payload);
+                if (count==null)
+                    payloadsCounts.put(payload,1);
+                else
+                    payloadsCounts.put(payload,count+1);
+            }
         }
+        tokens.add(t);
     }
     
     public BytesRef getNewPayload(BytesRef payload,int count)
@@ -105,17 +116,29 @@ public class TokenCountPayloadsFilter extends TokenFilter {
     
     public void writeToken(Token t)
     {
-        int count = payloadsCounts.get(t.payload);
-        assert(count>0);
-        
-        BytesRef newPayload = getNewPayload(t.payload,count);
+        BytesRef newPayload = null;
+        if (this.ignoredTypes.contains(t.type))
+        {
+            newPayload = t.payload;
+            if (newPayload == null)
+                newPayload = encoder.encode(Integer.toString(0).toCharArray());
+        }
+        else
+        {
+            int count = payloadsCounts.get(t.payload);
+            newPayload = getNewPayload(t.payload,count);
+        }
         
         clearAttributes();
         offsetAtt.setOffset(t.tokStart, t.tokEnd);
         posIncrAtt.setPositionIncrement(t.positionIncrement);
         posLenAtt.setPositionLength(t.positionLength);
         termAtt.copyBuffer(t.curTermBuffer, 0, t.curTermLength);
-        payloadAtt.setPayload(newPayload);
+        typeAtt.setType(t.type);
+        if (newPayload!=null)
+            payloadAtt.setPayload(newPayload);
+        //assert(newPayload.equals(payloadAtt.getPayload()));
+        
     }
     
     int current = 0;
@@ -124,22 +147,19 @@ public class TokenCountPayloadsFilter extends TokenFilter {
     public final boolean incrementToken() throws IOException {
         
         // get all payloads & counts
-        if (input.incrementToken())
+        while (current==0 && input.incrementToken())
         {
-            current = 0;
-            do
-            {
-                char[] curTermBuffer = termAtt.buffer().clone();
-                int curTermLength = termAtt.length();
-                int curCodePointCount = charUtils.codePointCount(termAtt);
-                int positionIncrement = posIncrAtt.getPositionIncrement();
-                int positionLength = posLenAtt.getPositionLength();
-                int tokStart = offsetAtt.startOffset();
-                int tokEnd = offsetAtt.endOffset();
-                BytesRef payload = payloadAtt.getPayload();
-                
-                addToken(curTermBuffer,curTermLength,curCodePointCount,positionIncrement,positionLength,tokStart,tokEnd,payload);
-            } while(input.incrementToken());
+            char[] curTermBuffer = termAtt.buffer().clone();
+            int curTermLength = termAtt.length();
+            int curCodePointCount = charUtils.codePointCount(termAtt);
+            int positionIncrement = posIncrAtt.getPositionIncrement();
+            int positionLength = posLenAtt.getPositionLength();
+            int tokStart = offsetAtt.startOffset();
+            int tokEnd = offsetAtt.endOffset();
+            String type = typeAtt.type();
+            BytesRef payload = payloadAtt.getPayload();
+
+            addToken(curTermBuffer,curTermLength,curCodePointCount,positionIncrement,positionLength,tokStart,tokEnd,payload,type);
         }
         
         while (current<tokens.size()) {
@@ -152,6 +172,7 @@ public class TokenCountPayloadsFilter extends TokenFilter {
     @Override
     public void reset() throws IOException {
         super.reset();
+        current=0;
         payloadsCounts.clear();
         tokens.clear();
     }

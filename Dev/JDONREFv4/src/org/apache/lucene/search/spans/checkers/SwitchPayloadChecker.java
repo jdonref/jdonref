@@ -6,8 +6,6 @@ import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.spans.IMultiPayload;
-import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * Be aware checkers in different clauses are not matchable simultaneously.
@@ -133,15 +131,15 @@ public class SwitchPayloadChecker extends AbstractPayloadChecker
         return res;
     }
 
-    @Override
-    public void setQuery(IPayloadCheckerSpanQuery query) {
-        Enumeration<String> eKeys = clauses.keys();
-        while(eKeys.hasMoreElements())
-        {
-            String key = eKeys.nextElement();
-            clauses.get(key).setQuery(query);
-        }
-    }
+//    @Override
+//    public void setQuery(IPayloadCheckerSpanQuery query) {
+//        Enumeration<String> eKeys = clauses.keys();
+//        while(eKeys.hasMoreElements())
+//        {
+//            String key = eKeys.nextElement();
+//            clauses.get(key).setQuery(query);
+//        }
+//    }
 
     @Override
     public SwitchPayloadChecker clone()

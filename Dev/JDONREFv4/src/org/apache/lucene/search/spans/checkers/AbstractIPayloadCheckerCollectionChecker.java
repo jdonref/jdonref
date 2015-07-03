@@ -1,7 +1,6 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.util.List;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  *
@@ -20,13 +19,13 @@ public abstract class AbstractIPayloadCheckerCollectionChecker extends AbstractP
         this.checkers = checkers;
     }
     
-    @Override
-    public void setQuery(IPayloadCheckerSpanQuery query) {
-        for(int i=0;i<checkers.size();i++)
-        {
-            checkers.get(i).setQuery(query);
-        }
-    }
+//    @Override
+//    public void setQuery(IPayloadCheckerSpanQuery query) {
+//        for(int i=0;i<checkers.size();i++)
+//        {
+//            checkers.get(i).setQuery(query);
+//        }
+//    }
     
     @Override
     public void clear() {

@@ -2,7 +2,6 @@ package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
 import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  *
@@ -48,10 +47,10 @@ public class NotPayloadChecker extends AbstractPayloadChecker
         return res;
     }
 
-    @Override
-    public void setQuery(IPayloadCheckerSpanQuery query) {
-        checker.setQuery(query);
-    }
+//    @Override
+//    public void setQuery(IPayloadCheckerSpanQuery query) {
+//        checker.setQuery(query);
+//    }
 
     @Override
     public NotPayloadChecker clone() {

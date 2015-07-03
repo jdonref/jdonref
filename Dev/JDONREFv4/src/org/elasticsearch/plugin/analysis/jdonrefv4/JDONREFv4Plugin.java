@@ -8,8 +8,8 @@ import java.util.Collection;
 import static org.elasticsearch.common.collect.Lists.newArrayList;
 import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.index.analysis.AnalysisModule;
-import org.elasticsearch.index.query.MultiPayloadSpanTermQueryParser;
-import org.elasticsearch.index.query.PayloadCheckerSpanQueryParser;
+import org.elasticsearch.index.query.MultiPayloadSpanTermFilterParser;
+import org.elasticsearch.index.query.PayloadCheckerSpanFilterParser;
 import org.elasticsearch.index.query.jdonrefv4.JDONREFv4QueryParser;
 import org.elasticsearch.indices.query.IndicesQueriesModule;
 import org.elasticsearch.plugin.analysis.*;
@@ -49,7 +49,7 @@ public class JDONREFv4Plugin extends AbstractPlugin
     public void onModule(IndicesQueriesModule module)
     {
         module.addQuery(new JDONREFv4QueryParser());
-        module.addQuery(new MultiPayloadSpanTermQueryParser());
-        module.addQuery(new PayloadCheckerSpanQueryParser());
+        module.addFilter(new MultiPayloadSpanTermFilterParser());
+        module.addFilter(new PayloadCheckerSpanFilterParser());
     }
 }

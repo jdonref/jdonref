@@ -7,53 +7,47 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
  *
  * @author Julien
  */
-public class MultiPayloadSpanTermQueryBuilder extends SpanTermQueryBuilder
+public class MultiPayloadSpanTermFilterBuilder extends BaseFilterBuilder
 {
     /* AAAARGH ! */
     protected String protectedName;
     protected Object protectedValue;
     protected float protectedBoost;
-    protected String protectedQueryName;
+    protected String protectedFilterName;
     
     protected boolean checked = true;
     
-    public MultiPayloadSpanTermQueryBuilder(String name, String value) {
-        super(name,value);
+    public MultiPayloadSpanTermFilterBuilder(String name, String value) {
+        super();
         this.protectedName = name;
         this.protectedValue = value;
     }
 
-    public MultiPayloadSpanTermQueryBuilder(String name, int value) {
-        super(name,value);
+    public MultiPayloadSpanTermFilterBuilder(String name, int value) {
+        super();
         this.protectedName = name;
         this.protectedValue = value;
     }
 
-    public MultiPayloadSpanTermQueryBuilder(String name, long value) {
-        super(name,value);
+    public MultiPayloadSpanTermFilterBuilder(String name, long value) {
+        super();
         this.protectedName = name;
         this.protectedValue = value;
     }
 
-    public MultiPayloadSpanTermQueryBuilder(String name, float value) {
-        super(name,value);
+    public MultiPayloadSpanTermFilterBuilder(String name, float value) {
+        super();
         this.protectedName = name;
         this.protectedValue = value;
     }
 
-    public MultiPayloadSpanTermQueryBuilder(String name, double value) {
-        super(name,value);
+    public MultiPayloadSpanTermFilterBuilder(String name, double value) {
+        super();
         this.protectedName = name;
         this.protectedValue = value;
-    }
-
-    public MultiPayloadSpanTermQueryBuilder boost(float boost) {
-        super.boost(boost);
-        this.protectedBoost = boost;
-        return this;
     }
     
-    public MultiPayloadSpanTermQueryBuilder checked(boolean value)
+    public MultiPayloadSpanTermFilterBuilder checked(boolean value)
     {
         this.checked = value;
         return this;
@@ -62,16 +56,16 @@ public class MultiPayloadSpanTermQueryBuilder extends SpanTermQueryBuilder
     /**
      * Sets the query name for the filter that can be used when searching for matched_filters per hit.
      */
-    public MultiPayloadSpanTermQueryBuilder queryName(String queryName) {
-        super.queryName(queryName);
-        this.protectedQueryName = queryName;
+    public MultiPayloadSpanTermFilterBuilder filterName(String filterName) {
+        //super.queryName(queryName);
+        this.protectedFilterName = filterName;
         return this;
     }
 
     @Override
     public void doXContent(XContentBuilder builder, Params params) throws IOException {
-        builder.startObject(MultiPayloadSpanTermQueryParser.NAME);
-        if (protectedBoost == -1 && protectedQueryName != null) {
+        builder.startObject(MultiPayloadSpanTermFilterParser.NAME);
+        if (protectedBoost == -1 && protectedFilterName != null) {
             builder.field(protectedName, protectedValue);
         } else {
             builder.startObject(protectedName);
@@ -81,8 +75,8 @@ public class MultiPayloadSpanTermQueryBuilder extends SpanTermQueryBuilder
             if (protectedBoost != -1) {
                 builder.field("boost", protectedBoost);
             }
-            if (protectedQueryName != null) {
-                builder.field("_name", protectedQueryName);
+            if (protectedFilterName != null) {
+                builder.field("_name", protectedFilterName);
             }
             builder.endObject();
         }

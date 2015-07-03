@@ -3,9 +3,10 @@ package org.elasticsearch.index.query;
 import static com.google.common.collect.Lists.newArrayList;
 import java.io.IOException;
 import java.util.List;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.MultiPayloadSpanTermQuery;
-import org.apache.lucene.search.spans.PayloadCheckerSpanQuery;
+import org.apache.lucene.search.spans.MultiPayloadSpanTermFilter;
+import org.apache.lucene.search.spans.PayloadCheckerSpanFilter;
 import org.apache.lucene.search.spans.checkers.IPayloadChecker;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.inject.Inject;
@@ -15,14 +16,12 @@ import org.elasticsearch.common.xcontent.XContentParser;
  *
  * @author Julien
  */
-public class PayloadCheckerSpanQueryParser implements QueryParser {
+public class PayloadCheckerSpanFilterParser implements FilterParser {
     
     public static final String NAME = "span_payloadchecker";
-
-    public static final int NOTERMCOUNTPAYLOADFACTOR = -1;
     
     @Inject
-    public PayloadCheckerSpanQueryParser() {
+    public PayloadCheckerSpanFilterParser() {
     }
 
     @Override
@@ -31,14 +30,13 @@ public class PayloadCheckerSpanQueryParser implements QueryParser {
     }
 
     @Override
-    public Query parse(QueryParseContext parseContext) throws IOException, QueryParsingException {
+    public Filter parse(QueryParseContext parseContext) throws IOException, QueryParsingException {
         XContentParser parser = parseContext.parser();
         
-        String queryName = null;
-        int limit = -1;
-        List<MultiPayloadSpanTermQuery> clauses = newArrayList();
+        String filterName = null;
+        List<MultiPayloadSpanTermFilter> clauses = newArrayList();
         IPayloadChecker checker = null;
-        int termCountPayloadFactor = NOTERMCOUNTPAYLOADFACTOR;
+        int termCountPayloadFactor = PayloadCheckerSpanFilter.NOTERMCOUNTPAYLOADFACTOR;
         
         XContentParser.Token token;
         String currentFieldName = null;
@@ -47,25 +45,24 @@ public class PayloadCheckerSpanQueryParser implements QueryParser {
                 currentFieldName = parser.currentName();
             } else if (token == XContentParser.Token.START_OBJECT) {
                 if ("checker".equals(currentFieldName)) {
-                    checker = PayloadCheckerFactory.getInstance().parseInnerQuery(parseContext);
+                    checker = PayloadCheckerFactory.getInstance().parseInnerFilter(parseContext);
                 }
             } else if (token == XContentParser.Token.START_ARRAY) {
                 if ("clauses".equals(currentFieldName)) {
                     while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
-                        Query query = parseContext.parseInnerQuery();
-                        if (!(query instanceof MultiPayloadSpanTermQuery)) {
+                        Filter filter = parseContext.parseInnerFilter();
+                        if (!(filter instanceof MultiPayloadSpanTermFilter)) {
                             throw new QueryParsingException(parseContext.index(), NAME+" [clauses] must be of type span_multipayloadterm");
                         }
-                        clauses.add((MultiPayloadSpanTermQuery) query);
+                        clauses.add((MultiPayloadSpanTermFilter) filter);
                     }
                 } else {
-                    throw new QueryParsingException(parseContext.index(), "["+NAME+"] query does not support [" + currentFieldName + "]");
+                    throw new QueryParsingException(parseContext.index(), "["+NAME+"] filter does not support [" + currentFieldName + "]");
                 }
             } else if (token.isValue()) {
                 if ("_name".equals(currentFieldName)) {
-                    queryName = parser.text();
-                } else if ("limit".equals(currentFieldName))
-                    limit = parser.intValue();
+                    filterName = parser.text();
+                }
                 else if ("termcountpayloadfactor".equals(currentFieldName)) {
                         termCountPayloadFactor = parser.intValue();
                 } else {
@@ -78,17 +75,15 @@ public class PayloadCheckerSpanQueryParser implements QueryParser {
             throw new QueryParsingException(parseContext.index(), NAME+" must include [clauses]");
         }
         
-        PayloadCheckerSpanQuery gpsQuery = new PayloadCheckerSpanQuery(clauses.toArray(new MultiPayloadSpanTermQuery[clauses.size()]));
-        if (limit!=-1)
-            gpsQuery.setLimit(limit);
+        PayloadCheckerSpanFilter gpsFilter = new PayloadCheckerSpanFilter(clauses.toArray(new MultiPayloadSpanTermFilter[clauses.size()]));
         
-        gpsQuery.setChecker(checker);
+        gpsFilter.setChecker(checker);
         
-        gpsQuery.setTermCountPayloadFactor(termCountPayloadFactor);
-        if (queryName != null) {
-            parseContext.addNamedQuery(queryName, gpsQuery);
+        gpsFilter.setTermCountPayloadFactor(termCountPayloadFactor);
+        if (filterName != null) {
+            parseContext.addNamedFilter(filterName, gpsFilter);
         }
         
-        return gpsQuery;
+        return gpsFilter;
     }
 }

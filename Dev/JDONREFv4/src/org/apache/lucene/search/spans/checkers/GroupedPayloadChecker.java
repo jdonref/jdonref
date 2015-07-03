@@ -21,12 +21,10 @@ public class GroupedPayloadChecker extends MultiPayloadChecker
     {
       if (index<=1) return true;
       
-      int size = lastpayloads.size();
-      
-      for(int i=0;i<size;i++)
+      for(int i=0;i<numcolumns;i++)
       {
           set.clear();
-          BytesRef[] payloads = lastpayloads.get(i);
+          BytesRef[] payloads = lastpayloads[i];
           int j = index;
           
           do
@@ -37,16 +35,17 @@ public class GroupedPayloadChecker extends MultiPayloadChecker
               }
               if (j==-1) return true;
               
+              int savedj = j;
               byte[] payload = payloads[j].bytes;
               
-              if (!set.contains(new BytesRef(payload))) // Array do not override equals method, BytesRef do
+              if (!set.contains(payloads[j])) // Array do not override equals method, BytesRef do
               {
                   do
                   {
                       j--;
                   } while (j >= 0 && (payloads[j]==null || Arrays.equals(payloads[j].bytes, payload)));
                   if (j == -1) return true;
-                  else set.add(new BytesRef(payload));
+                  else set.add(payloads[savedj]);
               }
               else
                   break;

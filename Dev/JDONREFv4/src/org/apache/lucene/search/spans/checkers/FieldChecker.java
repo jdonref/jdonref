@@ -2,7 +2,6 @@ package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * 
@@ -83,9 +82,9 @@ public class FieldChecker extends AbstractPayloadChecker
         return res;
     }
 
-    @Override
-    public void setQuery(IPayloadCheckerSpanQuery query) {
-    }
+//    @Override
+//    public void setQuery(IPayloadCheckerSpanQuery query) {
+//    }
 
     @Override
     public FieldChecker clone()

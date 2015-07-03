@@ -1,7 +1,6 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * Abstract class to check document subspans for payload rules.
@@ -9,8 +8,8 @@ import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
  */
 public abstract class AbstractPayloadChecker implements IPayloadChecker
 {
-    @Override
-    public abstract void setQuery(IPayloadCheckerSpanQuery query);
+//    @Override
+//    public abstract void setQuery(IPayloadCheckerSpanQuery query);
     
     /**
      * Check one of the payload from one of the spans.

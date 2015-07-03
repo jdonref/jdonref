@@ -6,7 +6,7 @@ package org.apache.lucene.search.spans;
  */
 
 
-public interface IPayloadCheckerSpanQuery
+public interface IPayloadCheckerSpanFilter
 {
     int getClausesCount();
 }

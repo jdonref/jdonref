@@ -4,133 +4,67 @@ import java.io.IOException;
 import java.util.Set;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
-import org.apache.lucene.search.similarities.Similarity;
-import org.apache.lucene.search.similarities.Similarity.SimScorer;
-import org.apache.lucene.search.spans.MultiPayloadTermSpans;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.ToStringUtils;
 
 /** A Query that matches documents containing a term.
 This may be combined with other terms with a {@link BooleanQuery}.
  */
-public class JDONREFv4TermQuery extends Query {
+public class PayloadAsScoreTermQuery extends Query {
 
-    protected int termCountPayloadFactor = MultiPayloadTermSpans.NOTERMCOUNTPAYLOADFACTOR;
     protected final Term term;
     protected final int docFreq;
-    private final JDONREFv4TermContext perReaderTermState;
-    protected boolean last = false;
-    protected int token;
-    protected int queryIndex;
-    protected boolean checked = true;
-    protected int order;
-    protected int integerTypeAsPayloadFactor = MultiPayloadTermSpans.NOINTEGERTYPEASPAYLOADFACTOR;
+    private final PayloadAsScoreTermContext perReaderTermState;
+    private boolean finalWildCard = false;
 
-    public boolean isLast() {
-        return last;
+    public boolean isFinalWildCard() {
+        return finalWildCard;
     }
 
-    public void setLast(boolean last) {
-        this.last = last;
+    public void setFinalWildCard(boolean finalWildCard) {
+        this.finalWildCard = finalWildCard;
     }
 
-    public int getTermCountPayloadFactor() {
-        return termCountPayloadFactor;
+    int numTerms = 0;
+
+    public int getNumTerms() {
+        return numTerms;
     }
 
-    public void setTermCountPayloadFactor(int termCountPayloadFactor) {
-        this.termCountPayloadFactor = termCountPayloadFactor;
-    }
-
-    public int getIntegerTypeAsPayloadFactor() {
-        return integerTypeAsPayloadFactor;
-    }
-
-    public void setIntegerTypeAsPayloadFactor(int integerTypeAsPayloadFactor) {
-        this.integerTypeAsPayloadFactor = integerTypeAsPayloadFactor;
-    }
-    
-  public int getOrder()
-  {
-      return this.order;
-  }
-  
-    void setOrder(int i) {
-        this.order = i;
-    }
-    
-    public boolean isChecked() {
-        return checked;
-    }
-
-    public void setChecked(boolean checked) {
-        this.checked = checked;
-    }
-    
-    public int getToken() {
-        return token;
-    }
-
-    public void setToken(int token) {
-        this.token = token;
-    }
-
-    public int getQueryIndex() {
-        return queryIndex;
-    }
-
-    public void setQueryIndex(int queryIndex) {
-        this.queryIndex = queryIndex;
+    public void setNumTerms(int numTerms) {
+        this.numTerms = numTerms;
     }
     
     public final class TermWeight extends Weight {
 
-        private final Similarity similarity;
-        private final Similarity.SimWeight stats;
-        private final JDONREFv4TermContext termStates;
+        protected PayloadAsScoreTermContext termStates;
         protected IndexSearcher searcher;
-        protected int index;
 
-        public Similarity getSimilarity() {
-            return similarity;
-        }
-
-        public JDONREFv4TermContext getContext() {
+        public PayloadAsScoreTermContext getContext() {
             return termStates;
         }
 
-        public IndexSearcher getSearcher() {
-            return searcher;
-        }
-
-        public TermWeight(IndexSearcher searcher, JDONREFv4TermContext termStates, int index)
+        public TermWeight(PayloadAsScoreTermContext termStates)
                 throws IOException {
             assert termStates != null : "TermContext must not be null";
             this.termStates = termStates;
-            this.similarity = searcher.getSimilarity(); // lol
-
-            this.index = index;
-            this.searcher = searcher;
-            this.stats = similarity.computeWeight(
-                    getBoost(),
-                    searcher.collectionStatistics(term.field()),
-                    searcher.termStatistics(term, termStates.getContext()));
         }
 
         @Override
         public String toString() {
-            return "weight(" + JDONREFv4TermQuery.this + ")";
+            return "weight(" + PayloadAsScoreTermQuery.this + ")";
         }
 
         @Override
         public Query getQuery() {
-            return JDONREFv4TermQuery.this;
+            return PayloadAsScoreTermQuery.this;
         }
 
         @Override
         public float getValueForNormalization() {
-            return stats.getValueForNormalization();
+            return 1.0f;
         }
+        
         float queryNorm;
         float topLevelBoost;
 
@@ -143,14 +77,13 @@ public class JDONREFv4TermQuery extends Query {
         }
 
         @Override
-        public void normalize(float queryNorm, float topLevelBoost) {
-            this.queryNorm = queryNorm;
-            this.topLevelBoost = topLevelBoost;
-            stats.normalize(queryNorm, topLevelBoost);
+        public void normalize(float queryNorm, float topLevelBoost)
+        {
         }
 
         @Override
-        public Scorer scorer(AtomicReaderContext context, Bits acceptDocs) throws IOException {
+        public Scorer scorer(AtomicReaderContext context, Bits acceptDocs) throws IOException
+        {
             assert termStates.topReaderContext == ReaderUtil.getTopLevelContext(context) : "The top-reader used to create Weight (" + termStates.topReaderContext + ") is not the same as the current reader's top-reader (" + ReaderUtil.getTopLevelContext(context);
             final TermsEnum termsEnum = getTermsEnum(context);
             if (termsEnum == null) {
@@ -159,7 +92,7 @@ public class JDONREFv4TermQuery extends Query {
             final DocsAndPositionsEnum postings = termsEnum.docsAndPositions(acceptDocs, null, DocsAndPositionsEnum.FLAG_PAYLOADS);
             
             assert postings != null;
-            return new JDONREFv4TermScorer(this,postings, similarity.simScorer(stats, context), this.index, this.searcher, context.reader(),termCountPayloadFactor, order, checked);
+            return new PayloadTermScorer(this,postings);
         }
 
         /**
@@ -191,15 +124,10 @@ public class JDONREFv4TermQuery extends Query {
             if (scorer != null) {
                 int newDoc = scorer.advance(doc);
                 if (newDoc == doc) {
-                    float freq = scorer.freq();
-                    SimScorer docScorer = similarity.simScorer(stats, context);
-                    ComplexExplanation result = new ComplexExplanation();
-                    result.setDescription("weight(" + getQuery() + " in " + doc + ") [" + similarity.getClass().getSimpleName() + "], result of:");
-                    Explanation scoreExplanation = docScorer.explain(doc, new Explanation(freq, "termFreq=" + freq));
-                    result.addDetail(scoreExplanation);
-                    result.setValue(scoreExplanation.getValue());
-                    result.setMatch(true);
-                    return result;
+                    float score = scorer.score();
+                    Explanation scoreExplanation = new Explanation(score, "payload=" + score);
+                    scoreExplanation.setValue(score);
+                    return scoreExplanation;
                 }
             }
             return new ComplexExplanation(false, 0.0f, "no matching term");
@@ -207,14 +135,14 @@ public class JDONREFv4TermQuery extends Query {
     }
 
     /** Constructs a query for the term <code>t</code>. */
-    public JDONREFv4TermQuery(Term t) {
+    public PayloadAsScoreTermQuery(Term t) {
         this(t, -1);
     }
 
     /** Expert: constructs a TermQuery that will use the
      *  provided docFreq instead of looking up the docFreq
      *  against the searcher. */
-    public JDONREFv4TermQuery(Term t, int docFreq) {
+    public PayloadAsScoreTermQuery(Term t, int docFreq) {
         term = t;
         this.docFreq = docFreq;
         perReaderTermState = null;
@@ -223,7 +151,7 @@ public class JDONREFv4TermQuery extends Query {
     /** Expert: constructs a TermQuery that will use the
      *  provided docFreq instead of looking up the docFreq
      *  against the searcher. */
-    public JDONREFv4TermQuery(Term t, JDONREFv4TermContext states) {
+    public PayloadAsScoreTermQuery(Term t, PayloadAsScoreTermContext states) {
         assert states != null;
         term = t;
         docFreq = states.docFreq();
@@ -238,10 +166,10 @@ public class JDONREFv4TermQuery extends Query {
     @Override
     public Weight createWeight(IndexSearcher searcher) throws IOException {
         final IndexReaderContext context = searcher.getTopReaderContext();
-        final JDONREFv4TermContext termState;
+        final PayloadAsScoreTermContext termState;
         if (perReaderTermState == null || perReaderTermState.topReaderContext != context) {
             // make TermQuery single-pass if we don't have a PRTS or if the context differs!
-            termState = JDONREFv4TermContext.build(context, term);
+            termState = PayloadAsScoreTermContext.build(context, term);
         } else {
             // PRTS was pre-build for this IS
             termState = this.perReaderTermState;
@@ -251,7 +179,7 @@ public class JDONREFv4TermQuery extends Query {
         if (docFreq != -1) {
             termState.setDocFreq(docFreq);
         }
-        return new TermWeight(searcher, termState, this.token);
+        return new TermWeight(termState);
     }
 
     @Override
@@ -275,10 +203,10 @@ public class JDONREFv4TermQuery extends Query {
     /** Returns true iff <code>o</code> is equal to this. */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof JDONREFv4TermQuery)) {
+        if (!(o instanceof PayloadAsScoreTermQuery)) {
             return false;
         }
-        JDONREFv4TermQuery other = (JDONREFv4TermQuery) o;
+        PayloadAsScoreTermQuery other = (PayloadAsScoreTermQuery) o;
         return (this.getBoost() == other.getBoost()) && this.term.equals(other.term);
     }
 

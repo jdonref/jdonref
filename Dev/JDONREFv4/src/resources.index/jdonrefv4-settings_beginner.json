@@ -1,12 +1,11 @@
 {
     "index" : {
-        "index.store.type": "niofs",
         "analysis" : {
             "analyzer": {
                 "jdonrefv4_index_token_count" : {
                     "type" : "custom",
                     "tokenizer" : "whitespace",
-                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*"french_keywords",*/ "french_stemmer","jdonrefv4_tokenCount","jdonrefv4_synonyme", "jdonrefv4_nGram", "jdonrefv4_integertypeaspayload"]
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*"french_keywords",*/ "french_stemmer","jdonrefv4_tokenCount","jdonrefv4_synonyme", "jdonrefv4_nGram"]
                 },
                 "jdonrefv4_index" : {
                     "type" : "custom",
@@ -22,11 +21,6 @@
                     "type" : "custom",
                     "tokenizer" : "standard",
                     "filter" : ["lowercase", "french_elision", "french_stop"/*,/"french_keywords"*/, "french_stemmer"]
-                },
-                "jdonrefv4_search_unsplit" : {
-                    "type" : "custom",
-                    "tokenizer" : "standard",
-                    "filter" : ["lowercase", "french_elision", "french_stop"/*,/"french_keywords"*/, "french_stemmer"]
                 }
             },
             "filter" : {
@@ -38,7 +32,7 @@
                 "french_elision": {
                   "type":         "elision",
                   "articles": [ "l", "m", "qu", "n", "s",
-                                  "j", "jusqu", "quoiqu",
+                                  "j", "d", "c", "jusqu", "quoiqu",
                                   "lorsqu", "puisqu"
                               ]
                 },
@@ -70,10 +64,6 @@
                     "with_payloads": true,
                     "keep_numbers" : true,
                     "keep_under_min" : true
-                },
-                "jdonrefv4_integertypeaspayload" : {
-                    "type":"integertypeaspayload",
-                    "factor": 1000000
                 },
                 "jdonrefv4_tokenCount": {
                     "type" : "tokencountpayloads",

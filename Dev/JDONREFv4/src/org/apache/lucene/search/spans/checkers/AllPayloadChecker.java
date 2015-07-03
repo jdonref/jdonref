@@ -2,8 +2,6 @@ package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
 import java.util.Arrays;
-import org.apache.lucene.search.spans.MultiPayloadTermSpans;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * Check every token with given payload in a document are present in the query.
@@ -55,9 +53,9 @@ public class AllPayloadChecker extends AbstractPayloadChecker
         return res;
     }
 
-    @Override
-    public void setQuery(IPayloadCheckerSpanQuery query) {
-    }
+//    @Override
+//    public void setQuery(IPayloadCheckerSpanQuery query) {
+//    }
 
     @Override
     public AllPayloadChecker clone()

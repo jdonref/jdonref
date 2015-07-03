@@ -48,18 +48,17 @@ public class PayloadBeforeAnotherChecker extends MultiPayloadChecker
       if (index<=1) return true;
       
       boolean check = false;
-      int size = lastpayloads.size();
       
-      for(int i=0;i<size;i++)
+      for(int i=0;i<numcolumns;i++)
       {
-          BytesRef[] payloads = lastpayloads.get(i);
+          BytesRef[] payloads = lastpayloads[i];
           byte[] payload;
           int state = 0;
           boolean subcheck = true;
 
           for(int j=0;subcheck && j<=index;j++)
           {
-              if (payloads[j]!=null)
+              if (payloads[j]!=null) // non match terms are ignored in grammar sequence
               {
                 payload = payloads[j].bytes;
                 int substate = 0;
@@ -106,7 +105,7 @@ public class PayloadBeforeAnotherChecker extends MultiPayloadChecker
               }
           }
           
-          check |= subcheck;
+          check |= subcheck; if (!check) break;
       }
       
       return check;

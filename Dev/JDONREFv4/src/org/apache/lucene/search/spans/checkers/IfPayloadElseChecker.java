@@ -1,7 +1,6 @@
 package org.apache.lucene.search.spans.checkers;
 
 import java.io.IOException;
-import org.apache.lucene.search.spans.IPayloadCheckerSpanQuery;
 
 /**
  * Be aware of performances
@@ -77,10 +76,10 @@ public class IfPayloadElseChecker extends IfPayloadChecker
         return res;
     }
 
-    @Override
-    public void setQuery(IPayloadCheckerSpanQuery query) {
-        condition.setQuery(query);
-        then.setQuery(query);
-        elseChecker.setQuery(query);
-    }
+//    @Override
+//    public void setQuery(IPayloadCheckerSpanQuery query) {
+//        condition.setQuery(query);
+//        then.setQuery(query);
+//        elseChecker.setQuery(query);
+//    }
 }
