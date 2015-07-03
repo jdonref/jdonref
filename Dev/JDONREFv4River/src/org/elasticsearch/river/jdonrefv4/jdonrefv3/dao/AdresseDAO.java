@@ -70,7 +70,8 @@ public class AdresseDAO
                 "st_AsGeoJSON(st_transform(adr_adresses_"+dpt+".geometrie,4326)) AS adr_geometrie "+ // 33
                 "FROM adr_adresses_"+dpt+", voi_voies_"+dpt+", com_communes "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee " +
-                "and adr_adresses_"+dpt+".voi_id = voi_voies_"+dpt+".voi_id";
+                "and adr_adresses_"+dpt+".voi_id = voi_voies_"+dpt+".voi_id " +
+                "order by voi_nom,com_communes.com_code_insee ";
                 
 
         PreparedStatement ps = connection.prepareStatement(sql);

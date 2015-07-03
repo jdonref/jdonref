@@ -100,6 +100,7 @@ public class InitParameters {
     public void setAllDept(ArrayList<String> allDept) {
         this.allDept = allDept;
     }
+    
 
     /**
      * verification doublon
@@ -139,12 +140,12 @@ public class InitParameters {
      * retourne las liste des departement compris entre deb et fin si les 2 sont present 
      * deb peut etre plus grand que fin auquel cas on parcours dans l'autre sens
      * verification doublon
-     *  TODO au lieu de mettre init3("01","15") pour l'ensemble mettre init3({"01..15"})
+     *  TODO au lieu de mettre depts_intervalle("01","15") pour l'ensemble mettre depts_intervalle({"01..15"})
      * 
      * @param DepDeb
      * @param DepFin 
      */
-    public void init3(String DepDeb, String DepFin){
+    public void depts_intervalle(String DepDeb, String DepFin){
         ArrayList<String> depts = (ArrayList<String>) allDept.clone();
         deleteDoublon(depts);
         if(depts.contains(DepDeb) && depts.contains(DepFin)){
@@ -176,7 +177,7 @@ public class InitParameters {
             for(int i = 0; i<arg.size();i++){
                 if(arg.get(i)[0].equals("init3")){
                     ArrayList<String> str = new ArrayList(Arrays.asList(getListeDepartement()));
-                    init3(arg.get(i)[1], arg.get(i)[2]);
+                    depts_intervalle(arg.get(i)[1], arg.get(i)[2]);
                     str.addAll(Arrays.asList(getListeDepartement()));
                     deleteDoublon(str);
                     setListeDepartement((String[])str.toArray(new String[str.size()]));

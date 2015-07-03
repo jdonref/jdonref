@@ -138,7 +138,7 @@ public class VoieIndex {
             
                         
 //            creation de l'objet metaDataVoie plus haut
-            metaDataVoie.setId(++idVoie);
+            metaDataVoie.setId(new Long(++idVoie));
             map_idIndexVoieES.put(v.idvoie, idVoie);
             bulk.append(metaDataVoie.toJSONMetaData().toString()).append("\n").append(v.toJSONDocument(withGeometry).toString()).append("\n");
             if((idVoie-idVoieTmp)%paquetsBulk==0){
@@ -189,7 +189,7 @@ public class VoieIndex {
 //            addVoie(v);
             
 //            creation de l'objet metaDataVoie plus haut
-            metaDataVoie.setId(++idVoie);
+            metaDataVoie.setId(new Long(++idVoie));
             bulk += metaDataVoie.toJSONMetaData().toString()+"\n"+v.toJSONDocument(withGeometry).toString()+"\n";
             if((idVoie-idVoieTmp)%paquetsBulk==0){
                 System.out.println("voie : bulk pour les ids de "+(idVoie-paquetsBulk+1)+" à "+idVoie);

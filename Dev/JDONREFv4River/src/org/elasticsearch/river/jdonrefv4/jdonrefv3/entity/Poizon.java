@@ -180,7 +180,7 @@ public class Poizon {
     }
     
     
-    
+   
         public JsonObject toJSONDocument(boolean withGeometry)
     {
 
@@ -251,10 +251,5 @@ public class Poizon {
 
          return poizon.build();   
     }
-    
-    
 
-    
-    
-    
 }

@@ -21,9 +21,11 @@ public class ValideN {
     boolean verboseIndexation = true;
     boolean withGeometry = false;
     boolean withSwitchAlias = true;
-    boolean parent = true;
-    String url = "10.213.93.13:9200";
+    boolean parent = false;
+    String url = "localhost:9200";
+//    String url = "10.213.93.35:9200";
 //    String url = "plf.jdonrefv4.ppol.minint.fr";
+//    String connectionString = "jdbc:postgresql://10.232.73.78:5433/jdonref_ign";
     String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN2";
     String user = "postgres";
     String passwd = "postgres";
@@ -194,23 +196,26 @@ public class ValideN {
                 Connection connection = DriverManager.getConnection(connectionString,user,passwd); 
                 InitParameters initParam = InitParameters.getInstance();
                 initParam.allDeptInit(connection);
-                String[] departementsIDF = {"75", "94", "93", "95", "92", "91", "78", "77"};
-                initParam.init2(departementsIDF);
-                
-//                String[] listeDepartements = {"20_a"};
-//                String[] listeDepartementsN = {"20_b"};
-                String[] listeDepartements = initParam.getListeDepartement();
-                String[] listeDepartementsN = initParam.getListeDepartementN();
 
+//                String[] departementsIDF = {"75", "94", "93", "95", "92", "91", "78", "77", "89", "60", "51", "45", "28", "27", "10", "02"};
+//                String[] departementsIDF = {"75", "94", "93", "95", "92", "91", "78", "77"}; //1
+//                initParam.init2(departementsIDF); // 1               
+//                String[] listeDepartements = initParam.getListeDepartement(); //1
+                String[] listeDepartements = (String[])initParam.getAllDept().toArray(new String[initParam.getAllDept().size()]); //2 ALL
+//                String[] listeDepartements = {"75"}; 
+              
+//                initParam.depts_intervalle("01","10"); // 3
+//                String[] listeDepartements = initParam.getListeDepartement(); //3
+                
                 //on commente ce qu'on veux indexer !!
                 ArrayList<String> flags = new ArrayList<>();
-//                flags.add("DEPARTEMENT");
-//                flags.add("COMMUNE");
-//                flags.add("VOIE");
+                flags.add("DEPARTEMENT");
+                flags.add("COMMUNE");
+                flags.add("VOIE");
 //                flags.add("ADRESSE");
-//                flags.add("POIZON");
-//                flags.add("PAYS");
-                  flags.add("TRONCON");
+                flags.add("POIZON");
+                flags.add("PAYS");
+                flags.add("TRONCON");
 
                 setIndexName("jdonref_idf");
                 aliasName.clear();
@@ -220,11 +225,15 @@ public class ValideN {
                 
                 JDONREFIndex jdonrefIndex = initJDONREFIndex(connection, indexName, aliasName, url, verboseIndexation, restart, withGeometry, withSwitchAlias, parent, millis);
                 getJDONREFIndex(jdonrefIndex, listeDepartements,flags);
-                ///
+/*
+//               String[] listeDepartementsN = {"13"};
+                String[] listeDepartementsN = initParam.getListeDepartementN();
+               
+             
                 flags.clear();
-//                flags.add("DEPARTEMENT");
-//                flags.add("COMMUNE");
-//                flags.add("VOIE");
+                flags.add("DEPARTEMENT");
+                flags.add("COMMUNE");
+                flags.add("VOIE");
 //                flags.add("ADRESSE");
                 flags.add("TRONCON");
                 flags.add("POIZON");
@@ -237,7 +246,7 @@ public class ValideN {
                 jdonrefIndex.setAliasL(aliasName);
 
                 getJDONREFIndex(jdonrefIndex, listeDepartementsN,flags);
-
+*/
             } catch (SQLException | IOException ex) {
                 Logger.getLogger(ValideN.class.getName()).log(Level.SEVERE, null, ex);
             }

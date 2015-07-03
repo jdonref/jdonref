@@ -155,7 +155,7 @@ public class DepartementIndex
 //            d.t1 = t1;
             
 //            creation de l'objet metaDataDep plus haut
-            metaDataDep.setId(++idDep);
+            metaDataDep.setId(new Long(++idDep));
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idDep-idDepTmp)%paquetsBulk==0){
                 System.out.println("departement : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);
@@ -201,7 +201,7 @@ public class DepartementIndex
 //            addDepartment(d);
             
 //            creation de l'objet metaDataDep plus haut
-            metaDataDep.setId(++idDep);
+            metaDataDep.setId(new Long(++idDep));
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idDep-idDepTmp)%paquetsBulk==0){
                 System.out.println("departement : bulk pour les ids de "+(idDep-paquetsBulk+1)+" à "+idDep);

@@ -5,7 +5,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.AdresseDAO;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Adresse;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.MetaData;
@@ -106,22 +109,55 @@ public class AdresseIndex {
         StringBuilder bulk = new StringBuilder();
         int i =0;
         int lastIdBulk=idAdresseTmp;
-
+        
+        String voi_nom = "";
+        String codeinsee = "";
+        JsonArrayBuilder ad = Json.createArrayBuilder();
+        boolean first = true;
+        boolean show = true;
+        Adresse adrLast=null;
+        Adresse adr=null;
         while(rs.next())
         {
             if(paquetsBulk == 1) System.out.println(dpt+": "+i+" adresses traités");
-            if (isVerbose() && i%paquetsBulk==1)
+            if (isVerbose() && i%paquetsBulk==1 && show){
                 System.out.println(dpt+": "+i+" adresses traitées");
-            
-            Adresse adr = new Adresse(rs);
-            if (adr.numero!=null){
-//            creation de l'objet metaDataAdresse plus haut
-                metaDataAdresse.setId(++idAdresse);
-                if(parent == false) bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
-                else{
-                    metaDataAdresse.setParent(map_idIndexVoieES.get(adr.voie.idvoie).toString());
-                    bulk.append(metaDataAdresse.toJSONMetaDataWithPartent().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
+                show = false;
+            }
+            adr = new Adresse(rs);
+            if(first){
+                voi_nom = adr.voie.voi_nom;
+                codeinsee = adr.voie.commune.codeinsee;
+                first = false;
+                adr.toJSONDocumentNestedAddWithoutNum(ad,withGeometry);
+            }
+            if(adr.voie.voi_nom.equals(voi_nom)){
+                //Ajouter sans numero avec code insee different ????
+                if(!adr.voie.commune.codeinsee.equals(codeinsee)){
+                    codeinsee = adr.voie.commune.codeinsee;
+                    adr.toJSONDocumentNestedAddWithoutNum(ad,withGeometry);
                 }
+                adrLast = adr;
+                if (adr.numero!=null)
+                    adr.toJSONDocumentNestedAdd(ad,withGeometry); 
+            }else{
+                if(!show) show = true;
+                String adjson = adrLast.toJSONDocumentNested(ad).toString();
+//                System.out.println(adjson);
+                ad = Json.createArrayBuilder();
+                adr.toJSONDocumentNestedAddWithoutNum(ad,withGeometry);
+                if (adr.numero!=null)
+                    adr.toJSONDocumentNestedAdd(ad,withGeometry); 
+                voi_nom = adr.voie.voi_nom; 
+                codeinsee = adr.voie.commune.codeinsee;
+    //            creation de l'objet metaDataAdresse plus haut
+                metaDataAdresse.setId(new Long(++idAdresse));
+                if(parent == false) bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adjson).append("\n"); 
+                else{
+                    metaDataAdresse.setParent(map_idIndexVoieES.get(adrLast.voie.idvoie).toString());
+                    bulk.append(metaDataAdresse.toJSONMetaDataWithPartent().toString()).append("\n").append(adjson).append("\n"); 
+                }
+                adrLast = adr;
 // envoyé le bulk par paquet de 1000 à partir de idAdresseTmp 
 // idAdresseTmp valeur de l'id de debut au moment de l'appel à cette methode
                 if((idAdresse-idAdresseTmp)%paquetsBulk==0){
@@ -133,10 +169,22 @@ public class AdresseIndex {
                     bulk.setLength(0);
                     lastIdBulk=idAdresse;
                 }
-            }    
-            i++;     
+                i++;     
+            }
         }
         rs.close();
+       
+        if(adr!=null){
+            String adjson = adr.toJSONDocumentNested(ad).toString();
+    //        System.out.println(adjson);
+    //        System.out.println(bulk.toString());
+            metaDataAdresse.setId(new Long(++idAdresse));
+            if(parent == false) bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adjson).append("\n"); 
+            else{
+                metaDataAdresse.setParent(map_idIndexVoieES.get(adr.voie.idvoie).toString());
+                bulk.append(metaDataAdresse.toJSONMetaDataWithPartent().toString()).append("\n").append(adjson).append("\n"); 
+            }
+        }
         if(bulk.length()!=0){
                 System.out.println("adresse : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
                 if (!isVerbose())
@@ -169,7 +217,7 @@ public class AdresseIndex {
             Adresse adr = adresses[i]; 
             if (adr.numero!=null){
 //            creation de l'objet metaDataAdresse plus haut
-                metaDataAdresse.setId(++idAdresse);                
+                metaDataAdresse.setId(new Long(++idAdresse));                
                 bulk += metaDataAdresse.toJSONMetaData().toString()+"\n"+adr.toJSONDocument(withGeometry).toString()+"\n";
                 if((idAdresse-idAdresseTmp)%paquetsBulk==0){
                     System.out.println("adresse : bulk pour les ids de "+(idAdresse-paquetsBulk+1)+" à "+idAdresse);

@@ -12,7 +12,7 @@ import javax.json.JsonObjectBuilder;
 public class MetaData {
     String index;
     String type;
-    int id;
+    long id;
     int version;
     String parent;
 
@@ -20,13 +20,13 @@ public class MetaData {
     public MetaData() {
     }
     
-    public MetaData(String index, String type, int id) {
+    public MetaData(String index, String type, long id) {
         this.index = index;
         this.type = type;
         this.id = id;
     }
 
-    public MetaData(String index, String type, int id, int version) {
+    public MetaData(String index, String type, long id, int version) {
         this.index = index;
         this.type = type;
         this.id = id;
@@ -35,11 +35,11 @@ public class MetaData {
         
      
     
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

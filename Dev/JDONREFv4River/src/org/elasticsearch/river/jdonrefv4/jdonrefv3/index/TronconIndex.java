@@ -267,7 +267,7 @@ ElasticSearchUtil util;
             Troncon tr = new Troncon(rs,side);
                         
 //            creation de l'objet metaDataTroncon plus haut
-            metaDataTroncon.setId(++idTroncon);
+            metaDataTroncon.setId(new Long(++idTroncon));
             bulk += metaDataTroncon.toJSONMetaData().toString()+"\n"+tr.toJSONDocument(withGeometry).toString()+"\n";
             if((idTroncon-idTronconTmp)%paquetsBulk==0){
                 System.out.println("troncons "+side+" : bulk pour les ids de "+(idTroncon-paquetsBulk+1)+" à "+idTroncon);

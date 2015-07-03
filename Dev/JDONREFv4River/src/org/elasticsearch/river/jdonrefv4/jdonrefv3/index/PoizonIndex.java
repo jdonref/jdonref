@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.PoizonDAO;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.MetaData;
@@ -28,7 +29,7 @@ public class PoizonIndex {
     
     static int idPoizon=0;
     static int idPoizonTmp=0;
-    int paquetsBulk=100;
+    int paquetsBulk=1000;
 
     String index;
     
@@ -104,7 +105,8 @@ public class PoizonIndex {
         return lastUpdate;
     }
 
-    
+    ArrayList<String> ids = new ArrayList<>();
+    int idid = 0;
     public void indexJDONREFPoizon() throws IOException, SQLException
     {
         if (isVerbose())
@@ -133,7 +135,8 @@ public class PoizonIndex {
             
 //            creation de l'objet metaDataPoizon plus haut
 //            metaDataPoizon.setId(++idPoizon);
-            metaDataPoizon.setId(Integer.parseInt(p.poizon_id1));
+//            metaDataPoizon.setId(Integer.parseInt(p.poizon_id1));
+            metaDataPoizon.setId(Long.parseLong(p.poizon_service+p.poizon_id1));
             ++idPoizon;
             bulk += metaDataPoizon.toJSONMetaData().toString()+"\n"+p.toJSONDocument(withGeometry).toString()+"\n";
             if((idPoizon-idPoizonTmp)%paquetsBulk==0){

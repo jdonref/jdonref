@@ -132,17 +132,17 @@ public class Valide
 //                }
                 
 //                String[] departements = {"95", "94", "93", "92", "91", "78", "77", "75"};
-                String[] departements = {"95"};
+                String[] departements = {"75"};
                                
 //                departements = new String[]{"23"};
                 jdonrefIndex.setCodesDepartements(departements); // remove comments to select departements
-//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
-//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); // useless
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.COMMUNE); // too long ! (big geometry)
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.TRONCON); // useless
 //                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.ADRESSE);
-//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
-//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.DEPARTEMENT);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.POIZON);
 //                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.VOIE);
-//                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
+                jdonrefIndex.removeFlag(JDONREFIndex.FLAGS.PAYS);
                 jdonrefIndex.reindex();
             }
         }
@@ -155,16 +155,16 @@ public class Valide
     public void valideTestsAfterIndexation() throws ParseException, SQLException
     {
         // URL d'un master et load balancer d'elasticsearch
-        String url = "10.213.93.13:9200";
-//        String url = "plf.jdonrefv4.ppol.minint.fr";
+//        String url = "10.213.93.13:9200";
+        String url = "plf.jdonrefv4.ppol.minint.fr";
         boolean bouchon = false;
         boolean reindex = true;
         boolean verboseIndexation = true;
         boolean withGeometry = false;
         boolean withSwitchAlias = true;
         boolean restart = true;
-        String indexName = "jdonref";
-        String aliasName = "jdonref";
+        String indexName = "jdonreftest";
+        String aliasName = "jdonreftest";
         
         long millis = 0; // Calendar.getInstance one
         //long millis = 1417344386023l;

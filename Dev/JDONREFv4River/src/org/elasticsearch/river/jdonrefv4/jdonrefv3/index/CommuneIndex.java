@@ -121,7 +121,7 @@ public class CommuneIndex
             Commune c = new Commune(rs);        
                         
 //            creation de l'objet metaDataCommune plus haut
-            metaDataCommune.setId(++idCommune);
+            metaDataCommune.setId(new Long(++idCommune));
             bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument(withGeometry).toString()+"\n";
             if((idCommune-idCommuneTmp)%paquetsBulk==0){
                 System.out.println("commune : bulk pour les ids de "+(idCommune-paquetsBulk+1)+" à "+idCommune);
@@ -166,7 +166,7 @@ public class CommuneIndex
             Commune c = communes[i];
             
 //            creation de l'objet metaDataCommune plus haut
-            metaDataCommune.setId(++idCommune);
+            metaDataCommune.setId(new Long(++idCommune));
             bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument(withGeometry).toString()+"\n";
             if((idCommune-idCommuneTmp)%paquetsBulk==0){
                 System.out.println("commune : bulk pour les ids de "+(idCommune-paquetsBulk+1)+" à "+idCommune);

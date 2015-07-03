@@ -107,7 +107,7 @@ public class PaysIndex
             Pays d = new Pays(rs);
             
 //            creation de l'objet metaDataDep plus haut
-            metaDataDep.setId(++idPays);
+            metaDataDep.setId(new Long(++idPays));
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idPays-idPaysTmp)%paquetsBulk==0){
                 System.out.println("pays : bulk pour les ids de "+(idPays-paquetsBulk+1)+" à "+idPays);
@@ -153,7 +153,7 @@ public class PaysIndex
 //            addDepartment(d);
             
 //            creation de l'objet metaDataDep plus haut
-            metaDataDep.setId(++idPays);
+            metaDataDep.setId(new Long(++idPays));
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
             if((idPays-idPaysTmp)%paquetsBulk==0){
                 System.out.println("pays : bulk pour les ids de "+(idPays-paquetsBulk+1)+" à "+idPays);

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import org.apache.lucene.analysis.FrequentTermsUtil;
@@ -229,6 +230,85 @@ public class Adresse
         
         return adresse.build();
     }
+    
+    
+        public JsonObject toJSONDocumentNested(JsonArrayBuilder ad)
+    {
+        JsonObjectBuilder adresse = Json.createObjectBuilder();
+        adresse.add("adresses",ad);
+        adresse.add("code_departement",voie.commune.getCodeDepartement());
+        adresse.add("code_pays","FR1");
+        adresse.add("type_de_voie",voie.typedevoie);
+        if (voie.article!=null)
+            adresse.add("article",voie.article);
+        adresse.add("libelle",voie.libelle);
+        adresse.add("voi_nom",voie.voi_nom);
+        adresse.add("pays","FRANCE");
+        adresse.add("ligne7",toLigne7().trim());
+//        adresse.add("type","adresse");
+       
+        
+        return adresse.build();
+    }
+    
+    public void toJSONDocumentNestedAdd(JsonArrayBuilder ad, boolean withGeometry)
+    {
+        JsonObjectBuilder adresse = Json.createObjectBuilder();
+        adresse.add("adr_id",idadresse);
+        adresse.add("voi_id",voie.idvoie);
+        adresse.add("code_insee",voie.commune.codeinsee);
+        if (voie.commune.com_code_insee_commune!=null)
+            adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
+        if (numero!=null)
+                adresse.add("numero",numero); // need a boost ?
+        if (repetition!=null)
+            adresse.add("repetition",repetition); 
+        adresse.add("commune",voie.commune.commune);
+        String code_arrondissement = voie.commune.getCodeArrondissement();
+        if (code_arrondissement!=null)
+            adresse.add("code_arrondissement",code_arrondissement);
+        adresse.add("code_postal",voie.commune.codepostal);
+        adresse.add("t0" , getDatForm(t0));
+        adresse.add("t1" , getDatForm(t1));
+        adresse.add("ligne4",toLigne4().trim());
+        adresse.add("ligne6",toLigne6().trim());
+//        adresse.add("type","voie");
+        if (withGeometry)
+            adresse.add("geometrie" , geometrieJSON(geometrie));
+        adresse.add("pin" , geometrieJSON(geometrie));
+
+        ad.add(adresse);
+    }
+    public void toJSONDocumentNestedAddWithoutNum(JsonArrayBuilder ad, boolean withGeometry)
+    {
+        //modifier les champs renseigner sans num : exemple idadresse pas coherent de le mettre ..
+        
+        JsonObjectBuilder adresse = Json.createObjectBuilder();
+        adresse.add("adr_id",idadresse);
+        adresse.add("voi_id",voie.idvoie);
+        adresse.add("code_insee",voie.commune.codeinsee);
+        if (voie.commune.com_code_insee_commune!=null)
+            adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
+         adresse.add("numero","");
+        if (repetition!=null)
+            adresse.add("repetition",repetition); 
+        adresse.add("commune",voie.commune.commune);
+        String code_arrondissement = voie.commune.getCodeArrondissement();
+        if (code_arrondissement!=null)
+            adresse.add("code_arrondissement",code_arrondissement);
+        adresse.add("code_postal",voie.commune.codepostal);
+        adresse.add("t0" , getDatForm(t0));
+        adresse.add("t1" , getDatForm(t1));
+        adresse.add("ligne4",voie.voi_nom);
+        adresse.add("ligne6",toLigne6().trim());
+//        adresse.add("type","voie");   
+        if (withGeometry)
+            adresse.add("geometrie" , geometrieJSON(geometrie));
+        adresse.add("pin" , geometrieJSON(geometrie));
+
+        ad.add(adresse);
+    }
+
     
     public boolean equals(Adresse a)
     {
