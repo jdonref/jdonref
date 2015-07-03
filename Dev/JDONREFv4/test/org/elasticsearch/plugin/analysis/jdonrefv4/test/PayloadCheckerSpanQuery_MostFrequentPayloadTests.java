@@ -13,9 +13,7 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.MultiPayloadSpanTermQueryBuilder;
-import org.elasticsearch.index.query.PayloadCheckerSpanQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.junit.Assert;
 import org.junit.Test;
@@ -113,16 +111,16 @@ public class PayloadCheckerSpanQuery_MostFrequentPayloadTests extends QueryTests
         
         FrequentTermsUtil.setFilePath("src/resources/analysis/word84.txt");
         
-        PayloadCheckerSpanQueryBuilder qb = new PayloadCheckerSpanQueryBuilder();
+        PayloadCheckerSpanFilterBuilder qb = new PayloadCheckerSpanFilterBuilder();
         for(int i=0;i<tokens.length;i++)
         {
-            MultiPayloadSpanTermQueryBuilder sqb = new MultiPayloadSpanTermQueryBuilder("fullName",tokens[i]);
+            MultiPayloadSpanTermFilterBuilder sqb = new MultiPayloadSpanTermFilterBuilder("fullName",tokens[i]);
             qb.clause(sqb);
         }
         NullPayloadChecker checker = new NullPayloadChecker();
         qb.checker(checker);
-        qb.limit(20); // sharding need to reduce that number a lot
+        //qb.limit(20); // sharding need to reduce that number a lot
         
-        return qb;
+        return new FilteredQueryBuilder(new MatchAllQueryBuilder(),qb);
     }
 }

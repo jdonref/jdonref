@@ -85,9 +85,18 @@ public class TokenCountPayloadsFilterTests extends QueryTests
                 {
                     docsEnum.nextPosition();
                     BytesRef payload = docsEnum.getPayload();
-                    int payloadValue = PayloadHelper.decodeInt(payload.bytes,payload.offset);
-                    assert(payloadValue==2001 || payloadValue==1002 || payloadValue==1003);
+                    if (payload!=null)
+                    {
+                        int payloadValue = PayloadHelper.decodeInt(payload.bytes,payload.offset);
+                        //System.out.println(terms1.term().utf8ToString()+" "+payloadValue);
+                        assert(payloadValue==2001 || payloadValue==1002 || payloadValue==1003 || 
+                               payloadValue==1 || payloadValue==2 || payloadValue==3 || payloadValue==0);
+                    }
+                    /*else
+                        System.out.println(terms1.term().utf8ToString()+" "+"No payload");*/
                 }
+                /*if (freq==0)
+                    System.out.println(terms1.term().utf8ToString()+" "+"No payload");*/
             }
         }
         
@@ -105,7 +114,8 @@ public class TokenCountPayloadsFilterTests extends QueryTests
                     docsEnum.nextPosition();
                     BytesRef payload = docsEnum.getPayload();
                     int payloadValue = PayloadHelper.decodeInt(payload.bytes,payload.offset);
-                    assert(payloadValue==1001 || payloadValue==1002 || payloadValue==1003);
+                    assert(payloadValue==1001 || payloadValue==1002 || payloadValue==1003 || 
+                           payloadValue==1 || payloadValue==2 || payloadValue==3 || payloadValue==0);
                 }
             }
         }

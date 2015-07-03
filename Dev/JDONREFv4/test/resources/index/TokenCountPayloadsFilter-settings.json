@@ -5,12 +5,7 @@
                 "jdonrefv4_index" : {
                     "type" : "custom",
                     "tokenizer" : "whitespace",
-                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer","jdonrefv4_tokenCount","jdonrefv4_synonyme", "jdonrefv4_nGram"]
-                },
-                "jdonrefv4_codes_index" : {
-                    "type" : "custom",
-                    "tokenizer" : "standard",
-                    "filter" : ["standard", "lowercase"]
+                    "filter" : ["delimited_payload_filter", "lowercase", "french_elision", "french_stop", /*/"french_keywords",*/ "french_stemmer","jdonrefv4_synonyme", "jdonrefv4_nGram","jdonrefv4_unsplit_index","jdonrefv4_tokenCount"]
                 },
                 "jdonrefv4_search" : {
                     "type" : "custom",
@@ -59,9 +54,20 @@
                     "token_chars": ["digit"],
                     "withPayloads": true
                 },
+                "jdonrefv4_unsplit_index" : {
+                  "type": "unsplit",
+                  "min_words_unsplitted" : 2,
+                  "keep_originals" : true,
+                  "max_subwords" : 1,
+                  "frequent_terms_only": false,
+                  "required_payloads" : [11],
+                  "ordered_payloads" : [2,5]/*,
+                  "path": "./src/resources/analysis/word84.txt"*/
+                },
                 "jdonrefv4_tokenCount": {
                     "type" : "tokencountpayloads",
-                    "factor": 1000
+                    "factor": 1000,
+                    "ignored_types" : ["NGRAM","UNSPLITED"]
                 }
             },
             "similarity": {

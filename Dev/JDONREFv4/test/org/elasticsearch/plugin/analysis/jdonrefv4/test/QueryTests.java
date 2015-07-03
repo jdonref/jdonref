@@ -6,10 +6,13 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import org.apache.lucene.search.Explanation;
 import org.elasticsearch.ElasticsearchException;
+
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder;
@@ -180,7 +183,13 @@ public abstract class QueryTests
         //QueryStringQueryBuilder qb = new QueryStringQueryBuilder(voie);
         
         long start = Calendar.getInstance().getTimeInMillis();
-        SearchResponse search = client().prepareSearch().setQuery(qb)./*setExplain(true).*/execute().actionGet();
+        //        SearchResponse search = client().prepareSearch().setQuery(qb).setSize(10).setExplain(true).execute().actionGet();
+        SearchRequestBuilder srq = client().prepareSearch();
+        srq.setQuery(qb);
+        srq.setSize(10);
+//        srq.setExplain(true);
+        SearchResponse search = srq.execute().actionGet();
+        //
         long end = Calendar.getInstance().getTimeInMillis();
         System.out.println("Took "+(end-start)+" ms");
         SearchHit[] hits = search.getHits().getHits();
@@ -192,9 +201,9 @@ public abstract class QueryTests
             if (size==0) return;
         }
         System.out.println(hits.length+" hit"+((hits.length>1)?"s":""));
-        if (size==-1)
+        if (size==-1 && match)
             Assert.assertTrue(hits.length>0);
-        else
+        else if (size!=-1)
             Assert.assertTrue(hits.length==size);
         
         boolean match_ligne4 = false;
@@ -202,16 +211,23 @@ public abstract class QueryTests
         boolean hitPrinted = false;
         boolean explanationPrinted = false;
         int positionMatch = -1;
-            
-        System.out.println(hits.length+" hit(s). Best is "+hits[0].getScore());
+
+        if (hits.length>0)
+            System.out.println(hits.length+" hit(s). Best is "+hits[0].getScore());
+        else
+        {
+            System.out.println("0 hits");
+            if (match==false) return;
+        }
         for(int i=0;(i<hits.length)&&!(match_ligne4&&match_ligne6);i++) // on n'affiche l'explication qu'en cas d'erreur et pour le premier et le résultat attendu.
         {
             hitPrinted = false;
             explanationPrinted = false;
             SearchHit hit = hits[i];
             Explanation ex = hits[i].explanation();
-            match_ligne4 = assertion_ligne4.equals(hit.getSource().get("ligne4"));
+            match_ligne4 = (!hit.getSource().containsKey("ligne4") && assertion_ligne4==null) || (assertion_ligne4!=null && assertion_ligne4.equals(hit.getSource().get("ligne4")));
             match_ligne6 = assertion_ligne6.equals(hit.getSource().get("ligne6"));
+            System.out.println("Hit "+i+" "+hit.getSource().get("ligne4")+" "+hit.getSource().get("ligne6"));
             if (ex!=null && !noexplaintest && Math.abs(hits[i].getScore()-ex.getValue())>0.05)
             {
                 printExplanation(ex);
@@ -227,7 +243,12 @@ public abstract class QueryTests
             printExplanation(hits[0].explanation());
         }
         if (indice==-1 && !match) Assert.assertTrue(positionMatch==-1);
-        if (match && indice!=-1) Assert.assertTrue(positionMatch<=indice);
+        if (match)
+        {
+            Assert.assertTrue(positionMatch!=-1);
+            if (indice!=-1)
+                Assert.assertTrue(positionMatch<=indice);
+        }
         if (note_minimum>-1)
         {
             if (hits[positionMatch].getScore()<note_minimum)

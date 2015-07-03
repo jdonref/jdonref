@@ -15,9 +15,7 @@ import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.MultiPayloadSpanTermQueryBuilder;
-import org.elasticsearch.index.query.PayloadCheckerSpanQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -91,10 +89,10 @@ public class PayloadCheckerSpanQuery_OnePayloadVersusTypeTests extends QueryTest
     {
         String[] tokens = voie.split(" ");
         
-        PayloadCheckerSpanQueryBuilder qb = new PayloadCheckerSpanQueryBuilder();
+        PayloadCheckerSpanFilterBuilder qb = new PayloadCheckerSpanFilterBuilder();
         for(int i=0;i<tokens.length;i++)
         {
-            MultiPayloadSpanTermQueryBuilder sqb = new MultiPayloadSpanTermQueryBuilder("fullName",tokens[i]);
+            MultiPayloadSpanTermFilterBuilder sqb = new MultiPayloadSpanTermFilterBuilder("fullName",tokens[i]);
             qb.clause(sqb);
         }
         qb.termCountPayloadFactor(1000);
@@ -109,6 +107,6 @@ public class PayloadCheckerSpanQuery_OnePayloadVersusTypeTests extends QueryTest
         AndPayloadChecker checker = new AndPayloadChecker(checker0, checker1, checker2);
         qb.checker(checker);
         
-        return qb;
+        return new FilteredQueryBuilder(new MatchAllQueryBuilder(),qb);
     }
 }
