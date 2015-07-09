@@ -22,6 +22,9 @@ public class JDONREFIndex
     boolean withGeometry = true;
     boolean withSwitchAlias = false;
     boolean parent = false;
+    boolean nested = false;
+    String replicas = "0";
+    
 
     ElasticSearchUtil util;
     String index = null;
@@ -67,6 +70,14 @@ public class JDONREFIndex
 
     public void setParent(boolean parent) {
         this.parent = parent;
+    }
+    
+    public boolean isNested() {
+        return nested;
+    }
+
+    public void setNested(boolean nested) {
+        this.nested = nested;
     }
     
     public static JDONREFIndex getInstance()
@@ -409,8 +420,9 @@ public class JDONREFIndex
         if (isFlag(FLAGS.ADRESSE))
         {
             if (restart){
-                if(parent==false) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse.json");
-                else util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-parent.json");
+                if(nested) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-nested.json");
+                else if(parent) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-parent.json");
+                else util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse.json");
             }
             AdresseIndex adrIndex = AdresseIndex.getInstance();
             adrIndex.setUtil(util);
@@ -481,7 +493,7 @@ public class JDONREFIndex
             {
                 PaysIndex.getInstance().indexJDONREFPays();   
                 util.showSetRefreshInterval(pays_index,"30s");
-                util.showSetReplicaNumber(pays_index, "1");
+                util.showSetReplicaNumber(pays_index, replicas);
                 if (withSwitchAlias)
                     for(String alias : aliasL)
                         util.showExchangeIndexInAlias(alias, pays_index, index+"_pays");
@@ -490,7 +502,7 @@ public class JDONREFIndex
             {
                 DepartementIndex.getInstance().indexJDONREFDepartements();
                 util.showSetRefreshInterval(departement_index,"30s");
-                util.showSetReplicaNumber(departement_index, "1");
+                util.showSetReplicaNumber(departement_index, replicas);
                 if (withSwitchAlias)
                     for(String alias : aliasL)
                         util.showExchangeIndexInAlias(alias, departement_index, index+"_departement");                
@@ -499,7 +511,7 @@ public class JDONREFIndex
             {
                 CommuneIndex.getInstance().indexJDONREFCommune();
                 util.showSetRefreshInterval(commune_index,"30s");
-                util.showSetReplicaNumber(commune_index, "1");
+                util.showSetReplicaNumber(commune_index, replicas);
                 if (withSwitchAlias)
                     for(String alias : aliasL)
                         util.showExchangeIndexInAlias(alias, commune_index, index+"_commune");
@@ -508,18 +520,18 @@ public class JDONREFIndex
             {
                 PoizonIndex.getInstance().indexJDONREFPoizon();
                 util.showSetRefreshInterval(poizon_index,"30s");
-                util.showSetReplicaNumber(poizon_index, "1");
+                util.showSetReplicaNumber(poizon_index, replicas);
                 if (withSwitchAlias)
                     for(String alias : aliasL)
                         util.showExchangeIndexInAlias(alias, poizon_index, index+"_poizon");
             }
             for(int i=0;i<codesDepartements.length;i++)
-                DepartementIndex.getInstance().indexJDONREFDepartement(parent, codesDepartements[i]);
+                DepartementIndex.getInstance().indexJDONREFDepartement(nested, parent, codesDepartements[i]);
             
             if (isFlag(FLAGS.VOIE))
             {
                 util.showSetRefreshInterval(voie_index,"30s");
-                util.showSetReplicaNumber(voie_index, "1");
+                util.showSetReplicaNumber(voie_index, replicas);
                 if (withSwitchAlias){
                     if(parent==false){
                         for(String alias : aliasL)
@@ -530,7 +542,7 @@ public class JDONREFIndex
             if (isFlag(FLAGS.ADRESSE))
             {
                 util.showSetRefreshInterval(adresse_index,"30s");
-                util.showSetReplicaNumber(adresse_index, "1");
+                util.showSetReplicaNumber(adresse_index, replicas);
                 if (withSwitchAlias){
                     if(parent==false){
                         for(String alias : aliasL)
@@ -544,7 +556,7 @@ public class JDONREFIndex
             if (isFlag(FLAGS.TRONCON))
             {
                 util.showSetRefreshInterval(troncon_index,"30s");
-                util.showSetReplicaNumber(troncon_index, "1");
+                util.showSetReplicaNumber(troncon_index, replicas);
                 if (withSwitchAlias)
                     for(String alias : aliasL)
                         util.showExchangeIndexInAlias(alias, troncon_index, index+"_troncon");

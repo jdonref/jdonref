@@ -246,7 +246,7 @@ public class DepartementIndex
 //        tIndex.indexJDONREFTronconsGaucheDepartement(voies, dpt);
     }
     
-    public void indexJDONREFDepartement(boolean parent, String dpt) throws IOException, SQLException
+    public void indexJDONREFDepartement(boolean nested, boolean parent, String dpt) throws IOException, SQLException
     {
         if (isFlag(FLAGS.VOIE))
         {
@@ -258,7 +258,8 @@ public class DepartementIndex
         {
             AdresseIndex adrIndex = AdresseIndex.getInstance();
             adrIndex.setMap_idIndexVoieES(VoieIndex.getInstance().getMap_idIndexVoieES());
-            adrIndex.indexJDONREFAdressesDepartement(parent, dpt);
+            if(nested) adrIndex.indexJDONREFAdressesDepartementNested(dpt);
+            else adrIndex.indexJDONREFAdressesDepartement(parent, dpt);
         }
         
         if (isFlag(FLAGS.TRONCON))

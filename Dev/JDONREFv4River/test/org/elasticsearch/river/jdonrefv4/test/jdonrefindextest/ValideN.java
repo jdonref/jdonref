@@ -22,8 +22,9 @@ public class ValideN {
     boolean withGeometry = false;
     boolean withSwitchAlias = true;
     boolean parent = false;
+    boolean nested = false;
+//    String url = "10.213.92.241:9200";
     String url = "localhost:9200";
-//    String url = "10.213.93.35:9200";
 //    String url = "plf.jdonrefv4.ppol.minint.fr";
 //    String connectionString = "jdbc:postgresql://10.232.73.78:5433/jdonref_ign";
     String connectionString = "jdbc:postgresql://localhost:5432/JDONREF_IGN2";
@@ -151,6 +152,7 @@ public class ValideN {
             
         JDONREFIndex jdonrefIndex = JDONREFIndex.getInstance();
         jdonrefIndex.setParent(parent);
+        jdonrefIndex.setNested(nested);
         jdonrefIndex.setWithSwitchAlias(withSwitchAlias);
         jdonrefIndex.setIndex(indexName);
         jdonrefIndex.setAliasL(aliasName);

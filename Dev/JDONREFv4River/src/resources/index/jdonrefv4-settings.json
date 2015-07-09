@@ -1,27 +1,28 @@
 {
     "index" : {
         "index.store.type": "memory",
+        "number_of_replicas" : 0,
         "analysis" : {
             "analyzer": {
                 "jdonrefv4_index_token_count" : {
                     "type" : "custom",
                     "tokenizer" : "whitespace",
-                    "filter" : [/*"delimited_payload_filter",*/ "lowercase", "jdonrefv4_synonyme", "french_elision", "french_stop", /*"french_keywords",*/ "french_stemmer"/*, "jdonrefv4_nGram", "jdonrefv4_unsplit_index","jdonrefv4_tokenCount"*/]
+                    "filter" : [/*"delimited_payload_filter",*/ "lowercase", "jdonrefv4_synonyme", "french_elision", "french_stop", /*"french_keywords",*/ "french_stemmer"/*, "jdonrefv4_nGram", "jdonrefv4_unsplit_index","jdonrefv4_tokenCount"*/, "jdonrefv4_metaphone"]
                 },
                 "jdonrefv4_index" : {
                     "type" : "custom",
                     "tokenizer" : "whitespace",
-                    "filter" : ["lowercase", "jdonrefv4_synonyme", "french_elision", "french_stop", /*"french_keywords",*/ "french_stemmer"]
+                    "filter" : ["lowercase", "jdonrefv4_synonyme", "french_elision", "french_stop", /*"french_keywords",*/ "french_stemmer", "jdonrefv4_metaphone"]
                 },
                 "jdonrefv4_codes_index" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["standard", "lowercase"]
+                    "filter" : ["standard", "lowercase", "jdonrefv4_metaphone"]
                 },
                 "jdonrefv4_search" : {
                     "type" : "custom",
                     "tokenizer" : "standard",
-                    "filter" : ["lowercase", "french_elision", "french_stop"/*,/"french_keywords"*/, "french_stemmer"]
+                    "filter" : ["lowercase", "french_elision", "french_stop"/*,/"french_keywords"*/, "french_stemmer", "jdonrefv4_metaphone"]
                 },
                 "jdonrefv4_search_unsplit" : {
                     "type" : "custom",
@@ -54,15 +55,15 @@
                   "type":       "stemmer",
                   "language":   "light_french"
                 },
-//                "jdonrefv4_metaphone" : {
-//                    "type" : "phonetic",
-//                    "encoder" : "metaphone",
-//                    "replace" : true
-//                },
+                "jdonrefv4_metaphone" : {
+                    "type" : "phonetic",
+                    "encoder" : "metaphone",
+                    "replace" : true
+                },
                 "jdonrefv4_synonyme" : {
                     "type" : "payloadsynonym",
                    /* "synonyms_path": "/usr/share/elasticsearch/plugins/jdonrefv4-0.5/jdonrefv4_synonym.fr_FR.txt"*/
-                    "synonyms_path": "C:/Users/akchana/Desktop/elasticsearch-1.3.0/plugins/jdonrefv4-0.5/jdonrefv4_synonym.fr_FR.txt"
+                    "synonyms_path": "C:/Divers/@ES/elasticsearch-1.3.0/plugins/jdonrefv4-0.5/jdonrefv4_synonym.fr_FR.txt"
                 },
                 "jdonrefv4_nGram" : {
                     "type" : "payloadedgengram",

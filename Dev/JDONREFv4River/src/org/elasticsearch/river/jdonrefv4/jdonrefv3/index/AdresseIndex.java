@@ -94,8 +94,65 @@ public class AdresseIndex {
         util.indexResource(index,"adresse", data.toString());
     }
 
+    
+public void indexJDONREFAdressesDepartement(Boolean parent, String dpt) throws IOException, SQLException
+    {
+        if (isVerbose())
+            System.out.println("dpt "+dpt+" : adresses");
+        AdresseDAO dao = new AdresseDAO();
+        ResultSet rs = dao.getAllAdressesOfDepartement(connection, dpt);
+//      creation de l'objet metaDataAdresse
+        MetaData metaDataAdresse= new MetaData();
+        metaDataAdresse.setIndex(index);
+        metaDataAdresse.setType("adresse");
+              
+        StringBuilder bulk = new StringBuilder();
+        int i =0;
+        int lastIdBulk=idAdresseTmp;
 
-    public void indexJDONREFAdressesDepartement(Boolean parent, String dpt) throws IOException, SQLException
+        while(rs.next())
+        {
+            if(paquetsBulk == 1) System.out.println(dpt+": "+i+" adresses traités");
+            if (isVerbose() && i%paquetsBulk==1)
+                System.out.println(dpt+": "+i+" adresses traitées");
+            
+            Adresse adr = new Adresse(rs);
+            if (adr.numero!=null){
+//            creation de l'objet metaDataAdresse plus haut
+                metaDataAdresse.setId(new Long(++idAdresse));
+                if(parent == false) bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
+                else{
+                    metaDataAdresse.setParent(map_idIndexVoieES.get(adr.voie.idvoie).toString());
+                    bulk.append(metaDataAdresse.toJSONMetaDataWithPartent().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
+                }
+// envoyé le bulk par paquet de 1000 à partir de idAdresseTmp 
+// idAdresseTmp valeur de l'id de debut au moment de l'appel à cette methode
+                if((idAdresse-idAdresseTmp)%paquetsBulk==0){
+                    System.out.println("adresse : bulk pour les ids de "+(idAdresse-paquetsBulk+1)+" à "+idAdresse);
+                    if (!isVerbose())
+                        util.indexResourceBulk(bulk.toString());
+                    else
+                        util.showIndexResourceBulk(bulk.toString());
+                    bulk.setLength(0);
+                    lastIdBulk=idAdresse;
+                }
+            }    
+            i++;     
+        }
+        rs.close();
+        if(bulk.length()!=0){
+                System.out.println("adresse : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk.toString());
+                else
+                    util.showIndexResourceBulk(bulk.toString());
+        }
+        idAdresseTmp = idAdresse;
+    }
+
+   
+
+    public void indexJDONREFAdressesDepartementNested(String dpt) throws IOException, SQLException
     {
         if (isVerbose())
             System.out.println("dpt "+dpt+" : adresses");
@@ -152,11 +209,8 @@ public class AdresseIndex {
                 codeinsee = adr.voie.commune.codeinsee;
     //            creation de l'objet metaDataAdresse plus haut
                 metaDataAdresse.setId(new Long(++idAdresse));
-                if(parent == false) bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adjson).append("\n"); 
-                else{
-                    metaDataAdresse.setParent(map_idIndexVoieES.get(adrLast.voie.idvoie).toString());
-                    bulk.append(metaDataAdresse.toJSONMetaDataWithPartent().toString()).append("\n").append(adjson).append("\n"); 
-                }
+                bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adjson).append("\n"); 
+
                 adrLast = adr;
 // envoyé le bulk par paquet de 1000 à partir de idAdresseTmp 
 // idAdresseTmp valeur de l'id de debut au moment de l'appel à cette methode
@@ -179,11 +233,7 @@ public class AdresseIndex {
     //        System.out.println(adjson);
     //        System.out.println(bulk.toString());
             metaDataAdresse.setId(new Long(++idAdresse));
-            if(parent == false) bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adjson).append("\n"); 
-            else{
-                metaDataAdresse.setParent(map_idIndexVoieES.get(adr.voie.idvoie).toString());
-                bulk.append(metaDataAdresse.toJSONMetaDataWithPartent().toString()).append("\n").append(adjson).append("\n"); 
-            }
+            bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adjson).append("\n"); 
         }
         if(bulk.length()!=0){
                 System.out.println("adresse : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        

@@ -167,6 +167,7 @@ public class Adresse
         adresse.add("adr_id",idadresse);
 //        adresse.add("tro_id",troncon.tro_id);
         adresse.add("voi_id",voie.idvoie);
+        adresse.add("voi_nom",voie.voi_nom);
         adresse.add("code_insee",voie.commune.codeinsee);
         if (voie.commune.com_code_insee_commune!=null)
             adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
