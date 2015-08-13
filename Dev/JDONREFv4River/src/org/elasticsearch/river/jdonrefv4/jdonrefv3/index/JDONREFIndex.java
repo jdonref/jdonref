@@ -23,6 +23,7 @@ public class JDONREFIndex
     boolean withSwitchAlias = false;
     boolean parent = false;
     boolean nested = false;
+    boolean csv = false;
     String replicas = "0";
     
 
@@ -79,7 +80,15 @@ public class JDONREFIndex
     public void setNested(boolean nested) {
         this.nested = nested;
     }
-    
+
+    public boolean isCsv() {
+        return csv;
+    }
+
+    public void setCsv(boolean csv) {
+        this.csv = csv;
+    }
+
     public static JDONREFIndex getInstance()
     {
         if (instance==null)
@@ -422,6 +431,7 @@ public class JDONREFIndex
             if (restart){
                 if(nested) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-nested.json");
                 else if(parent) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-parent.json");
+                else if(csv) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-csv.json");
                 else util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse.json");
             }
             AdresseIndex adrIndex = AdresseIndex.getInstance();
@@ -526,7 +536,7 @@ public class JDONREFIndex
                         util.showExchangeIndexInAlias(alias, poizon_index, index+"_poizon");
             }
             for(int i=0;i<codesDepartements.length;i++)
-                DepartementIndex.getInstance().indexJDONREFDepartement(nested, parent, codesDepartements[i]);
+                DepartementIndex.getInstance().indexJDONREFDepartement(csv, nested, parent, codesDepartements[i]);
             
             if (isFlag(FLAGS.VOIE))
             {

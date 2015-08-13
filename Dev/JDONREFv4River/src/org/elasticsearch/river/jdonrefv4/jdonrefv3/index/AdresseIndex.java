@@ -1,16 +1,21 @@
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.index;
 
+import au.com.bytecode.opencsv.CSVReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.AdresseDAO;
+import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.AdresseDAO_csv;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Adresse;
+import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Adresse_csv;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.MetaData;
 
 /**
@@ -18,6 +23,9 @@ import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.MetaData;
  * @author Julien
  */
 public class AdresseIndex {
+
+    public static char SEPARATOR = ';';
+    
     boolean verbose = false;
     boolean withGeometry = true;
     ElasticSearchUtil util;
@@ -25,7 +33,7 @@ public class AdresseIndex {
 
     static int idAdresse=0;
     static int idAdresseTmp=0;
-    int paquetsBulk=500;
+    int paquetsBulk=1000;
 
     protected static AdresseIndex instance = null;
     HashMap<String, Integer> map_idIndexVoieES =  new HashMap<>();
@@ -235,6 +243,63 @@ public void indexJDONREFAdressesDepartement(Boolean parent, String dpt) throws I
             metaDataAdresse.setId(new Long(++idAdresse));
             bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adjson).append("\n"); 
         }
+        if(bulk.length()!=0){
+                System.out.println("adresse : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
+                if (!isVerbose())
+                    util.indexResourceBulk(bulk.toString());
+                else
+                    util.showIndexResourceBulk(bulk.toString());
+        }
+        idAdresseTmp = idAdresse;
+    }
+    
+    public void indexJDONREFAdressesDepartement_csv(String dptFile) throws IOException, SQLException
+    {
+        
+        String dpt = dptFile.substring(dptFile.lastIndexOf("_")+1, dptFile.lastIndexOf("."));
+        
+        if (isVerbose())
+            System.out.println("dpt "+dpt+" : adresses");
+        CSVReader csvReader = new CSVReader(new FileReader(new File(dptFile)), SEPARATOR);
+        AdresseDAO_csv csv = new AdresseDAO_csv(csvReader);
+        List<String[]> adresses = csv.datas;
+//      creation de l'objet metaDataAdresse
+        MetaData metaDataAdresse= new MetaData();
+        metaDataAdresse.setIndex(index);
+        metaDataAdresse.setType("adresse");
+              
+        StringBuilder bulk = new StringBuilder();
+        int i =0;
+        int lastIdBulk=idAdresseTmp;
+
+        for(String[] adresse : adresses)
+        {
+            if(paquetsBulk == 1) System.out.println(dpt+": "+i+" adresses traités");
+            if (isVerbose() && i%paquetsBulk==1)
+                System.out.println(dpt+": "+i+" adresses traitées");
+
+            Adresse_csv adr = new Adresse_csv(adresse);
+
+            if (adr.numero!=null){
+//            creation de l'objet metaDataAdresse plus haut
+                metaDataAdresse.setId(new Long(++idAdresse));
+                bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adr.toJSONDocument_csv().toString()).append("\n"); 
+
+// envoyé le bulk par paquet de 1000 à partir de idAdresseTmp 
+// idAdresseTmp valeur de l'id de debut au moment de l'appel à cette methode
+                if((idAdresse-idAdresseTmp)%paquetsBulk==0){
+                    System.out.println("adresse : bulk pour les ids de "+(idAdresse-paquetsBulk+1)+" à "+idAdresse);
+                    if (!isVerbose())
+                        util.indexResourceBulk(bulk.toString());
+                    else
+                        util.showIndexResourceBulk(bulk.toString());
+                    bulk.setLength(0);
+                    lastIdBulk=idAdresse;
+                }
+            }    
+            i++;     
+        }
+        csvReader.close();
         if(bulk.length()!=0){
                 System.out.println("adresse : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
                 if (!isVerbose())

@@ -157,19 +157,17 @@ public class Poizon {
     
     
     public JsonObject geometrieJSON(String geometrie) {
-        GeomUtil geomUtil = new GeomUtil();
-        HashMap<String, String> hash = geomUtil.toHashGeo(geometrie);
+        HashMap<String, String> hash = GeomUtil.toHashGeo(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()
                 .add("type", hash.get("type"))
-                .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+                .add("coordinates", GeomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }
 
     public JsonObject centroideJSON(String centroide){
-        GeomUtil geomUtil = new GeomUtil();
-        HashMap<String,String> hash = geomUtil.toHashGeo(centroide);
+        HashMap<String,String> hash = GeomUtil.toHashGeo(centroide);
         JsonObjectBuilder geo = Json.createObjectBuilder()  
-                .add("centroide", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+                .add("centroide", GeomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }
 

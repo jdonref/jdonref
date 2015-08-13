@@ -12,7 +12,7 @@ import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.InitParameters;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.index.JDONREFIndex;
 import org.junit.Test;
 
-public class ValideN {
+public class Valide_bd {
 
     String indexName = "indexName";
     ArrayList<String> aliasName = new ArrayList<>();
@@ -33,122 +33,15 @@ public class ValideN {
     boolean restart = true;
     long millis = 0;
 
-    public ArrayList<String> getAliasName() {
-        return aliasName;
-    }
-
     public void setAliasName(ArrayList<String> aliasName) {
         this.aliasName = aliasName;
-    }
-
-    public boolean isBouchon() {
-        return bouchon;
-    }
-
-    public void setBouchon(boolean bouchon) {
-        this.bouchon = bouchon;
-    }
-
-    public String getConnectionString() {
-        return connectionString;
-    }
-
-    public void setConnectionString(String connectionString) {
-        this.connectionString = connectionString;
-    }
-
-    public String getIndexName() {
-        return indexName;
     }
 
     public void setIndexName(String indexName) {
         this.indexName = indexName;
     }
 
-    public long getMillis() {
-        return millis;
-    }
-
-    public void setMillis(long millis) {
-        this.millis = millis;
-    }
-
-    public boolean isParent() {
-        return parent;
-    }
-
-    public void setParent(boolean parent) {
-        this.parent = parent;
-    }
-
-    public String getPasswd() {
-        return passwd;
-    }
-
-    public void setPasswd(String passwd) {
-        this.passwd = passwd;
-    }
-
-    public boolean isReindex() {
-        return reindex;
-    }
-
-    public void setReindex(boolean reindex) {
-        this.reindex = reindex;
-    }
-
-    public boolean isRestart() {
-        return restart;
-    }
-
-    public void setRestart(boolean restart) {
-        this.restart = restart;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public boolean isVerboseIndexation() {
-        return verboseIndexation;
-    }
-
-    public void setVerboseIndexation(boolean verboseIndexation) {
-        this.verboseIndexation = verboseIndexation;
-    }
-
-    public boolean isWithGeometry() {
-        return withGeometry;
-    }
-
-    public void setWithGeometry(boolean withGeometry) {
-        this.withGeometry = withGeometry;
-    }
-
-    public boolean isWithSwitchAlias() {
-        return withSwitchAlias;
-    }
-
-    public void setWithSwitchAlias(boolean withSwitchAlias) {
-        this.withSwitchAlias = withSwitchAlias;
-    }
-    
-    
-    
-    
-    public JDONREFIndex initJDONREFIndex(Connection connection, String indexName, ArrayList<String> aliasName, String url, boolean verboseIndexation, boolean restart, boolean withGeometry, boolean withSwitchAlias, boolean parent, long millis) {   
+    public JDONREFIndex initJDONREFIndex(Connection connection, String indexName, ArrayList<String> aliasName, String url, boolean verboseIndexation, boolean restart, boolean withGeometry, boolean withSwitchAlias, boolean parent, boolean nested, long millis) {   
             
         JDONREFIndex jdonrefIndex = JDONREFIndex.getInstance();
         jdonrefIndex.setParent(parent);
@@ -225,8 +118,8 @@ public class ValideN {
                 aliasName.add("jdonref_idf"); 
                 setAliasName(aliasName);
                 
-                JDONREFIndex jdonrefIndex = initJDONREFIndex(connection, indexName, aliasName, url, verboseIndexation, restart, withGeometry, withSwitchAlias, parent, millis);
-                getJDONREFIndex(jdonrefIndex, listeDepartements,flags);
+                JDONREFIndex jdonrefIndex = initJDONREFIndex(connection, indexName, aliasName, url, verboseIndexation, restart, withGeometry, withSwitchAlias, parent,nested, millis);
+                getJDONREFIndex(jdonrefIndex, listeDepartements ,flags);
 /*
 //               String[] listeDepartementsN = {"13"};
                 String[] listeDepartementsN = initParam.getListeDepartementN();
@@ -250,7 +143,7 @@ public class ValideN {
                 getJDONREFIndex(jdonrefIndex, listeDepartementsN,flags);
 */
             } catch (SQLException | IOException ex) {
-                Logger.getLogger(ValideN.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Valide_bd.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

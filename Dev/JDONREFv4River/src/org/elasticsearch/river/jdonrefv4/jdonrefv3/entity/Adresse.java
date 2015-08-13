@@ -4,14 +4,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import org.apache.lucene.analysis.FrequentTermsUtil;
 
 /**
  * @author Julien
@@ -147,11 +145,10 @@ public class Adresse
     }
     
     public JsonObject geometrieJSON(String geometrie){
-        GeomUtil geomUtil = new GeomUtil();
-        HashMap<String,String> hash = geomUtil.toHashGeo(geometrie);
+        HashMap<String,String> hash = GeomUtil.toHashGeo(geometrie);
         JsonObjectBuilder geo = Json.createObjectBuilder()  
                 .add("type", hash.get("type"))
-                .add("coordinates", geomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
+                .add("coordinates", GeomUtil.toGeojson(hash.get("coordinates"), hash.get("type")));
         return geo.build();
     }        
     

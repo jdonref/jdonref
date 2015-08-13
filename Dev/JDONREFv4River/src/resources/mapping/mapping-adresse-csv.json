@@ -1,0 +1,24 @@
+{
+     "adresse": {
+        "_type": {"store": true},
+        "_source": {"excludes": ["geometrie"]},
+        "properties" : {
+                            "adr_id" : { "type" : "string", "index":"no"},
+                            "voi_nom" : { "type" : "string", "index":"no"},
+                            "id_fantoir" : { "type" : "string", "index":"no"},
+                            "numero" : { "type" : "string", "index":"not_analyzed"}, 
+                            "repetition" : { "type" : "string", "index":"not_analyzed"},
+                            "code_insee" : { "type" : "string", "index":"not_analyzed", "copy_to": ["codes"]},
+                            "code_postal" : { "type" : "string", "index":"not_analyzed", "copy_to": ["codes"]},
+                            "alias" : { "type" : "string", "index":"no"},
+                            "nom_ld" : { "type" : "string", "index":"no"},
+                            "nom_afnor" : { "type" : "string", "index":"no"},
+                            "libelle_acheminement" : { "type" : "string", "index":"no"},
+                            "nom_commun" : { "type" : "string" , "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv4_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "pays" : { "type" : "string", "index":"no"},
+                            "pinXY" : { "properties" : { "centroide" : { "type" : "geo_point" , "fielddata" : { "format" : "compressed" , "precision" : "1cm"}}}},
+                            "pin" : { "properties" : { "centroide" : { "type" : "geo_point" , "fielddata" : { "format" : "compressed" , "precision" : "1cm"}}}},
+                            "codes" : { "type" : "string", "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv4_codes_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"}
+                      }
+     }
+  }
