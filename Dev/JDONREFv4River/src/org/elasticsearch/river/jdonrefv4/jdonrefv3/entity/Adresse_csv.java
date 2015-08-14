@@ -4,9 +4,8 @@
  */
 package org.elasticsearch.river.jdonrefv4.jdonrefv3.entity;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+
+import javax.json.*;
 
 
 public class Adresse_csv {
@@ -51,22 +50,21 @@ public class Adresse_csv {
     {
         JsonObjectBuilder adresse = Json.createObjectBuilder();
         adresse.add("adr_id",id);
-        if (numero!=null) adresse.add("voi_nom",nom_voie);
-        if (numero!=null) adresse.add("id_fantoir",id_fantoir);
+        if (nom_voie!=null) adresse.add("voi_nom",nom_voie);
+        if (id_fantoir!=null) adresse.add("id_fantoir",id_fantoir);
         if (numero!=null) adresse.add("numero",numero);
-        if (numero!=null) adresse.add("repetition",rep);
-        if (numero!=null) adresse.add("code_insee",code_insee);
-        if (numero!=null) adresse.add("code_postal",code_post);
-        if (numero!=null) adresse.add("alias",alias);
-        if (numero!=null) adresse.add("nom_ld",nom_ld);
-        if (numero!=null) adresse.add("nom_afnor",nom_afnor);
-        if (numero!=null) adresse.add("libelle_acheminement",libelle_acheminement);
-        if (numero!=null) adresse.add("nom_commune",nom_commune);
+        if (rep!=null) adresse.add("repetition",rep);
+        if (code_insee!=null) adresse.add("code_insee",code_insee);
+        if (code_post!=null) adresse.add("code_postal",code_post);
+        if (alias!=null) adresse.add("alias",alias);
+        if (nom_ld!=null) adresse.add("nom_ld",nom_ld);
+        if (nom_afnor!=null) adresse.add("nom_afnor",nom_afnor);
+        if (libelle_acheminement!=null) adresse.add("libelle_acheminement",libelle_acheminement);
+        if (nom_commune!=null) adresse.add("nom_commune",nom_commune);
         adresse.add("pays","FRANCE");
         adresse.add("type","adresse");
-        
-        adresse.add("pinXY" , Json.createObjectBuilder().add("centroide", GeomUtil.toGeojson(x+","+y, "point")).build());
-        adresse.add("pin" , Json.createObjectBuilder().add("centroide", GeomUtil.toGeojson(lat+","+lon, "point")).build());
+        if (x!=null && y!=null) adresse.add("pinXY" , Json.createObjectBuilder().add("centroide", GeomUtil.toGeojson("["+x+","+y+"]", "point")).build());
+        if (lon!=null && lat!=null)adresse.add("pin" , Json.createObjectBuilder().add("centroide", GeomUtil.toGeojson("["+lon+","+lat+"]", "point")).build());
         
         return adresse.build();
     }
