@@ -1,1 +1,0 @@
-link.exe /LIBPATH:"C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\lib" /LIBPATH:"C:\Program Files\PostgreSQL\8.3\lib" /LIBPATH:"C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\PlatformSDK\Lib"  /DEF:def.txt /DLL /OUT:levenstein.so levenstein.obj postgres.lib

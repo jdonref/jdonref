@@ -1,1 +1,0 @@
-java -jar dist\JDONREFv3Charge.jar analyse test test

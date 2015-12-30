@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
-    <system systemId="http://localhost/JDONREFv3/JDONREF?wsdl" uri="xml-resources/web-service-references/JDONREF/wsdl/localhost/JDONREFv3/JDONREF.wsdl"/>
-    <system systemId="http://localhost:80/JDONREFv3/JDONREF?xsd=1" uri="xml-resources/web-service-references/JDONREF/wsdl/localhost_80/JDONREFv3/JDONREF.xsd_1.xsd"/>
-</catalog>

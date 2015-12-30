@@ -1,1 +1,0 @@
-PATH=%PATH%;C:\Program Files\Microsoft Visual Studio .NET 2003\Common7\IDE;C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\bin;C:\Program Files\Microsoft Platform SDK\Lib;c:\Program files\PostgreSQL\8.3\lib

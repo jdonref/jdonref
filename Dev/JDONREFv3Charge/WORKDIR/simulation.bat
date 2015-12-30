@@ -1,1 +1,0 @@
-java -Xms1024M -Xmx1024M -jar dist\JDONREFv3Charge.jar simulation test 600000

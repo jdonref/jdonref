@@ -1,2 +1,0 @@
-Erreur durant le géocodage de "473";"";"";"";"149 BOULEVARD DE LA VILLETTE";"";"75010 PARIS";200;"";"";"";"149 BOULEVARD DE LA VILLETTE";"";"75010 PARIS". Un géocodage à la commune est tenté.
-Erreur durant le géocodage de "641";"";"";"";"30 RUE DU VERTBOIS";"";"75003 PARIS";200;"";"";"";"30 RUE DU VERTBOIS";"";"75003 PARIS". Un géocodage à la commune est tenté.
