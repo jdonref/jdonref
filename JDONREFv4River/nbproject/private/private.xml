@@ -1,3 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?><project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/org/elasticsearch/river/jdonrefv4/jdonrefv3/business/AdresseBusiness.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/resources/mapping/mapping-voie.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/org/elasticsearch/river/jdonrefv4/jdonrefv3/index/VoieIndex.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/org/elasticsearch/river/jdonrefv4/jdonrefv3/dao/VoieDAO.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/resources/mapping/mapping-adresse-parent.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/resources/mapping/mapping-commune.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/resources/mapping/mapping-poizon.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/org/elasticsearch/river/jdonrefv4/jdonrefv3/index/ElasticSearchUtil.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/resources/mapping/mapping-pays.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/resources/mapping/mapping-adresse.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/org/elasticsearch/river/jdonrefv4/jdonrefv3/index/AdresseIndex.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/resources/index/jdonrefv4-settings.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/resources/mapping/mapping-voie_adr.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/src/org/elasticsearch/river/jdonrefv4/jdonrefv3/dao/AdresseDAO.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4River/test/org/elasticsearch/river/jdonrefv4/test/jdonrefindextest/Valide_bd.java</file>
+        </group>
+    </open-files>
 </project-private>

@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +18,7 @@ import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.AdresseDAO_csv;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Adresse;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Adresse_csv;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.MetaData;
+import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.VoieAdr;
 
 /**
  *
@@ -29,20 +31,19 @@ public class AdresseIndex {
     boolean verbose = false;
     boolean withGeometry = true;
     ElasticSearchUtil util;
-    Connection connection;
 
     static int idAdresse=0;
     static int idAdresseTmp=0;
-    int paquetsBulk=100000;
+    int paquetsBulk=1000;
 
     protected static AdresseIndex instance = null;
-    HashMap<String, Integer> map_idIndexVoieES =  new HashMap<>();
+    HashMap<String, VoieAdr> map_idIndexVoieES =  new HashMap<>();
 
-    public HashMap<String, Integer> getMap_idIndexVoieES() {
+    public HashMap<String, VoieAdr> getMap_idIndexVoieES() {
         return map_idIndexVoieES;
     }
 
-    public void setMap_idIndexVoieES(HashMap<String, Integer> map_idIndexVoieES) {
+    public void setMap_idIndexVoieES(HashMap<String, VoieAdr> map_idIndexVoieES) {
         this.map_idIndexVoieES = map_idIndexVoieES;
     }
     String index;
@@ -78,12 +79,8 @@ public class AdresseIndex {
         this.util = util;
     }
     
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
+    public Connection getConnection() throws SQLException {
+        return JDONREFIndex.getInstance().getNewConnection();
     }
     
     public boolean isVerbose() {
@@ -102,40 +99,58 @@ public class AdresseIndex {
         util.indexResource(index,"adresse", data.toString());
     }
 
+    HashSet<String> ids = new HashSet<String>();
     
 public void indexJDONREFAdressesDepartement(Boolean parent, String dpt) throws IOException, SQLException
     {
         if (isVerbose())
             System.out.println("dpt "+dpt+" : adresses");
         AdresseDAO dao = new AdresseDAO();
-        ResultSet rs = dao.getAllAdressesOfDepartement(connection, dpt);
+        Connection c = getConnection();
+        ResultSet rs = dao.getAllAdressesOfDepartement(c, dpt);
 //      creation de l'objet metaDataAdresse
         MetaData metaDataAdresse= new MetaData();
         metaDataAdresse.setIndex(index);
         metaDataAdresse.setType("adresse");
-              
+        
+        ids.clear();
+        
         StringBuilder bulk = new StringBuilder();
         int i =0;
         int lastIdBulk=idAdresseTmp;
-
+        int lastI = -1;
+        
         while(rs.next())
         {
-            if(paquetsBulk == 1) System.out.println(dpt+": "+i+" adresses traités");
             if (isVerbose() && i%paquetsBulk==1)
-                System.out.println(dpt+": "+i+" adresses traitées");
+            {
+                if (i!=lastI)
+                {
+                    System.out.println(dpt+": "+i+" adresses traitées");
+                    lastI = i;
+                }
+            }
             
             Adresse adr = new Adresse(rs);
+            
+            if (ids.contains(adr.idadresse))
+                continue;
+            ids.add(adr.idadresse);
+            
             if (adr.numero!=null){
 //            creation de l'objet metaDataAdresse plus haut
                 metaDataAdresse.setId(new Long(++idAdresse));
-                if(parent == false) bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
-                else{
-                    metaDataAdresse.setParent(map_idIndexVoieES.get(adr.voie.idvoie).toString());
-                    bulk.append(metaDataAdresse.toJSONMetaDataWithPartent().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n"); 
+                if(parent == false)
+                    bulk.append(metaDataAdresse.toJSONMetaData().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n");
+                else
+                {
+                    metaDataAdresse.setParent(Integer.toString(map_idIndexVoieES.get(adr.voiAdr.ligne4).idvoie));
+                    bulk.append(metaDataAdresse.toJSONMetaDataWithParent().toString()).append("\n").append(adr.toJSONDocument(withGeometry).toString()).append("\n");
                 }
-// envoyé le bulk par paquet de 1000 à partir de idAdresseTmp 
+// envoyé le bulk par paquet de 1000 à partir de idAdresseTmp
 // idAdresseTmp valeur de l'id de debut au moment de l'appel à cette methode
-                if((idAdresse-idAdresseTmp)%paquetsBulk==0){
+                if((idAdresse-idAdresseTmp)%paquetsBulk==0)
+                {
                     System.out.println("adresse : bulk pour les ids de "+(idAdresse-paquetsBulk+1)+" à "+idAdresse);
                     if (!isVerbose())
                         util.indexResourceBulk(bulk.toString());
@@ -144,10 +159,12 @@ public void indexJDONREFAdressesDepartement(Boolean parent, String dpt) throws I
                     bulk.setLength(0);
                     lastIdBulk=idAdresse;
                 }
-            }    
+            }
+            adr = null;
             i++;     
         }
         rs.close();
+        c.close();
         if(bulk.length()!=0){
                 System.out.println("adresse : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idAdresse));        
                 if (!isVerbose())
@@ -158,14 +175,13 @@ public void indexJDONREFAdressesDepartement(Boolean parent, String dpt) throws I
         idAdresseTmp = idAdresse;
     }
 
-   
-
     public void indexJDONREFAdressesDepartementNested(String dpt) throws IOException, SQLException
     {
         if (isVerbose())
             System.out.println("dpt "+dpt+" : adresses");
         AdresseDAO dao = new AdresseDAO();
-        ResultSet rs = dao.getAllAdressesOfDepartement(connection, dpt);
+        Connection c = getConnection();
+        ResultSet rs = dao.getAllAdressesOfDepartement(c, dpt);
 //      creation de l'objet metaDataAdresse
         MetaData metaDataAdresse= new MetaData();
         metaDataAdresse.setIndex(index);
@@ -235,6 +251,7 @@ public void indexJDONREFAdressesDepartement(Boolean parent, String dpt) throws I
             }
         }
         rs.close();
+        c.close();
        
         if(adr!=null){
             String adjson = adr.toJSONDocumentNested(ad).toString();

@@ -38,6 +38,16 @@ public abstract class QueryTests
     
     protected boolean noexplaintest = false;
     
+    public void publicIndex(BulkRequestBuilder brb,String index,String type,String id, String parent,XContentBuilder data)
+    {
+        IndexRequestBuilder irb = client().prepareIndex(index,type,id);
+        irb.setSource(data);
+        //irb.setParent(parent);
+        irb.setRefresh(false);
+        
+        brb.add(irb);
+    }
+    
     public void publicIndex(BulkRequestBuilder brb,String index,String type,String id, XContentBuilder data)
     {
         IndexRequestBuilder irb = client().prepareIndex(index,type,id);
@@ -60,6 +70,13 @@ public abstract class QueryTests
             .build();
     }
     
+    public static Settings nodeSettings()
+    {
+        return settingsBuilder()
+                .put("script.groovy.sandbox.enabled",true)
+                .build();
+    }
+    
     public boolean randomBoolean()
     {
         return (new Random()).nextBoolean();
@@ -70,7 +87,10 @@ public abstract class QueryTests
     public static Client client()
     {
         if (node==null)
-            node = NodeBuilder.nodeBuilder().clusterName("test"+Calendar.getInstance().getTimeInMillis()).node();
+            node = NodeBuilder.nodeBuilder()
+                    .clusterName("test"+Calendar.getInstance().getTimeInMillis())
+                    .settings(nodeSettings())
+                    .node();
         return node.client();
     }
     

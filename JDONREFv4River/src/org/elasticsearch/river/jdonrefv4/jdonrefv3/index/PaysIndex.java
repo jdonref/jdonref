@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import javax.json.JsonObject;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.PaysDAO;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.MetaData;
@@ -17,7 +18,6 @@ public class PaysIndex
 {
     boolean verbose = false;
     ElasticSearchUtil util;
-    Connection connection;
     
     static int idPays=0;
     static int idPaysTmp=0;
@@ -61,12 +61,8 @@ public class PaysIndex
         this.verbose = verbose;
     }
 
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
+    public Connection getConnection() throws SQLException {
+        return JDONREFIndex.getInstance().getNewConnection();
     }
 
     public boolean isWithGeometry() {
@@ -83,17 +79,22 @@ public class PaysIndex
         util.indexResource(index,"pays", data.toString());
     }
     
+    HashSet<String> ids = new HashSet<String>();
+    
     public void indexJDONREFPays() throws IOException, SQLException
     {
         if (isVerbose())
             System.out.println("Pays");
         
         PaysDAO dao = new PaysDAO();
+        Connection connection = getConnection();
         ResultSet rs = dao.getAllPays(connection);
 //      creation de l'objet metaDataDep
         MetaData metaDataDep= new MetaData();
         metaDataDep.setIndex(index);
         metaDataDep.setType("pays");
+        
+        ids.clear();
         
         int i =0;
         String bulk ="";
@@ -105,6 +106,10 @@ public class PaysIndex
                 System.out.println(i+" pays traités");
             
             Pays d = new Pays(rs);
+            
+            if (ids.contains(d.pays_sov_a3))
+                continue;
+            ids.add(d.pays_sov_a3);
             
 //            creation de l'objet metaDataDep plus haut
             metaDataDep.setId(new Long(++idPays));
@@ -121,6 +126,7 @@ public class PaysIndex
             i++;
         }
         rs.close();
+        connection.close();
         if(!bulk.equals("")){
                 System.out.println("pays : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPays));        
                 if (!isVerbose())

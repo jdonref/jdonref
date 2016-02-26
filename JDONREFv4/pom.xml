@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmln:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.elasticsearch.plugin</groupId>
+    <artifactId>jdonref-elasticsearch-plugin</artifactId>
+    <version>3.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>jdonref-elasticsearch-plugin</name>
+    <description>JDONREF is a free webservice for restructuration, normalisation, postal validation and geocoding of French postal address.</description>
+    <url>https://github.com/jdonref/jdonref/</url>
+    <inceptionYear>2015</inceptionYear>
+    <licenses>
+        <license>
+            <name>CECILL v2</name>
+            <url>http://www.cecill.info/licences/Licence_CeCILL_V2-fr.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:git@github.com:jdonref/jdonref.git</connection>
+        <developerConnection>scm:git:git@github.com:jdonref/jdonref.git
+        </developerConnection>
+        <url>http://github.com/jdonref/jdonref</url>
+    </scm>
+
+    <parent>
+        <groupId>org.elasticsearch.plugin</groupId>
+        <artifactId>plugins</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <!-- define class name for the descriptor file -->
+        <elasticsearch.plugin.classname>org.elasticsearch.plugin.analysis.jdonrefv4.JDONREFv4Plugin</elasticsearch.plugin.classname>
+
+        <tests.jvms>1</tests.jvms>
+        <es.logger.level>INFO</es.logger.level>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+            </plugin>
+         </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>oss-snapshots</id>
+            <name>Sonatype OSS Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>mvnrepository.com</id>
+            <name>mvnrepository.com</name>
+            <url>http://www.mvnrepository.com/artifact/</url>
+        </repository>
+    </repositories>
+</project>

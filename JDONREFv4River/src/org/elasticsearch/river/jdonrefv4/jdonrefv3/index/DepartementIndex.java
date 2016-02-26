@@ -21,7 +21,6 @@ public class DepartementIndex
 {
     boolean verbose = false;
     ElasticSearchUtil util;
-    Connection connection;
     
     static int idDep=0;
     static int idDepTmp=0;
@@ -96,14 +95,6 @@ public class DepartementIndex
         this.verbose = verbose;
     }
 
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-    }
-
     public boolean isWithGeometry() {
         return withGeometry;
     }
@@ -118,17 +109,22 @@ public class DepartementIndex
         util.indexResource(index,"departement", data.toString());
     }
     
+    HashSet<String> ids = new HashSet<String>();
+    
     public void indexJDONREFDepartements() throws IOException, SQLException
     {
         if (isVerbose())
             System.out.println("Départements");
         
         DepartementDAO dao = new DepartementDAO();
+        Connection connection = JDONREFIndex.getInstance().getNewConnection();
         ResultSet rs = dao.getAllDepartement(connection, getDept());
 //      creation de l'objet metaDataDep
         MetaData metaDataDep= new MetaData();
         metaDataDep.setIndex(index);
         metaDataDep.setType("departement");
+        
+        ids.clear();
         
         int i =0;
         String bulk ="";
@@ -154,6 +150,10 @@ public class DepartementIndex
 //            d.t0 = t0;
 //            d.t1 = t1;
             
+            if (ids.contains(d.code_departement))
+                continue;
+            ids.add(d.code_departement);
+
 //            creation de l'objet metaDataDep plus haut
             metaDataDep.setId(new Long(++idDep));
             bulk += metaDataDep.toJSONMetaData().toString()+"\n"+d.toJSONDocument(withGeometry).toString()+"\n";
@@ -169,6 +169,7 @@ public class DepartementIndex
             i++;
         }
         rs.close();
+        connection.close();
         if(!bulk.equals("")){
         System.out.println("departement : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idDep));        
         if (!isVerbose())
@@ -257,7 +258,6 @@ public class DepartementIndex
         if (isFlag(FLAGS.ADRESSE))
         {
             AdresseIndex adrIndex = AdresseIndex.getInstance();
-            adrIndex.setMap_idIndexVoieES(VoieIndex.getInstance().getMap_idIndexVoieES());
             if(nested) adrIndex.indexJDONREFAdressesDepartementNested(dpt);
             else if(csv) adrIndex.indexJDONREFAdressesDepartement_csv(dpt);
             else adrIndex.indexJDONREFAdressesDepartement(parent, dpt);

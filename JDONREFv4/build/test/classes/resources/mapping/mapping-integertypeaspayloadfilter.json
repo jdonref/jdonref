@@ -1,0 +1,9 @@
+{
+     "integertypeaspayloadfilter": {
+        "_type": {"store": true},
+        "_source": {"excludes": ["geometrie"]},
+        "properties" : {
+                            "fullName" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"}
+                        }
+    }
+  }

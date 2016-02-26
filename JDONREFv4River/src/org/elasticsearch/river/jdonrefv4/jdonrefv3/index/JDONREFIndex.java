@@ -3,6 +3,7 @@ package org.elasticsearch.river.jdonrefv4.jdonrefv3.index;
 import com.sun.jersey.api.client.Client;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -119,7 +120,26 @@ public class JDONREFIndex
         }
     }
 
+    String connectionString;
+    String password;
+    String user;
     
+    public void setConnectionString(String connectionString) {
+        this.connectionString = connectionString;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public Connection getNewConnection() throws SQLException
+    {
+        return DriverManager.getConnection(connectionString,user,password);
+    }
     
     public static enum FLAGS
     {
@@ -176,13 +196,8 @@ public class JDONREFIndex
         if (withSwitchAlias)
         {
             departement_index += "_departement_"+millis;
-            if(parent == false){
-                voie_index += "_voie_"+millis;
-                adresse_index += "_adresse_"+millis;
-            }else{
-                voie_index += "_adr_voie_"+millis;
-                adresse_index += "_adr_voie_"+millis;
-            }
+            voie_index += "_voie_"+millis;
+            adresse_index += "_adresse_"+millis;
             pays_index += "_pays_"+millis;
             commune_index += "_commune_"+millis;
             troncon_index += "_troncon_"+millis;
@@ -198,13 +213,8 @@ public class JDONREFIndex
         if (withSwitchAlias)
         {
             departement_index += "_departement_"+millis;
-            if(parent == false){
-                voie_index += "_voie_"+millis;
-                adresse_index += "_adresse_"+millis;
-            }else{
-                voie_index += "_adr_voie_"+millis;
-                adresse_index += "_adr_voie_"+millis;
-            }
+            voie_index += "_voie_"+millis;
+            adresse_index += "_adresse_"+millis;
             pays_index += "_pays_"+millis;
             commune_index += "_commune_"+millis;
             troncon_index += "_troncon_"+millis;
@@ -240,16 +250,6 @@ public class JDONREFIndex
      
     public boolean isVerbose() {
         return verbose;
-    }
-    
-    Connection connection = null;
-
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
     }
     
     boolean bouchon = false;
@@ -341,7 +341,7 @@ public class JDONREFIndex
         this.verbose = verbose;
     }
     
-    public void reindex() throws IOException, SQLException
+    public void reindex() throws IOException, SQLException, Exception
     {
         if (isVerbose())
             System.out.println("Démarrage de l'indexation");
@@ -409,7 +409,6 @@ public class JDONREFIndex
             DepartementIndex dptIndex = DepartementIndex.getInstance();
             dptIndex.setDept(codesDepartements);
             dptIndex.setFlags(flags);
-            dptIndex.setConnection(connection);
             dptIndex.setUtil(util);
             dptIndex.setVerbose(isVerbose());
             dptIndex.setWithGeometry(withGeometry);
@@ -421,22 +420,33 @@ public class JDONREFIndex
                 util.showPutMapping(voie_index,"voie", "./src/resources/mapping/mapping-voie.json");
             VoieIndex vIndex = VoieIndex.getInstance();
             vIndex.setUtil(util);
-            vIndex.setConnection(connection);
             vIndex.setVerbose(isVerbose());
             vIndex.setWithGeometry(withGeometry);
             vIndex.setIndex(voie_index);
+            vIndex.setSource(csv?"csv":"bdd");
         }
         if (isFlag(FLAGS.ADRESSE))
         {
             if (restart){
                 if(nested) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-nested.json");
-                else if(parent) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-parent.json");
+                else if(parent)
+                {
+                    util.showPutMapping(adresse_index,"voie_adr", "./src/resources/mapping/mapping-voie_adr.json");
+                    util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-parent.json");
+                }
                 else if(csv) util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse-csv.json");
                 else util.showPutMapping(adresse_index,"adresse", "./src/resources/mapping/mapping-adresse.json");
             }
+            if (parent)
+            {
+                VoieAdrIndex vIndex = VoieAdrIndex.getInstance();
+                vIndex.setUtil(util);
+                vIndex.setVerbose(isVerbose());
+                vIndex.setIndex(adresse_index);
+                vIndex.setSource(csv?"csv":"bdd");
+            }
             AdresseIndex adrIndex = AdresseIndex.getInstance();
             adrIndex.setUtil(util);
-            adrIndex.setConnection(connection);
             adrIndex.setVerbose(isVerbose());
             adrIndex.setWithGeometry(withGeometry);
             adrIndex.setIndex(adresse_index);
@@ -447,7 +457,6 @@ public class JDONREFIndex
                 util.showPutMapping(pays_index,"pays", "./src/resources/mapping/mapping-pays.json");
             PaysIndex paysIndex = PaysIndex.getInstance();
             paysIndex.setVerbose(isVerbose());
-            paysIndex.setConnection(connection);
             paysIndex.setUtil(util);
             paysIndex.setWithGeometry(withGeometry);
             paysIndex.setIndex(pays_index);
@@ -459,7 +468,6 @@ public class JDONREFIndex
             CommuneIndex cIndex = CommuneIndex.getInstance();
             cIndex.setDept(codesDepartements);
             cIndex.setVerbose(isVerbose());
-            cIndex.setConnection(connection);
             cIndex.setWithGeometry(withGeometry);
             cIndex.setUtil(util);
             cIndex.setIndex(commune_index);
@@ -470,7 +478,6 @@ public class JDONREFIndex
                 util.showPutMapping(troncon_index,"troncon", "./src/resources/mapping/mapping-troncon.json");
             TronconIndex tIndex = TronconIndex.getInstance();
             tIndex.setUtil(util);
-            tIndex.setConnection(connection);
             tIndex.setVerbose(isVerbose());
             tIndex.setWithGeometry(withGeometry);
             tIndex.setIndex(troncon_index);
@@ -481,7 +488,6 @@ public class JDONREFIndex
                 util.showPutMapping(poizon_index,"poizon", "./src/resources/mapping/mapping-poizon.json");
             PoizonIndex pzIndex = PoizonIndex.getInstance();
             pzIndex.setVerbose(isVerbose());
-            pzIndex.setConnection(connection);
             pzIndex.setWithGeometry(withGeometry);
             pzIndex.setUtil(util);
             pzIndex.setIndex(poizon_index);
@@ -535,6 +541,15 @@ public class JDONREFIndex
                     for(String alias : aliasL)
                         util.showExchangeIndexInAlias(alias, poizon_index, index+"_poizon");
             }
+            
+            if (isFlag(FLAGS.ADRESSE) && (parent || nested))
+            {
+                for(int i=0;i<codesDepartements.length;i++)
+                    VoieAdrIndex.getInstance().indexJDONREFVoiesDepartement(codesDepartements[i]);
+                VoieAdrIndex.getInstance().indexJDONREFVoiesMap();
+                AdresseIndex.getInstance().setMap_idIndexVoieES(VoieAdrIndex.getInstance().getMap_idIndexVoieES());
+            }
+            
             for(int i=0;i<codesDepartements.length;i++)
                 DepartementIndex.getInstance().indexJDONREFDepartement(csv, nested, parent, codesDepartements[i]);
             
@@ -562,7 +577,7 @@ public class JDONREFIndex
                             util.showExchangeIndexInAlias(alias, adresse_index, index+"_adr_voie"); 
                     }
                 }
-            }            
+            }
             if (isFlag(FLAGS.TRONCON))
             {
                 util.showSetRefreshInterval(troncon_index,"30s");

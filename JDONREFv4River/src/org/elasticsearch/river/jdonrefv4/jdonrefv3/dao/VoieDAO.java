@@ -45,7 +45,7 @@ public class VoieDAO
 //                        "where voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee";
         
         
-        String sql = "SELECT " +
+        String sql = "SELECT DISTINCT ON (voi_id) " +
                 "com_communes.com_code_insee, " +            //1
                 "com_communes.dpt_code_departement, " +      //2
                 "com_nom, " +                                //3
@@ -75,7 +75,7 @@ public class VoieDAO
                 "voi_voies_"+dpt+".t0 AS voi_t0, " +         //27
                 "voi_voies_"+dpt+".t1 AS voi_t1 " +          //28
                 "FROM voi_voies_"+dpt+", com_communes "+
-                "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee";
+                "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee order by voi_id";
 
         
         PreparedStatement ps = connection.prepareStatement(sql);

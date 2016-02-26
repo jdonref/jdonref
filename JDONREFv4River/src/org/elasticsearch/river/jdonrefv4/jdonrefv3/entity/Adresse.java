@@ -22,6 +22,8 @@ public class Adresse
         
         this.numero = numero;
         this.repetition = repetition;
+        
+        voiAdr = new VoieAdr(voie, Integer.parseInt(numero),repetition);
     }
     
     public Adresse(ResultSet rs,String numero, String repetition,float lat,float lon) throws SQLException
@@ -43,6 +45,8 @@ public class Adresse
         }
         this.lat = lat;
         this.lon = lon;
+        
+        voiAdr = new VoieAdr(voie, Integer.parseInt(numero),repetition);
     }   
     
 //    public Adresse(ResultSet rs) throws SQLException
@@ -87,7 +91,9 @@ public class Adresse
             this.numero = null;
         if (repetition.equals("0") || repetition.trim().equals(""))
             this.repetition = null;
-
+        
+        
+        voiAdr = new VoieAdr(voie, numero==null?0:Integer.parseInt(numero),repetition);
     }
     
     public String[] getLignes()
@@ -114,6 +120,7 @@ public class Adresse
 
     
     public Voie voie;
+    public VoieAdr voiAdr;
     
     public String toLigne4()
     {
@@ -164,7 +171,7 @@ public class Adresse
         adresse.add("adr_id",idadresse);
 //        adresse.add("tro_id",troncon.tro_id);
         adresse.add("voi_id",voie.idvoie);
-        adresse.add("voi_nom",voie.voi_nom);
+        //adresse.add("voi_nom",voie.voi_nom);
         adresse.add("code_insee",voie.commune.codeinsee);
         if (voie.commune.com_code_insee_commune!=null)
             adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
@@ -287,7 +294,7 @@ public class Adresse
         adresse.add("code_insee",voie.commune.codeinsee);
         if (voie.commune.com_code_insee_commune!=null)
             adresse.add("code_insee_commune",voie.commune.com_code_insee_commune);
-         adresse.add("numero","");
+        adresse.add("numero","");
         if (repetition!=null)
             adresse.add("repetition",repetition); 
         adresse.add("commune",voie.commune.commune);

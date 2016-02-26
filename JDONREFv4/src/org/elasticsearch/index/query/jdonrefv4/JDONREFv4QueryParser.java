@@ -1,32 +1,43 @@
 package org.elasticsearch.index.query.jdonrefv4;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CachingTokenFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.UnsplitFilter;
 import org.apache.lucene.analysis.payloads.IntegerEncoder;
-import org.apache.lucene.analysis.payloads.PayloadHelper;
-import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
-import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
-import org.apache.lucene.search.spans.MultiPayloadSpanTermFilter;
-import org.apache.lucene.search.spans.PayloadCheckerSpanFilter;
 import org.apache.lucene.search.spans.checkers.*;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
-import org.elasticsearch.cluster.ClusterService;
-import org.elasticsearch.common.Nullable;
+import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.lucene.search.jdonrefv4.MaximumScoreBooleanQuery;
-import org.elasticsearch.common.lucene.search.jdonrefv4.PayloadAsScoreTermQuery;
+import org.elasticsearch.common.lucene.search.NotFilter;
+import org.elasticsearch.common.lucene.search.XBooleanFilter;
+import org.elasticsearch.common.lucene.search.XFilteredQuery;
+import org.elasticsearch.common.lucene.search.jdonrefv4.PercentScoreBooleanQuery;
+import org.elasticsearch.common.lucene.search.jdonrefv4.PercentScoreTermQuery;
+import org.elasticsearch.common.regex.Regex;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.index.fielddata.plain.ParentChildIndexFieldData;
+import org.elasticsearch.index.mapper.DocumentMapper;
+import org.elasticsearch.index.mapper.internal.ParentFieldMapper;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.search.child.ParentConstantScoreQuery;
+import org.elasticsearch.index.search.child.ParentQuery;
+import org.elasticsearch.search.fetch.innerhits.InnerHitsContext;
+import org.elasticsearch.search.internal.SubSearchContext;
 
 /**
  *
@@ -38,33 +49,17 @@ public class JDONREFv4QueryParser implements QueryParser
     public static final String SEARCH_ANALYZER = "jdonrefv4_search";
     public static final int DEFAULTMAXSIZE = Integer.MAX_VALUE;
     public static final int TERMCOUNTDEFAULTFACTOR = 1000;
-    public static String DEFAULTFIELD = "fullName";
+    public static String DEFAULTFIELD = "libelle";
     public static boolean DEFAULTDEBUGMODE = false;
     public static boolean DEFAULTPROGRESSIVESHOULDMATCH = false;
     
     private Settings settings;
+        
+    IntegerEncoder encoder = new IntegerEncoder();
     
-    @Nullable
-    private final ClusterService clusterService;
-    
-    protected ConcurrentHashMap<Integer,Integer> payloadIndex = new ConcurrentHashMap<>();
-    
-     public JDONREFv4QueryParser()
-     {
-          clusterService = null;
-          payloadIndex.put(1,0); // ligne1
-          payloadIndex.put(2,1); // ligne4
-          payloadIndex.put(11,2); // numero
-          payloadIndex.put(5,3); // commune
-          payloadIndex.put(3,4); // codes
-          payloadIndex.put(9,5); // ligne7
-          payloadIndex.put(10,6); // code pays
-     }
-    
-    @Inject
-    public JDONREFv4QueryParser(@Nullable ClusterService clusterService,Settings settings) {
-        this.clusterService = clusterService;
-        this.settings = settings;
+    @Inject public JDONREFv4QueryParser(Settings indexSettings) {
+        //this.service = service;
+        this.settings = indexSettings;
     }
     
     @Override
@@ -236,6 +231,153 @@ public class JDONREFv4QueryParser implements QueryParser
 //        return nullChecker;
     }
     
+    // From HasParentFilterParser
+    static Query createParentQuery(Query innerQuery, String parentType, boolean score, QueryParseContext parseContext, Tuple<String, SubSearchContext> innerHits) {
+        DocumentMapper parentDocMapper = parseContext.mapperService().documentMapper(parentType);
+        if (parentDocMapper == null) {
+            throw new QueryParsingException(parseContext.index(), "[has_parent] query configured 'parent_type' [" + parentType + "] is not a valid type");
+        }
+
+        if (innerHits != null) {
+            InnerHitsContext.ParentChildInnerHits parentChildInnerHits = new InnerHitsContext.ParentChildInnerHits(innerHits.v2(), innerQuery, null, parseContext.mapperService(), parentDocMapper);
+            String name = innerHits.v1() != null ? innerHits.v1() : parentType;
+            parseContext.addInnerHits(name, parentChildInnerHits);
+        }
+
+        Set<String> parentTypes = new HashSet<>(5);
+        parentTypes.add(parentDocMapper.type());
+        ParentChildIndexFieldData parentChildIndexFieldData = null;
+        for (DocumentMapper documentMapper : parseContext.mapperService().docMappers(false)) {
+            ParentFieldMapper parentFieldMapper = documentMapper.parentFieldMapper();
+            if (parentFieldMapper.active()) {
+                DocumentMapper parentTypeDocumentMapper = parseContext.mapperService().documentMapper(parentFieldMapper.type());
+                parentChildIndexFieldData = parseContext.getForField(parentFieldMapper);
+                if (parentTypeDocumentMapper == null) {
+                    // Only add this, if this parentFieldMapper (also a parent)  isn't a child of another parent.
+                    parentTypes.add(parentFieldMapper.type());
+                }
+            }
+        }
+        if (parentChildIndexFieldData == null) {
+            throw new QueryParsingException(parseContext.index(), "[has_parent] no _parent field configured");
+        }
+
+        Filter parentFilter = null;
+        if (parentTypes.size() == 1) {
+            DocumentMapper documentMapper = parseContext.mapperService().documentMapper(parentTypes.iterator().next());
+            if (documentMapper != null) {
+                parentFilter = documentMapper.typeFilter();
+            }
+        } else {
+            XBooleanFilter parentsFilter = new XBooleanFilter();
+            for (String parentTypeStr : parentTypes) {
+                DocumentMapper documentMapper = parseContext.mapperService().documentMapper(parentTypeStr);
+                if (documentMapper != null) {
+                    parentsFilter.add(documentMapper.typeFilter(), BooleanClause.Occur.SHOULD);
+                }
+            }
+            parentFilter = parentsFilter;
+        }
+
+        if (parentFilter == null) {
+            return null;
+        }
+
+        // wrap the query with type query
+        innerQuery = new XFilteredQuery(innerQuery, parseContext.cacheFilter(parentDocMapper.typeFilter(), null));
+        Filter childrenFilter = parseContext.cacheFilter(new NotFilter(parentFilter), null);
+        if (score) {
+            return new ParentQuery(parentChildIndexFieldData, innerQuery, parentDocMapper.type(), childrenFilter);
+        } else {
+            return new ParentConstantScoreQuery(parentChildIndexFieldData, innerQuery, parentDocMapper.type(), childrenFilter);
+        }
+    }
+    
+    // From HasParentFilterParser
+    public Query getHasParentQuery(QueryParseContext parseContext,Query innerQuery,String parentType) throws IOException
+    {
+       if (parentType == null) {
+            throw new QueryParsingException(parseContext.index(), "[has_parent] filter requires 'parent_type' field");
+        }
+        
+        Query parentQuery = createParentQuery(innerQuery, parentType, false, parseContext, null);
+        if (parentQuery == null) {
+            return null;
+        }
+        
+        return parentQuery;
+    }
+    
+    public Query getTermsQuery(QueryParseContext parseContext,String fieldName,List<BytesRef> values, int minimumShouldMatch, float score, int typemask, Predicate<BytesRef> match)
+    {
+        float boost = 1.0f;
+        
+        try {
+            PercentScoreBooleanQuery booleanQuery = new PercentScoreBooleanQuery();
+            booleanQuery.setActive(false);
+            for(int i=0;i<values.size();i++) {
+                if (match==null || match.test(values.get(i)))
+                    booleanQuery.add(new PercentScoreTermQuery(new Term(fieldName, BytesRef.deepCopyOf(values.get(i))), score, typemask, 1<<i), BooleanClause.Occur.SHOULD);
+            }
+            booleanQuery.setBoost(boost);
+            booleanQuery.setMinimumNumberShouldMatch(minimumShouldMatch);
+            return booleanQuery;
+        } finally {
+        }
+    }
+    
+    public Query getTermsQuery(QueryParseContext parseContext,String fieldName,List<BytesRef> values, int minimumShouldMatch, float score, int typemask)
+    {
+        return getTermsQuery(parseContext, fieldName, values, minimumShouldMatch, score, typemask, null);
+    }
+    
+    public void addTermsQuery(BooleanQuery booleanQuery,QueryParseContext parseContext,String fieldName,List<BytesRef> values, float score, int typemask)
+    {
+        addTermsQuery(booleanQuery, parseContext, fieldName, values, score, typemask, null);
+    }
+    
+    public void addTermsQuery(BooleanQuery booleanQuery,QueryParseContext parseContext,String fieldName,List<BytesRef> values, float score, int typemask, Predicate<BytesRef> match)
+    {
+        for(int i=0;i<values.size();i++) {
+            if (match==null || match.test(values.get(i)))
+                booleanQuery.add(new PercentScoreTermQuery(new Term(fieldName, BytesRef.deepCopyOf(values.get(i))), score, typemask, 1<<i), BooleanClause.Occur.SHOULD);
+        }
+    }
+    
+    public Query getQueryStringQuery(QueryParseContext parseContext, String ligne4, ArrayList<Object> terms, int minimumShouldMatch) {
+        
+        BooleanQuery bq = new BooleanQuery();
+        for(int i=0;i<terms.size()-1;i++)
+        {
+            TermQuery tq = new TermQuery(new Term(ligne4,(BytesRef)terms.get(i)));
+            bq.add(tq, BooleanClause.Occur.SHOULD);
+        }
+        WildcardQuery wq = new WildcardQuery(new Term(ligne4, (BytesRef) terms.get(terms.size()-1)));
+        bq.add(wq, BooleanClause.Occur.SHOULD);
+        bq.setMinimumNumberShouldMatch(Math.min(terms.size(), minimumShouldMatch));
+        
+        return bq;
+    }
+    
+    public Query getQueryStringQuery(QueryParseContext parseContext, String ligne4, String ligne6, ArrayList<Object> terms, int minimumShouldMatch) {
+        
+        BooleanQuery bq = new BooleanQuery();
+        for(int i=0;i<terms.size()-1;i++)
+        {
+            TermQuery tq = new TermQuery(new Term(ligne4,(BytesRef)terms.get(i)));
+            bq.add(tq, BooleanClause.Occur.SHOULD);
+            tq = new TermQuery(new Term(ligne6,(BytesRef)terms.get(i)));
+            bq.add(tq, BooleanClause.Occur.SHOULD);
+        }
+        WildcardQuery wq = new WildcardQuery(new Term(ligne4, (BytesRef) terms.get(terms.size()-1)));
+        bq.add(wq, BooleanClause.Occur.SHOULD);
+        wq = new WildcardQuery(new Term(ligne6, (BytesRef) terms.get(terms.size()-1)));
+        bq.add(wq, BooleanClause.Occur.SHOULD);
+        bq.setMinimumNumberShouldMatch(Math.min(terms.size(), minimumShouldMatch));
+        
+        return bq;
+    }
+    
     private Query getJDONREFv4Query(String term, String find, QueryParseContext parseContext,int debugDoc,boolean debugMode,boolean progressiveShouldMatch) throws IOException
     {
         Analyzer analyser = parseContext.mapperService().fieldSearchAnalyzer(term); //analysisService().analyzer(SEARCH_ANALYZER);
@@ -247,9 +389,9 @@ public class JDONREFv4QueryParser implements QueryParser
         
         CachingTokenFilter buffer = null;
         TermToBytesRefAttribute termAtt = null;
-        TypeAttribute typeAtt = null;
+        //TypeAttribute typeAtt = null;
         TokenStream source = null;
-        PayloadAttribute payloadAtt = null;
+        //PayloadAttribute payloadAtt = null;
         int numTokens = 0;
     
         try
@@ -262,14 +404,14 @@ public class JDONREFv4QueryParser implements QueryParser
             if (buffer.hasAttribute(TermToBytesRefAttribute.class)) {
                termAtt = buffer.getAttribute(TermToBytesRefAttribute.class);
             }
-            if (buffer.hasAttribute(TypeAttribute.class))
+            /*if (buffer.hasAttribute(TypeAttribute.class))
             {
                typeAtt = buffer.getAttribute(TypeAttribute.class);
             }
             if (buffer.hasAttribute(PayloadAttribute.class))
             {
                payloadAtt = buffer.getAttribute(PayloadAttribute.class);
-            }
+            }*/
             
             if (termAtt != null) {
                 try {
@@ -287,23 +429,14 @@ public class JDONREFv4QueryParser implements QueryParser
             IOUtils.closeWhileHandlingException(source);
         }
         
+        if (debugMode)
+            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getId()+" found "+numTokens+" tokens");
+        
         buffer.reset();
         
         BytesRef bytes = termAtt == null ? null : termAtt.getBytesRef();
+        ArrayList<BytesRef> terms = new ArrayList<>(); // chaque terme composant la requête
         
-        PayloadCheckerSpanFilter spanFilter = new PayloadCheckerSpanFilter();
-        spanFilter.setChecker(getChecker());
-        spanFilter.setTermCountPayloadFactor(TERMCOUNTDEFAULTFACTOR);
-        
-        BooleanQuery orQuery = new MaximumScoreBooleanQuery();
-        ((MaximumScoreBooleanQuery)orQuery).setParseContext(parseContext); 
-        ((MaximumScoreBooleanQuery)orQuery).setProgressiveShouldMatch(progressiveShouldMatch);
-        orQuery.setMinimumNumberShouldMatch(1);
-        int maxTokens = 0;
-                
-        // phrase query:
-        PayloadAsScoreTermQuery q = null;
-        MultiPayloadSpanTermFilter filter = null;
         for (int i = 0; i < numTokens; i++) {
             try {
                 boolean hasNext = buffer.incrementToken();
@@ -315,50 +448,144 @@ public class JDONREFv4QueryParser implements QueryParser
 
             if (bytes.length>0)
             {
-                String type = typeAtt.type();
-                
-//                if (UnsplitFilter.UNSPLIT_TYPE.equals(type))
-                {
-                    int payload = 1;
-//                    int payload = PayloadHelper.decodeInt(payloadAtt.getPayload().bytes,payloadAtt.getPayload().offset);
-                
-                    if (debugMode)
-                    {
-                        System.out.println("Thread "+Thread.currentThread().getId()+" add or query :"+bytes.utf8ToString());
-                        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getId()+" add or query :"+bytes.utf8ToString());
-                    }
-                    q = new PayloadAsScoreTermQuery(new Term(term,BytesRef.deepCopyOf(bytes)));
-//                    q.setNumTerms(payload);
-                    q.setNumTerms(payload);
-                    
-                    orQuery.add(new BooleanClause(q,BooleanClause.Occur.SHOULD));
-                }
-//                else // word type
-                {
-                    maxTokens++;
-                    if (debugMode)
-                    {
-                        System.out.println("Thread "+Thread.currentThread().getId()+" add span filter :"+bytes.utf8ToString());
-                        Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getId()+" add span filter :"+bytes.utf8ToString());
-                    }
-                    filter = new MultiPayloadSpanTermFilter(new Term(term,BytesRef.deepCopyOf(bytes)));
-                    spanFilter.addClause(filter);
-                }
+                terms.add(BytesRef.deepCopyOf(bytes));
             }
         }
-        if(q!=null)
-            q.setFinalWildCard(true); // true uniquement pour le dernier
-        if(filter!=null)
-            filter.setFinalWildCard(true);
         
-        FilteredQuery fQuery = new FilteredQuery(orQuery,spanFilter,FilteredQuery.LEAP_FROG_QUERY_FIRST_STRATEGY);
-        ((MaximumScoreBooleanQuery)orQuery).setNumTokens(maxTokens);
+        PercentScoreBooleanQuery thisQuery = new PercentScoreBooleanQuery();
+        thisQuery.setMaxCoord(terms.size());
+        
+        if (matchesIndices(parseContext.index().name(), "*adresse*")
+                && terms.stream().filter((i)->isInteger(i)).count()>0    // au moins un numéro dans la requête
+                && terms.size()>1)                                       // et deux éléments saisis
+        {
+            if (debugMode)
+                Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getId()+" make adresse query");
+            
+            // cas de l'index sur les adresses pour imposer le filtre sur le numéro            
+            Query numeros = getTermsQuery(parseContext,"numero", terms,1,30,1,(i)->isInteger(i));
+            thisQuery.add(numeros,BooleanClause.Occur.MUST);
+            
+            // ainsi qu'un autre élément de l'adresse (attention, actuellement, il peut s'agir d'une répetition !)
+            //addTermsQuery(thisQuery,parseContext,"numero", numbers,30,2);
+            addTermsQuery(thisQuery,parseContext,"repetition", terms,30,2);
+            addTermsQuery(thisQuery,parseContext,"type_de_voie", terms,10,4);
+            addTermsQuery(thisQuery,parseContext,"libelle", terms,50,8);
+            addTermsQuery(thisQuery,parseContext,"codes", terms,50,16);
+            addTermsQuery(thisQuery,parseContext,"commune", terms,50,32);
+            
+            thisQuery.setMinimumNumberShouldMatch(terms.size()-1);
+        }
+        else if (matchesIndices(parseContext.index().name(), "*voie*"))
+        {
+            // la présence du libelle est imposé pour les voies
+            Query libelle = getTermsQuery(parseContext,"libelle", terms,1,50,8);
+            thisQuery.add(libelle,BooleanClause.Occur.MUST);
+            
+            addTermsQuery(thisQuery,parseContext,"type_de_voie", terms,10,4);
+            addTermsQuery(thisQuery,parseContext,"codes", terms,50,16);
+            addTermsQuery(thisQuery,parseContext,"commune", terms,50,32);
+            thisQuery.setMinimumNumberShouldMatch(terms.size()-1);
+        }
+        else if (matchesIndices(parseContext.index().name(), "*commune*"))
+        {
+            // 1 élément parmi les codes ou le nom de la commune
+            addTermsQuery(thisQuery,parseContext,"codes", terms,50,16);
+            addTermsQuery(thisQuery,parseContext,"commune", terms,50,32);
+            thisQuery.setMinimumNumberShouldMatch(terms.size()-1);
+        }
+        else if (matchesIndices(parseContext.index().name(), "*pays*"))
+        {
+            // la présence du pays est obligatoire pour un pays !
+            Query ligne7 = getTermsQuery(parseContext,"ligne7", terms,terms.size()-1,50,64);
+            thisQuery.add(ligne7,BooleanClause.Occur.MUST);
+            //thisQuery.setMinimumNumberShouldMatch(terms1.size()-1); // no need
+        }
+        else if (matchesIndices(parseContext.index().name(), "*poizon*"))
+        {
+            // ligne 1 obligatoire pour les poizon
+            Query ligne1 = getTermsQuery(parseContext,"ligne1", terms,1,50,128);
+            thisQuery.add(ligne1,BooleanClause.Occur.MUST);
+            
+            addTermsQuery(thisQuery,parseContext,"ligne4", terms,50,256);
+            addTermsQuery(thisQuery,parseContext,"codes", terms,50,512);
+            addTermsQuery(thisQuery,parseContext,"commune", terms,50,1024);
+            thisQuery.setMinimumNumberShouldMatch(terms.size()-1);
+        }
+        else
+            return new EmptyQuery();
         
         if (debugMode)
         {
-            Logger.getLogger(this.getClass().toString()).debug("Thread "+Thread.currentThread().getId()+" "+fQuery.toString());   
+            Logger.getLogger(this.getClass().toString()).info("Thread "+Thread.currentThread().getId()+" "+thisQuery.toString());   
         }
         
-        return fQuery;
+        return thisQuery;
+    }
+    
+    // from org.elasticsearch.index.query.IndicesQueryParser
+    protected boolean matchesIndices(String currentIndex, String... indices) {
+        for (String index : indices) {
+            if (Regex.simpleMatch(index, currentIndex)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isInteger(BytesRef t)
+        {
+            try
+            {
+                Integer.parseInt(t.utf8ToString());
+                return true;
+            }
+            catch(NumberFormatException nfe)
+            {
+                return false;
+            }
+        }
+    
+    public class EmptyQuery extends Query
+    {
+        public EmptyQuery() {
+        }
+        
+        public Weight createWeight(IndexSearcher is) throws IOException {
+            return new EmptyWeight();
+        }
+        
+        protected class EmptyWeight extends Weight {
+
+            @Override
+            public Explanation explain(AtomicReaderContext arc, int i) throws IOException {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public Query getQuery() {
+                return EmptyQuery.this;
+            }
+
+            @Override
+            public float getValueForNormalization() throws IOException {
+                return 0;
+            }
+
+            @Override
+            public void normalize(float f, float f1) {
+            }
+
+            @Override
+            public Scorer scorer(AtomicReaderContext arc, Bits bits) throws IOException {
+                return null;
+            }
+        }
+        
+        @Override
+        public String toString(String string) {
+            return "Empty";
+        }
+        
     }
 }

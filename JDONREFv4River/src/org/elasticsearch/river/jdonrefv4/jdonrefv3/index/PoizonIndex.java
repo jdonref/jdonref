@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.PoizonDAO;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.MetaData;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Poizon;
@@ -25,7 +26,6 @@ public class PoizonIndex {
     boolean withGeometry = true;
     boolean verbose = false;
     ElasticSearchUtil util;
-    Connection connection;
     
     static int idPoizon=0;
     static int idPoizonTmp=0;
@@ -74,14 +74,9 @@ public class PoizonIndex {
         this.verbose = verbose;
     }
 
-    public Connection getConnection() {
-        return connection;
+    public Connection getConnection() throws SQLException {
+        return JDONREFIndex.getInstance().getNewConnection();
     }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-    }
-
     
     public String getDatForm(Date d) {
         SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -93,6 +88,7 @@ public class PoizonIndex {
     public Date dateOfFirst(String object, String attribut) throws SQLException{ 
         Date lastUpdate = new Date();   
         PoizonDAO dao = new PoizonDAO();
+        Connection connection = getConnection();
         ResultSet rsDatesT0 = dao.getDateT0AllPoizon(connection);
         while(rsDatesT0.next()){
             Date date = rsDatesT0.getTimestamp(1);
@@ -102,9 +98,13 @@ public class PoizonIndex {
                 return lastUpdate;
             lastUpdate = date; 
         } 
+        rsDatesT0.close();
+        connection.close();
         return lastUpdate;
     }
 
+    HashSet<String> idpoizon = new HashSet<String>();
+    
     ArrayList<String> ids = new ArrayList<>();
     int idid = 0;
     public void indexJDONREFPoizon() throws IOException, SQLException
@@ -115,11 +115,14 @@ public class PoizonIndex {
         String lastUpdate = getDatForm(dateOfFirst("poizon","t0"));
         
         PoizonDAO dao = new PoizonDAO();
+        Connection connection = getConnection();
         ResultSet rs = dao.getAllPoizon(connection,lastUpdate);
 //      creation de l'objet metaDataPoizon
         MetaData metaDataPoizon= new MetaData();
         metaDataPoizon.setIndex(index);
         metaDataPoizon.setType("poizon");
+        
+        idpoizon.clear();
         
         int i =0;
         String bulk ="";
@@ -132,6 +135,10 @@ public class PoizonIndex {
                 System.out.println(i+" poizon traités");
             
             Poizon p = new Poizon(rs);
+            
+            if (idpoizon.contains(p.poizon_service+" "+p.poizon_id1))
+                continue;
+            idpoizon.add(p.poizon_service+" "+p.poizon_id1);
             
 //            creation de l'objet metaDataPoizon plus haut
 //            metaDataPoizon.setId(++idPoizon);
@@ -151,6 +158,7 @@ public class PoizonIndex {
             i++;
         }
         rs.close();
+        connection.close();
         if(!bulk.equals("")){
                 System.out.println("poizon : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idPoizon));
                 if (!isVerbose())

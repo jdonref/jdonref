@@ -1,0 +1,14 @@
+{
+    "voie_adr": {
+        "_type": {"store": true},
+       "_source": {"excludes": ["geometrie"]},
+       "properties" : {
+                            "numero" : { "type" : "string", "index":"not_analyzed"},
+                            "repetition" : { "type" : "string", "index":"not_analyzed"},
+                            "type_de_voie" : { "type" : "string", "analyzer":"jdonrefv4_index_token_count","search_analyzer":"jdonrefv4_search"},
+                            "article" : { "type" : "string", "index":"no"},
+                            "libelle" : { "type" : "string", "analyzer":"jdonrefv4_index_token_count","search_analyzer":"jdonrefv4_search"},
+                            "ligne4" : { "type" : "string",  "index_analyzer":"jdonrefv4_index","search_analyzer":"jdonrefv4_search"}
+                      }
+   }
+ }

@@ -124,7 +124,7 @@ public class MetaData {
     }
     
         
-        public JsonObject toJSONMetaDataWithPartent()
+        public JsonObject toJSONMetaDataWithParent()
     {
          JsonObjectBuilder builder = Json.createObjectBuilder();
          JsonObjectBuilder builder1 = Json.createObjectBuilder();

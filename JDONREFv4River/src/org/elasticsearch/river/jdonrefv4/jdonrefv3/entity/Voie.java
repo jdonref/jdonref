@@ -43,6 +43,29 @@ public class Voie
         this.geometrie = "{\"type\":\"MultiLineString\",\"coordinates\":"+geometrie+"}";
     }
 
+    public Voie(String[] voie)
+    {
+        this.commune = new Commune(voie[5],voie[5].substring(0,2),voie[15],voie[15],voie[15],voie[15],voie[5],null,null,voie[6]);
+        this.idvoie = voie[0];
+        this.voi_code_fantoir = voie[2];
+        this.voi_nom = voie[1];
+        this.voi_nom_desab = voie[1];
+        this.voi_nom_origine = voie[1];
+        this.cdp_code_postal = voie[6];
+        this.typedevoie = "";
+        this.voi_type_de_voie_pq = "";
+        this.libelle = "";
+        this.voi_lbl_pq = "";
+        this.voi_lbl_sans_articles = "";
+        this.voi_lbl_sans_articles_pq = "";
+        this.voi_mot_determinant = "";
+        this.voi_mot_determinant_pq = "";
+        this.min_numero = 0;
+        this.max_numero = 0;
+        this.t0 = null;
+        this.t1 = null;
+    }
+    
     public Voie(Commune commune, String idvoie, String voi_code_fantoir, String voi_nom, String voi_nom_desab, String voi_nom_origine, String cdp_code_postal, String typedevoie, String voi_type_de_voie_pq, String libelle, String voi_lbl_pq, String voi_lbl_sans_articles, String voi_lbl_sans_articles_pq, String voi_mot_determinant, String voi_mot_determinant_pq, int min_numero, int max_numero, Date t0, Date t1, String article) {
         this.commune = commune;
         this.idvoie = idvoie;

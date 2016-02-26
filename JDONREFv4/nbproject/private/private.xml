@@ -1,3 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?><project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreBooleanQuery.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreConjunctionScorer.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreBooleanScorer.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/test/resources/index/jdonrefv4-settings_Query.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/plugin/analysis/jdonref/JDONREFPlugin.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/test/org/elasticsearch/plugin/analysis/jdonrefv4/test/JDONREFv4QueryTests.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/index/query/jdonrefv4/JDONREFv4QueryParser.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/apache/lucene/analysis/CountTokenAsValueFilter.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/index/query/jdonrefv4/JDONREFv4QueryBuilder.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/test/resources/mapping/mapping-adresse.json</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreMinShouldMatchSumScorer.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreBooleanTwoTimeScorer.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreReqOptSumScorer.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreTermQuery.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/apache/lucene/analysis/CountTokenAsValueFilterFactory.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreTermScorer.java</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/_site/JDONREFv4Test.html</file>
+            <file>file:/C:/Users/moquetju/Documents/Projets/Referentiel/JDONREF/v4/JDONREFv4/src/org/elasticsearch/common/lucene/search/jdonrefv4/PercentScoreDisjunctionScorer.java</file>
+        </group>
+    </open-files>
 </project-private>

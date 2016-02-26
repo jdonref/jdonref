@@ -14,13 +14,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.lucene.analysis.FrequentTermsUtil;
+//import org.apache.lucene.analysis.FrequentTermsUtil;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.index.JDONREFIndex;
 import org.junit.Test;
 
 public class Valide_json {
 
-    private String RESOURCES_PATH = "./src/resources/csv/BAN_licence_gratuite_repartage/";
+    private String RESOURCES_PATH = "C:\\Users\\moquetju\\Desktop\\ban";
     private String DEPT_FILE_NAME = "BAN_licence_gratuite_repartage_";
 
     String indexName = "indexName";
@@ -30,10 +30,10 @@ public class Valide_json {
     boolean verboseIndexation = true;
     boolean withGeometry = false;
     boolean withSwitchAlias = true;
-    boolean parent = false;
+    boolean parent = true;
     boolean nested = false;
     boolean csv = true;
-    String url = "localhost:9200";
+    String url = "10.213.93.85:9200";
     boolean restart = true;
     long millis = 0;
 
@@ -63,7 +63,7 @@ public class Valide_json {
         return jdonrefIndex;
      } 
     
-    public void getJDONREFIndex(JDONREFIndex jdonrefIndex, String[] listeDepartement,ArrayList<String> flags) throws SQLException, IOException{
+    public void getJDONREFIndex(JDONREFIndex jdonrefIndex, String[] listeDepartement,ArrayList<String> flags) throws SQLException, IOException, Exception{
         
         jdonrefIndex.setCodesDepartements(listeDepartement);
         
@@ -93,14 +93,14 @@ public class Valide_json {
     };
     
     @Test
-    public void valideTestsAfterIndexation() {
-        FrequentTermsUtil.setFilePath("./src/resources/analysis/word84.txt");
+    public void valideTestsAfterIndexation() throws Exception {
+        //FrequentTermsUtil.setFilePath("./src/resources/analysis/word84.txt");
         if(reindex){
             try {
                 File repertoire = new File(RESOURCES_PATH);
                 
 //                String[] listeDepts = {"all"};
-                String[] listeDepts = {"75", "94", "93", "95", "92", "91", "78", "77"};
+                String[] listeDepts = {"75"}; //, "94", "93", "95", "92", "91", "78", "77"};
                 
                 String[] listeDepartements = null;
                 if(Arrays.asList(listeDepts).contains("all")){
@@ -125,8 +125,8 @@ public class Valide_json {
                 ArrayList<String> flags = new ArrayList<>();
                 flags.add("DEPARTEMENT");
                 flags.add("COMMUNE");
-                flags.add("VOIE");
-//                flags.add("ADRESSE");
+                //flags.add("VOIE");
+                //flags.add("ADRESSE");
                 flags.add("POIZON");
                 flags.add("PAYS");
                 flags.add("TRONCON");

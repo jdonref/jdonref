@@ -34,7 +34,7 @@ public class AdresseDAO
     public ResultSet getAllAdressesOfDepartement(Connection connection,String dpt) throws SQLException
     {
         
-        String sql = "SELECT " +
+        String sql = "SELECT distinct on (adr_id) " +
                 "com_communes.com_code_insee," +            // 1
                 "com_communes.dpt_code_departement," +      // 2
                 "com_nom," +                                // 4
@@ -71,7 +71,7 @@ public class AdresseDAO
                 "FROM adr_adresses_"+dpt+", voi_voies_"+dpt+", com_communes "+
                 "WHERE voi_voies_"+dpt+".com_code_insee = com_communes.com_code_insee " +
                 "and adr_adresses_"+dpt+".voi_id = voi_voies_"+dpt+".voi_id " +
-                "order by voi_nom,com_communes.com_code_insee ";
+                "order by adr_id,voi_nom,com_communes.com_code_insee";
                 
 
         PreparedStatement ps = connection.prepareStatement(sql);

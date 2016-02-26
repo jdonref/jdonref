@@ -3,21 +3,22 @@
         "_type": {"store": true},
         "_source": {"excludes": ["geometrie"]},
         "properties" : {
-                            "code_departement" : { "type" : "string", "term_vector" : "with_positions_offsets", "index":"not_analyzed", "copy_to": ["codes"]},
-                            "code_pays" : { "type" : "string" , "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv4_codes_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
-                            "codes" : { "type" : "string", "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv4_codes_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "code_departement" : { "type" : "string",  "index":"not_analyzed", "copy_to": ["codes"]},
+                            "code_pays" : { "type" : "string" ,  "index_analyzer":"jdonrefv4_codes_index","search_analyzer":"jdonrefv4_search"},
+                            "codes" : { "type" : "string",  "index_analyzer":"jdonrefv4_codes_index","search_analyzer":"jdonrefv4_search"},
                             "pays" : { "type" : "string" , "index": "no"},
                             "t0" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
                             "t1" : { "type" : "date", "format": "YYYY-MM-dd HH:mm:ss", "index":"not_analyzed"},
                             "ligne6" : { "type" : "string", "index": "no"},
-                            "ligne7" : { "type" : "string", "term_vector" : "with_positions_offsets", "index_analyzer":"jdonrefv4_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "ligne7" : { "type" : "string",  "index_analyzer":"jdonrefv4_index","search_analyzer":"jdonrefv4_search"},
                             "pin" : { "properties" : { "centroide" : { "type" : "geo_point" , "fielddata" : { "format" : "compressed" , "precision" : "1cm"}}}},
                             "geometrie" : { "type" : "geo_shape", "precision": "1cm", "tree": "quadtree"},
-                            "fullName" : {"type": "string", "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index_token_count","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"}
+                            "fullName" : {"type": "string", "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index_token_count","search_analyzer":"jdonrefv4_search"},
+                            "score" : { "type" : "string", "term_vector":"yes", "index":"analyzed" , "analyzer":"jdonrefv4_score_analyzer"}
                         },
-       "transform" : {
-           "lang" : "groovy",
-           "script" : "ctx._source['fullName'] = ''; if (ctx._source['ligne7']!=null) { def tokens = ctx._source['ligne7'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|9'; }; if (ctx._source['code_pays']!=null) { def tokens = ctx._source['code_pays'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|10'; }; if (ctx._source['code_departement']!=null) { def tokens = ctx._source['code_departement'].split(' '); for(x in tokens) ctx._source['fullName'] += ' ' + x + '|3'; };"
-       }
+        "transform": {
+          "lang" : "groovy",
+          "script" : "ctx._source['score']= ''; if (ctx._source['numero']!=null) { def tokens= ctx._source['numero'].split(' '); for(x in tokens) ctx._source['numero'] += ' ' + x + '|1'; }; if (ctx._source['repetition']!=null) { def tokens= ctx._source['repetition'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|2'; }; if (ctx._source['type_de_voie']!=null) { def tokens= ctx._source['type_de_voie'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|3'; }; if (ctx._source['libelle']!=null) { def tokens= ctx._source['libelle'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|4'; }; if (ctx._source['code_postal']!=null) { def tokens= ctx._source['code_postal'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|5'; }; if (ctx._source['code_departement']!=null) { def tokens= ctx._source['code_departement'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|6'; }; if (ctx._source['code_arrondissement']!=null) { def tokens= ctx._source['code_arrondissement'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|7'; }; if (ctx._source['code_insee']!=null) { def tokens= ctx._source['code_insee'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|8'; }; if (ctx._source['code_insee_commune']!=null) { def tokens= ctx._source['code_insee_commune'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|9'; }; if (ctx._source['commune']!=null) { def tokens= ctx._source['commune'].split(' '); for(x in tokens) ctx._source['score'] += ' ' + x + '|10'; }; "
+        }
     }
   }

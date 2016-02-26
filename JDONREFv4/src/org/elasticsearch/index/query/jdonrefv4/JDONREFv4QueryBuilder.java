@@ -1,11 +1,9 @@
 package org.elasticsearch.index.query.jdonrefv4;
 
 import java.io.IOException;
-import org.elasticsearch.common.lucene.search.jdonrefv4.MaximumScoreBooleanQuery;
 import org.elasticsearch.common.xcontent.ToXContent.Params;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BaseQueryBuilder;
-import org.elasticsearch.index.query.BoostableQueryBuilder;
 
 /**
  *

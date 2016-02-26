@@ -1,0 +1,25 @@
+{
+     "unsplitfilter": {
+        "_type": {"store": true},
+        "_source": {"excludes": ["geometrie"]},
+        "properties" : {
+                            "fullName" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName2" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index2","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName3" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index3","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName4" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index4","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName5" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index5","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName6" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index6","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName7" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index7","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName8" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index8","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName9" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index9","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName10" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index10","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName11" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index11","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName12" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index12","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName13" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index13","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName14" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index14","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName15" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index15","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName16" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index16","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"},
+                            "fullName17" : {"type": "string", "store":true, "term_vector" : "with_positions_offsets_payloads", "index_analyzer":"jdonrefv4_index17","search_analyzer":"jdonrefv4_search", "similarity":"jdonrefv4"}
+                       }
+    }
+}

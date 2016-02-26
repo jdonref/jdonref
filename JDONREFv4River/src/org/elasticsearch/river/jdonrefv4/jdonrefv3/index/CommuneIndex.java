@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import javax.json.JsonObject;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.dao.CommuneDAO;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Commune;
@@ -18,7 +19,6 @@ public class CommuneIndex
     boolean verbose = false;
     boolean withGeometry = true;
     ElasticSearchUtil util;
-    Connection connection;
     
     static int idCommune=0;
     static int idCommuneTmp=0;
@@ -70,12 +70,8 @@ public class CommuneIndex
         this.util = util;
     }
     
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
+    public Connection getConnection() throws SQLException {
+        return JDONREFIndex.getInstance().getNewConnection();
     }
     
     public boolean isVerbose() {
@@ -93,13 +89,15 @@ public class CommuneIndex
         util.indexResource(index,"commune", data.toString());
     }
     
+    HashSet<String> ids = new HashSet<String>();
+    
     public void indexJDONREFCommune() throws IOException, SQLException
     {
         if (isVerbose())
             System.out.println("Communes");
         
         CommuneDAO dao = new CommuneDAO();
-        
+        Connection connection = getConnection();
         ResultSet rs = dao.getAllCommunes(connection, getDept());
 
 //      creation de l'objet metaDataCommune
@@ -107,6 +105,8 @@ public class CommuneIndex
         metaDataCommune.setIndex(index);
         metaDataCommune.setType("commune");
    
+        ids.clear();
+        
         String bulk ="";
         int i =0;
         int lastIdBulk=idCommuneTmp;
@@ -120,6 +120,10 @@ public class CommuneIndex
 //            Commune c = new Commune(rs,new int[]{1,2,3,4,5,6,7,8,9,10,11});        
             Commune c = new Commune(rs);        
                         
+            if (ids.contains(c.codeinsee+" "+c.commune))
+                continue;
+            ids.add(c.codeinsee+" "+c.commune);
+            
 //            creation de l'objet metaDataCommune plus haut
             metaDataCommune.setId(new Long(++idCommune));
             bulk += metaDataCommune.toJSONMetaData().toString()+"\n"+c.toJSONDocument(withGeometry).toString()+"\n";
@@ -135,6 +139,7 @@ public class CommuneIndex
             i++;
         }
         rs.close();
+        connection.close();
         if(!bulk.equals("")){
         System.out.println("commune : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idCommune));        
         util.indexResourceBulk(bulk);

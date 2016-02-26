@@ -21,8 +21,7 @@ public class TronconIndex
 {
      boolean verbose = false;
      boolean withGeometry = true;
-ElasticSearchUtil util;
-    Connection connection;
+    ElasticSearchUtil util;
 
     static int idTroncon=0;
     static int idTronconTmp=0;
@@ -72,12 +71,8 @@ ElasticSearchUtil util;
         this.verbose = verbose;
     }
     
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
+    public Connection getConnection() throws SQLException {
+        return JDONREFIndex.getInstance().getNewConnection();
     }
     
     private void addAdresse(Adresse a)
@@ -216,8 +211,10 @@ ElasticSearchUtil util;
         
         TronconDAO dao = new TronconDAO();
         
+        Connection connection = getConnection();
         ResultSet rs = dao.getAllTronconsGaucheOfDepartment(connection,dpt);
         indexJDONREFTronconsDepartement(rs, "gauches", dpt);
+        connection.close();
     }
     
     
@@ -236,8 +233,10 @@ ElasticSearchUtil util;
         
         TronconDAO dao = new TronconDAO();
         
+        Connection connection = getConnection();
         ResultSet rs = dao.getAllTronconsDroitOfDepartment(connection,dpt);
         indexJDONREFTronconsDepartement(rs, "droits", dpt);
+        connection.close();
     }
 
 
@@ -247,6 +246,7 @@ ElasticSearchUtil util;
             System.out.println("dpt "+dpt+" : troncons "+side);
         
         TronconDAO dao = new TronconDAO();
+        Connection connection = getConnection();
 //        ResultSet rs = dao.getAllTronconsByDep(connection, dpt);    
         ResultSet rs = dao.getAllTronconsByDepBySide(connection, dpt,side);    
 //      creation de l'objet metaDataTroncon
@@ -281,6 +281,7 @@ ElasticSearchUtil util;
             i++;
         }
         rs.close();
+        connection.close();
         if(!bulk.equals("")){
                 System.out.println("troncons "+side+" : bulk pour les ids de "+(lastIdBulk+1)+" à "+(idTroncon));        
                 if (!isVerbose())
@@ -306,6 +307,7 @@ ElasticSearchUtil util;
         HashMap<String, ArrayList<Troncon>> hashMap = new HashMap<String, ArrayList<Troncon>>();
 
         TronconDAO dao = new TronconDAO();
+        Connection connection = getConnection();
         ResultSet rs = dao.getAllTronconsByDep(connection, dep);
         
         while(rs.next())
@@ -325,6 +327,8 @@ ElasticSearchUtil util;
                 }
             }
         }
+        rs.close();
+        connection.close();
 
         return hashMap;
     }

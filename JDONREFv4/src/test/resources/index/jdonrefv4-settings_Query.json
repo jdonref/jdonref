@@ -1,0 +1,121 @@
+{
+    "index" : {
+        "index.store.type": "memory",
+        "number_of_shards" : 1,
+        "number_of_replicas" : 0,
+        "analysis" : {
+            "analyzer": {
+                "jdonrefv4_index_token_count" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : ["delimited_payload_filter", "lowercase", "jdonrefv4_synonyme", "french_elision", "french_stop" /*,"french_keywords"*/, "french_stemmer", /*"jdonrefv4_nGram", */"jdonrefv4_unsplit_index","jdonrefv4_tokenCount"]
+                },
+                "jdonrefv4_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "whitespace",
+                    "filter" : ["lowercase", "jdonrefv4_synonyme", "french_elision", "french_stop" /*,"french_keywords"*/ , "french_stemmer" ]
+                },
+                "jdonrefv4_codes_index" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "lowercase"]
+                },
+                "jdonrefv4_search_unsplit" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["lowercase", "french_elision", "french_stop"/*,"french_keywords"*/,"french_stemmer", "jdonrefv4_unsplit_search"]
+                },
+                "jdonrefv4_search" : {
+                    "type" : "custom",
+                    "tokenizer" : "standard",
+                    "filter" : ["lowercase", "french_elision", "french_stop"/*,"french_keywords"*/,"french_stemmer"]
+                }
+            },
+            "filter" : {
+                "delimited_payload_filter" : {
+                  "type": "delimited_payload_filter",
+                  "delimiter" : "|",
+                  "encoding" : "int"
+                },
+                "french_elision": {
+                  "type":         "elision",
+                  "articles": [ "l", "m", "qu", "n", "s",
+                                  "j", "jusqu", "quoiqu",
+                                  "lorsqu", "puisqu"
+                              ]
+                },
+                "french_stop": {
+                  "type":       "stop",
+                  "stopwords":  "_french_" 
+                },
+//                "french_keywords": {
+//                  "type":       "keyword_marker",
+//                  "keywords":   [] 
+//                },
+                "french_stemmer": {
+                  "type":       "stemmer",
+                  "language":   "light_french"
+                },
+//                "jdonrefv4_metaphone" : {
+//                    "type" : "phonetic",
+//                    "encoder" : "metaphone",
+//                    "replace" : true
+//                },
+                "jdonrefv4_synonyme" : {
+                    "type" : "payloadsynonym",
+                    "synonyms_path": "./src/resources/analysis/jdonrefv4_synonym.fr_FR.txt"
+                },
+                "jdonrefv4_nGram" : {
+                    "type" : "payloadedgengram",
+                    "min_gram": 3,
+                    "max_gram": 15,
+                    "with_payloads": true,
+                    "keep_numbers" : true,
+                    "keep_under_min" : true
+                },
+                "jdonrefv4_integertypeaspayload" : {
+                    "type":"integertypeaspayload",
+                    "factor": 1000000
+                },
+                "jdonrefv4_tokenCount": {
+                    "type" : "tokencountpayloads",
+                    "factor": 1000,
+                    "ignored_types" : ["NGRAM","UNSPLITED"]
+                },
+                "jdonrefv4_unsplit_index" : {
+                 // "debugMode": true,
+                  "type": "unsplit",
+                  "delimiter": " ",
+                  "min_words_unsplitted" : 2,
+                  "keep_originals" : true,
+                  "max_subwords" : 1,
+                  "frequent_terms_only": false,
+                  "required_payloads" : [11],
+                  "ordered_payloads" : [1,2,5,9],
+                  "alone_payloads" : [3],
+                  "at_least_one_payloads" : [1,2],
+                  "minimum_score": 0,
+                  "span_score_payload" : true,
+                  "score_items" : [1,11,2,5,3,9],
+                  "score_value" : [50,30,50,50,50,10]/*,
+                  "path": "./src/resources/analysis/word84.txt"*/
+                },
+                "jdonrefv4_unsplit_search" : {
+                  "type": "unsplit",
+                  "delimiter": " ",
+                  "min_words_unsplitted" : "70%",
+                  "keep_originals" : false,
+                  "frequent_terms_only": false,
+                  "count_payload" : true
+                  /*,
+                  "path": "./src/resources/analysis/word84.txt"*/
+                }
+            },
+            "similarity": {
+                "jdonrefv4" : {
+                    "type": "org.apache.lucene.search.similarities.JDONREFv4TermSimilarity"
+                }
+            }
+        }
+    }
+}

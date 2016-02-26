@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.lucene.analysis.FrequentTermsUtil;
+//import org.apache.lucene.analysis.FrequentTermsUtil;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Commune;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Departement;
 import org.elasticsearch.river.jdonrefv4.jdonrefv3.entity.Voie;
@@ -88,7 +88,7 @@ public class Valide
     }
 //"geometrie":{"type":"point","coordinates":[2.3292484283447266,48.84809494018555]}}}}
     
-    public JDONREFIndex getJDONREFIndex(String index,String alias,boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,boolean withSwitchAlias,String url,String connectionString,String user,String passwd,boolean restart,long millis) throws SQLException, IOException
+    public JDONREFIndex getJDONREFIndex(String index,String alias,boolean bouchon,boolean reindex,boolean verboseIndexation,boolean withGeometry,boolean withSwitchAlias,String url,String connectionString,String user,String passwd,boolean restart,long millis) throws SQLException, IOException, Exception
     {
         JDONREFIndex jdonrefIndex = JDONREFIndex.getInstance();
         jdonrefIndex.setUrl(url);
@@ -116,8 +116,9 @@ public class Valide
             }
             else
             {
-                Connection connection = DriverManager.getConnection(connectionString,user,passwd);
-                jdonrefIndex.setConnection(connection);
+                jdonrefIndex.setConnectionString(connectionString);
+                jdonrefIndex.setPassword(passwd);
+                jdonrefIndex.setUser(user);
                 
 //                int numDepartements = 1; // max = 96. 20 not included. skip setCodesDepartements to test it (and all others).
 //                String[] departements = new String[numDepartements+(numDepartements>=20?-1:0)];
@@ -174,7 +175,7 @@ public class Valide
         String user = "postgres";
         String passwd = "postgres";
         
-        FrequentTermsUtil.setFilePath("./src/resources/analysis/word84.txt");
+//        FrequentTermsUtil.setFilePath("./src/resources/analysis/word84.txt");
         
         try {
             
